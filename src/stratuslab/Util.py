@@ -1,13 +1,13 @@
-from com.sixsq.slipstream.exceptions.Exceptions import ConfigurationFileError
 import logging
 import os
 import sys
 import uuid as uuidModule
 
 timeformat = '%Y-%m-%d %H:%M:%S'
+defaultConfigSection = 'stratuslab'
 
 def configureLogger():
-    filename=os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),'slipstream.log')
+    filename=os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),'stratuslab.log')
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(levelname)s %(message)s',
                         filename=filename)
@@ -27,6 +27,7 @@ def resetStdFromLogger():
     sys.stdout = sys.stdout._std
     sys.stderr = sys.stderr._std
 
+# TODO: useful?
 def whoami():
     return sys._getframe(1).f_code.co_name
 
@@ -67,6 +68,7 @@ class StdOutWithLogger:
     def flush(self):
         self._std.flush()
 
+# TODO: Useful?
 def getHomeDirectory():
     if (sys.platform == "win32"):
         if (os.environ.has_key("HOME")):
@@ -82,41 +84,11 @@ def getHomeDirectory():
             # No home directory set
             return ""
 
-def getConfigFileName():
-    ''' Look for the configuration file in the following order:
-        1- local directory
-        2- installation location
-        3- calling module location
-    '''
-    filename = 'slipstream.client.conf'
-    configFilename = os.path.join(os.getcwd(),filename)
-    if os.path.exists(configFilename):
-        return configFilename
-    configFilename = os.path.join(getInstallationLocation(),filename)
-    if not os.path.exists(configFilename):
-        configFilename = os.path.join(os.path.dirname(sys.argv[0]),filename)
-    if not os.path.exists(configFilename):
-        raise ConfigurationFileError('Failed to find the configuration file: ' + configFilename)
-    return configFilename
-
-def getInstallationLocation():
-    ''' Look for the installation location in the following order:
-        1- SLIPSTREAM_HOME env var if set
-        2- Default target directory, if exists (/opt/slipstream/src)
-        3- Base module: __file__/../../.., since the util module is namespaced
-    '''
-    slipstreamDefaultDirName = os.path.join(os.sep,'opt','slipstream','client','src')
-    # Relative to the src dir.  We do this to avoid importing a module, since util
-    # should have a minimum of dependencies
-    slipstreamDefaultRelativeDirName = os.path.join(os.path.dirname(__file__),'..','..','..')
-    if os.environ.has_key('SLIPSTREAM_HOME'):
-        slipstreamHome = os.environ['SLIPSTREAM_HOME']
-    elif os.path.exists(slipstreamDefaultDirName):
-        slipstreamHome = slipstreamDefaultDirName
-    else:
-        slipstreamHome = slipstreamDefaultRelativeDirName
-    return slipstreamHome
-
 def uuid():
     '''Generates a unique ID.'''
     return str(uuidModule.uuid4())
+
+def validConfiguration(config):
+    if not config.has_section(defaultConfigSection):
+        raise ValueError('Invalid configuration')
+        
