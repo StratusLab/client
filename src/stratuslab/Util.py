@@ -1,13 +1,14 @@
-import logging
 import os
 import sys
+import logging
 import uuid as uuidModule
 
 timeformat = '%Y-%m-%d %H:%M:%S'
 defaultConfigSection = 'stratuslab'
 
 def configureLogger():
-    filename=os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),'stratuslab.log')
+    filename = os.path.abspath('%s/../stratuslab.log' %
+        os.path.abspath(os.path.dirname(__file__)))
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(levelname)s %(message)s',
                         filename=filename)
