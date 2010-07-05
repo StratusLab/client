@@ -24,20 +24,27 @@ class MainProgram(CommandBase):
                 help='don\'t print status messages to stdout')
         self.parser.add_option('-v', action='store_true', dest='verbose', 
                 default=False, help='display more informations')
+        self.parser.add_option('-r', action='store_true', dest='revert', 
+                default=False, help='remove previous configuration')
 
         (self.options, self.args) = self.parser.parse_args()
 
         super(MainProgram,self).__init__()
 
     def doWork(self):
-        if len(self.args) < 2:
-            raise self.usageExitTooFewArguments()
-        elif len(self.args) > 2:
-            raise self.usageExitTooManyArguments()
-
         configurator = Configurator(self.options.configFile)
-        self.logMessage('User config file: %s' % configurator.userConfigFile)
-        configurator.setOption(key=self.args[0], value=self.args[1])
+
+        if self.options.revert:
+            configurator.revertConfig()
+            self.logMessage('User configuration reverted')
+        else:
+            if len(self.args) < 2:
+                raise self.usageExitTooFewArguments()
+            elif len(self.args) > 2:
+                raise self.usageExitTooManyArguments()
+
+            self.logMessage('User config file: %s' % configurator.userConfigFile)
+            configurator.setOption(key=self.args[0], value=self.args[1])
 
         self.logMessage('Done!')
 

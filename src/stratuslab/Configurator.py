@@ -40,3 +40,7 @@ class Configurator(object):
         self.userConfig.write(fd)
         fd.close()
 
+    def revertConfig(self):
+        if os.path.isfile(self.userConfigFile):
+            os.remove(self.userConfigFile)
+
