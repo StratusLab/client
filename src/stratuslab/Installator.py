@@ -22,7 +22,6 @@ class Installator(object):
         validConfiguration(self.userConfig)
 
         self.config = dict(self.userConfig.items(defaultConfigSection))
-        self.buildDir = self.config['one_build_dir']
         self.loadMachineSpecs()
 
     def setPythonPath(self, path):
@@ -49,20 +48,21 @@ class Installator(object):
             self.config['one_password'])
         self.machine.configureONeAdminEnv()
         self.machine.configureONeAdminAuth()
-        self.machine.setupONeAdminSSHCred(self.config['one_ssh_key'])
+        #self.machine.setupONeAdminSSHCred(self.config['one_ssh_key'])
 
     def installONe(self):
         self.machine.installDependencies()
-        self.machine.cloneGitRepository(self.config['one_git_repo'],
-            self.config['one_clone_name'], self.config['one_branch'])  
+        self.machine.cloneGitRepository(self.config['one_build_dir'],
+            self.config['one_git_repo'], self.config['one_clone_name'],
+            self.config['one_branch'])  
         self.machine.buildOpenNebula()
         self.machine.installOpenNebula()
         self.machine.startONeDaemon()
         
     def setupONeEnv(self):
         if self.config['share_type'] == 'nfs':
-            self.configureNFS(self.config['network_addr'],
+            self.machine.configureNFS(self.config['network_addr'],
             self.config['network_mask'])
         elif self.config['share_type'] == 'ssh':
-            self.configureSSH()
+            self.machine.configureSSH()
 

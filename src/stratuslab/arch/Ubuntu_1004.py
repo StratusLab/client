@@ -10,14 +10,15 @@ class Ubuntu(Base):
         ]
         self.NFSDeps = ['nfs-common']
         self.SSHDeps = []
-        super(Base, self).__init__()
+        super(Base,self).__init__()
 
     def updatePackageManager(self):
         self.execute(['apt-get', 'update'])
 
     def installPackages(self, packages):
-        self.execute(['apt-get', '-y', '-q',
-        'install'].extend(packages)) 
+        cmd = ['apt-get', '-y', '-q', 'install']
+        cmd.extend(packages)
+        self.execute(cmd)
 
-machine = Ubuntu
+machine = Ubuntu()
 
