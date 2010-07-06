@@ -51,7 +51,7 @@ class Installator(object):
         self.machine.configureONeAdminAuth()
         self.machine.setupONeAdminSSHCred(self.config['one_ssh_key'])
 
-    def installOne(self):
+    def installONe(self):
         self.machine.installDependencies()
         self.machine.cloneGitRepository(self.config['one_git_repo'],
             self.config['one_clone_name'], self.config['one_branch'])  
@@ -61,9 +61,8 @@ class Installator(object):
         
     def setupONeEnv(self):
         if self.config['share_type'] == 'nfs':
-            # TODO
-            pass
+            self.configureNFS(self.config['network_addr'],
+            self.config['network_mask'])
         elif self.config['share_type'] == 'ssh':
-            # TODO
-            pass
+            self.configureSSH()
 

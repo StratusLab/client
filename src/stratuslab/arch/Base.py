@@ -13,6 +13,12 @@ class Base(object):
         self.updatePackageManager()
         self.installPackages(self.frontendDeps)
 
+    def updatePackageManager(self):
+        pass
+
+    def installPackages(self, packages):
+        pass
+
     def cloneGitRepository(self, repoUrl, cloneName, branch):
         self.ONeRepo = repoUrl
         self.ONeSrcDir = os.path.abspath('%s/%s' %
@@ -80,6 +86,15 @@ class Base(object):
         self.setONeAdminOwner('%s/.ssh/authorized_keys' % self.ONeHome)
         self.append2File('%s/.ssh/config' % self.ONeHome, 
             'Host *\n\tStrictHostKeyChecking no')
+
+    def configureNFS(self, networkAddr, networkMask):
+        self.append2File('/etc/exportfs', 
+            '%s %s/%s(rw,async,no_subtree_check)' % 
+            (self.ONeHome, networkAddr, networkMask))
+        self.execute(['exportfs', '-a'])
+
+    def configureSSH(self):
+        pass
 
     def append2file(self, filename, content):
         fd = open(filename, 'a')
