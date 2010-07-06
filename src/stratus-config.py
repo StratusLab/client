@@ -9,7 +9,7 @@ from stratuslab.Configurator import Configurator
 
 # TODO: Display some information when modify config?
 class MainProgram(CommandBase):
-    '''A command-line program to configure StrtusLab.'''
+    '''A command-line program to configure StratusLab.'''
 
     def __init__(self):
         self.dirPath =  os.path.abspath(os.path.dirname(__file__))

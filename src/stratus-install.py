@@ -8,7 +8,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.Installator import Installator
 
 class MainProgram(CommandBase):
-    '''A command-line program to install StrtusLab.'''
+    '''A command-line program to install StratusLab front-end.'''
 
     def __init__(self):
         self.dirPath =  os.path.abspath(os.path.dirname(__file__))
