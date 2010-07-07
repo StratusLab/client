@@ -91,8 +91,9 @@ class Base(object):
             'Host *\n\tStrictHostKeyChecking no')
 
     def configureNFS(self, networkAddr, networkMask):
-        self.append2file('/etc/exportfs', 
-            '%s %s/%s(rw,async,no_subtree_check)' % 
+        self.installPackages(self.NFSDeps)
+        self.append2file('/etc/exports', 
+            '%s %s/%s(rw,async,no_subtree_check)\n' % 
             (self.ONeHome, networkAddr, networkMask))
         self.execute(['exportfs', '-a'])
 

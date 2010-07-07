@@ -28,9 +28,19 @@ def resetStdFromLogger():
     sys.stdout = sys.stdout._std
     sys.stderr = sys.stderr._std
 
-# TODO: useful?
 def whoami():
     return sys._getframe(1).f_code.co_name
+
+def fileGetContents(filename):
+    fd = open(filename, 'rb')
+    content = fd.read()
+    fd.close()
+    return content
+
+def filePutContents(filename, data):
+    fd = open(filename, 'wb')
+    fd.write(data)
+    fd.close()
 
 class StdOutWithLogger:
     def __init__(self,std):
@@ -69,7 +79,6 @@ class StdOutWithLogger:
     def flush(self):
         self._std.flush()
 
-# TODO: Useful?
 def getHomeDirectory():
     if (sys.platform == "win32"):
         if (os.environ.has_key("HOME")):

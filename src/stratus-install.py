@@ -18,21 +18,26 @@ class MainProgram(CommandBase):
         self.parser.add_option('-c', '--config', dest='configFile',
                 help='configuration file', metavar='FILE',
                 default='%s/stratuslab.cfg.user' % self.dirPath)
-        self.parser.add_option('-q', '--quiet', action='store_false', 
-                dest='verbose', default=True,
-                help='don\'t print status messages to stdout')
+        self.parser.add_option('-t', '--template', dest='onedTpl',
+                help='ONe daemon template', metavar='TEMPLATE',
+                default='%s/oned.conf.tpl' % self.dirPath)
+        self.parser.add_option('-q', '--quiet', dest='quiet',
+                help='don\'t print status messages to stdout',
+                default=False, action='store_true')
         self.parser.add_option('-v', action='store_true', dest='verbose', 
-                default=False, help='display more informations')
+                help='display more informations', default=False)
 
         (self.options, self.args) = self.parser.parse_args()
 
         super(MainProgram, self).__init__()
 
     def doWork(self):
-      	installator = Installator(self.options.configFile) 
+      	installator = Installator(self.options) 
         installator.setupONeAdmin()
         installator.installONe()
         installator.setupONeEnv()
+        installator.configureONeD()
+        installator.startONe()
         self.logMessage('Done!')
 
 

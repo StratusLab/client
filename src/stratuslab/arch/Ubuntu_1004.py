@@ -8,7 +8,7 @@ class Ubuntu(Base):
             'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
             'scons', 'g++', 'git-core', 'ssh',
         ]
-        self.NFSDeps = ['nfs-common']
+        self.NFSDeps = ['nfs-kernel-server']
         self.SSHDeps = []
         super(Base,self).__init__()
 
