@@ -1,5 +1,5 @@
 #*******************************************************************************
-#                       OpenNebula Configuration file
+#             OpenNebula Configuration file (Stratuslab version)
 #*******************************************************************************
 
 #*******************************************************************************
@@ -29,14 +29,15 @@
 #  DEBUG_LEVEL: 0 = ERROR, 1 = WARNING, 2 = INFO, 3 = DEBUG
 #*******************************************************************************
 
-HOST_MONITORING_INTERVAL = 600
+HOST_MONITORING_INTERVAL = %(host_monitoring_interval)s
 
-VM_POLLING_INTERVAL      = 600
+VM_POLLING_INTERVAL      = %(vm_polling_interval)s
 
-#VM_DIR=/srv/cloud/one/var
+VM_DIR=%(vm_dir)s 
 
-PORT=2633
+PORT=%(one_port)s
 
+# TODO: Add value in config
 DB = [ backend = "sqlite" ]
 
 # Sample configuration for MySQL
@@ -46,7 +47,7 @@ DB = [ backend = "sqlite" ]
 #        passwd  = "oneadmin",
 #        db_name = "opennebula" ]
 
-VNC_BASE_PORT = 5000
+VNC_BASE_PORT = %(vnc_base_port)s
 
 DEBUG_LEVEL=%(debug_level)s
 
@@ -73,7 +74,7 @@ MAC_PREFIX   = %(mac_prefix)s
 #   name      : name for this information manager
 #
 #   executable: path of the information driver executable, can be an
-#               absol%(hypervisor)sute path or relative to $ONE_LOCATION/lib/mads (or
+#               absolsute path or relative to $ONE_LOCATION/lib/mads (or
 #               /usr/lib/one/mads/ if OpenNebula was installed in /)
 #
 #   arguments : for the driver executable, usually a probe configuration file,
@@ -89,27 +90,27 @@ IM_MAD = [
 #-------------------------------------------------------------------------------
 #  XEN Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-#IM_MAD = [
-#    name       = "im_xen",
-#    executable = "one_im_ssh",
-#    arguments  = "im_xen/im_xen.conf" ]
+IM_MAD = [
+    name       = "im_xen",
+    executable = "one_im_ssh",
+    arguments  = "im_xen/im_xen.conf" ]
 
 #-------------------------------------------------------------------------------
 #  KVM Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-#IM_MAD = [
-#      name       = "im_kvm",
-#      executable = "one_im_ssh",
-#      arguments  = "im_kvm/im_kvm.conf" ]
+IM_MAD = [
+      name       = "im_kvm",
+      executable = "one_im_ssh",
+      arguments  = "im_kvm/im_kvm.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 #  EC2 Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-#IM_MAD = [
-#      name       = "im_ec2",
-#      executable = "one_im_ec2",
-#      arguments  = "im_ec2/im_ec2.conf" ]
+IM_MAD = [
+      name       = "im_ec2",
+      executable = "one_im_ec2",
+      arguments  = "im_ec2/im_ec2.conf" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -143,20 +144,20 @@ VM_MAD = [
 #-------------------------------------------------------------------------------
 #  XEN Virtualization Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-#VM_MAD = [
-#    name       = "vmm_xen",
-#    executable = "one_vmm_xen",
-#    default    = "vmm_xen/vmm_xen.conf",
-#    type       = "xen" ]
+VM_MAD = [
+    name       = "vmm_xen",
+    executable = "one_vmm_xen",
+    default    = "vmm_xen/vmm_xen.conf",
+    type       = "xen" ]
 
 #-------------------------------------------------------------------------------
 #  KVM Virtualization Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-#VM_MAD = [
-#    name       = "vmm_kvm",
-#    executable = "one_vmm_kvm",
-#    default    = "vmm_kvm/vmm_kvm.conf",
-#    type       = "kvm" ]
+VM_MAD = [
+    name       = "vmm_kvm",
+    executable = "one_vmm_kvm",
+    default    = "vmm_kvm/vmm_kvm.conf",
+    type       = "kvm" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -165,11 +166,11 @@ VM_MAD = [
 #               relative to $ONE_LOCATION/etc (or /etc/one/ if OpenNebula was
 #               installed in /).
 #-------------------------------------------------------------------------------
-#VM_MAD = [
-#    name       = "vmm_ec2",
-#    executable = "one_vmm_ec2",
-#    arguments  = "vmm_ec2/vmm_ec2.conf",
-#    type       = "xml" ]
+VM_MAD = [
+    name       = "vmm_ec2",
+    executable = "one_vmm_ec2",
+    arguments  = "vmm_ec2/vmm_ec2.conf",
+    type       = "xml" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -196,36 +197,36 @@ TM_MAD = [
 #-------------------------------------------------------------------------------
 # SSH Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-#TM_MAD = [
-#    name       = "tm_ssh",
-#    executable = "one_tm",
-#    arguments  = "tm_ssh/tm_ssh.conf" ]
+TM_MAD = [
+    name       = "tm_ssh",
+    executable = "one_tm",
+    arguments  = "tm_ssh/tm_ssh.conf" ]
 
 #-------------------------------------------------------------------------------
 # NFS Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-#TM_MAD = [
-#    name       = "tm_nfs",
-#    executable = "one_tm",
-#    arguments  = "tm_nfs/tm_nfs.conf" ]
+TM_MAD = [
+    name       = "tm_nfs",
+    executable = "one_tm",
+    arguments  = "tm_nfs/tm_nfs.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # Dummy Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-#TM_MAD = [
-#    name       = "tm_dummy",
-#    executable = "one_tm",
-#    arguments  = "tm_dummy/tm_dummy.conf" ]
+TM_MAD = [
+    name       = "tm_dummy",
+    executable = "one_tm",
+    arguments  = "tm_dummy/tm_dummy.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # LVM Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-#TM_MAD = [
-#    name       = "tm_lvm",
-#    executable = "one_tm",
-#    arguments  = "tm_lvm/tm_lvm.conf" ]
+TM_MAD = [
+    name       = "tm_lvm",
+    executable = "one_tm",
+    arguments  = "tm_lvm/tm_lvm.conf" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************

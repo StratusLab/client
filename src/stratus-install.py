@@ -13,32 +13,68 @@ class MainProgram(CommandBase):
     def __init__(self):
         self.dirPath =  os.path.abspath(os.path.dirname(__file__))
         usage = 'usage: %prog [options]'
-        self.parser = OptionParser(usage=usage)
+        parser = OptionParser(usage=usage)
 
-        self.parser.add_option('-c', '--config', dest='configFile',
+        parser.add_option('-c', '--config', dest='configFile',
                 help='configuration file', metavar='FILE',
                 default='%s/stratuslab.cfg.user' % self.dirPath)
-        self.parser.add_option('-t', '--template', dest='onedTpl',
+        parser.add_option('-t', '--template', dest='onedTpl',
                 help='ONe daemon template', metavar='TEMPLATE',
                 default='%s/oned.conf.tpl' % self.dirPath)
-        self.parser.add_option('-q', '--quiet', dest='quiet',
+        parser.add_option('-n', '--node', dest='nodeAddr',
+                help='IP address or hostname of the node to configure',
+                default=None, metavar='ADDRESS')
+        parser.add_option('--im', dest='infoDriver',
+                help='information driver', metavar='IM_NAME',
+                default='im_stratuslab')
+        parser.add_option('--vmm', dest='virtDriver',
+                help='virtualization driver', metavar='VM_NAME',
+                default='vm_stratuslab')
+        # TODO: take care of this for the node deps installation/config
+        parser.add_option('--tm', dest='transfertDriver',
+                help='transfert driver', metavar='VM_NAME',
+                default='tm_stratuslab')
+        parser.add_option('-k', '--private-key', dest='privateKey',
+                help='private key for ssh node connection', metavar='FILENAME',
+                default=None)
+        parser.add_option('-q', '--quiet', dest='quiet',
                 help='don\'t print status messages to stdout',
                 default=False, action='store_true')
-        self.parser.add_option('-v', action='store_true', dest='verbose', 
+        parser.add_option('-v', action='store_true', dest='verbose', 
                 help='display more informations', default=False)
 
-        (self.options, self.args) = self.parser.parse_args()
+        (self.options, self.args) = parser.parse_args()
 
         super(MainProgram, self).__init__()
 
-    def doWork(self):
+    def doWorkNodes(self):
       	installator = Installator(self.options) 
-        installator.setupONeAdmin()
+        installator.propagateNodeInfos()
+
+        if installator.checkConnectivity(self.options.nodeAddr) > 0: 
+            raise ValueError('Unable to connect the node %s' %
+                self.options.nodeAddr)
+
+        installator.createONeAdmin(installator.node)
+        installator.installNodeDependencies()
+        installator.setupFileSharingClient()
+        installator.configureFileSharingClient()
+        installator.addONeNode()
+
+    def doWorkFrontend(self):
+      	installator = Installator(self.options) 
+        installator.createONeAdmin(installator.frontend)
+        installator.configureONeAdmin()
         installator.installONe()
-        installator.setupONeEnv()
-        installator.configureONeD()
-        installator.startONe()
-        self.logMessage('Done!')
+        installator.configureONeDaemon()
+        installator.setupFileSharingServer()
+        installator.startONeDaemon()
+
+    def doWork(self):
+        if self.options.nodeAddr is not None:
+            self.doWorkNodes() 
+        else:
+            self.doWorkFrontend()
 
 
 if __name__ == '__main__':

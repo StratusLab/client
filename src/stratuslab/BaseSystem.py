@@ -1,19 +1,27 @@
-# -*- coding: utf-8 -*-
 import os
 import shutil
 import subprocess
 
-class Base(object):
-
-    def installDependencies(self):
-        self.updatePackageManager()
-        self.installPackages(self.frontendDeps)
+class BaseSystem(object):
 
     def updatePackageManager(self):
         pass
 
     def installPackages(self, packages):
         pass
+
+    def installNodePackages(self, packages):
+        pass
+
+    def installFrontendDependencies(self):
+        self.updatePackageManager()
+        self.installPackages(self.frontendDeps)
+
+    def installNodeDependencies(self):
+        self.installNodePackages(self.nodeDeps)
+
+    def installHypervisor(self):
+        self.installNodePackages(self.hypervisorDeps.get(self.hypervisor))
 
     def cloneGitRepository(self, buildDir, repoUrl, cloneName, branch):
         self.ONeRepo = repoUrl
@@ -89,15 +97,39 @@ class Base(object):
         self.append2file('%s/.ssh/config' % self.ONeHome, 
             'Host *\n\tStrictHostKeyChecking no')
 
-    def configureNFS(self, networkAddr, networkMask):
-        self.installPackages(self.NFSDeps)
+    def configureNFSServer(self, networkAddr, networkMask):
         self.append2file('/etc/exports', 
             '%s %s/%s(rw,async,no_subtree_check)\n' % 
             (self.ONeHome, networkAddr, networkMask))
         self.execute(['exportfs', '-a'])
 
-    def configureSSH(self):
+    def configureSSHServer(self):
         pass
+
+    def configureNFSClient(self, frontendIP):
+        self.nodeShell('mkdir -p %s' % self.ONeHome)
+        self.nodeShell('echo "%s:%s %s nfs '
+            'soft,intr,rsize=32768,wsize=32768,rw 0 0"'
+            ' >> /etc/fstab' % 
+            (frontendIP, self.ONeHome, self.ONeHome))
+        self.nodeShell('mount -a')
+
+    def configureSSHClient(self):
+        # TODO: setup ssh authorized keys
+        pass
+
+    def configureHypervisor(self):
+        if self.hypervisor == 'xen':
+            self.configureXEN()
+        elif self.hypervisor == 'kvm':
+            self.configureKVM()
+
+    def configureKVM(self):
+        pass
+
+    def configureXEN(self):
+        self.nodeShell('echo "%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm, '
+            '/usr/sbin/xentop" >> /etc/sudoers' % self.ONeAdmin)
 
     def append2file(self, filename, content):
         fd = open(filename, 'a+')
@@ -108,11 +140,27 @@ class Base(object):
         print '%s\nCOMMAND: %s\n%s' % ('*' * 60, ' '.join(command), '*' * 60) 
     	process = subprocess.Popen(command, shell=shell)
         process.wait()
+        return process.returncode
 
     def ONeAdminExecute(self, command, shell=False):
         su = ['su', '-l', self.ONeAdmin, '-c']
         su.extend(command)
-        self.execute(su, shell)
+        return self.execute(su, shell)
+
+    def nodeShell(self, command):
+        self.remoteCmd(self.nodeAddr, command,
+            port=self.nodePort,
+            privateKey=self.nodePrivateKey)
+
+    def remoteCmd(self, hostAddr, command, user='root', port=22,
+            privateKey=None):
+        sshCmd = ['ssh', '-p', str(port), '-l', user]
+        if privateKey is not None and os.path.isfile(privateKey):
+            # TODO: with verbose display a message if key not exists
+            sshCmd.extend(['-i', privateKey])
+        sshCmd.append(hostAddr)
+        sshCmd.append(command)
+        return self.execute(sshCmd)
 
     def setONeAdminOwner(self, path):
         os.chown(path, int(self.ONeAdminUID), int(self.ONeAdminGID)) 
@@ -120,4 +168,16 @@ class Base(object):
     def createDirs(self, path):
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
+    
+    def setNodeAddr(self, nodeAddr):
+        self.nodeAddr = nodeAddr
+
+    def setNodePort(self, nodePort):
+        self.nodePort = nodePort
+
+    def setNodePrivateKey(self, privateKey):
+        self.nodePrivateKey = privateKey
+
+    def setNodeHypervisor(self, hypervisor):
+        self.hypervisor = hypervisor
 
