@@ -65,9 +65,8 @@ class Base(object):
         self.setONeAdminOwner('%s/.bash_login' % self.ONeHome)
 
         # Hack to always load .bashrc
-        self.execute(['sed', '-i', 
-            '\'s/\[ -z \"\$PS1\" \] \&\& return/#&/\'', 
-            '%s/.bashrc' % self.ONeHome])
+        self.execute(['sed -i \'s/\[ -z \\\"\$PS1\\\" \\] \\&\\& ' 
+            'return/#&/\' %s/.bashrc' % self.ONeHome], shell=True)
 
     def configureONeAdminAuth(self):
         self.createDirs('%s/.one' % self.ONeHome)
@@ -80,7 +79,8 @@ class Base(object):
     def setupONeAdminSSHCred(self, keysPath):
         self.createDirs('%s/.ssh/' % self.ONeHome)
         self.setONeAdminOwner('%s/.ssh/' % self.ONeHome)
-        self.execute(['ssh-keygen', '-q', '-f', keysPath, '-N', '\'\'', '-q']) 
+        self.execute(['ssh-keygen -f %s -N "" -q' % keysPath],
+            shell=True) 
         self.setONeAdminOwner(keysPath)
         self.setONeAdminOwner('%s.pub' % keysPath)
 
