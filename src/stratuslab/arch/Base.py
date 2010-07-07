@@ -47,8 +47,7 @@ class Base(object):
         self.ONeAdminUID = uid
         self.ONeAdminPassword = password
 
-        self.createDirs(self.ONeHome)
-        self.setONeAdminOwner(self.ONeHome)
+        self.createDirs(os.path.dirname(self.ONeHome))
         self.execute(['useradd', '-d', self.ONeHome, '-g', self.ONeAdminGroup, '-u', uid,
             username, '-s', '/bin/bash', '-p', password, '--create-home'])
 
