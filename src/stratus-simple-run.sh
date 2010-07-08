@@ -2,7 +2,7 @@
 
 GUEST_PORT=2222
 HOST_PORT=22
-STRATUSLAB_KEY="$HOME/.ssh/stratuslab-stoke.key"
+STRATUSLAB_KEY="$HOME/.ssh/root_hudson_id_rsa.key"
 SSH_OPTIONS="-p $GUEST_PORT -i $STRATUSLAB_KEY"
 SCP_OPTIONS="-P $GUEST_PORT -i $STRATUSLAB_KEY -q -r"
 ONE_FRONTEND_ENDPOINT="root@localhost"
