@@ -13,7 +13,7 @@ class MainProgram(CommandBase):
 
     def __init__(self):
         self.dirPath =  os.path.abspath(os.path.dirname(__file__))
-        usage = 'usage: %prog [options] key value'
+        usage = 'usage: %prog [options] [key value]'
         self.parser = OptionParser(usage=usage)
 
         self.parser.add_option('-c', '--config', dest='configFile',
@@ -37,6 +37,8 @@ class MainProgram(CommandBase):
         if self.options.revert:
             configurator.revertConfig()
             self.logMessage('User configuration reverted')
+        elif len(self.args) == 0:
+            configurator.writeUserConfig()
         else:
             if len(self.args) < 2:
                 raise self.usageExitTooFewArguments()
