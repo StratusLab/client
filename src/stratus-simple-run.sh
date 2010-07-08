@@ -25,7 +25,7 @@ ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "mkdir -p $ONE_FRONTEND_INSTALL_DIR"
 exit_on_error
 
 log_message "Copy install script..."
-scp $SCP_OPTIONS src $ONE_FRONTEND_ENDPOINT:$ONE_FRONTEND_INSTALL_DIR
+scp $SCP_OPTIONS src/* $ONE_FRONTEND_ENDPOINT:$ONE_FRONTEND_INSTALL_DIR
 exit_on_error
 
 log_message "Configure stratuslab..."
