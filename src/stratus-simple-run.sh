@@ -15,7 +15,8 @@ log_message() {
 
 exit_on_error() {
     if [ $? -ne 0 ]; then
-        echo "Failled executing command: $(!!)"       
+        LAST_COMMAND="!!"
+        echo "Failled executing command: $LAST_COMMAND"       
         exit 1
     fi
 }
