@@ -84,14 +84,15 @@ class BaseSystem(object):
         self.setONeAdminOwner('%s/.one/one_auth' % self.ONeHome)
 
     def setupONeAdminSSHCred(self, keysPath):
-        self.createDirs('%s/.ssh/' % self.ONeHome)
-        self.setONeAdminOwner('%s/.ssh/' % self.ONeHome)
-        self.execute(['ssh-keygen -f %s -N "" -q' % keysPath],
+        keyName = '%s/.ssh/id_rsa' % self.ONeHome
+        self.createDirs(os.path.dirname(keyName))
+        self.setONeAdminOwner(os.path.dirname(keyName))
+        self.execute(['ssh-keygen -f %s -N "" -q' % keyName],
             shell=True) 
-        self.setONeAdminOwner(keysPath)
-        self.setONeAdminOwner('%s.pub' % keysPath)
+        self.setONeAdminOwner(keyName)
+        self.setONeAdminOwner('%s.pub' % keyName)
 
-        shutil.copy('%s.pub' % keysPath, 
+        shutil.copy('%s.pub' % keyName, 
             '%s/.ssh/authorized_keys' % self.ONeHome)
         self.setONeAdminOwner('%s/.ssh/authorized_keys' % self.ONeHome)
         self.append2file('%s/.ssh/config' % self.ONeHome, 

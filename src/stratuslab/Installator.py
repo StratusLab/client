@@ -88,9 +88,10 @@ class Installator(object):
         self.frontend.installOpenNebula()
 
     def addONeNode(self):
-        self.frontend.ONeAdminExecute(['onehost create %s %s %s %s' % 
-            (self.nodeAddr, self.infoDriver, self.virtDriver,
-            self.transfertDriver)])
+        self.frontend.ONeAdminExecute(['onehost create %s '
+            'im_%s vmm_%s tm_%s' % 
+            (self.nodeAddr, self.config['hypervisor'],
+            self.config['hypervisor'], self.config['share_type'])])
         
     def setupFileSharingServer(self):
         self.frontend.installPackages(self.frontend.fileSharingFrontendDeps.get(
@@ -123,6 +124,8 @@ class Installator(object):
         ONeDConfTemplate = fileGetContents(self.ONeDConfTemplateFile)         
         filePutContents('%s/var/oned.conf' % self.config['one_home'],
             ONeDConfTemplate % self.config)
+        self.frontend.setONeAdminOwner('%s/var/oned.conf' %
+            self.config['one_home'])
 
     def startONeDaemon(self):
         self.frontend.startONeDaemon()

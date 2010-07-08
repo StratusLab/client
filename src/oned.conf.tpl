@@ -83,34 +83,34 @@ MAC_PREFIX   = %(mac_prefix)s
 #*******************************************************************************
 
 IM_MAD = [
-    name       = "im_stratuslab",
+    name       = "im_%(hypervisor)s",
     executable = "one_im_%(share_type)s",
     arguments  = "im_%(hypervisor)s/im_%(hypervisor)s.conf" ]
 
 #-------------------------------------------------------------------------------
 #  XEN Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-IM_MAD = [
-    name       = "im_xen",
-    executable = "one_im_ssh",
-    arguments  = "im_xen/im_xen.conf" ]
+#IM_MAD = [
+#    name       = "im_xen",
+#    executable = "one_im_ssh",
+#    arguments  = "im_xen/im_xen.conf" ]
 
 #-------------------------------------------------------------------------------
 #  KVM Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-IM_MAD = [
-      name       = "im_kvm",
-      executable = "one_im_ssh",
-      arguments  = "im_kvm/im_kvm.conf" ]
+#IM_MAD = [
+#      name       = "im_kvm",
+#      executable = "one_im_ssh",
+#      arguments  = "im_kvm/im_kvm.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 #  EC2 Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-IM_MAD = [
-      name       = "im_ec2",
-      executable = "one_im_ec2",
-      arguments  = "im_ec2/im_ec2.conf" ]
+#IM_MAD = [
+#      name       = "im_ec2",
+#      executable = "one_im_ec2",
+#      arguments  = "im_ec2/im_ec2.conf" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -136,7 +136,7 @@ IM_MAD = [
 
 
 VM_MAD = [
-    name       = "vmm_stratuslab",
+    name       = "vmm_%(hypervisor)s",
     executable = "one_vmm_%(hypervisor)s",
     default    = "vmm_%(hypervisor)s/vmm_%(hypervisor)s.conf",
     type       = "%(virt_manager)s" ]
@@ -144,20 +144,20 @@ VM_MAD = [
 #-------------------------------------------------------------------------------
 #  XEN Virtualization Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-VM_MAD = [
-    name       = "vmm_xen",
-    executable = "one_vmm_xen",
-    default    = "vmm_xen/vmm_xen.conf",
-    type       = "xen" ]
+#VM_MAD = [
+#    name       = "vmm_xen",
+#    executable = "one_vmm_xen",
+#    default    = "vmm_xen/vmm_xen.conf",
+#    type       = "xen" ]
 
 #-------------------------------------------------------------------------------
 #  KVM Virtualization Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-VM_MAD = [
-    name       = "vmm_kvm",
-    executable = "one_vmm_kvm",
-    default    = "vmm_kvm/vmm_kvm.conf",
-    type       = "kvm" ]
+#VM_MAD = [
+#    name       = "vmm_kvm",
+#    executable = "one_vmm_kvm",
+#    default    = "vmm_kvm/vmm_kvm.conf",
+#    type       = "kvm" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -166,11 +166,11 @@ VM_MAD = [
 #               relative to $ONE_LOCATION/etc (or /etc/one/ if OpenNebula was
 #               installed in /).
 #-------------------------------------------------------------------------------
-VM_MAD = [
-    name       = "vmm_ec2",
-    executable = "one_vmm_ec2",
-    arguments  = "vmm_ec2/vmm_ec2.conf",
-    type       = "xml" ]
+#VM_MAD = [
+#    name       = "vmm_ec2",
+#    executable = "one_vmm_ec2",
+#    arguments  = "vmm_ec2/vmm_ec2.conf",
+#    type       = "xml" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -190,43 +190,43 @@ VM_MAD = [
 #*******************************************************************************
 
 TM_MAD = [
-    name       = "tm_stratuslab",
+    name       = "tm_%(share_type)s",
     executable = "one_tm",
     arguments  = "tm_%(share_type)s/tm_%(share_type)s.conf" ]
 
 #-------------------------------------------------------------------------------
 # SSH Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_ssh",
-    executable = "one_tm",
-    arguments  = "tm_ssh/tm_ssh.conf" ]
+#TM_MAD = [
+#    name       = "tm_ssh",
+#    executable = "one_tm",
+#    arguments  = "tm_ssh/tm_ssh.conf" ]
 
 #-------------------------------------------------------------------------------
 # NFS Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_nfs",
-    executable = "one_tm",
-    arguments  = "tm_nfs/tm_nfs.conf" ]
+#TM_MAD = [
+#    name       = "tm_nfs",
+#    executable = "one_tm",
+#    arguments  = "tm_nfs/tm_nfs.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # Dummy Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_dummy",
-    executable = "one_tm",
-    arguments  = "tm_dummy/tm_dummy.conf" ]
+#TM_MAD = [
+#    name       = "tm_dummy",
+#    executable = "one_tm",
+#    arguments  = "tm_dummy/tm_dummy.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # LVM Transfer Manager Driver sample configuration
 #-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_lvm",
-    executable = "one_tm",
-    arguments  = "tm_lvm/tm_lvm.conf" ]
+#TM_MAD = [
+#    name       = "tm_lvm",
+#    executable = "one_tm",
+#    arguments  = "tm_lvm/tm_lvm.conf" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************

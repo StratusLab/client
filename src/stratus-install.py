@@ -71,10 +71,10 @@ class MainProgram(CommandBase):
         installator.startONeDaemon()
 
     def doWork(self):
-        if self.options.nodeAddr is not None:
-            self.doWorkNodes() 
-        else:
+        if self.options.nodeAddr:
             self.doWorkFrontend()
+        else:
+            self.doWorkNodes() 
 
 
 if __name__ == '__main__':
