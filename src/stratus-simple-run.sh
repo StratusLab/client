@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GUEST_PORT=2222
+GUEST_PORT=22
 HOST_PORT=22
 STRATUSLAB_KEY="$HOME/.ssh/root_hudson_id_rsa.key"
 SSH_OPTIONS="-p $GUEST_PORT -i $STRATUSLAB_KEY"
