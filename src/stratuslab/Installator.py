@@ -76,7 +76,7 @@ class Installator(object):
     def configureONeAdmin(self):
         self.frontend.configureONeAdminEnv()
         self.frontend.configureONeAdminAuth()
-        self.frontend.setupONeAdminSSHCred(self.config['one_ssh_key'])
+        self.frontend.setupONeAdminSSHCred()
 
     def installONe(self):
         self.frontend.installFrontendDependencies()

@@ -83,7 +83,7 @@ class BaseSystem(object):
             % (self.ONeAdmin, self.ONeAdminPassword))
         self.setONeAdminOwner('%s/.one/one_auth' % self.ONeHome)
 
-    def setupONeAdminSSHCred(self, keysPath):
+    def setupONeAdminSSHCred(self):
         keyName = '%s/.ssh/id_rsa' % self.ONeHome
         self.createDirs(os.path.dirname(keyName))
         self.setONeAdminOwner(os.path.dirname(keyName))
