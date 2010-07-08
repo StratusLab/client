@@ -72,9 +72,9 @@ class MainProgram(CommandBase):
 
     def doWork(self):
         if self.options.nodeAddr:
-            self.doWorkFrontend()
-        else:
             self.doWorkNodes() 
+        else:
+            self.doWorkFrontend()
 
 
 if __name__ == '__main__':
