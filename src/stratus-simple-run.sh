@@ -24,6 +24,12 @@ log_message "Create target directory..."
 ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "mkdir -p $ONE_FRONTEND_INSTALL_DIR"
 exit_on_error
 
+# Remove this for a clean install
+log_message "Multi-install workaround..."
+ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "su -l oneadmin -c 'one stop'"
+ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "rm -rf /srv/cloud/one/*"
+ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "rm -rf /srv/cloud/one/.ssh"
+
 log_message "Copy install script..."
 scp $SCP_OPTIONS src/* $ONE_FRONTEND_ENDPOINT:$ONE_FRONTEND_INSTALL_DIR
 exit_on_error
