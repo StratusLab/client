@@ -35,6 +35,7 @@ scp $SCP_OPTIONS src/* $ONE_FRONTEND_ENDPOINT:$ONE_FRONTEND_INSTALL_DIR
 exit_on_error
 
 log_message "Configure stratuslab..."
+ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "python $ONE_FRONTEND_INSTALL_DIR/stratus-config.py -r"
 ssh $SSH_OPTIONS $ONE_FRONTEND_ENDPOINT "python $ONE_FRONTEND_INSTALL_DIR/stratus-config.py"
 exit_on_error
 
