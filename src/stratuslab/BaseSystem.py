@@ -138,7 +138,8 @@ class BaseSystem(object):
         fd.close()
 
     def execute(self, command, shell=False):
-        print '%s\nCOMMAND: %s\n%s' % ('*' * 60, ' '.join(command), '*' * 60) 
+        print '\n\n\n%s\nExecuting: %s\n\n%s' % (
+            '-' * 60, ' '.join(command), '-' * 60) 
     	process = subprocess.Popen(command, shell=shell)
         process.wait()
         return process.returncode
