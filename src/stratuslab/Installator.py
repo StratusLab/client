@@ -27,14 +27,14 @@ class Installator(object):
             self.config['frontend_system'])
         self.node = self.getSystemMethods(self.config['node_system'])
         
-        self.privateKey = (True and options.privateKey) or
-            self.config['node_private_key']
-        self.infoDriver = (True and options.infoDriver) or 'im_%s' %
-            self.config['hypervisor']
-        self.virtDriver = (True and options.virtDriver) or 'vmm_%s' %
-            self.config['hypervisor']
-        self.transfertDriver = (True and options.transfertDriver) or
-            'tm_%s' % self.config['share_type']
+        self.privateKey = (True and options.privateKey) or (
+            self.config['node_private_key'])
+        self.infoDriver = (True and options.infoDriver) or ('im_%s' %
+            self.config['hypervisor'])
+        self.virtDriver = (True and options.virtDriver) or ('vmm_%s' %
+            self.config['hypervisor'])
+        self.transfertDriver = (True and options.transfertDriver) or (
+            'tm_%s' % self.config['share_type'])
 
     def setPythonPath(self, path):
         if not path in sys.path:
@@ -90,7 +90,7 @@ class Installator(object):
 
     def addONeNode(self):
         self.frontend.ONeAdminExecute(['onehost create %s %s %s %s' % 
-            (self.infoDriver, self.virtDriver, self.transfertDriver)
+            (self.infoDriver, self.virtDriver, self.transfertDriver)])
         
     def setupFileSharingServer(self):
         self.frontend.installPackages(self.frontend.fileSharingFrontendDeps.get(
