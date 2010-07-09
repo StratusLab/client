@@ -90,7 +90,9 @@ class Installator(object):
 
     def addONeNode(self):
         self.frontend.ONeAdminExecute(['onehost create %s %s %s %s' % 
-            (self.infoDriver, self.virtDriver, self.transfertDriver)])
+            (self.nodeAddr, self.infoDriver, self.virtDriver,
+            self.transfertDriver)
+        ])
         
     def setupFileSharingServer(self):
         self.frontend.installPackages(self.frontend.fileSharingFrontendDeps.get(
