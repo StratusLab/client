@@ -17,23 +17,24 @@ class Installator(object):
         self.verbose = options.verbose
         self.quiet = options.quiet
         self.nodeAddr = options.nodeAddr
-        self.infoDriver = options.infoDriver
-        self.virtDriver = options.virtDriver
-        self.transfertDriver = options.transfertDriver
         self.ONeDConfTemplateFile = options.onedTpl
+
         self.specsFilesDir = self.specsFilesDir % ({
             'currentDir': os.path.abspath(os.path.dirname(__file__))
         })
-
         self.config = self.parseConfig(self.configFile)
         self.frontend = self.getSystemMethods(
             self.config['frontend_system'])
         self.node = self.getSystemMethods(self.config['node_system'])
         
-        if options.privateKey is not None:
-            self.privateKey = options.privateKey
-        else:
-            self.privateKey = self.config['node_private_key']
+        self.privateKey = (True and options.privateKey) or
+            self.config['node_private_key']
+        self.infoDriver = (True and options.infoDriver) or 'im_%s' %
+            self.config['hypervisor']
+        self.virtDriver = (True and options.virtDriver) or 'vmm_%s' %
+            self.config['hypervisor']
+        self.transfertDriver = (True and options.transfertDriver) or
+            'tm_%s' % self.config['share_type']
 
     def setPythonPath(self, path):
         if not path in sys.path:
@@ -88,10 +89,8 @@ class Installator(object):
         self.frontend.installOpenNebula()
 
     def addONeNode(self):
-        self.frontend.ONeAdminExecute(['onehost create %s '
-            'im_%s vmm_%s tm_%s' % 
-            (self.nodeAddr, self.config['hypervisor'],
-            self.config['hypervisor'], self.config['share_type'])])
+        self.frontend.ONeAdminExecute(['onehost create %s %s %s %s' % 
+            (self.infoDriver, self.virtDriver, self.transfertDriver)
         
     def setupFileSharingServer(self):
         self.frontend.installPackages(self.frontend.fileSharingFrontendDeps.get(

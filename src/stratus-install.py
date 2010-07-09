@@ -26,14 +26,14 @@ class MainProgram(CommandBase):
                 default=None, metavar='ADDRESS')
         parser.add_option('--im', dest='infoDriver',
                 help='information driver', metavar='IM_NAME',
-                default='im_stratuslab')
+                default=None)
         parser.add_option('--vmm', dest='virtDriver',
                 help='virtualization driver', metavar='VM_NAME',
-                default='vm_stratuslab')
+                default=None)
         # TODO: take care of this for the node deps installation/config
         parser.add_option('--tm', dest='transfertDriver',
                 help='transfert driver', metavar='VM_NAME',
-                default='tm_stratuslab')
+                default=None)
         parser.add_option('-k', '--private-key', dest='privateKey',
                 help='private key for ssh node connection', metavar='FILENAME',
                 default=None)
