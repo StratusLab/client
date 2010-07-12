@@ -138,7 +138,7 @@ class BaseSystem(object):
         fd.close()
 
     def execute(self, command, shell=False):
-        self.displayMessage(command)
+        self.displayMessage(' '.join(command))
     	process = subprocess.Popen(command, shell=shell)
         process.wait()
         return process.returncode
