@@ -138,8 +138,7 @@ class BaseSystem(object):
         fd.close()
 
     def execute(self, command, shell=False):
-        print '\n\n\n%s\nExecuting: %s\n%s\n' % (
-            '-' * 60, ' '.join(command), '-' * 60) 
+        self.displayMessage(command)
     	process = subprocess.Popen(command, shell=shell)
         process.wait()
         return process.returncode
@@ -165,9 +164,12 @@ class BaseSystem(object):
         return self.execute(sshCmd)
 
     def setONeAdminOwner(self, path):
+        self.displayMessage('chown %d:%d %s [python cmd]' % (
+            int(self.ONeAdminUID), int(self.ONeAdminGID), path))
         os.chown(path, int(self.ONeAdminUID), int(self.ONeAdminGID)) 
     
     def createDirs(self, path):
+        self.displayMessage('mkdirs -p %s [python cmd]' % path)
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
     
@@ -182,4 +184,8 @@ class BaseSystem(object):
 
     def setNodeHypervisor(self, hypervisor):
         self.hypervisor = hypervisor
+
+    def displayMessage(self, *msg):
+        print '\n\n\n%s\nExecuting: %s\n%s\n' % (
+            '-' * 60, ' '.join(msg), '-' * 60) 
 
