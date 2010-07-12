@@ -59,11 +59,11 @@ class BaseSystem(object):
         self.execute(['useradd', '-d', self.ONeHome, '-g', self.ONeAdminGroup, '-u', uid,
             username, '-s', '/bin/bash', '-p', password, '--create-home'])
 
-    def configureONeAdminEnv(self):  
+    def configureONeAdminEnv(self, ONeDPort):  
         self.append2file('%s/.bashrc' % self.ONeHome, 
             'export ONE_LOCATION=%s\n' % self.ONeHome)
         self.append2file('%s/.bashrc' % self.ONeHome, 
-            'export ONE_XMLRPC=http://localhost:2633/RPC2\n')
+            'export ONE_XMLRPC=http://localhost:%s/RPC2\n' % ONeDPort)
         self.append2file('%s/.bashrc' % self.ONeHome, 
             'export PATH=%s/bin:%s\n' % (self.ONeHome, os.getenv('PATH')))
 
@@ -138,7 +138,7 @@ class BaseSystem(object):
         fd.close()
 
     def execute(self, command, shell=False):
-        print '\n\n\n%s\nExecuting: %s\n\n%s' % (
+        print '\n\n\n%s\nExecuting: %s\n%s\n' % (
             '-' * 60, ' '.join(command), '-' * 60) 
     	process = subprocess.Popen(command, shell=shell)
         process.wait()

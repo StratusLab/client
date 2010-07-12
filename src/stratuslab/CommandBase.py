@@ -1,20 +1,9 @@
-#!/usr/bin/env python
-
-import os
 import sys
-
-from stratuslab.Util import redirectStd2Logger
 
 class CommandBase(object):
     
     def __init__(self, argv=None):
-        redirectStd2Logger()
-                
         self._callAndHandleErrorsForCommands(self.doWork.__name__)
-
-    def logMessage(self, *message):
-        if self.options.verbose:
-            print ''.join(message)
 
     def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
         res = 0

@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-from ConfigParser import SafeConfigParser
 
 from stratuslab.Util import defaultConfigSection
 from stratuslab.Util import validConfiguration
 from stratuslab.Util import filePutContents
 from stratuslab.Util import fileGetContents 
+from stratuslab.Util import parseConfig
 
 class Installator(object):
     # Path to the systems directory 
     specsFilesDir = '%(currentDir)s/system'
 
     def __init__(self, options):
+        #self.verbose = options.verbose
+        #self.quiet = options.quiet
         self.configFile = options.configFile
-        self.verbose = options.verbose
-        self.quiet = options.quiet
         self.nodeAddr = options.nodeAddr
         self.ONeDConfTemplateFile = options.onedTpl
 
         self.specsFilesDir = self.specsFilesDir % ({
             'currentDir': os.path.abspath(os.path.dirname(__file__))
         })
-        self.config = self.parseConfig(self.configFile)
+        self.config = parseConfig(self.configFile)
         self.frontend = self.getSystemMethods(
             self.config['frontend_system'])
         self.node = self.getSystemMethods(self.config['node_system'])
@@ -50,16 +50,6 @@ class Installator(object):
         module = __import__(system)
         return getattr(module, 'system')
 
-    def parseConfig(self, configFile):
-        if not os.path.isfile(configFile):
-            raise ValueError('Configuration file %s does not exists' %
-                configFile)
-
-        config = SafeConfigParser()
-        config.read(configFile)    
-        validConfiguration(config)
-        return dict(config.items(defaultConfigSection))
-
     def propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)
         self.node.setNodePrivateKey(self.privateKey)
@@ -75,7 +65,7 @@ class Installator(object):
                               self.config['one_password'])
 
     def configureONeAdmin(self):
-        self.frontend.configureONeAdminEnv()
+        self.frontend.configureONeAdminEnv(self.config['one_port'])
         self.frontend.configureONeAdminAuth()
         self.frontend.setupONeAdminSSHCred()
 

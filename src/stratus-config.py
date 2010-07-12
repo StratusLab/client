@@ -19,11 +19,14 @@ class MainProgram(CommandBase):
         self.parser.add_option('-c', '--config', dest='configFile',
                 help='default configuration file', metavar='FILE',
                 default='%s/stratuslab.cfg' % self.dirPath)
-        self.parser.add_option('-q', '--quiet', action='store_false', 
-                dest='verbose', default=True,
-                help='don\'t print status messages to stdout')
-        self.parser.add_option('-v', action='store_true', dest='verbose', 
-                default=False, help='display more informations')
+        self.parser.add_option('-k', '--keys', dest='showDefaultKeys',
+                help='display keys and default value',
+                action="store_true", default=False)
+        #self.parser.add_option('-q', '--quiet', action='store_false', 
+        #        dest='verbose', default=True,
+        #        help='don\'t print status messages to stdout')
+        #self.parser.add_option('-v', action='store_true', dest='verbose', 
+        #        default=False, help='display more informations')
         self.parser.add_option('-r', action='store_true', dest='revert', 
                 default=False, help='remove previous configuration')
 
@@ -36,7 +39,8 @@ class MainProgram(CommandBase):
 
         if self.options.revert:
             configurator.revertConfig()
-            self.logMessage('User configuration reverted')
+        elif self.options.showDefaultKeys:
+            configurator.displayDefaultKeys()
         elif len(self.args) == 0:
             configurator.writeUserConfig()
         else:
@@ -45,10 +49,7 @@ class MainProgram(CommandBase):
             elif len(self.args) > 2:
                 raise self.usageExitTooManyArguments()
 
-            self.logMessage('User config file: %s' % configurator.userConfigFile)
             configurator.setOption(key=self.args[0], value=self.args[1])
-
-        self.logMessage('Done!')
 
 
 if __name__ == '__main__':

@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
+
 from ConfigParser import SafeConfigParser
 
-from stratuslab.Util import defaultConfigSection, validConfiguration
+from stratuslab.Util import defaultConfigSection
+from stratuslab.Util import validConfiguration
+from stratuslab.Util import parseConfig
 
 
 class Configurator(object):
@@ -21,12 +25,29 @@ class Configurator(object):
     def _buildUserConfig(self):
         self.userConfigFile = '%s.user' % self.baseConfigFile
         
-        if os.path.isfile(self.userConfigFile):
-            self.userConfig = SafeConfigParser()
-            self.userConfig.read(self.userConfigFile)
-            validConfiguration(self.userConfig)
-        else:
-            self.userConfig = self.baseConfig
+        if not os.path.isfile(self.userConfigFile):
+            shutil.copy(self.baseConfigFile, self.userConfigFile)
+
+        self.userConfig = SafeConfigParser()
+        self.userConfig.read(self.userConfigFile)
+        validConfiguration(self.userConfig)
+
+    def displayDefaultKeys(self):
+        columnSize = 25
+        defaultConfig = parseConfig(self.baseConfigFile)
+        userConfig = parseConfig(self.userConfigFile)
+
+        print ' %s|  %s|  %s' % (
+            'Config key'.ljust(columnSize), 
+            'Current value'.ljust(columnSize),
+            'Default value')
+        print '-' * (columnSize*3+1)
+
+        for key in defaultConfig.keys():
+            print ' %s|  %s|  %s' % (
+                key.ljust(columnSize), 
+                userConfig.get(key).ljust(columnSize),
+                defaultConfig.get(key))
 
     def setOption(self, key, value):
         if not self.userConfig.has_option(defaultConfigSection, key):

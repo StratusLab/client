@@ -8,7 +8,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.Installator import Installator
 
 class MainProgram(CommandBase):
-    '''A command-line program to install StratusLab front-end.'''
+    '''A command-line program to install StratusLab.'''
 
     def __init__(self):
         self.dirPath =  os.path.abspath(os.path.dirname(__file__))
@@ -30,18 +30,17 @@ class MainProgram(CommandBase):
         parser.add_option('--vmm', dest='virtDriver',
                 help='virtualization driver', metavar='VM_NAME',
                 default=None)
-        # TODO: take care of this for the node deps installation/config
         parser.add_option('--tm', dest='transfertDriver',
                 help='transfert driver', metavar='VM_NAME',
                 default=None)
         parser.add_option('-k', '--private-key', dest='privateKey',
                 help='private key for ssh node connection', metavar='FILENAME',
                 default=None)
-        parser.add_option('-q', '--quiet', dest='quiet',
-                help='don\'t print status messages to stdout',
-                default=False, action='store_true')
-        parser.add_option('-v', action='store_true', dest='verbose', 
-                help='display more informations', default=False)
+        #parser.add_option('-q', '--quiet', dest='quiet',
+        #        help='don\'t print status messages to stdout',
+        #        default=False, action='store_true')
+        #parser.add_option('-v', action='store_true', dest='verbose', 
+        #        help='display more informations', default=False)
 
         (self.options, self.args) = parser.parse_args()
 
