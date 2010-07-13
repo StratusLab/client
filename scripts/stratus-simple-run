@@ -90,18 +90,18 @@ class StratusSimpleRun(object):
             self.options.frontend, self.options.installDir))
 
     def configureStratuslab(self):
-        self.ssh(['python', '%s/stratus-config.py' 
+        self.ssh(['python', '%s/stratus-config' 
             % self.options.installDir, '-r'])
-        self.ssh(['python', '%s/stratus-config.py' 
+        self.ssh(['python', '%s/stratus-config' 
             % self.options.installDir])
 
     def installStratuslabFrontend(self):
-        self.ssh(['python', '%s/stratus-install.py' 
+        self.ssh(['python', '%s/stratus-install' 
             % self.options.installDir])
 
     def installStratuslabNodes(self):
         for node in self.options.nodes.split(' '):
-            self.ssh(['python', '%s/stratus-install.py' 
+            self.ssh(['python', '%s/stratus-install' 
                 % self.options.installDir, '-n', node])
 
 
