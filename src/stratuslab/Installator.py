@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import sys
 
@@ -47,8 +46,19 @@ class Installator(object):
 
         self.setPythonPath(self.specsFilesDir)
 
-        module = __import__(system)
+        module = self.importSystem(system)
         return getattr(module, 'system')
+
+    def importSystem(self, system):
+        module = None
+        try:
+            module = __import__(system)
+        except:
+            print 'Error while importing system module'
+            sys.exit(1)
+        else:
+            return module
+
 
     def propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)

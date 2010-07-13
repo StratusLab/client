@@ -36,7 +36,7 @@ class BaseSystem(object):
         self.execute(['scons', '-j2'])
 
     def installOpenNebula(self):
-        self.setONeAdminOwner(os.getcwd())
+        #self.setONeAdminOwner(os.getcwd())
         self.execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
             self.ONeAdmin, '-g', self.ONeAdminGroup])
 
@@ -164,12 +164,9 @@ class BaseSystem(object):
         return self.execute(sshCmd)
 
     def setONeAdminOwner(self, path):
-        self.displayMessage('chown %d:%d %s [python cmd]' % (
-            int(self.ONeAdminUID), int(self.ONeAdminGID), path))
         os.chown(path, int(self.ONeAdminUID), int(self.ONeAdminGID)) 
     
     def createDirs(self, path):
-        self.displayMessage('mkdirs -p %s [python cmd]' % path)
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
     

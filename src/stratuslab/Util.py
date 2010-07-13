@@ -1,4 +1,5 @@
 import os
+import urllib2
 
 from ConfigParser import SafeConfigParser
 
@@ -28,4 +29,9 @@ def filePutContents(filename, data):
 def validConfiguration(config):
     if not config.has_section(defaultConfigSection):
         raise ValueError('Invalid configuration')
+
+def wget(url, savePath):
+    fd = urllib2.urlopen(url)
+    filePutContents(savePath, fd.read())
+    fd.close()
         
