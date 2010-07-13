@@ -11,8 +11,6 @@ class CentOS(BaseSystem):
         self.arch = self.getSystemArch()
         self.installCmd = 'yum -q -y --nogpgcheck install'
         self.remotePackages = [
-            'http://download.fedora.redhat.com/pub/epel/5/i386/'
-                'epel-release-5-3.noarch.rpm',
             'http://prdownloads.sourceforge.net/scons/'
                 'scons-1.2.0-1.noarch.rpm',
             'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS/'
@@ -26,9 +24,8 @@ class CentOS(BaseSystem):
             'http://kernel.org/pub/software/scm/git/git-1.7.1.1.tar.gz',
             'http://www.sqlite.org/sqlite-amalgamation-3.6.17.tar.gz',
         ]
-        self.frontendBuildDeps = ['gcc', 'gcc-c++', 'zlib-devel']
         self.frontendDeps = [ 
-            'ruby', 'ruby-devel', 'ruby-ri', 'ruby-irb'
+            'ruby', 'gcc', 'gcc-c++', 'zlib-devel'
         ]
         self.nodeDeps = ['ruby']
         self.hypervisorDeps = {
@@ -70,9 +67,8 @@ class CentOS(BaseSystem):
                 (self.installCmd, ' '.join(packages)))
 
     def installFrontendDependencies(self):
-        self.installPackages(self.frontendBuildDeps)
-        self.installRemotePackages(self.remotePackages)
         super(CentOS, self).installFrontendDependencies()
+        self.installRemotePackages(self.remotePackages)
         self.installSourceDependencies()
 
     def installSourceDependencies(self):
