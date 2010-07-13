@@ -15,7 +15,7 @@ class StratusSimpleRun(object):
         self.parser = OptionParser(usage=usage)
 
         self.parser.add_option('-n', '--nodes', dest='nodes',
-            help='node list', default=['localhost'])
+            help='node list', default='localhost')
         self.parser.add_option('-p', '--port', dest='sshPort',
             help='ssh port of the frontend', default=22)
         self.parser.add_option('-k', '--key', dest='sshKey',
@@ -58,8 +58,11 @@ class StratusSimpleRun(object):
         self.execute(sshCmd, shell, exitOnError)
 
     def scp(self, src, dest):
-        scpCmd ='scp %s %s %s' % (self.options.scpOptions, src, dest)
-        self.execute(scpCmd.split(' '))
+        scpCmd = ['scp']
+        scpCmd.extend(self.options.scpOptions.split(' '))
+        scpCmd.append(src)
+        scpCmd.append(dest)
+        self.execute(scpCmd)
 
     def launchSimpleRun(self):
         print 'Multi-install workaround...'
@@ -97,7 +100,7 @@ class StratusSimpleRun(object):
             % self.options.installDir])
 
     def installStratuslabNodes(self):
-        for node in nodes:
+        for node in self.options.nodes.split(' '):
             self.ssh(['python', '%s/stratus-install.py' 
                 % self.options.installDir, '-n', node])
 
