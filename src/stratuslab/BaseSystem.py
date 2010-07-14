@@ -7,6 +7,7 @@ class BaseSystem(object):
     nodePort = None
     nodePrivateKey = None
     hypervisor = None
+    ONeHome = '/tmp'
     
     def updatePackageManager(self):
         pass
