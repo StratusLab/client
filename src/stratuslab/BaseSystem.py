@@ -3,11 +3,22 @@ import shutil
 import subprocess
 
 class BaseSystem(object):
-    nodeAddr = None
-    nodePort = None
-    nodePrivateKey = None
-    hypervisor = None
-    ONeHome = '/tmp'
+    
+    def __init__(self):
+        self.nodeAddr = None
+        self.nodePort = None
+        self.nodePrivateKey = None
+        self.hypervisor = None
+        self.ONeRepo = None
+        self.ONeSrcDir = None
+        self.ONeAdminGroup = None
+        self.ONeAdminGID = None
+        self.createONeGroupCmd = None
+        self.ONeAdmin = None
+        self.ONeHome = None
+        self.ONeAdminUID = None
+        self.ONeAdminPassword = None
+        self.createONeAdminCmd = None
     
     def updatePackageManager(self):
         pass
