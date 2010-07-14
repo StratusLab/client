@@ -46,8 +46,19 @@ class BaseSystem(object):
     def createONeGroup(self, groupname, gid):
         self.ONeAdminGroup =  groupname
         self.ONeAdminGID = gid
-
-        self.execute(['groupadd', '-g', gid,  groupname])
+        self.createONeGroupCmd = ['groupadd', '-g', self.ONeAdminGID, 
+              self.ONeAdminGroup]
+        
+        if self.nodeAddr:
+            self.createONeAdminNode()
+        else:
+            self.createONeAdminFrontend()
+        
+    def createONeGroupFrontend(self):
+        self.execute(self.createONeGroupCmd)
+        
+    def createONeGroupNode(self):
+        self.nodeShell(self.createONeGroupCmd)
 
     def createONeAdmin(self, username, uid, homeDir, password):
         self.ONeAdmin = username
@@ -152,7 +163,7 @@ class BaseSystem(object):
 
     def execute(self, command, shell=False):
         self.displayMessage(' '.join(command))
-    	process = subprocess.Popen(command, shell=shell)
+        process = subprocess.Popen(command, shell=shell)
         process.wait()
         return process.returncode
 
