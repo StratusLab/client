@@ -4,22 +4,6 @@ import subprocess
 
 class BaseSystem(object):
     
-    def __init__(self):
-        self.nodeAddr = None
-        self.nodePort = None
-        self.nodePrivateKey = None
-        self.hypervisor = None
-        self.ONeRepo = None
-        self.ONeSrcDir = None
-        self.ONeAdminGroup = None
-        self.ONeAdminGID = None
-        self.createONeGroupCmd = None
-        self.ONeAdmin = None
-        self.ONeHome = None
-        self.ONeAdminUID = None
-        self.ONeAdminPassword = None
-        self.createONeAdminCmd = None
-    
     def updatePackageManager(self):
         pass
 
@@ -65,10 +49,10 @@ class BaseSystem(object):
         self.createONeGroupCmd = ['groupadd', '-g', self.ONeAdminGID, 
               self.ONeAdminGroup]
         
-        if self.nodeAddr:
-            self.createONeAdminNode()
+        if hasattr(self, 'nodeAddr'):
+            self.createONeGroupNode()
         else:
-            self.createONeAdminFrontend()
+            self.createONeGroupFrontend()
         
     def createONeGroupFrontend(self):
         self.execute(self.createONeGroupCmd)
@@ -83,9 +67,9 @@ class BaseSystem(object):
         self.ONeAdminPassword = password
         self.createONeAdminCmd = ['useradd', '-d', self.ONeHome, '-g', 
             self.ONeAdminGroup, '-u', self.ONeAdminUID, self.ONeAdmin,
-            '-s', '/bin/bash', '-p', password, '--create-home']
+            '-s', '/bin/bash', '-p', self.ONeAdminPassword, '--create-home']
         
-        if self.nodeAddr:
+        if hasattr(self, 'nodeAddr'):
             self.createONeAdminNode()
         else:
             self.createONeAdminFrontend()
@@ -93,11 +77,19 @@ class BaseSystem(object):
 
     def createONeAdminFrontend(self):
         self.createDirs(os.path.dirname(self.ONeHome))
+        self.execute(['useradd', '-d', self.ONeHome, '-g', 
+            self.ONeAdminGroup, '-u', self.ONeAdminUID, self.ONeAdmin,
+            '-s', '/bin/bash', '-p', self.ONeAdminPassword, 
+            '--create-home'])
         self.execute(self.createONeAdminCmd)
         
     def createONeAdminNode(self):
         self.nodeShell('mkdir -p %s' % self.ONeHome)
-        self.nodeShell(self.createONeAdminCmd)
+        self.execute(['useradd', '-d', self.ONeHome, '-g', 
+            self.ONeAdminGroup, '-u', self.ONeAdminUID, self.ONeAdmin,
+            '-s', '/bin/bash', '-p', self.ONeAdminPassword, 
+            '--create-home'])
+        self.execute(self.createONeAdminCmd)
 
     def configureONeAdminEnv(self, ONeDPort):  
         self.append2file('%s/.bashrc' % self.ONeHome, 
