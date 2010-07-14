@@ -36,7 +36,6 @@ class BaseSystem(object):
         self.execute(['scons', '-j2'])
 
     def installOpenNebula(self):
-        #self.setONeAdminOwner(os.getcwd())
         self.execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
             self.ONeAdmin, '-g', self.ONeAdminGroup])
 
@@ -80,7 +79,7 @@ class BaseSystem(object):
         self.execute(self.createONeAdminCmd)
         
     def createONeAdminNode(self):
-        self.nodeShell('mkdir -p %s' % self.ONeHome)
+        self.nodeShell('mkdir -p %s' % os.path.dirname(self.ONeHome))
         self.nodeShell(' '.join(self.createONeAdminCmd))
 
     def configureONeAdminEnv(self, ONeDPort):  
