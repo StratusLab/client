@@ -54,10 +54,23 @@ class BaseSystem(object):
         self.ONeHome = homeDir
         self.ONeAdminUID = uid
         self.ONeAdminPassword = password
+        self.createONeAdminCmd = ['useradd', '-d', self.ONeHome, '-g', 
+            self.ONeAdminGroup, '-u', self.ONeAdminUID, self.ONeAdmin,
+            '-s', '/bin/bash', '-p', password, '--create-home']
+        
+        if self.nodeAddr:
+            self.createONeAdminNode()
+        else:
+            self.createONeAdminFrontend()
 
+
+    def createONeAdminFrontend(self):
         self.createDirs(os.path.dirname(self.ONeHome))
-        self.execute(['useradd', '-d', self.ONeHome, '-g', self.ONeAdminGroup, '-u', uid,
-            username, '-s', '/bin/bash', '-p', password, '--create-home'])
+        self.execute(self.createONeAdminCmd)
+        
+    def createONeAdminNode(self):
+        self.nodeShell('mkdir -p %s' % self.ONeHome)
+        self.nodeShell(self.createONeAdminCmd)
 
     def configureONeAdminEnv(self, ONeDPort):  
         self.append2file('%s/.bashrc' % self.ONeHome, 
