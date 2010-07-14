@@ -3,7 +3,11 @@ import shutil
 import subprocess
 
 class BaseSystem(object):
-
+    nodeAddr = None
+    nodePort = None
+    nodePrivateKey = None
+    hypervisor = None
+    
     def updatePackageManager(self):
         pass
 
