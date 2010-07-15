@@ -4,9 +4,9 @@ import shutil
 
 from ConfigParser import SafeConfigParser
 
-from stratuslab.Util import defaultConfigSection
-from stratuslab.Util import validConfiguration
-from stratuslab.Util import parseConfig
+from Util import defaultConfigSection
+from Util import validConfiguration
+from Util import parseConfig
 
 
 class Configurator(object):
