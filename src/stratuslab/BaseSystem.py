@@ -87,17 +87,17 @@ class BaseSystem(object):
 
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
             'export ONE_LOCATION', 
-            'export ONE_LOCATION=%s\n' % self.ONeHome)
+            'export ONE_LOCATION=%s' % self.ONeHome)
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome, 
             'export ONE_XMLRPC', 
-            'export ONE_XMLRPC=http://localhost:%s/RPC2\n' % self.ONeDPort)
+            'export ONE_XMLRPC=http://localhost:%s/RPC2' % self.ONeDPort)
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
             'export PATH', 
             'export PATH=%s/bin:%s\n' % (self.ONeHome, os.getenv('PATH')))
 
         self.appendOrReplaceInFileCmd('%s/.bash_login' % self.ONeHome, 
             '[ -f ~/.bashrc ]',
-            '[ -f ~/.bashrc ] && source ~/.bashrc\n')
+            '[ -f ~/.bashrc ] && source ~/.bashrc')
         self.setOwnerCmd('%s/.bash_login' % self.ONeHome)
 
         # Hack to always load .bashrc

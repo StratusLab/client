@@ -43,7 +43,7 @@ def appendOrReplaceInFile(filename, search, replace):
             newContent.append(line)
     
     if insertionMade is False:
-        newContent.append(replace)
+        newContent.append('%s\n' % replace)
     
     filePutContents(filename, '\n'.join(newContent))
 
