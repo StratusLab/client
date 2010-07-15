@@ -60,6 +60,7 @@ class Installator(object):
         self.node.setNodePrivateKey(self.privateKey)
         self.node.setNodePort(self.config['node_ssh_port'])
         self.node.setNodeHypervisor(self.config['hypervisor'])
+        self.node.workOnNode()
 
     def createONeAdmin(self, system):
         system.createONeGroup(self.config['one_group'],

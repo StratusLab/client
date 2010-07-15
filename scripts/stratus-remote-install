@@ -80,7 +80,7 @@ class StratusSimpleRun(object):
         self.installStratuslabNodes()
 
     def multiInstallWorkaround(self):
-        self.ssh(['su', '-l', 'oneadmin', '-c', 'one', 'stop'],
+        self.ssh(['su', '-l', 'oneadmin', '-c', 'one stop'],
             exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/lib'], 
             exitOnError=False)
