@@ -49,7 +49,7 @@ class MainProgram(CommandBase):
     def doWorkFrontend(self):
       	installator = Installator(self.options)
         installator.createONeAdmin(installator.frontend)
-        installator.configureONeAdminFrontend()()
+        installator.configureONeAdminFrontend()
         installator.installONe()
         installator.configureONeDaemon()
         installator.setupFileSharingServer()
