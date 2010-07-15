@@ -17,7 +17,6 @@ class MainProgram:
 
     def doWork(self):
         appender = FileAppender.FileAppender(os.path.join(os.sep, 'etc','rc.local'))
-        appender = FileAppender.FileAppender('toto')
         
         oneStartCommand = 'su oneadmin; one start'
         appender.insertAtTheEnd(oneStartCommand)
