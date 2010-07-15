@@ -22,7 +22,7 @@ class Ubuntu(BaseSystem):
             'nfs': ['nfs-common'],
             'ssh': [],
         }
-        super(BaseSystem,self).__init__()
+        super(Ubuntu, self).__init__()
 
     def updatePackageManager(self):
         self.execute(['apt-get', 'update'])

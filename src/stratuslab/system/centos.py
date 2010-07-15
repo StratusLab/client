@@ -39,7 +39,7 @@ class CentOS(BaseSystem):
             'nfs': [],
             'ssh': [],
         }
-        super(BaseSystem,self).__init__()
+        super(CentOS, self).__init__()
 
     def getSystemArch(self):
         _, _, _, _, arch = os.uname()
