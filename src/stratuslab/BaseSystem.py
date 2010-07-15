@@ -93,7 +93,7 @@ class BaseSystem(object):
             'export ONE_XMLRPC=http://localhost:%s/RPC2' % self.ONeDPort)
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
             'export PATH', 
-            'export PATH=%s/bin:%s\n' % (self.ONeHome, os.getenv('PATH')))
+            'export PATH=%s/bin:%s' % (self.ONeHome, os.getenv('PATH')))
 
         self.appendOrReplaceInFileCmd('%s/.bash_login' % self.ONeHome, 
             '[ -f ~/.bashrc ]',
