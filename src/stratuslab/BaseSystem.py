@@ -224,9 +224,17 @@ class BaseSystem(object):
     def remoteCreateDirs(self, path):
         self.nodeShell('mkdir -p %s' % path)
         
+    def escapeChars(self, str):
+        escapedChars = ['[', ']', '&', '\\', '$']
+        
+        for char in escapedChars:
+            str.replace(char, '\\%s' % char)
+            
+        return str
+        
     def remoteAppendOrReplaceInFile(self, filename, search, replace):
         res = self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
-            search, replace, filename)], shell=True)
+            search, self.escapeChars(replace), filename)], shell=True)
         
         # We suppose the file does not exists
         if res != 0:
