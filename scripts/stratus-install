@@ -40,6 +40,7 @@ class MainProgram(CommandBase):
                 self.options.nodeAddr)
 
         installator.createONeAdmin(installator.node)
+        installator.configureONeAdminNode()
         installator.installNodeDependencies()
         installator.setupFileSharingClient()
         installator.configureFileSharingClient()
@@ -48,7 +49,7 @@ class MainProgram(CommandBase):
     def doWorkFrontend(self):
       	installator = Installator(self.options)
         installator.createONeAdmin(installator.frontend)
-        installator.configureONeAdmin()
+        installator.configureONeAdminFrontend()()
         installator.installONe()
         installator.configureONeDaemon()
         installator.setupFileSharingServer()

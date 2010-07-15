@@ -70,7 +70,10 @@ class Installator(object):
                               self.config['one_home'],
                               self.config['one_password'])
 
-    def configureONeAdmin(self):
+    def configureONeAdminNode(self):
+        self.node.configureONeAdminEnv(self.config['one_port'])
+
+    def configureONeAdminFrontend(self):
         self.frontend.configureONeAdminEnv(self.config['one_port'])
         self.frontend.configureONeAdminAuth()
         self.frontend.setupONeAdminSSHCred()
