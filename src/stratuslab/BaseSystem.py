@@ -3,6 +3,7 @@ import shutil
 import subprocess
 
 from Util import appendOrReplaceInFile
+from stratuslab.Util import filePutContents
 
 class BaseSystem(object):
     
@@ -208,7 +209,7 @@ class BaseSystem(object):
 
     def remoteCmd(self, hostAddr, command, user='root', port=22,
             privateKey=None):
-        sshCmd = ['ssh', '-p', str(port), '-l', user]
+        sshCmd = ['ssh', '-p', str(port), '-l', user, '-F', self.tempSshConf]
         if privateKey is not None and os.path.isfile(privateKey):
             # TODO: with verbose display a message if key not exists
             sshCmd.extend(['-i', privateKey])
@@ -267,4 +268,10 @@ class BaseSystem(object):
         self.executeCmd = self.nodeShell
         self.copyCmd = self.remoteCopyFile
         self.createDirsCmd = self.remoteCreateDirs
+        self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
+        self.genTempSshConf(self.tempSshConf)
+        
+    def genTempSshConf(self, path):
+        if not os.path.isfile(path):
+            filePutContents(path, 'Host *\n\tStrictHostKeyChecking no')
         
