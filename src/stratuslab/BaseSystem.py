@@ -228,7 +228,7 @@ class BaseSystem(object):
         escapedChars = ['[', ']', '&', '\\', '$']
         
         for char in escapedChars:
-            str.replace(char, '\\%s' % char)
+            str = str.replace(char, '\\%s' % char)
             
         return str
         
