@@ -24,9 +24,9 @@ class MainProgram:
         
         print '\nSo far so good...\n'
         print 'To complete the installation of StratusLab, please run:'
-        print '    > stratus-config ... to configure your cloud'
-        print '    > stratus-install ... for each physical machine (front-end and nodes)'
-        print '                          which will take part in the cloud'
+        print '    stratus-config ... to configure your cloud'
+        print '    stratus-install ... for each physical machine (front-end and nodes)'
+        print '                        which will take part in the cloud'
         print '\nThank you for installing StratusLab.'
         print 'Let us know how it goes: support@stratuslab.eu\n'
 
