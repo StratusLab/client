@@ -63,7 +63,7 @@
 							<groupname>root</groupname>
 							<sources>
 								<source>
-									<location>src</location>
+									<location>scripts</location>
 									<includes>
 										<include>stratus-*</include>
 									</includes>
@@ -86,7 +86,7 @@
 						</mapping>
 						<mapping>
 							<directory>/usr/lib/stratuslab/scripts</directory>
-							<filemode>644</filemode>
+							<filemode>755</filemode>
 							<username>root</username>
 							<groupname>root</groupname>
 							<sources>
