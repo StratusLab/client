@@ -1,11 +1,11 @@
 import os
 import sys
 
-from stratuslab.Util import defaultConfigSection
-from stratuslab.Util import validConfiguration
-from stratuslab.Util import filePutContents
-from stratuslab.Util import fileGetContents 
-from stratuslab.Util import parseConfig
+from Util import defaultConfigSection
+from Util import validConfiguration
+from Util import filePutContents
+from Util import fileGetContents 
+from Util import parseConfig
 
 class Installator(object):
     # Path to the systems directory 
