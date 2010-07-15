@@ -26,6 +26,10 @@ def wget(url, savePath):
     fd.close()
 
 def appendOrReplaceInFile(filename, search, replace):
+    if not os.path.isfile(filename):
+        filePutContents(filename, replace)
+        return 
+    
     fileContent = fileGetContents(filename)
     lines = fileContent.split('\n')
     

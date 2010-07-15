@@ -224,8 +224,12 @@ class BaseSystem(object):
         self.nodeShell('mkdir -p %s' % path)
         
     def remoteAppendOrReplaceInFile(self, filename, search, replace):
-        self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
+        res = self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
             search, replace, filename)], shell=True)
+        
+        # We suppose the file does not exists
+        if res != 0:
+            self.nodeShell('echo "%s" >> %s' % (replace, filename))
     
     def remoteCopyFile(self, src, dest):
         self.nodeShell(['cp -rf %s %s' % (src, dest)])
