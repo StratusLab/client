@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append(os.path.join('..','src'))
+sys.path.append(os.path.join(os.sep,'usr','lib','stratuslab'))
+
+from stratuslab import FileAppender
+
+class MainProgram:
+    '''A command-line program to perform StratusLab RPM/DEB post-installation.'''
+
+    def __init__(self):
+        self.doWork()
+
+    def doWork(self):
+        appender = FileAppender.FileAppender(os.path.join(os.sep, 'etc','rc.local'))
+        
+        oneStartCommand = 'su oneadmin; one start'
+        appender.insertAtTheEnd(oneStartCommand)
+        
+        print '\nSo far so good...\n'
+        print 'To complete the installation of StratusLab, please run:'
+        print '    stratus-config ... to configure your cloud'
+        print '    stratus-install ... for each physical machine (front-end and nodes)'
+        print '                        which will take part in the cloud'
+        print '\nThank you for installing StratusLab.'
+        print 'Let us know how it goes: support@stratuslab.eu\n'
+
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
+
