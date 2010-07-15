@@ -172,7 +172,7 @@ class BaseSystem(object):
         return self.execute(su, shell)
 
     def nodeShell(self, command):
-        self.remoteCmd(self.nodeAddr, command,
+        return self.remoteCmd(self.nodeAddr, command,
             port=self.nodePort,
             privateKey=self.nodePrivateKey)
 
