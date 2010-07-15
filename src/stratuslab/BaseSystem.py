@@ -95,8 +95,7 @@ class BaseSystem(object):
             'export PATH', 
             'export PATH=%s/bin:%s' % (self.ONeHome, os.getenv('PATH')))
 
-        self.appendOrReplaceInFileCmd('%s/.bash_login' % self.ONeHome, 
-            '[ -f ~/.bashrc ]',
+        self.filePutContentsCmd('%s/.bash_login' % self.ONeHome,
             '[ -f ~/.bashrc ] && source ~/.bashrc')
         self.setOwnerCmd('%s/.bash_login' % self.ONeHome)
 
@@ -224,24 +223,19 @@ class BaseSystem(object):
     def remoteCreateDirs(self, path):
         self.nodeShell('mkdir -p %s' % path)
         
-    def escapeChars(self, str):
-        escapedChars = ['[', ']', '&', '\\', '$']
-        
-        for char in escapedChars:
-            str = str.replace(char, '\\%s' % char)
-            
-        return str
-        
     def remoteAppendOrReplaceInFile(self, filename, search, replace):
         res = self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
-            search, self.escapeChars(replace), filename)], shell=True)
+            search, replace, filename)], shell=True)
         
         # We suppose the file does not exists
         if res != 0:
-            self.nodeShell('echo "%s" >> %s' % (replace, filename))
+            self.remoteFilePutContents(filename, replace)
     
     def remoteCopyFile(self, src, dest):
         self.nodeShell(['cp -rf %s %s' % (src, dest)])
+        
+    def remoteFilePutContents(self, filename, data):
+        self.nodeShell('echo "%s" > %s' % (data, filename))
         
     # -------------------------------------------
     #     General
@@ -269,6 +263,7 @@ class BaseSystem(object):
         self.executeCmd = self.execute
         self.copyCmd = shutil.copy
         self.createDirsCmd = self.createDirs
+        self.filePutContentsCmd = filePutContents
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self.remoteAppendOrReplaceInFile
@@ -276,6 +271,7 @@ class BaseSystem(object):
         self.executeCmd = self.nodeShell
         self.copyCmd = self.remoteCopyFile
         self.createDirsCmd = self.remoteCreateDirs
+        self.filePutContentsCmd = self.remoteFilePutContents
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
         self.genTempSshConf(self.tempSshConf)
         
