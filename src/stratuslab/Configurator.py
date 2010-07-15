@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 import os
 import shutil
 
 from ConfigParser import SafeConfigParser
 
 from stratuslab.Util import defaultConfigSection
-from stratuslab.Util import validConfiguration
+from stratuslab.Util import validateConfig
 from stratuslab.Util import parseConfig
 
 
@@ -18,19 +17,19 @@ class Configurator(object):
 
         self.baseConfig = SafeConfigParser()
         self.baseConfig.read(configFile)    
-        validConfiguration(self.baseConfig)
+        validateConfig(self.baseConfig)
 
         self._buildUserConfig()
 
     def _buildUserConfig(self):
-        self.userConfigFile = '%s.user' % self.baseConfigFile
+        self.userConfigFile = self.baseConfigFile.replace('.ref', '')
         
         if not os.path.isfile(self.userConfigFile):
             shutil.copy(self.baseConfigFile, self.userConfigFile)
 
         self.userConfig = SafeConfigParser()
         self.userConfig.read(self.userConfigFile)
-        validConfiguration(self.userConfig)
+        validateConfig(self.userConfig)
 
     def displayDefaultKeys(self):
         columnSize = 25

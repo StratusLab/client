@@ -12,7 +12,7 @@ def parseConfig(configFile):
 
     config = SafeConfigParser()
     config.read(configFile)    
-    validConfiguration(config)
+    validateConfig(config)
     return dict(config.items(defaultConfigSection))
 
 def fileGetContents(filename):
@@ -26,7 +26,7 @@ def filePutContents(filename, data):
     fd.write(data)
     fd.close()
 
-def validConfiguration(config):
+def validateConfig(config):
     if not config.has_section(defaultConfigSection):
         raise ValueError('Invalid configuration')
 

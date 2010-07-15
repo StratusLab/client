@@ -30,9 +30,12 @@ class StratusSimpleRun(object):
         self.parser.add_option('-f', '--frontend', dest='frontend',
             help='frontend endpoint', metavar='ENDPOINT',
             default='root@localhost')
-        self.parser.add_option('-i', '--install-dir', metavar='PATH',
-            dest='installDir', help='remote source directory',
-            default='stratuslab') 
+        self.parser.add_option('-u', '--upload-dir', metavar='PATH',
+            dest='uploadDir', help='remote source directory',
+            default='stratuslab')
+        self.parser.add_option('-c', '--config', dest='config', 
+            help='additional config "key:value#key:value"',
+            default=None)  
 
         (self.options, self.args) = self.parser.parse_args()
 
@@ -77,32 +80,43 @@ class StratusSimpleRun(object):
         self.installStratuslabNodes()
 
     def multiInstallWorkaround(self):
-        self.ssh(['su', '-l', 'oneadmin', '-c', 'one stop'],
+        self.ssh(['su', '-l', 'oneadmin', '-c', 'one', 'stop'],
             exitOnError=False)
-        self.ssh(['rm', '-rf', '/srv/cloud/one/*'], 
+        self.ssh(['rm', '-rf', '/srv/cloud/one/lib'], 
             exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/.ssh'],
             exitOnError=False)
 
     def uploadStratuslab(self):
-        self.ssh(['rm', '-rf', self.options.installDir])
+        self.ssh(['rm', '-rf', self.options.uploadDir])
+        self.ssh(['mkdir', '-p', self.options.uploadDir])
         self.scp('%s/src/' % self.rootPath, '%s:%s' % (
-            self.options.frontend, self.options.installDir))
+            self.options.frontend, self.options.uploadDir))
+        self.scp('%s/scripts/' % self.rootPath, '%s:%s' % (
+            self.options.frontend, self.options.uploadDir))
 
     def configureStratuslab(self):
-        self.ssh(['python', '%s/stratus-config' 
-            % self.options.installDir, '-r'])
-        self.ssh(['python', '%s/stratus-config' 
-            % self.options.installDir])
+        baseConfigCmd = ['python', '%s/scripts/stratus-config' 
+            % self.options.uploadDir]
+        
+        if self.options.config:
+            for item in self.options.config.split('#'):
+                # hack to make a real copy of the var
+                currentCmd = baseConfigCmd[:]
+                currentCmd.append(item.split(':')[0])
+                currentCmd.append(' '.join(item.split(':')[1:]))
+                self.ssh(currentCmd)
+        else:
+            self.ssh(baseConfigCmd)
 
     def installStratuslabFrontend(self):
-        self.ssh(['python', '%s/stratus-install' 
-            % self.options.installDir])
+        self.ssh(['python', '%s/scripts/stratus-install' 
+            % self.options.uploadDir])
 
     def installStratuslabNodes(self):
         for node in self.options.nodes.split(' '):
-            self.ssh(['python', '%s/stratus-install' 
-                % self.options.installDir, '-n', node])
+            self.ssh(['python', '%s/scripts/stratus-install' 
+                % self.options.uploadDir, '-n', node])
 
 
 if __name__ == '__main__':

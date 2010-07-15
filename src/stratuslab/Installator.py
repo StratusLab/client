@@ -1,8 +1,6 @@
 import os
 import sys
 
-from stratuslab.Util import defaultConfigSection
-from stratuslab.Util import validConfiguration
 from stratuslab.Util import filePutContents
 from stratuslab.Util import fileGetContents 
 from stratuslab.Util import parseConfig
@@ -12,8 +10,6 @@ class Installator(object):
     specsFilesDir = '%(currentDir)s/system'
 
     def __init__(self, options):
-        #self.verbose = options.verbose
-        #self.quiet = options.quiet
         self.configFile = options.configFile
         self.nodeAddr = options.nodeAddr
         self.ONeDConfTemplateFile = options.onedTpl
@@ -58,7 +54,6 @@ class Installator(object):
             sys.exit(1)
         else:
             return module
-
 
     def propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)
@@ -120,7 +115,7 @@ class Installator(object):
     def configureONeDaemon(self):
         if not os.path.isfile(self.ONeDConfTemplateFile):
             raise ValueError('ONe daemon configuration template '
-                '%s does not exists' % ONeDConfTemplateFile)
+                '%s does not exists' % self.ONeDConfTemplateFile)
 
         ONeDConfTemplate = fileGetContents(self.ONeDConfTemplateFile)         
         filePutContents('%s/var/oned.conf' % self.config['one_home'],
@@ -131,11 +126,10 @@ class Installator(object):
     def startONeDaemon(self):
         self.frontend.startONeDaemon()
 
-    def checkConnectivity(self, hostAddr):
-        return self.node.nodeShell('exit 0')
+    def nodeAlive(self):
+        return self.node.nodeShell('exit 0') == 0
 
     def installNodeDependencies(self):
         self.node.installNodeDependencies()
         self.node.installHypervisor()
         self.node.configureHypervisor()
-
