@@ -11,18 +11,17 @@ class CentOS(BaseSystem):
         self.arch = self.getSystemArch()
         self.installCmd = 'yum -q -y --nogpgcheck install'
         self.remotePackages = [
-            'http://prdownloads.sourceforge.net/scons/'
-                'scons-1.2.0-1.noarch.rpm',
-            'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS/'
-                'xmlrpc-c-1.06.18-1.el5.kb.%(arch)s.rpm' % (
-                {'arch': self.arch}),
-            'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS/'
-                'xmlrpc-c-devel-1.06.18-1.el5.kb.%(arch)s.rpm' % (
-                {'arch': self.arch}),
+            # ('name', 'version', 'arch', 'uri')
+            # --> <uri>/<name>-<version>.<arch>.rpm
+            ('scons', '1.2.0-1', 'noarch', 'http://prdownloads.sourceforge.net/scons'),
+            ('xmlrpc-c', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
+            ('xmlrpc-c', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
         ]
         self.remoteSources = [
-            'http://kernel.org/pub/software/scm/git/git-1.7.1.1.tar.gz',
-            'http://www.sqlite.org/sqlite-amalgamation-3.6.17.tar.gz',
+            # ('name', 'version', 'uri', 'extension')
+            # --> <uri>/<name>-<version>.<extention>
+            ('git', '1.7.1.1', 'http://kernel.org/pub/software/scm/git', 'tar.gz'),
+            ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
         ]
         self.frontendDeps = [ 
             'ruby', 'gcc', 'gcc-c++', 'zlib-devel'
@@ -68,12 +67,28 @@ class CentOS(BaseSystem):
 
     def installFrontendDependencies(self):
         super(CentOS, self).installFrontendDependencies()
-        self.installRemotePackages(self.remotePackages)
-        self.installSourceDependencies()
+        self.installRemotePackages(self.remotePackagesAddress(self.remotePackages))
+        self.installSourceDependencies(self.remoteSourcesAddress(self.remoteSources))
 
-    def installSourceDependencies(self):
-        for dep in self.remoteSources:
+    def remotePackagesAddress(self, packages):
+        remotePackages = []
+        
+        for name, version, arch, uri in packages:
+            remotePackages.append('%s/%s-%s.%s.rpm' % (uri % ({'arch': arch}), name, version, arch))
+        
+        return remotePackages
+
+    def installSourceDependencies(self, sourcesAddress):
+        for dep in sourcesAddress:
             self.buildAndInstall(dep)
+    
+    def remoteSourcesAddress(self, sources):
+        remoteSources = []
+        
+        for name, version, uri, ext in sources:
+            remoteSources.append('%s/%s-%s.%s' % (uri, name, version, ext))
+            
+        return remoteSources
 
     def buildAndInstall(self, sourceAddr):
         archive = '/tmp/stratus-deps-src.tar.gz'

@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 class BaseSystem(object):
-
+    
     def updatePackageManager(self):
         pass
 
@@ -36,7 +36,6 @@ class BaseSystem(object):
         self.execute(['scons', '-j2'])
 
     def installOpenNebula(self):
-        #self.setONeAdminOwner(os.getcwd())
         self.execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
             self.ONeAdmin, '-g', self.ONeAdminGroup])
 
@@ -46,18 +45,42 @@ class BaseSystem(object):
     def createONeGroup(self, groupname, gid):
         self.ONeAdminGroup =  groupname
         self.ONeAdminGID = gid
-
-        self.execute(['groupadd', '-g', gid,  groupname])
+        self.createONeGroupCmd = ['groupadd', '-g', self.ONeAdminGID, 
+              self.ONeAdminGroup]
+        
+        if hasattr(self, 'nodeAddr'):
+            self.createONeGroupNode()
+        else:
+            self.createONeGroupFrontend()
+        
+    def createONeGroupFrontend(self):
+        self.execute(self.createONeGroupCmd)
+        
+    def createONeGroupNode(self):
+        self.nodeShell(' '.join(self.createONeGroupCmd))
 
     def createONeAdmin(self, username, uid, homeDir, password):
         self.ONeAdmin = username
         self.ONeHome = homeDir
         self.ONeAdminUID = uid
         self.ONeAdminPassword = password
+        self.createONeAdminCmd = ['useradd', '-d', self.ONeHome, '-g', 
+            self.ONeAdminGroup, '-u', self.ONeAdminUID, self.ONeAdmin,
+            '-s', '/bin/bash', '-p', self.ONeAdminPassword, '--create-home']
+        
+        if hasattr(self, 'nodeAddr'):
+            self.createONeAdminNode()
+        else:
+            self.createONeAdminFrontend()
 
+
+    def createONeAdminFrontend(self):
         self.createDirs(os.path.dirname(self.ONeHome))
-        self.execute(['useradd', '-d', self.ONeHome, '-g', self.ONeAdminGroup, '-u', uid,
-            username, '-s', '/bin/bash', '-p', password, '--create-home'])
+        self.execute(self.createONeAdminCmd)
+        
+    def createONeAdminNode(self):
+        self.nodeShell('mkdir -p %s' % os.path.dirname(self.ONeHome))
+        self.nodeShell(' '.join(self.createONeAdminCmd))
 
     def configureONeAdminEnv(self, ONeDPort):  
         self.append2file('%s/.bashrc' % self.ONeHome, 
@@ -139,7 +162,7 @@ class BaseSystem(object):
 
     def execute(self, command, shell=False):
         self.displayMessage(' '.join(command))
-    	process = subprocess.Popen(command, shell=shell)
+        process = subprocess.Popen(command, shell=shell)
         process.wait()
         return process.returncode
 
@@ -149,7 +172,7 @@ class BaseSystem(object):
         return self.execute(su, shell)
 
     def nodeShell(self, command):
-        self.remoteCmd(self.nodeAddr, command,
+        return self.remoteCmd(self.nodeAddr, command,
             port=self.nodePort,
             privateKey=self.nodePrivateKey)
 
