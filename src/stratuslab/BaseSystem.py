@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 from Util import appendOrReplaceInFile
-from stratuslab.Util import filePutContents
+from stratuslab.Util import filePutContents, fileGetContents
 
 class BaseSystem(object):
     
@@ -120,6 +120,13 @@ class BaseSystem(object):
             'Host', 'Host *')
         self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome,
             '\tStrictHost', '\tStrictHostKeyChecking no')
+
+    def configureNodeSshCred(self):
+        oneKey = fileGetContents('%s/.ssh/id_rsa.pub' % self.ONeHome)
+        self.createDirsCmd('%s/.ssh/' % self.ONeHome)
+        self.filePutContentsCmd('%s/.ssh/authorized_keys' % self.ONeHome,
+              oneKey)
+        # FIXME: See to set user rights
 
     def configureONeAdminAuth(self):
         self.createDirsCmd('%s/.one' % self.ONeHome)

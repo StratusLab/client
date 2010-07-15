@@ -84,6 +84,8 @@ class StratusSimpleRun(object):
             exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/lib'], 
             exitOnError=False)
+        self.ssh(['rm', '-rf', '/srv/cloud/one/var'], 
+            exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/.ssh'],
             exitOnError=False)
 

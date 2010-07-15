@@ -71,7 +71,8 @@ class Installator(object):
                               self.config['one_password'])
 
     def configureONeAdminNode(self):
-        self.node.configureONeAdminEnv(self.config['one_port'])
+        #self.node.configureONeAdminEnv(self.config['one_port'])
+        self.node.configureNodeSshCred()
 
     def configureONeAdminFrontend(self):
         self.frontend.configureONeAdminEnv(self.config['one_port'])
