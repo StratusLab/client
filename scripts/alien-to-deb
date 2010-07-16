@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Calling alien to convert RPM into DEB"
+alien --to-deb --scripts target/rpm/stratuslab/RPMS/noarch/stratuslab-*.rpm 
