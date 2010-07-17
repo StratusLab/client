@@ -9,12 +9,6 @@
 	<name>stratuslab</name>
 	<url>http://stratuslab.eu/</url>
 
-<!--	<parent>
-		<groupId>stratuslab</groupId>
-		<artifactId>stratuslab</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
-	</parent> -->
-
 	<profiles>
 		<profile>
 			<activation>
@@ -105,6 +99,20 @@
 				</configuration>
 			</plugin>
 
+      			<plugin>
+        			<groupId>org.codehaus.mojo</groupId>
+        			<artifactId>exec-maven-plugin</artifactId>
+			        <executions>
+          				<execution>
+				            <goals>
+				              	<goal>exec</goal>
+				            </goals>
+			    	      	</execution>
+        			</executions>
+        			<configuration>
+          				<executable>scripts/alien-to-deb</executable>
+        			</configuration>
+      			</plugin>
 		</plugins>
 
 	</build>

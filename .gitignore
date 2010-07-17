@@ -3,3 +3,4 @@
 .settings
 .pydevproject
 target
+*.deb
