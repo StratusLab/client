@@ -71,7 +71,6 @@ class Installator(object):
                               self.config['one_password'])
 
     def configureONeAdminNode(self):
-        #self.node.configureONeAdminEnv(self.config['one_port'])
         self.node.configureNodeSshCred()
 
     def configureONeAdminFrontend(self):
@@ -101,10 +100,17 @@ class Installator(object):
 
     def configureFileSharingServer(self):
         if self.config['share_type'] == 'nfs':
-            self.frontend.configureNFSServer(self.config['network_addr'],
-                                             self.config['network_mask'])
+            self.configureNfsServer()
         elif self.config['share_type'] == 'ssh':
             self.frontend.configureSSHServer()
+
+    def configureNfsServer(self):
+        if self.config.get('existing_nfs', None):
+            self.frontend.configureNfsShare(self.config['existing_nfs'], 
+                os.path.dirname(self.config['one_home']))
+        else:
+            self.frontend.configureNFSServer(self.config['network_addr'],
+                                             self.config['network_mask'])
 
     def setupFileSharingClient(self):
         self.node.installNodePackages(self.node.fileSharingNodeDeps.get(
@@ -113,9 +119,17 @@ class Installator(object):
 
     def configureFileSharingClient(self):
         if self.config['share_type'] == 'nfs':
-            self.frontend.configureNFSClient(self.config['frontend_ip'])
+            self.configureNfsClient()
         elif self.config['share_type'] == 'ssh':
             self.frontend.configureSSHClient()
+            
+    def configureNfsClient(self):
+        if self.config.get('existing_nfs', None):
+            self.frontend.configureNfsShare(self.config['existing_nfs'], 
+                os.path.dirname(self.config['one_home']))
+        else:
+            self.frontend.configureNFSClient('%s:%s' % (
+                self.config['frontend_ip'], self.config['one_home']))
 
     def configureONeDaemon(self):
         if not os.path.isfile(self.ONeDConfTemplateFile):

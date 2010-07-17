@@ -15,7 +15,7 @@ class StratusSimpleRun(object):
         self.parser = OptionParser(usage=usage)
 
         self.parser.add_option('-n', '--nodes', dest='nodes',
-            help='node list', default='localhost')
+            help='node list, separate by space', default='localhost')
         self.parser.add_option('-p', '--port', dest='sshPort',
             help='ssh port of the frontend', default=22)
         self.parser.add_option('-k', '--key', dest='sshKey',

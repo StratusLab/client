@@ -48,11 +48,11 @@ class MainProgram(CommandBase):
 
     def doWorkFrontend(self):
       	installator = Installator(self.options)
+        installator.setupFileSharingServer()
         installator.createONeAdmin(installator.frontend)
         installator.configureONeAdminFrontend()
         installator.installONe()
         installator.configureONeDaemon()
-        installator.setupFileSharingServer()
         installator.startONeDaemon()
 
     def doWork(self):

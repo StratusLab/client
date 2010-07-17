@@ -122,10 +122,12 @@ class BaseSystem(object):
             '\tStrictHost', '\tStrictHostKeyChecking no')
 
     def configureNodeSshCred(self):
-        oneKey = fileGetContents('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self.createDirsCmd('%s/.ssh/' % self.ONeHome)
+        oneKey = fileGetContents('%s/.ssh/id_rsa' % self.ONeHome)
+        self.filePutContentsCmd('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
+        oneKeyPub = fileGetContents('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self.filePutContentsCmd('%s/.ssh/authorized_keys' % self.ONeHome,
-              oneKey)
+              oneKeyPub)
         # FIXME: See to set user rights
 
     def configureONeAdminAuth(self):
@@ -142,22 +144,21 @@ class BaseSystem(object):
 
     def configureNFSServer(self, networkAddr, networkMask):
         self.appendOrReplaceInFileCmd('/etc/exports', 
-            self.ONeHome, '%s %s/%s(rw,async,no_subtree_check)\n' % 
+            self.ONeHome, '%s %s/%s(rw,async,no_subtree_check)' % 
             (self.ONeHome, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
 
-    def configureNFSClient(self, frontendIP):
-        self.createDirsCmd(self.ONeHome)
-        self.appendOrReplaceInFileCmd('/etc/fstab', frontendIP,
-            '%s:%s %s nfs soft,intr,rsize=32768,wsize=32768,rw 0 0' % (
-             frontendIP, self.ONeHome, self.ONeHome))
-        self.executeCmd('mount -a')
+    def configureNfsShare(self, shareLocation, mountPoint):
+        self.createDirsCmd(mountPoint)
+        self.appendOrReplaceInFileCmd('/etc/fstab', shareLocation,
+            '%s %s nfs soft,intr,rsize=32768,wsize=32768,rw 0 0' % (
+             shareLocation, mountPoint))
+        self.executeCmd(['mount', '-a'])
         
     def configureSSHServer(self):
         pass
 
     def configureSSHClient(self):
-        # TODO: setup ssh authorized keys
         pass
 
     # -------------------------------------------
