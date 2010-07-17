@@ -62,7 +62,7 @@ class DeployVm(object):
         self.image = os.path.abspath('%s/%s' % (os.getcwd(), imgName)) 
             
     def startVm(self):
-        qemuCmd = ['qemu']
+        qemuCmd = ['qemu', '-nographic']
         qemuCmd.append(self.image)
         
         self.options.redirections += ',tcp:%s::22,' % self.options.sshPort
