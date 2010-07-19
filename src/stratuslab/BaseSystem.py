@@ -247,7 +247,7 @@ class BaseSystem(object):
         self.nodeShell(['cp -rf %s %s' % (src, dest)])
         
     def remoteFilePutContents(self, filename, data):
-        self.nodeShell('echo "%s" > %s' % (data, filename))
+        self.nodeShell('echo "%s" >> %s' % (data, filename))
         
     # -------------------------------------------
     #     General

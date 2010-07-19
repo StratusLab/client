@@ -62,7 +62,6 @@ class Installator(object):
         self.node.setNodeHypervisor(self.config['hypervisor'])
         self.node.workOnNode()
         self.frontend.setONeAdmin(self.config['one_username'])
-        print dir(self.frontend)
 
     def createONeAdmin(self, system):
         system.createONeGroup(self.config['one_group'],

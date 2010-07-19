@@ -29,7 +29,7 @@ class StratusSimpleRun(object):
             metavar='OPTIONS')
         self.parser.add_option('-f', '--frontend', dest='frontend',
             help='frontend endpoint', metavar='ENDPOINT',
-            default='root@localhost')
+            default='localhost')
         self.parser.add_option('-u', '--upload-dir', metavar='PATH',
             dest='uploadDir', help='remote source directory',
             default='stratuslab')
