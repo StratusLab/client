@@ -116,8 +116,8 @@ class CentOS(BaseSystem):
 
         self.installPackages(pkgList)
         
-    def configureNFSServer(self, networkAddr, networkMask):
-        super(CentOS, self).configureNFSServer(networkAddr, networkMask)
+    def configureNFSServer(self, mountPoint, networkAddr, networkMask):
+        super(CentOS, self).configureNFSServer(mountPoint, networkAddr, networkMask)
         self.execute(['service', 'nfs', 'start'])
 
 

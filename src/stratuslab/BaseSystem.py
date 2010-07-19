@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 from Util import appendOrReplaceInFile
-from stratuslab.Util import filePutContents, fileGetContents
+from Util import filePutContents, fileGetContents
 
 class BaseSystem(object):
     
