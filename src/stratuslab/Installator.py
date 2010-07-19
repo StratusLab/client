@@ -61,6 +61,8 @@ class Installator(object):
         self.node.setNodePort(self.config['node_ssh_port'])
         self.node.setNodeHypervisor(self.config['hypervisor'])
         self.node.workOnNode()
+        self.frontend.setONeAdmin(self.config['one_username'])
+        print dir(self.frontend)
 
     def createONeAdmin(self, system):
         system.createONeGroup(self.config['one_group'],
@@ -105,12 +107,19 @@ class Installator(object):
             self.frontend.configureSSHServer()
 
     def configureNfsServer(self):
-        if self.config.get('existing_nfs', None):
+        if self.nfsExists():
             self.frontend.configureNfsShare(self.config['existing_nfs'], 
-                os.path.dirname(self.config['one_home']))
+                self.getNfsDefaultMountPoint())
         else:
-            self.frontend.configureNFSServer(self.config['network_addr'],
+            self.frontend.configureNFSServer(self.getNfsDefaultMountPoint(),
+                                             self.config['network_addr'],
                                              self.config['network_mask'])
+
+    def nfsExists(self):
+        return not (self.config.get('existing_nfs', '') == '')
+
+    def getNfsDefaultMountPoint(self):
+        return os.path.dirname(self.config['one_home'])
 
     def setupFileSharingClient(self):
         self.node.installNodePackages(self.node.fileSharingNodeDeps.get(
@@ -124,12 +133,13 @@ class Installator(object):
             self.frontend.configureSSHClient()
             
     def configureNfsClient(self):
-        if self.config.get('existing_nfs', None):
-            self.frontend.configureNfsShare(self.config['existing_nfs'], 
-                os.path.dirname(self.config['one_home']))
+        if self.nfsExists():
+            host = self.config['existing_nfs']
         else:
-            self.frontend.configureNFSClient('%s:%s' % (
-                self.config['frontend_ip'], self.config['one_home']))
+            host = '%s:%s' % (self.config['frontend_ip'], 
+                self.getNfsDefaultMountPoint())
+
+        self.node.configureNfsShare(host, self.getNfsDefaultMountPoint())
 
     def configureONeDaemon(self):
         if not os.path.isfile(self.ONeDConfTemplateFile):

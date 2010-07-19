@@ -142,10 +142,10 @@ class BaseSystem(object):
     #     File sharing configuration
     # -------------------------------------------
 
-    def configureNFSServer(self, networkAddr, networkMask):
+    def configureNFSServer(self, mountPoint, networkAddr, networkMask):
         self.appendOrReplaceInFileCmd('/etc/exports', 
-            self.ONeHome, '%s %s/%s(rw,async,no_subtree_check)' % 
-            (self.ONeHome, networkAddr, networkMask))
+            mountPoint, '%s %s/%s(rw,async,no_subtree_check)' % 
+            (mountPoint, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
 
     def configureNfsShare(self, shareLocation, mountPoint):
@@ -232,12 +232,16 @@ class BaseSystem(object):
         self.nodeShell('mkdir -p %s' % path)
         
     def remoteAppendOrReplaceInFile(self, filename, search, replace):
-        res = self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
-            search, replace, filename)], shell=True)
-        
-        # We suppose the file does not exists
-        if res != 0:
+        res = self.nodeShell(['grep', search, filename])
+
+        if self.patternExists(res):
+            self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
+                search, replace, filename)], shell=True)
+        else:
             self.remoteFilePutContents(filename, replace)
+
+    def patternExists(self, returnCode):
+        return returnCode == 0
     
     def remoteCopyFile(self, src, dest):
         self.nodeShell(['cp -rf %s %s' % (src, dest)])
@@ -260,6 +264,9 @@ class BaseSystem(object):
 
     def setNodeHypervisor(self, hypervisor):
         self.hypervisor = hypervisor
+
+    def setONeAdmin(self, username):
+        self.ONeAdmin = username
 
     def displayMessage(self, *msg):
         print '\n\n\n%s\nExecuting: %s\n%s\n' % (

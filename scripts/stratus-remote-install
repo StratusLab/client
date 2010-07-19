@@ -23,7 +23,7 @@ class StratusSimpleRun(object):
             metavar='KEY_PATH',
             default=os.path.expandvars("$HOME/.ssh/root_hudson_id_rsa.key"))
         self.parser.add_option('--ssh-options', dest='sshOptions',
-            default='-p %(sshPort)s -i %(sshKey)s', metavar='OPTIONS')
+            default='-p %(sshPort)s -i %(sshKey)s -l root', metavar='OPTIONS')
         self.parser.add_option('--scp-options', dest='scpOptions',
             default='-P %(sshPort)s -i %(sshKey)s -q -r',
             metavar='OPTIONS')
@@ -64,7 +64,7 @@ class StratusSimpleRun(object):
         scpCmd = ['scp']
         scpCmd.extend(self.options.scpOptions.split(' '))
         scpCmd.append(src)
-        scpCmd.append(dest)
+        scpCmd.append('root@%s' % dest)
         self.execute(scpCmd)
 
     def launchSimpleRun(self):
@@ -74,6 +74,7 @@ class StratusSimpleRun(object):
         self.uploadStratuslab()
         print 'Configure stratuslab...'
         self.configureStratuslab()
+        self.copySshPrivateKey()
         print 'Install stratuslab frontend...'
         self.installStratuslabFrontend()
         print 'Install stratuslab nodes...'
@@ -111,6 +112,10 @@ class StratusSimpleRun(object):
                 self.ssh(currentCmd)
         else:
             self.ssh(baseConfigCmd)
+
+    def copySshPrivateKey(self):
+        self.scp(self.options.sshKey, '%s:.ssh/id_rsa' 
+             % self.options.frontend)
 
     def installStratuslabFrontend(self):
         self.ssh(['python', '%s/scripts/stratus-install' 
