@@ -90,7 +90,8 @@ class StratusSimpleRun(object):
             exitOnError=False)
 
     def uploadStratuslab(self):
-        self.ssh(['rm', '-rf', self.options.uploadDir])
+        self.ssh(['rm', '-rf', self.options.uploadDir], 
+            exitOnError=False)
         self.ssh(['mkdir', '-p', self.options.uploadDir])
         self.scp('%s/src/' % self.rootPath, '%s:%s' % (
             self.options.frontend, self.options.uploadDir))
