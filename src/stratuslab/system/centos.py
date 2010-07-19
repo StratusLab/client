@@ -15,7 +15,7 @@ class CentOS(BaseSystem):
             # --> <uri>/<name>-<version>.<arch>.rpm
             ('scons', '1.2.0-1', 'noarch', 'http://prdownloads.sourceforge.net/scons'),
             ('xmlrpc-c', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
-            ('xmlrpc-c', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
+            ('xmlrpc-c-devel', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
         ]
         self.remoteSources = [
             # ('name', 'version', 'uri', 'extension')
