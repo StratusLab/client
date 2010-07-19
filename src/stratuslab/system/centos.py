@@ -24,7 +24,7 @@ class CentOS(BaseSystem):
             ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
         ]
         self.frontendDeps = [ 
-            'ruby', 'gcc', 'gcc-c++', 'zlib-devel'
+            'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'libvirt'
         ]
         self.nodeDeps = ['ruby']
         self.hypervisorDeps = {
@@ -120,6 +120,17 @@ class CentOS(BaseSystem):
         super(CentOS, self).configureNFSServer(mountPoint, networkAddr, networkMask)
         self.execute(['service', 'nfs', 'start'])
 
+    def createONeAdmin(self, username, uid, homeDir, password):
+        super(CentOS, self).createONeAdmin(username, uid, homeDir, password)
+        self.configureLibvirt()
+
+    def configureLibvirt(self):
+        self.executeCmd(['service', 'libvirtd', 'start'])
+        self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
+        self.executeCmd(['chown', 'root:kvm', 
+                         '/var/run/libvirt/libvirt-sock'])
+        self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
+        self.executeCmd(['ln', '-s', '/usr/bin/qemu', '/usr/bin/kvm'])
 
 system = CentOS()
 

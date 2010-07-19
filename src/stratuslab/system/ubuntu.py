@@ -7,7 +7,7 @@ class Ubuntu(BaseSystem):
         self.installCmd = 'apt-get -q -y install' 
         self.frontendDeps = [
             'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
-            'scons', 'g++', 'git-core', 'ssh',
+            'scons', 'g++', 'git-core', 'ssh', 'libvirt-bin'
         ]
         self.nodeDeps = ['ruby']
         self.hypervisorDeps = {
@@ -39,6 +39,13 @@ class Ubuntu(BaseSystem):
         if len(packages) > 0:
             self.nodeShell('%s %s' % 
                 (self.installCmd, ' '.join(packages)))
+            
+    def createONeAdmin(self, username, uid, homeDir, password):
+        super(Ubuntu, self).createONeAdmin(username, uid, homeDir, password)
+        self.configureLibvirt()
+
+    def configureLibvirt(self):
+        self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
 
 system = Ubuntu()
 
