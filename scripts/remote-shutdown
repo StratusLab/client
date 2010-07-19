@@ -39,10 +39,11 @@ class RemoteShutdown(object):
         process.wait()
         
         if process.returncode != 0:
-            print 'An error occured while shutting down system'
-        else:
-            sleep(self.options.timeout)
-            print 'System halt successfully'
+            print 'An error occurred while shutting down system'
+            sys.exit(1)
+        
+        sleep(self.options.timeout)
+        print 'System halted successfully'
         
 
 if __name__ == '__main__':
