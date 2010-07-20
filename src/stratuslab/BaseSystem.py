@@ -144,7 +144,7 @@ class BaseSystem(object):
 
     def configureNFSServer(self, mountPoint, networkAddr, networkMask):
         self.appendOrReplaceInFileCmd('/etc/exports', 
-            mountPoint, '%s %s/%s(rw,async,no_subtree_check)' % 
+            mountPoint, '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' % 
             (mountPoint, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
 
