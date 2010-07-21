@@ -90,6 +90,7 @@ IM_MAD = [
     name       = "im_xen",
     executable = "one_im_ssh",
     arguments  = "im_xen/im_xen.conf" ]
+#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 #  KVM Information Driver Manager sample configuration
@@ -103,10 +104,10 @@ IM_MAD = [
 #-------------------------------------------------------------------------------
 #  EC2 Information Driver Manager sample configuration
 #-------------------------------------------------------------------------------
-IM_MAD = [
-      name       = "im_ec2",
-      executable = "one_im_ec2",
-      arguments  = "im_ec2/im_ec2.conf" ]
+#IM_MAD = [
+#      name       = "im_ec2",
+#      executable = "one_im_ec2",
+#      arguments  = "im_ec2/im_ec2.conf" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -138,6 +139,7 @@ VM_MAD = [
     executable = "one_vmm_xen",
     default    = "vmm_xen/vmm_xen.conf",
     type       = "xen" ]
+#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 #  KVM Virtualization Driver Manager sample configuration
@@ -155,11 +157,11 @@ VM_MAD = [
 #               relative to $ONE_LOCATION/etc (or /etc/one/ if OpenNebula was
 #               installed in /).
 #-------------------------------------------------------------------------------
-VM_MAD = [
-    name       = "vmm_ec2",
-    executable = "one_vmm_ec2",
-    arguments  = "vmm_ec2/vmm_ec2.conf",
-    type       = "xml" ]
+#VM_MAD = [
+#    name       = "vmm_ec2",
+#    executable = "one_vmm_ec2",
+#    arguments  = "vmm_ec2/vmm_ec2.conf",
+#    type       = "xml" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -185,6 +187,7 @@ TM_MAD = [
     name       = "tm_ssh",
     executable = "one_tm",
     arguments  = "tm_ssh/tm_ssh.conf" ]
+#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # NFS Transfer Manager Driver sample configuration
