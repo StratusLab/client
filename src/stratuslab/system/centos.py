@@ -39,8 +39,6 @@ class CentOS(BaseSystem):
             'nfs': [],
             'ssh': [],
         }
-        # Patch are in the root directory of the app
-        self.openNebulaPatchs = ['centos-001.patch']
         
         super(CentOS, self).__init__()
 
@@ -107,7 +105,6 @@ class CentOS(BaseSystem):
         self.execute(['make', '-j2', 'install'])
         os.chdir('../')
 
-   
     def installRemotePackages(self, packages):
         rpmName = '/tmp/stratus-%d.rpm'
         pkgList = []
@@ -118,17 +115,6 @@ class CentOS(BaseSystem):
             pkgList.append(rpmName % i)
 
         self.installPackages(pkgList)
-    
-    def buildOpenNebula(self):
-        self.patchOpenNebula()
-        super(CentOS, self).buildOpenNebula()
-        
-    def patchOpenNebula(self):
-        patchDir = os.path.abspath('%s/../../' % os.path.abspath(__file__))
-        
-        for patch in self.openNebulaPatchs:
-            if os.path.isfile('%s/%s' % (patchDir, patch)):
-                self.executeCmd(['patch', '-p1', '<', '%s/%s' % (patchDir, patch)])
         
     def configureNFSServer(self, mountPoint, networkAddr, networkMask):
         super(CentOS, self).configureNFSServer(mountPoint, networkAddr, networkMask)
