@@ -39,6 +39,9 @@ class CentOS(BaseSystem):
             'nfs': [],
             'ssh': [],
         }
+        # Patch are in the root directory of the app
+        self.openNebulaPatchs = ['centos-001.patch']
+        
         super(CentOS, self).__init__()
 
     def getSystemArch(self):
@@ -115,22 +118,29 @@ class CentOS(BaseSystem):
             pkgList.append(rpmName % i)
 
         self.installPackages(pkgList)
+    
+    def buildOpenNebula(self):
+        self.patchOpenNebula()
+        super(CentOS, self).buildOpenNebula()
+        
+    def patchOpenNebula(self):
+        patchDir = os.path.abspath('%s/../../' % os.path.abspath(__file__))
+        
+        for patch in self.openNebulaPatchs:
+            if os.path.isfile('%s/%s' % (patchDir, patch)):
+                self.executeCmd(['patch', '-p1', '<', '%s/%s' % (patchDir, patch)])
         
     def configureNFSServer(self, mountPoint, networkAddr, networkMask):
         super(CentOS, self).configureNFSServer(mountPoint, networkAddr, networkMask)
         self.execute(['service', 'nfs', 'start'])
 
-    def createONeAdmin(self, username, uid, homeDir, password):
-        super(CentOS, self).createONeAdmin(username, uid, homeDir, password)
-        self.configureLibvirt()
-
-    def configureLibvirt(self):
+    def configureKVM(self):
         self.executeCmd(['service', 'libvirtd', 'start'])
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
         self.executeCmd(['chown', 'root:kvm', 
                          '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
-        self.executeCmd(['ln', '-s', '/usr/bin/qemu', '/usr/bin/kvm'])
+        self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
 
 system = CentOS()
 

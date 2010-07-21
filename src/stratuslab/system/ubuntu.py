@@ -40,11 +40,7 @@ class Ubuntu(BaseSystem):
             self.nodeShell('%s %s' % 
                 (self.installCmd, ' '.join(packages)))
             
-    def createONeAdmin(self, username, uid, homeDir, password):
-        super(Ubuntu, self).createONeAdmin(username, uid, homeDir, password)
-        self.configureLibvirt()
-
-    def configureLibvirt(self):
+    def configureKVM(self):
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
 
 system = Ubuntu()
