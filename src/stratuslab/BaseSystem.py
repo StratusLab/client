@@ -139,11 +139,15 @@ class BaseSystem(object):
 
     def configureNodeSshCred(self):
         self.createDirsCmd('%s/.ssh/' % self.ONeHome)
+        self.setOwnerCmd('%s/.ssh/' % self.ONeHome)
+        
         oneKey = fileGetContents('%s/.ssh/id_rsa' % self.ONeHome)
-        self.filePutContentsCmd('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
+        self.filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
+        
         oneKeyPub = fileGetContents('%s/.ssh/id_rsa.pub' % self.ONeHome)
-        self.filePutContentsCmd('%s/.ssh/authorized_keys' % self.ONeHome,
+        self.filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
               oneKeyPub)
+        
         self.setOneAdminSshConfig()
 
     def configureONeAdminAuth(self):
@@ -264,6 +268,10 @@ class BaseSystem(object):
         
     def remoteFilePutContents(self, filename, data):
         self.nodeShell('echo "%s" >> %s' % (data, filename))
+        
+    def filePutContentAsOneAdmin(self, filename, content):
+        self.filePutContentsCmd(filename, content)
+        self.setOwnerCmd(filename)
         
     # -------------------------------------------
     #     General
