@@ -146,10 +146,10 @@ class Installator(object):
                 '%s does not exists' % self.ONeDConfTemplateFile)
 
         ONeDConfTemplate = fileGetContents(self.ONeDConfTemplateFile)         
-        filePutContents('%s/var/oned.conf' % self.config['one_home'],
+        filePutContents('%s/etc/oned.conf' % self.config['one_home'],
             ONeDConfTemplate % self.config)
-        self.frontend.setONeAdminOwner('%s/var/oned.conf' %
-            self.config['one_home'])
+        #self.frontend.setONeAdminOwner('%s/var/oned.conf' %
+        #    self.config['one_home'])
 
     def startONeDaemon(self):
         self.frontend.startONeDaemon()
