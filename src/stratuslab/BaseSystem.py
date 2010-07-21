@@ -228,9 +228,10 @@ class BaseSystem(object):
     def remoteCmd(self, hostAddr, command, user='root', port=22,
             privateKey=None, **kwargs):
         sshCmd = ['ssh', '-p', str(port), '-l', user, '-F', self.tempSshConf]
-        if privateKey is not None and os.path.isfile(privateKey):
-            print 'key %s does not exists, skip it' % privateKey
+        if privateKey and os.path.isfile(privateKey):
             sshCmd.extend(['-i', privateKey])
+        else:
+            print 'key %s does not exists, skip it' % privateKey
         sshCmd.append(hostAddr)
         sshCmd.append(command)
         return self.execute(sshCmd, **kwargs)
