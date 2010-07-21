@@ -53,11 +53,13 @@ class BaseSystem(object):
         self.execute(['scons', '-j2'])
         
     def patchOpenNebula(self):
-        patchDir = os.path.abspath('%s/../' % os.path.abspath(__file__))
+        patchDir = os.path.abspath('%s/../../' % os.path.abspath(__file__))
         
         for patch in self.openNebulaPatchs:
             if os.path.isfile('%s/%s' % (patchDir, patch)):
-                self.executeCmd(['patch', '-p1', '<', '%s/%s' % (patchDir, patch)])
+                patchFile = open('%s/%s' % (patchDir, patch), 'rb')
+                self.executeCmd(['patch', '-p1'], stdin=patchFile)
+                patchFile.close()
 
     def installOpenNebula(self):
         self.execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
@@ -193,16 +195,16 @@ class BaseSystem(object):
     #     Front-end related methods
     # -------------------------------------------
 
-    def execute(self, command, shell=False):
+    def execute(self, command, **kwargs):
         self.displayMessage(' '.join(command))
-        process = subprocess.Popen(command, shell=shell)
+        process = subprocess.Popen(command, **kwargs)
         process.wait()
         return process.returncode
 
-    def ONeAdminExecute(self, command, shell=False):
+    def ONeAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.ONeAdmin, '-c']
         su.extend(command)
-        return self.execute(su, shell)
+        return self.execute(su, **kwargs)
     
     def setONeAdminOwner(self, path):
         os.chown(path, int(self.ONeAdminUID), int(self.ONeAdminGID)) 
@@ -216,23 +218,22 @@ class BaseSystem(object):
     # -------------------------------------------
     
     def nodeShell(self, command, **kwargs):
-        # kwargs for compatibility with execute command
         if type(command) == type(list()):
             command = ' '.join(command)
             
         return self.remoteCmd(self.nodeAddr, command,
             port=self.nodePort,
-            privateKey=self.nodePrivateKey)
+            privateKey=self.nodePrivateKey, **kwargs)
 
     def remoteCmd(self, hostAddr, command, user='root', port=22,
-            privateKey=None):
+            privateKey=None, **kwargs):
         sshCmd = ['ssh', '-p', str(port), '-l', user, '-F', self.tempSshConf]
         if privateKey is not None and os.path.isfile(privateKey):
-            # TODO: with verbose display a message if key not exists
+            print 'key %s does not exists, skip it' % privateKey
             sshCmd.extend(['-i', privateKey])
         sshCmd.append(hostAddr)
         sshCmd.append(command)
-        return self.execute(sshCmd)
+        return self.execute(sshCmd, **kwargs)
 
     def remoteSetONeAdminOwner(self, path):
         self.nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
