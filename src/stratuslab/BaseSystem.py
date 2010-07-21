@@ -115,6 +115,13 @@ class BaseSystem(object):
         self.executeCmd(['sed -i \'s/\[ -z \\\"\$PS1\\\" \\] \\&\\& ' 
             'return/#&/\' %s/.bashrc' % self.ONeHome], shell=True)
 
+
+    def setOneAdminSshConfig(self):
+        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
+              'Host', 'Host *')
+        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
+              '\tStrictHost', '\tStrictHostKeyChecking no')
+
     def setupONeAdminSSHCred(self):
         keyName = '%s/.ssh/id_rsa' % self.ONeHome
         
@@ -128,10 +135,7 @@ class BaseSystem(object):
         self.copyCmd('%s.pub' % keyName, 
             '%s/.ssh/authorized_keys' % self.ONeHome)
         self.setOwnerCmd('%s/.ssh/authorized_keys' % self.ONeHome)
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
-            'Host', 'Host *')
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome,
-            '\tStrictHost', '\tStrictHostKeyChecking no')
+        self.setOneAdminSshConfig()
 
     def configureNodeSshCred(self):
         self.createDirsCmd('%s/.ssh/' % self.ONeHome)
@@ -140,7 +144,7 @@ class BaseSystem(object):
         oneKeyPub = fileGetContents('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self.filePutContentsCmd('%s/.ssh/authorized_keys' % self.ONeHome,
               oneKeyPub)
-        # FIXME: See to set user rights
+        self.setOneAdminSshConfig()
 
     def configureONeAdminAuth(self):
         self.createDirsCmd('%s/.one' % self.ONeHome)
@@ -300,9 +304,9 @@ class BaseSystem(object):
         self.createDirsCmd = self.remoteCreateDirs
         self.filePutContentsCmd = self.remoteFilePutContents
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
-        self.genTempSshConf(self.tempSshConf)
+        self.generateSshConfig(self.tempSshConf)
         
-    def genTempSshConf(self, path):
+    def generateSshConfig(self, path):
         if not os.path.isfile(path):
             filePutContents(path, 'Host *\n\tStrictHostKeyChecking no')
         
