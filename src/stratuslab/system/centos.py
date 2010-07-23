@@ -50,6 +50,10 @@ class CentOS(BaseSystem):
         else:
             return 'i386' 
 
+    # -------------------------------------------
+    #     Package manager and related
+    # -------------------------------------------
+
     def updatePackageManager(self):
         pass
 
@@ -78,11 +82,22 @@ class CentOS(BaseSystem):
             remotePackages.append('%s/%s-%s.%s.rpm' % (uri % ({'arch': arch}), name, version, arch))
         
         return remotePackages
-
-    def installSourceDependencies(self, sourcesAddress):
-        for dep in sourcesAddress:
-            self.buildAndInstall(dep)
     
+    def installRemotePackages(self, packages):
+        rpmName = '/tmp/stratus-%d.rpm'
+        pkgList = []
+
+        for i in range(len(packages)):
+            pkg = packages.pop()
+            wget(pkg, rpmName % i)
+            pkgList.append(rpmName % i)
+
+        self.installPackages(pkgList)
+
+    # -------------------------------------------
+    #     Source build and installation methods
+    # -------------------------------------------
+        
     def remoteSourcesAddress(self, sources):
         remoteSources = []
         
@@ -90,7 +105,11 @@ class CentOS(BaseSystem):
             remoteSources.append('%s/%s-%s.%s' % (uri, name, version, ext))
             
         return remoteSources
-
+    
+    def installSourceDependencies(self, sourcesAddress):
+        for dep in sourcesAddress:
+            self.buildAndInstall(dep)
+    
     def buildAndInstall(self, sourceAddr):
         archive = '/tmp/stratus-deps-src.tar.gz'
         wget(sourceAddr, archive)
@@ -104,21 +123,18 @@ class CentOS(BaseSystem):
         self.execute(['./configure'])
         self.execute(['make', '-j2', 'install'])
         os.chdir('../')
-
-    def installRemotePackages(self, packages):
-        rpmName = '/tmp/stratus-%d.rpm'
-        pkgList = []
-
-        for i in range(len(packages)):
-            pkg = packages.pop()
-            wget(pkg, rpmName % i)
-            pkgList.append(rpmName % i)
-
-        self.installPackages(pkgList)
+        
+    # -------------------------------------------
+    #     File sharing related methods
+    # -------------------------------------------
         
     def configureNFSServer(self, mountPoint, networkAddr, networkMask):
         super(CentOS, self).configureNFSServer(mountPoint, networkAddr, networkMask)
         self.execute(['service', 'nfs', 'start'])
+        
+    # -------------------------------------------
+    #     Hypervisor related methods
+    # -------------------------------------------
 
     def configureKVM(self):
         self.executeCmd(['service', 'libvirtd', 'start'])
@@ -127,6 +143,21 @@ class CentOS(BaseSystem):
                          '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
+        
+    # -------------------------------------------
+    #     Network configuration and related
+    # -------------------------------------------
+        
+    def configureNetwork(self, networkInterface, bridge):
+        self.filePutContentsCmd(
+            '/etc/sysconfig/network-scripts/ifcfg-%s' % networkInterface, 
+            'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge)
+        )
+        self.filePutContentsCmd(
+            '/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
+            'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge
+        )
+        self.executeCmd(['service', 'network', 'restart'])
 
 system = CentOS()
 

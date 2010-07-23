@@ -225,6 +225,9 @@ class BaseSystem(object):
     #     Node related methods
     # -------------------------------------------
     
+    def configureNetwork(self, networkInterface, bridge):
+        pass
+    
     def nodeShell(self, command, **kwargs):
         if type(command) == type(list()):
             command = ' '.join(command)

@@ -72,6 +72,8 @@ class Installator(object):
                               self.config['one_password'])
 
     def configureONeAdminNode(self):
+        self.node.configureNetwork(self.config['node_network_interface'],
+                                   self.config['node_bridge_name'])
         self.node.configureNodeSshCred()
 
     def configureONeAdminFrontend(self):

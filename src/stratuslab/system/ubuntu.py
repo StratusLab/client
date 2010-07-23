@@ -24,6 +24,10 @@ class Ubuntu(BaseSystem):
         }
         super(Ubuntu, self).__init__()
 
+    # -------------------------------------------
+    #     Package manager and related
+    # -------------------------------------------
+
     def updatePackageManager(self):
         self.execute(['apt-get', 'update'])
 
@@ -40,8 +44,31 @@ class Ubuntu(BaseSystem):
             self.nodeShell('%s %s' % 
                 (self.installCmd, ' '.join(packages)))
             
+    # -------------------------------------------
+    #     Hypervisor related methods
+    # -------------------------------------------
+            
     def configureKVM(self):
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
+        
+    # -------------------------------------------
+    #     Network configuration and related
+    # -------------------------------------------
+        
+    def configureNetwork(self, networkInterface, bridge):
+        self.executeCmd(['sed \'s/.*%s.*/#&/\'' % networkInterface])
+        self.filePutContentsCmd('/etc/network/interfaces',
+            'auto %(bridge)s\n'
+            'iface %(bridge)s inet dhcp\n'
+            'pre-up ifconfig %(iface)s down\n'
+            'pre-up brctl addbr %(bridge)s\n'
+            'pre-up brctl addif %(bridge)s %(iface)s\n'
+            'pre-up ifconfig %s 0.0.0.0\n'
+            'post-down ifconfig %(iface)s down\n'
+            'post-down ifconfig %(bridge)s down\n'
+            'post-down brctl delif %(bridge)s %(iface)s\n'
+            'post-down brctl delbr %(bridge)s\n'
+            % ({'bridge': bridge, 'iface': networkInterface}))
 
 system = Ubuntu()
 
