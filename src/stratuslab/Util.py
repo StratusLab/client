@@ -58,3 +58,15 @@ def filePutContents(filename, data):
     fd.write(data)
     fd.close()
         
+def shaHexDigest(string):
+    shaMethod = None
+    try:
+        import hashlib
+        shaMethod = hashlib.sha1
+    except:
+        import sha
+        shaMethod = sha.new
+
+    shaMethod(string)
+    return shaMethod.hexdigest()
+    

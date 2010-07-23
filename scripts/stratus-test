@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from optparse import OptionParser, OptionGroup
+
+sys.path.append('/usr/lib/stratuslab')
+sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
+
+import stratuslab
+from stratuslab.CommandBase import CommandBase
+from stratuslab.Testor import Testor
+from stratuslab.Util import parseConfig
+
+class MainProgram(CommandBase):
+    '''A command-line program to install StratusLab.'''
+
+    def __init__(self):
+        self.runnedTests = 0
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(stratuslab.__file__)))
+        usage = 'usage: %prog [options]'
+
+        self.parser = OptionParser(usage=usage)
+        self.parser.add_option('-c', '--config', dest='configFile', 
+            help='configuration file', metavar='PATH', 
+            default='%s/conf/stratuslab.cfg' % modulePath)
+        self.parser.add_option('-t', '--template', dest='vmTemplate', 
+            help='VM template used for tests', metavar='PATH', 
+            default='')
+        
+        testsGroup = OptionGroup(self.parser, 'Available tests',
+            'Order of these options doesn\'t matter')
+        testsGroup.add_option('-s', '--run-machine', dest='runMachineTest',
+            help='deploy a VM check it run and stop it', action='store_true',
+            default=False)
+        self.parser.add_option_group(testsGroup)
+        
+        self.options, self.args = self.parser.parse_args()
+
+    def doWork(self):
+        self.config = parseConfig(self.options.configFile)
+        self.testor = Testor()
+        self.testor.setCredentials(self.config['frontend_ip'], 
+                                   self.config['one_port'],
+                                   self.config['one_username'], 
+                                   self.config['one_password'])
+        self.runTests()
+        self.checkRunnedTestsNb()
+        
+    def runTests(self):
+        print '> Launching tests'
+        if self.options.runMachineTest:
+            self.runnedTests += 1
+            vmId = self.testor.startVm(self.options.vmTemplate)
+            vmStarted = self.testor.waitUntilVmRunningOrTimeout(vmId, 20)
+            
+            if not vmStarted:
+                self.displayMessageAndExit('** Failing to start VM')
+        
+        if self.options.runMachineTest:
+            self.testor.deleteVm(vmId)
+            
+        print '> Tests finished successfully'
+            
+    def checkRunnedTestsNb(self):
+        if self.runnedTests == 0:
+            print 'Please select a test to run.'
+            self.parser.print_help()
+            sys.exit(1)
+
+    def displayMessageAndExit(self, *msg, **kwargs):
+        print '\n'.join(msg)
+        sys.exit(kwargs.get('exitCode', 1))
+        
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
+        sys.exit(1)
