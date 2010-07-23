@@ -196,8 +196,11 @@ class BaseSystem(object):
 
     def configureXEN(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
-            '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm, /usr/sbin/xentop' % (
-            self.ONeAdmin))
+            '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm *' % self.ONeAdmin)
+        self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
+            '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xentop *' % self.ONeAdmin)
+        self.executeCmd(['sed -i -E \'s/Defaults[[:space:]]+requiretty/#&/\''
+                         ' /etc/sudoers'])
 
     # -------------------------------------------
     #     Front-end related methods
