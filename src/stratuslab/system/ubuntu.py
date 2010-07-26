@@ -67,8 +67,8 @@ class Ubuntu(BaseSystem):
             'post-down ifconfig %(iface)s down\n'
             'post-down ifconfig %(bridge)s down\n'
             'post-down brctl delif %(bridge)s %(iface)s\n'
-            'post-down brctl delbr %(bridge)s\n'
-            % ({'bridge': bridge, 'iface': networkInterface}))
+            'post-down brctl delbr %(bridge)s\n' % (
+                {'bridge': bridge, 'iface': networkInterface}))
 
 system = Ubuntu()
 
