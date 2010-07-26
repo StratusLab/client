@@ -67,6 +67,6 @@ def shaHexDigest(string):
         import sha
         shaMethod = sha.new
 
-    shaMethod(string)
-    return shaMethod.hexdigest()
+    h = shaMethod(string)
+    return h.hexdigest()
     

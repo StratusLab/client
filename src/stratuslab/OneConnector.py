@@ -1,5 +1,6 @@
 import xmlrpclib
-from stratuslab.Util import shaHexDigest
+from stratuslab.Util import shaHexDigest, filePutContents
+from xml.etree.ElementTree import ElementTree
 
 class OneConnector(object):
     _sessionString = None
@@ -20,10 +21,10 @@ class OneConnector(object):
             return vmId
         
     def actionOnVm(self, vmId, action):
-        ret, err = self.rpc.one.vm.action(self._sessionString, vmId, action)
+        res = self.rpc.one.vm.action(self._sessionString, action, vmId)
         
-        if not ret:
-            raise Exception(err)
+        if not res[0]:
+            raise Exception(res[1])
         
     def getVmInfo(self, vmId):
         ret, info = self.rpc.one.vm.info(self._sessionString, vmId)
@@ -34,7 +35,10 @@ class OneConnector(object):
             return info
         
     def getVmState(self, vmId):
-        info = self.getVmInfo(vmId)
-        print info
-        return 'pending'
+        info = '/tmp/stratus-test.nfo'
+        filePutContents(info, self.getVmInfo(vmId))
+        tree = ElementTree()
+        tree.parse(info)
+        status = tree.find('STATE')
+        return int(status.text)
         

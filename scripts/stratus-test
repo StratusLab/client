@@ -29,7 +29,7 @@ class MainProgram(CommandBase):
             default='%s/conf/stratuslab.cfg' % modulePath)
         self.parser.add_option('-t', '--template', dest='vmTemplate', 
             help='VM template used for tests', metavar='PATH', 
-            default='%s/ttylinux.one')
+            default='%s/ttylinux.one' % modulePath)
         
         testsGroup = OptionGroup(self.parser, 'Available tests',
             'Order of these options doesn\'t matter')
@@ -60,15 +60,16 @@ class MainProgram(CommandBase):
                               'password': self.config['app_repo_password']})
             
             vmId = self.testor.startVm(vmTpl)
-            vmStarted = self.testor.waitUntilVmRunningOrTimeout(vmId, 20)
+            vmStarted = self.testor.waitUntilVmRunningOrTimeout(vmId, 120)
             
             if not vmStarted:
                 self.displayMessageAndExit('** Failing to start VM')
         
         if self.options.runMachineTest:
+            print '\n :: Shutting down VM'
             self.testor.deleteVm(vmId)
             
-        print '> Tests finished successfully'
+        print '\n> Tests finished successfully'
             
     def checkRunnedTestsNb(self):
         if self.runnedTests == 0:

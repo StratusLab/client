@@ -16,11 +16,14 @@ class Testor(object):
     
     def waitUntilVmRunningOrTimeout(self, vmId, timeout):
         event = threading.Event()
-        thread = UIThread(event, timeout, 'Starting VM', '')
+        thread = UIThread(event, timeout, ' :: Starting VM', '')
         thread.start()
         
-        while self.getVmState(vmId) != 'running' and event.isSet() == False:
+        while self.getVmState(vmId) != 3 and event.isSet() == False:
             time.sleep(2)
+            
+        # Wait VM to start up completely
+        time.sleep(3)
         
         if event.isSet():
             return False
