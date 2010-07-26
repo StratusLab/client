@@ -63,12 +63,12 @@ class Ubuntu(BaseSystem):
             'pre-up ifconfig %(iface)s down\n'
             'pre-up brctl addbr %(bridge)s\n'
             'pre-up brctl addif %(bridge)s %(iface)s\n'
-            'pre-up ifconfig %s 0.0.0.0\n'
+            'pre-up ifconfig %(iface)s 0.0.0.0\n'
             'post-down ifconfig %(iface)s down\n'
             'post-down ifconfig %(bridge)s down\n'
             'post-down brctl delif %(bridge)s %(iface)s\n'
-            'post-down brctl delbr %(bridge)s\n' % (
-                {'bridge': bridge, 'iface': networkInterface}))
+            'post-down brctl delbr %(bridge)s\n'
+            % ({'bridge': bridge, 'iface': networkInterface}))
 
 system = Ubuntu()
 
