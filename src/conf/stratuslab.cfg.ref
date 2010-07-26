@@ -31,3 +31,5 @@ node_private_key = /root/.ssh/id_rsa
 node_ssh_port = 22
 node_network_interface = eth0
 node_bridge_name = br0
+app_repo_username = foo
+app_repo_password = bar

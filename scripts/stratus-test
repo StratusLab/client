@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 import stratuslab
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
-from stratuslab.Util import parseConfig
+from stratuslab.Util import parseConfig, fileGetContents
 
 class MainProgram(CommandBase):
     '''A command-line program to install StratusLab.'''
@@ -29,7 +29,7 @@ class MainProgram(CommandBase):
             default='%s/conf/stratuslab.cfg' % modulePath)
         self.parser.add_option('-t', '--template', dest='vmTemplate', 
             help='VM template used for tests', metavar='PATH', 
-            default='')
+            default='%s/ttylinux.one')
         
         testsGroup = OptionGroup(self.parser, 'Available tests',
             'Order of these options doesn\'t matter')
@@ -54,7 +54,12 @@ class MainProgram(CommandBase):
         print '> Launching tests'
         if self.options.runMachineTest:
             self.runnedTests += 1
-            vmId = self.testor.startVm(self.options.vmTemplate)
+            
+            vmTpl = fileGetContents(self.options.vmTemplate) 
+            vmTpl = vmTpl % ({'username': self.config['app_repo_username'],
+                              'password': self.config['app_repo_password']})
+            
+            vmId = self.testor.startVm(vmTpl)
             vmStarted = self.testor.waitUntilVmRunningOrTimeout(vmId, 20)
             
             if not vmStarted:

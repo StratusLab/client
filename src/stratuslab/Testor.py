@@ -1,20 +1,18 @@
 import threading
 import time
-import sys
 
 from stratuslab.UIThread import UIThread
 from stratuslab.OneConnector import OneConnector
-from stratuslab.Util import fileGetContents
 
 class Testor(object):
 
     def setCredentials(self, frontend, port, username, password):
         server = 'http://%s:%s/RPC2' % (frontend, port)
         self.cloud = OneConnector(server)
+        self.cloud.setCredentials(username, password)
         
     def startVm(self, vmTpl):
-        tpl = fileGetContents(vmTpl)
-        return self.cloud.startVm(tpl)
+        return self.cloud.startVm(vmTpl)
     
     def waitUntilVmRunningOrTimeout(self, vmId, timeout):
         event = threading.Event()
