@@ -8,7 +8,7 @@ from Util import filePutContents, fileGetContents
 class BaseSystem(object):
     
     def __init__(self):
-        # Patch are in the root directory of the app
+        # Patch are in the share/ directory of the app
         self.openNebulaPatchs = ['centos-001.patch']
         self.workOnFrontend()
     
@@ -53,7 +53,7 @@ class BaseSystem(object):
         self.execute(['scons', '-j2'])
         
     def patchOpenNebula(self):
-        patchDir = os.path.abspath('%s/../../' % os.path.abspath(__file__))
+        patchDir = os.path.abspath('%s/../../share/' % os.path.abspath(__file__))
         
         for patch in self.openNebulaPatchs:
             if os.path.isfile('%s/%s' % (patchDir, patch)):
