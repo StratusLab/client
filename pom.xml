@@ -3,11 +3,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>stratuslab</groupId>
+	<groupId>eu.stratuslab</groupId>
 	<artifactId>stratuslab</artifactId>
+	<packaging>pom</packaging>
 	<version>0.1.0-SNAPSHOT</version>
 	<name>stratuslab</name>
 	<url>http://stratuslab.eu/</url>
+
+	<distributionManagement>
+		<repository>
+			<id>stratuslab.snapshots</id>
+			<name>Snapshots</name>
+			<url>http://repo.stratuslab.eu:8081/content/repositories/snapshots/</url>
+		</repository>
+	</distributionManagement>
 
 	<profiles>
 		<profile>
@@ -24,7 +33,7 @@
 						<executions>
 							<execution>
 								<goals>
-									<goal>rpm</goal>
+									<goal>attached-rpm</goal>
 								</goals>
 							</execution>
 						</executions>
