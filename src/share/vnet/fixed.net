@@ -1,0 +1,6 @@
+NAME = "%(network_name)s"
+TYPE = FIXED
+
+BRIDGE = %(bridge)s
+
+%(leases)s
