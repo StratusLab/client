@@ -1,0 +1,7 @@
+NAME = "%(network_name)s"
+TYPE = RANGED
+
+BRIDGE = %(bridge)s
+
+NETWORK_SIZE    = %(network_size)s
+NETWORK_ADDRESS = %(network_addr)s

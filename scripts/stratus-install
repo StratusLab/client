@@ -65,6 +65,7 @@ class MainProgram(CommandBase):
         installator.installONe()
         installator.configureONeDaemon()
         installator.startONeDaemon()
+        installator.addDefaultNetwork()
 
     def doWork(self):
         if self.options.nodeAddr:

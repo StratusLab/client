@@ -1,0 +1,8 @@
+NAME   = stratus-test
+CPU    = 0.1
+MEMORY = 64
+
+DISK   = [
+  source   = "http://%(app_repo_username)s:%(app_repo_password)s@%(app_repo_url)s/stock/ttylinux/ttylinux.img",
+  target   = "hda",
+  readonly = "no" ]

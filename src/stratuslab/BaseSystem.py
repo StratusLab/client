@@ -8,8 +8,6 @@ from Util import filePutContents, fileGetContents
 class BaseSystem(object):
     
     def __init__(self):
-        # Patch are in the root directory of the app
-        self.openNebulaPatchs = ['centos-001.patch']
         self.workOnFrontend()
     
     # -------------------------------------------
@@ -53,13 +51,13 @@ class BaseSystem(object):
         self.execute(['scons', '-j2'])
         
     def patchOpenNebula(self):
-        patchDir = os.path.abspath('%s/../../' % os.path.abspath(__file__))
+        patchDir = os.path.abspath('%s/../../share/patch' % os.path.abspath(__file__))
         
-        for patch in self.openNebulaPatchs:
-            if os.path.isfile('%s/%s' % (patchDir, patch)):
-                patchFile = open('%s/%s' % (patchDir, patch), 'rb')
-                self.executeCmd(['patch', '-p1'], stdin=patchFile)
-                patchFile.close()
+        for patch in [os.path.abspath('%s/%s' % (patchDir, f)) 
+                      for f in os.listdir(patchDir)]:
+            patchFile = open(patch, 'rb')
+            self.executeCmd(['patch', '-p1'], stdin=patchFile)
+            patchFile.close()
 
     def installOpenNebula(self):
         self.execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',

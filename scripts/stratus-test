@@ -29,12 +29,12 @@ class MainProgram(CommandBase):
             default='%s/conf/stratuslab.cfg' % modulePath)
         self.parser.add_option('-t', '--template', dest='vmTemplate', 
             help='VM template used for tests', metavar='PATH', 
-            default='%s/ttylinux.one' % modulePath)
+            default='%s/share/ttylinux-test.one' % modulePath)
         
         testsGroup = OptionGroup(self.parser, 'Available tests',
             'Order of these options doesn\'t matter')
         testsGroup.add_option('-s', '--run-machine', dest='runMachineTest',
-            help='deploy a VM check it run and stop it', action='store_true',
+            help='deploy a VM checks it run and stop it', action='store_true',
             default=False)
         self.parser.add_option_group(testsGroup)
         
@@ -55,10 +55,7 @@ class MainProgram(CommandBase):
         if self.options.runMachineTest:
             self.runnedTests += 1
             
-            vmTpl = fileGetContents(self.options.vmTemplate) 
-            vmTpl = vmTpl % ({'username': self.config['app_repo_username'],
-                              'password': self.config['app_repo_password']})
-            
+            vmTpl = fileGetContents(self.options.vmTemplate) % self.config
             vmId = self.testor.startVm(vmTpl)
             vmStarted = self.testor.waitUntilVmRunningOrTimeout(vmId, 120)
             
