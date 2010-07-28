@@ -109,25 +109,27 @@ class Installator(object):
     def addDefaultNetwork(self):
         # TODO: Use XML RPC methods
         for vnet in self.defaultNetworks:
-            if self.config.get('one_%s_network_addr' % vnet):
-                vnetTpl = self.buildFixedNetworkTemplate(vnet)
+            vnetTpl = '/tmp/stratus-vnet'
+            if self.config.get('one_%s_network_addr' % vnet, '') == '':
+                filePutContents(vnetTpl, self.buildRangedNetworkTemplate(vnet))
             else:
-                vnetTpl = self.buildRangedNetworkTemplate(vnet)
+                filePutContents(vnetTpl, self.buildFixedNetworkTemplate(vnet))
             self.frontend.ONeAdminExecute(['onevnet create %s' % vnetTpl])
         
     def buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContents('%s/share/vnet/fixed.net' % self.modulePath)
         vnetTpl = vnetTpl % ({'network_name': networkName,
                               'bridge': self.config.get('node_bridge_name'),
-                              'leases': ['LEASES = [ IP="%s"]' % i 
-                                         for i in self.config.get('one_%s_network_add' % networkName)]})
+                              'leases': '\n'.join(['LEASES = [ IP="%s"]' % i 
+                                         for i in self.config.get('one_%s_network_addr' % networkName).split(' ')])})
         return vnetTpl
     
     def buildRangedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContents('%s/share/vnet/ranged.net' % self.modulePath)
         vnetTpl = vnetTpl % ({'network_name': networkName,
+                              'bridge': self.config.get('node_bridge_name'),
                               'network_size': self.config.get('one_%s_network_size' % networkName),
-                              'network_add': self.config.get('one_%s_network' % networkName)})
+                              'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
         
     def setupFileSharingServer(self):

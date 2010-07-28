@@ -53,7 +53,8 @@ class BaseSystem(object):
     def patchOpenNebula(self):
         patchDir = os.path.abspath('%s/../../share/patch' % os.path.abspath(__file__))
         
-        for patch in [os.path.abspath(f) for f in os.listdir(patchDir)]:
+        for patch in [os.path.abspath('%s/%s' % (patchDir, f)) 
+                      for f in os.listdir(patchDir)]:
             patchFile = open(patch, 'rb')
             self.executeCmd(['patch', '-p1'], stdin=patchFile)
             patchFile.close()

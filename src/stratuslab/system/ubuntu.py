@@ -56,7 +56,9 @@ class Ubuntu(BaseSystem):
     # -------------------------------------------
         
     def configureNetwork(self, networkInterface, bridge):
-        self.executeCmd(['sed \'s/.*%s.*/#&/\'' % networkInterface])
+        for iface in (networkInterface, bridge):
+            self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
+        
         self.filePutContentsCmd('/etc/network/interfaces',
             'auto %(bridge)s\n'
             'iface %(bridge)s inet dhcp\n'
