@@ -45,7 +45,6 @@ class FileAppender(object):
     def _reverseLines(self):
         file = open(self.filename)
         self.lines = file.readlines()
-        newLines = []
         self.lines.reverse()
     
     def _appendNewLine(self, line):

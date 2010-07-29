@@ -1,6 +1,8 @@
 import os
+import sys
 import urllib2
-
+import subprocess
+import time
 from ConfigParser import SafeConfigParser
 
 defaultConfigSection = 'stratuslab'
@@ -22,15 +24,21 @@ def parseConfig(configFile):
 
 def wget(url, savePath):
     fd = urllib2.urlopen(url)
-    filePutContents(savePath, fd.read())
+    filePutContent(savePath, fd.read())
     fd.close()
+    
+def ping(host, timeout, number=1):
+    '''Ping <host> and return True if successful'''
+    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host])
+    p.wait()
+    return p.returncode == 0
 
 def appendOrReplaceInFile(filename, search, replace):
     if not os.path.isfile(filename):
-        filePutContents(filename, replace)
+        filePutContent(filename, replace)
         return 
     
-    fileContent = fileGetContents(filename)
+    fileContent = fileGetContent(filename)
     lines = fileContent.split('\n')
     
     newContent = []
@@ -45,15 +53,15 @@ def appendOrReplaceInFile(filename, search, replace):
     if insertionMade is False:
         newContent.append('%s\n' % replace)
     
-    filePutContents(filename, '\n'.join(newContent))
+    filePutContent(filename, '\n'.join(newContent))
 
-def fileGetContents(filename):
+def fileGetContent(filename):
     fd = open(filename, 'rb')
     content = fd.read()
     fd.close()
     return content
 
-def filePutContents(filename, data):
+def filePutContent(filename, data):
     fd = open(filename, 'wb')
     fd.write(data)
     fd.close()
@@ -69,4 +77,34 @@ def shaHexDigest(string):
 
     h = shaMethod(string)
     return h.hexdigest()
+
+def waitUntilPingOrTimeout(self, host, timeout, ticks=True):
+    start = time.time()
+    retCode = False
+    while not retCode:
+        retCode = ping(host, timeout)
+        if ticks:
+            sys.stdout.flush()
+            sys.stdout.write('.')
+        time.sleep(1)
+        
+        if time.time() - start > timeout:
+            return False
+        
+    return retCode
+
+def printAction(msg):
+    sys.stdout.flush()
+    print ('\n> %s' % msg),
+    
+def printStep(msg):
+    sys.stdout.flush()
+    print ('\n :: %s' % msg),
+
+def printError(msg, exitCode=1, exit=False):
+    sys.stdout.flush()
+    print ('\n  ** %s' % msg),
+    
+    if exit:
+        sys.exit(exitCode)
     

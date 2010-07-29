@@ -2,7 +2,8 @@
 
 import os
 import sys
-from optparse import OptionParser, OptionGroup
+from optparse import OptionParser
+from optparse import OptionGroup
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
@@ -10,13 +11,12 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 import stratuslab
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
-from stratuslab.Util import parseConfig, fileGetContents
+from stratuslab.Util import parseConfig
 
 class MainProgram(CommandBase):
-    '''A command-line program to install StratusLab.'''
+    '''A command-line program to test StratusLab.'''
 
     def __init__(self):
-        self.runnedTests = 0
         super(MainProgram, self).__init__()
 
     def parse(self):
@@ -29,55 +29,22 @@ class MainProgram(CommandBase):
             default='%s/conf/stratuslab.cfg' % modulePath)
         self.parser.add_option('-t', '--template', dest='vmTemplate', 
             help='VM template used for tests', metavar='PATH', 
-            default='%s/share/ttylinux-test.one' % modulePath)
+            default='%s/share/vm/ttylinux-test.one' % modulePath)
         
-        testsGroup = OptionGroup(self.parser, 'Available tests',
-            'Order of these options doesn\'t matter')
-        testsGroup.add_option('-s', '--run-machine', dest='runMachineTest',
-            help='deploy a VM checks it run and stop it', action='store_true',
-            default=False)
-        self.parser.add_option_group(testsGroup)
+        #testsGroup = OptionGroup(self.parser, 'Available tests',
+        #    'Order of these options doesn\'t matter')
+        #testsGroup.add_option('-s', '--run-machine', dest='runMachineTest',
+        #    help='deploy a VM checks it run and stop it', action='store_true',
+        #    default=False)
+        #self.parser.add_option_group(testsGroup)
         
-        self.options, self.args = self.parser.parse_args()
+        self.options, _ = self.parser.parse_args()
 
     def doWork(self):
-        self.config = parseConfig(self.options.configFile)
-        self.testor = Testor()
-        self.testor.setCredentials(self.config['frontend_ip'], 
-                                   self.config['one_port'],
-                                   self.config['one_username'], 
-                                   self.config['one_password'])
-        self.runTests()
-        self.checkRunnedTestsNb()
-        
-    def runTests(self):
-        print '> Launching tests'
-        if self.options.runMachineTest:
-            self.runnedTests += 1
-            
-            vmTpl = fileGetContents(self.options.vmTemplate) % self.config
-            vmId = self.testor.startVm(vmTpl)
-            vmStarted = self.testor.waitUntilVmRunningOrTimeout(vmId, 120)
-            
-            if not vmStarted:
-                self.displayMessageAndExit('** Failing to start VM')
-        
-        if self.options.runMachineTest:
-            print '\n :: Shutting down VM'
-            self.testor.deleteVm(vmId)
-            
-        print '\n> Tests finished successfully'
-            
-    def checkRunnedTestsNb(self):
-        if self.runnedTests == 0:
-            print 'Please select a test to run.'
-            self.parser.print_help()
-            sys.exit(1)
+        config = parseConfig(self.options.configFile)
+        self.testor = Testor(config, self.options)
+        self.testor.runTests()
 
-    def displayMessageAndExit(self, *msg, **kwargs):
-        print '\n'.join(msg)
-        sys.exit(kwargs.get('exitCode', 1))
-        
 
 if __name__ == '__main__':
     try:

@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 from Util import appendOrReplaceInFile
-from Util import filePutContents, fileGetContents
+from Util import filePutContent, fileGetContent
 
 class BaseSystem(object):
     
@@ -139,10 +139,10 @@ class BaseSystem(object):
         self.createDirsCmd('%s/.ssh/' % self.ONeHome)
         self.setOwnerCmd('%s/.ssh/' % self.ONeHome)
         
-        oneKey = fileGetContents('%s/.ssh/id_rsa' % self.ONeHome)
+        oneKey = fileGetContent('%s/.ssh/id_rsa' % self.ONeHome)
         self.filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
         
-        oneKeyPub = fileGetContents('%s/.ssh/id_rsa.pub' % self.ONeHome)
+        oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self.filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
               oneKeyPub)
         
@@ -306,7 +306,7 @@ class BaseSystem(object):
         self.executeCmd = self.execute
         self.copyCmd = shutil.copy
         self.createDirsCmd = self.createDirs
-        self.filePutContentsCmd = filePutContents
+        self.filePutContentsCmd = filePutContent
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self.remoteAppendOrReplaceInFile
@@ -320,5 +320,5 @@ class BaseSystem(object):
         
     def generateSshConfig(self, path):
         if not os.path.isfile(path):
-            filePutContents(path, 'Host *\n\tStrictHostKeyChecking no')
+            filePutContent(path, 'Host *\n\tStrictHostKeyChecking no')
         

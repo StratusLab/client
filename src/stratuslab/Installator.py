@@ -2,8 +2,8 @@ import os
 import sys
 
 import stratuslab
-from Util import filePutContents
-from Util import fileGetContents 
+from Util import filePutContent
+from Util import fileGetContent 
 from Util import parseConfig
 
 class Installator(object):
@@ -111,13 +111,13 @@ class Installator(object):
         for vnet in self.defaultNetworks:
             vnetTpl = '/tmp/stratus-vnet'
             if self.config.get('one_%s_network_addr' % vnet, '') == '':
-                filePutContents(vnetTpl, self.buildRangedNetworkTemplate(vnet))
+                filePutContent(vnetTpl, self.buildRangedNetworkTemplate(vnet))
             else:
-                filePutContents(vnetTpl, self.buildFixedNetworkTemplate(vnet))
+                filePutContent(vnetTpl, self.buildFixedNetworkTemplate(vnet))
             self.frontend.ONeAdminExecute(['onevnet create %s' % vnetTpl])
         
     def buildFixedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContents('%s/share/vnet/fixed.net' % self.modulePath)
+        vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % self.modulePath)
         vnetTpl = vnetTpl % ({'network_name': networkName,
                               'bridge': self.config.get('node_bridge_name'),
                               'leases': '\n'.join(['LEASES = [ IP="%s"]' % i 
@@ -125,7 +125,7 @@ class Installator(object):
         return vnetTpl
     
     def buildRangedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContents('%s/share/vnet/ranged.net' % self.modulePath)
+        vnetTpl = fileGetContent('%s/share/vnet/ranged.net' % self.modulePath)
         vnetTpl = vnetTpl % ({'network_name': networkName,
                               'bridge': self.config.get('node_bridge_name'),
                               'network_size': self.config.get('one_%s_network_size' % networkName),
@@ -181,8 +181,8 @@ class Installator(object):
             raise ValueError('ONe daemon configuration template '
                 '%s does not exists' % self.onedConfTemplate)
     
-        filePutContents('%s/etc/oned.conf' % self.config['one_home'],
-                        fileGetContents(self.onedConfTemplate) % self.config)
+        filePutContent('%s/etc/oned.conf' % self.config['one_home'],
+                        fileGetContent(self.onedConfTemplate) % self.config)
 
     def startONeDaemon(self):
         self.frontend.startONeDaemon()

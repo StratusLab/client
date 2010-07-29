@@ -1,0 +1,12 @@
+NAME   = %(vm_name)s
+CPU    = 1
+MEMORY = 256
+
+DISK   = [
+  source   = "%(vm_image)s",
+  target   = "hda",
+  readonly = "no",
+  save     = yes ]
+  
+ NIC    = [ NETWORK = "private" ]
+ 
