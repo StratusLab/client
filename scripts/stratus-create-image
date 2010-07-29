@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from optparse import OptionParser, OptionGroup
+
+sys.path.append('/usr/lib/stratuslab')
+sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
+
+import stratuslab
+from stratuslab.CommandBase import CommandBase
+from stratuslab.Creator import Creator
+from stratuslab.Util import parseConfig, printError
+
+class MainProgram(CommandBase):
+    '''A command-line program to create StratusLab image.'''
+
+    def __init__(self):
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        self.modulePath = os.path.abspath('%s/../' % os.path.abspath(
+            os.path.dirname(stratuslab.__file__)))
+        
+        usage = 'usage: %prog [options] stock-image'
+        
+        parser = OptionParser(usage=usage)
+        parser.add_option('-c', '--config', dest='configFile',
+            help='configuration file', metavar='FILE',
+            default='%s/conf/stratuslab.cfg' % self.modulePath)
+        parser.add_option('-t', '--template', dest='oneTpl',
+            help='One VM template', metavar='PATH',
+            default=None)
+        parser.add_option('-d', '--destination', dest='destination',
+            help='The directory in which to create the image. Defaults set in the config', 
+            metavar='PATH', default=None)
+        parser.add_option('-s', '--scripts', dest='scripts',
+            help='Scripts to execute on the VM (separate by space)',
+            default='', metavar='FILE')
+        parser.add_option('-p', '--packages', dest='packages',
+            help='Packages to install on the machine (name separate by space)',
+            default='', metavar='NAME')
+        parser.add_option('-n', '--no-shutdown', dest='shutdownVm',
+            help='Leave the VM running. A public IP will be created.',
+            action='store_false', default=True)
+        self.options, self.args = parser.parse_args()
+
+    def parseOptions(self):
+        if not os.path.isfile(self.options.configFile):
+            printError('Configuration file does not exist')
+
+        self.config = parseConfig(self.options.configFile)
+
+        if len(self.args) != 1:
+            printError('Unspecified stock image to use')
+        else:
+            self.stockImg = os.path.abspath(self.args[0])
+
+        if not os.path.isfile(self.stockImg):
+            printError('Stock image %s does not exist' % self.stockImg)
+
+        if self.options.oneTpl:
+            if not os.path.isfile(self.options.oneTpl):
+                printError('ONE template %s does not exist' % self.options.oneTpl)
+        else:
+            self.options.oneTpl = '%s/share/vm/img-creation-%s.one' % (self.modulePath, 
+                                                                       self.config.get('hypervisor'))
+
+        if self.options.destination:
+            if not os.path.isdir(self.options.destination):
+                printError('Manifest directory %s does not exist' % self.options.destination)
+        else:
+            self.options.destination = self.config.get('image_dir')
+            
+    def doWork(self):
+        self.parseOptions()
+        self.creator = Creator(self.config, self.options, self.stockImg)
+        self.creator.create()
+        
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

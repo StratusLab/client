@@ -27,9 +27,9 @@ def wget(url, savePath):
     filePutContent(savePath, fd.read())
     fd.close()
     
-def ping(host, timeout, number=1):
+def ping(host, timeout=5, number=1, **kwargs):
     '''Ping <host> and return True if successful'''
-    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host])
+    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], **kwargs)
     p.wait()
     return p.returncode == 0
 
@@ -78,20 +78,25 @@ def shaHexDigest(string):
     h = shaMethod(string)
     return h.hexdigest()
 
-def waitUntilPingOrTimeout(self, host, timeout, ticks=True):
+def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
+    if not stdout:
+        stdout = open('/dev/null', 'w')
+    if not stderr:
+        stderr = open('/dev/null', 'w')
+    
     start = time.time()
     retCode = False
     while not retCode:
-        retCode = ping(host, timeout)
         if ticks:
             sys.stdout.flush()
             sys.stdout.write('.')
+        retCode = ping(host, stdout=stdout, stderr=stderr)
         time.sleep(1)
         
         if time.time() - start > timeout:
             return False
         
-    return retCode
+    return retCode == 0
 
 def printAction(msg):
     sys.stdout.flush()
@@ -101,7 +106,7 @@ def printStep(msg):
     sys.stdout.flush()
     print ('\n :: %s' % msg),
 
-def printError(msg, exitCode=1, exit=False):
+def printError(msg, exitCode=1, exit=True):
     sys.stdout.flush()
     print ('\n  ** %s' % msg),
     

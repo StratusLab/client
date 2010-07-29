@@ -71,6 +71,7 @@ node_bridge_name = br0
 app_repo_username = foo
 app_repo_password = bar
 app_repo_url = appliances.stratuslab.eu/images
+image_dir = ./
 
 ;
 ; Available ONE networks

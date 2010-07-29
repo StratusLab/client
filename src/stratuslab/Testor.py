@@ -18,7 +18,7 @@ class Testor(object):
                                   self.config.get('one_password'))
         
         # Attributes initialization
-        self.vmTpl = None
+        self.vmTemplate = None
         self.vmId = None
         
         
@@ -29,13 +29,13 @@ class Testor(object):
         printAction('Smoke test finished')
     
     def buildVmTemplate(self):
-        self.vmTpl = fileGetContent(self.options.vmTemplate) % self.config
+        self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
     
     def startVmTest(self):
         printStep('Starting VM')
         
         self.buildVmTemplate()
-        self.vmId = self.cloud.vmStart(self.vmTpl)
+        self.vmId = self.cloud.vmStart(self.vmTemplate)
         
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 120)
             
