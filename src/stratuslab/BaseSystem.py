@@ -9,7 +9,7 @@ from Util import filePutContent, fileGetContent
 class BaseSystem(object):
     
     def __init__(self):
-        dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
         self.workOnFrontend()
