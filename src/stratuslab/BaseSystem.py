@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+from datetime import datetime
 
 from Util import appendOrReplaceInFile
 from Util import filePutContent, fileGetContent
@@ -8,6 +9,9 @@ from Util import filePutContent, fileGetContent
 class BaseSystem(object):
     
     def __init__(self):
+        dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
+        self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
         self.workOnFrontend()
     
     # -------------------------------------------
@@ -41,16 +45,16 @@ class BaseSystem(object):
         self.ONeRepo = repoUrl
         self.ONeSrcDir = buildDir
 
-        self.createDirs(self.ONeSrcDir)
+        self._createDirs(self.ONeSrcDir)
         os.chdir(self.ONeSrcDir)
-        self.execute(['git', 'clone', repoUrl, cloneName, '-b', branch])
+        self._execute(['git', 'clone', repoUrl, cloneName, '-b', branch])
         os.chdir(cloneName)
 
-    def buildOpenNebula(self):
-        self.patchOpenNebula()
-        self.execute(['scons', '-j2'])
+    def buildCloudSystem(self):
+        self._applyPatchs()
+        self.executeCmd(['scons', '-j2'])
         
-    def patchOpenNebula(self):
+    def _applyPatchs(self):
         patchDir = os.path.abspath('%s/../../share/patch' % os.path.abspath(__file__))
         
         for patch in [os.path.abspath('%s/%s' % (patchDir, f)) 
@@ -59,25 +63,25 @@ class BaseSystem(object):
             self.executeCmd(['patch', '-p1'], stdin=patchFile)
             patchFile.close()
 
-    def installOpenNebula(self):
-        self.execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
+    def installCloudSystem(self):
+        self._execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
             self.ONeAdmin, '-g', self.ONeAdminGroup])
 
-    def startONeDaemon(self):
-        self.ONeAdminExecute(['one start'])
+    def startCloudSystem(self):
+        self._cloudAdminExecute(['one start'])
 
     # -------------------------------------------
     #     ONE admin creation
     # -------------------------------------------
 
-    def createONeGroup(self, groupname, gid):
+    def createCloudGroup(self, groupname, gid):
         self.ONeAdminGroup =  groupname
         self.ONeAdminGID = gid
 
         self.executeCmd(['groupadd', '-g', self.ONeAdminGID, 
               self.ONeAdminGroup])
 
-    def createONeAdmin(self, username, uid, homeDir, password):
+    def createCloudAdmin(self, username, uid, homeDir, password):
         self.ONeAdmin = username
         self.ONeHome = homeDir
         self.ONeAdminUID = uid
@@ -92,7 +96,7 @@ class BaseSystem(object):
     #     ONE admin env config and related
     # -------------------------------------------
 
-    def configureONeAdminEnv(self, ONeDPort):
+    def configureCloudAdminEnv(self, ONeDPort):
         self.ONeDPort = ONeDPort
 
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
@@ -114,13 +118,13 @@ class BaseSystem(object):
             'return/#&/\' %s/.bashrc' % self.ONeHome], shell=True)
 
 
-    def setOneAdminSshConfig(self):
+    def _configureCloudAdminSsh(self):
         self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
               'Host', 'Host *')
         self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
               '\tStrictHost', '\tStrictHostKeyChecking no')
 
-    def setupONeAdminSSHCred(self):
+    def configureCloudAdminSshKeys(self):
         keyName = '%s/.ssh/id_rsa' % self.ONeHome
         
         self.createDirsCmd(os.path.dirname(keyName))
@@ -133,22 +137,22 @@ class BaseSystem(object):
         self.copyCmd('%s.pub' % keyName, 
             '%s/.ssh/authorized_keys' % self.ONeHome)
         self.setOwnerCmd('%s/.ssh/authorized_keys' % self.ONeHome)
-        self.setOneAdminSshConfig()
+        self._configureCloudAdminSsh()
 
-    def configureNodeSshCred(self):
+    def configureCloudAdminSshKeysNode(self):
         self.createDirsCmd('%s/.ssh/' % self.ONeHome)
         self.setOwnerCmd('%s/.ssh/' % self.ONeHome)
         
         oneKey = fileGetContent('%s/.ssh/id_rsa' % self.ONeHome)
-        self.filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
+        self._filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
         
         oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
-        self.filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
+        self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
               oneKeyPub)
         
-        self.setOneAdminSshConfig()
+        self._configureCloudAdminSsh()
 
-    def configureONeAdminAuth(self):
+    def configureCloudAdminAccount(self):
         self.createDirsCmd('%s/.one' % self.ONeHome)
         self.setOwnerCmd('%s/.one' % self.ONeHome)
 
@@ -160,23 +164,23 @@ class BaseSystem(object):
     #     File sharing configuration
     # -------------------------------------------
 
-    def configureNFSServer(self, mountPoint, networkAddr, networkMask):
+    def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
         self.appendOrReplaceInFileCmd('/etc/exports', 
             mountPoint, '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' % 
             (mountPoint, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
 
-    def configureNfsShare(self, shareLocation, mountPoint):
+    def configureExistingNfsShare(self, shareLocation, mountPoint):
         self.createDirsCmd(mountPoint)
         self.appendOrReplaceInFileCmd('/etc/fstab', shareLocation,
             '%s %s nfs soft,intr,rsize=32768,wsize=32768,rw 0 0' % (
              shareLocation, mountPoint))
         self.executeCmd(['mount', '-a'])
         
-    def configureSSHServer(self):
+    def configureSshServer(self):
         pass
 
-    def configureSSHClient(self):
+    def configureSshClient(self):
         pass
 
     # -------------------------------------------
@@ -185,14 +189,14 @@ class BaseSystem(object):
 
     def configureHypervisor(self):
         if self.hypervisor == 'xen':
-            self.configureXEN()
+            self._configureXen()
         elif self.hypervisor == 'kvm':
-            self.configureKVM()
+            self._configureKvm()
 
-    def configureKVM(self):
+    def _configureKvm(self):
         pass
 
-    def configureXEN(self):
+    def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
             '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm *' % self.ONeAdmin)
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
@@ -204,21 +208,28 @@ class BaseSystem(object):
     #     Front-end related methods
     # -------------------------------------------
 
-    def execute(self, command, **kwargs):
-        self.displayMessage(' '.join(command))
-        process = subprocess.Popen(command, **kwargs)
+    def _execute(self, command, **kwargs):
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+        
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+        
+        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, **kwargs)
         process.wait()
         return process.returncode
 
-    def ONeAdminExecute(self, command, **kwargs):
+    def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.ONeAdmin, '-c']
         su.extend(command)
-        return self.execute(su, **kwargs)
+        return self._execute(su, **kwargs)
     
-    def setONeAdminOwner(self, path):
+    def _setCloudAdminOwner(self, path):
         os.chown(path, int(self.ONeAdminUID), int(self.ONeAdminGID)) 
         
-    def createDirs(self, path):
+    def _createDirs(self, path):
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
     
@@ -229,15 +240,15 @@ class BaseSystem(object):
     def configureNetwork(self, networkInterface, bridge):
         pass
     
-    def nodeShell(self, command, **kwargs):
+    def _nodeShell(self, command, **kwargs):
         if type(command) == type(list()):
             command = ' '.join(command)
             
-        return self.remoteCmd(self.nodeAddr, command,
+        return self._remoteCmd(self.nodeAddr, command,
             port=self.nodePort,
             privateKey=self.nodePrivateKey, **kwargs)
 
-    def remoteCmd(self, hostAddr, command, user='root', port=22,
+    def _remoteCmd(self, hostAddr, command, user='root', port=22,
             privateKey=None, **kwargs):
         sshCmd = ['ssh', '-p', str(port), '-l', user, '-F', self.tempSshConf]
         if privateKey and os.path.isfile(privateKey):
@@ -246,34 +257,34 @@ class BaseSystem(object):
             print 'key %s does not exists, skip it' % privateKey
         sshCmd.append(hostAddr)
         sshCmd.append(command)
-        return self.execute(sshCmd, **kwargs)
+        return self._execute(sshCmd, **kwargs)
 
-    def remoteSetONeAdminOwner(self, path):
-        self.nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
+    def _remoteSetCloudAdminOwner(self, path):
+        self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
                                             self.ONeAdminGID, path)])
             
-    def remoteCreateDirs(self, path):
-        self.nodeShell('mkdir -p %s' % path)
+    def _remoteCreateDirs(self, path):
+        self._nodeShell('mkdir -p %s' % path)
         
-    def remoteAppendOrReplaceInFile(self, filename, search, replace):
-        res = self.nodeShell(['grep', search, filename])
+    def _remoteAppendOrReplaceInFile(self, filename, search, replace):
+        res = self._nodeShell(['grep', search, filename])
 
-        if self.patternExists(res):
-            self.nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
+        if self._patternExists(res):
+            self._nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
                 search, replace, filename)], shell=True)
         else:
-            self.remoteFilePutContents(filename, replace)
+            self._remoteFilePutContents(filename, replace)
 
-    def patternExists(self, returnCode):
+    def _patternExists(self, returnCode):
         return returnCode == 0
     
-    def remoteCopyFile(self, src, dest):
-        self.nodeShell(['cp -rf %s %s' % (src, dest)])
+    def _remoteCopyFile(self, src, dest):
+        self._nodeShell(['cp -rf %s %s' % (src, dest)])
         
-    def remoteFilePutContents(self, filename, data):
-        self.nodeShell('echo "%s" >> %s' % (data, filename))
+    def _remoteFilePutContents(self, filename, data):
+        self._nodeShell('echo "%s" >> %s' % (data, filename))
         
-    def filePutContentAsOneAdmin(self, filename, content):
+    def _filePutContentAsOneAdmin(self, filename, content):
         self.filePutContentsCmd(filename, content)
         self.setOwnerCmd(filename)
         
@@ -293,32 +304,28 @@ class BaseSystem(object):
     def setNodeHypervisor(self, hypervisor):
         self.hypervisor = hypervisor
 
-    def setONeAdmin(self, username):
+    def setCloudAdminName(self, username):
         self.ONeAdmin = username
-
-    def displayMessage(self, *msg):
-        print '\n\n\n%s\nExecuting: %s\n%s\n' % (
-            '-' * 60, ' '.join(msg), '-' * 60) 
 
     def workOnFrontend(self):
         self.appendOrReplaceInFileCmd = appendOrReplaceInFile
-        self.setOwnerCmd = self.setONeAdminOwner
-        self.executeCmd = self.execute
+        self.setOwnerCmd = self._setCloudAdminOwner
+        self.executeCmd = self._execute
         self.copyCmd = shutil.copy
-        self.createDirsCmd = self.createDirs
+        self.createDirsCmd = self._createDirs
         self.filePutContentsCmd = filePutContent
         
     def workOnNode(self):
-        self.appendOrReplaceInFileCmd = self.remoteAppendOrReplaceInFile
-        self.setOwnerCmd = self.remoteSetONeAdminOwner
-        self.executeCmd = self.nodeShell
-        self.copyCmd = self.remoteCopyFile
-        self.createDirsCmd = self.remoteCreateDirs
-        self.filePutContentsCmd = self.remoteFilePutContents
+        self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
+        self.setOwnerCmd = self._remoteSetCloudAdminOwner
+        self.executeCmd = self._nodeShell
+        self.copyCmd = self._remoteCopyFile
+        self.createDirsCmd = self._remoteCreateDirs
+        self.filePutContentsCmd = self._remoteFilePutContents
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
-        self.generateSshConfig(self.tempSshConf)
+        self._generateTempSshConfig(self.tempSshConf)
         
-    def generateSshConfig(self, path):
+    def _generateTempSshConfig(self, path):
         if not os.path.isfile(path):
             filePutContent(path, 'Host *\n\tStrictHostKeyChecking no')
         

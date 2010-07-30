@@ -29,7 +29,7 @@ class Ubuntu(BaseSystem):
     # -------------------------------------------
 
     def updatePackageManager(self):
-        self.execute(['apt-get', 'update'])
+        self._execute(['apt-get', 'update'])
 
     def installPackages(self, packages):
         if len(packages) < 1:
@@ -37,18 +37,18 @@ class Ubuntu(BaseSystem):
 
         cmd = self.installCmd.split(' ')
         cmd.extend(packages)
-        self.execute(cmd)
+        self._execute(cmd)
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
-            self.nodeShell('%s %s' % 
+            self._nodeShell('%s %s' % 
                 (self.installCmd, ' '.join(packages)))
             
     # -------------------------------------------
     #     Hypervisor related methods
     # -------------------------------------------
             
-    def configureKVM(self):
+    def _configureKvm(self):
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
         
     # -------------------------------------------

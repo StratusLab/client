@@ -98,6 +98,10 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
         
     return retCode == 0
 
+def setPythonPath(path):
+    if not path in sys.path:
+        sys.path.append(path)
+
 def printAction(msg):
     sys.stdout.flush()
     print ('\n> %s' % msg),

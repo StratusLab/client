@@ -63,11 +63,11 @@ class CentOS(BaseSystem):
 
         cmd = self.installCmd.split(' ')
         cmd.extend(packages)
-        self.execute(cmd)
+        self._execute(cmd)
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
-            self.nodeShell('%s %s' % 
+            self._nodeShell('%s %s' % 
                 (self.installCmd, ' '.join(packages)))
 
     def installFrontendDependencies(self):
@@ -120,23 +120,23 @@ class CentOS(BaseSystem):
             tar.extract(elem)
 
         os.chdir(srcFile[0].name)
-        self.execute(['./configure'])
-        self.execute(['make', '-j2', 'install'])
+        self._execute(['./configure'])
+        self._execute(['make', '-j2', 'install'])
         os.chdir('../')
         
     # -------------------------------------------
     #     File sharing related methods
     # -------------------------------------------
         
-    def configureNFSServer(self, mountPoint, networkAddr, networkMask):
-        super(CentOS, self).configureNFSServer(mountPoint, networkAddr, networkMask)
-        self.execute(['service', 'nfs', 'start'])
+    def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
+        super(CentOS, self).configureNewNfsServer(mountPoint, networkAddr, networkMask)
+        self._execute(['service', 'nfs', 'start'])
         
     # -------------------------------------------
     #     Hypervisor related methods
     # -------------------------------------------
 
-    def configureKVM(self):
+    def _configureKvm(self):
         self.executeCmd(['service', 'libvirtd', 'start'])
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
         self.executeCmd(['chown', 'root:kvm', 
