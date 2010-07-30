@@ -4,6 +4,9 @@
 ;
 hypervisor = kvm
 share_type = nfs
+debug_level = 3
+mac_prefix = 02:00
+virt_manager = kvm
 
 ;
 ; NFS share
@@ -38,9 +41,6 @@ one_home = /srv/cloud/one
 ; OpenNebula specific
 ;
 ;; TODO: Add prefix to key value
-mac_prefix = 02:00
-virt_manager = kvm
-debug_level = 3
 network_size = 254
 host_monitoring_interval = 60
 vm_polling_interval = 60

@@ -1,4 +1,5 @@
 import sys
+from stratuslab.Util import printError
 
 class CommandBase(object):
     
@@ -7,6 +8,11 @@ class CommandBase(object):
         self._callAndHandleErrorsForCommands(self.doWork.__name__)
 
     def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
+        if hasattr(self, 'config'):
+            self.debugLevel = self.config.get('debug_level', 3)
+        else:
+            self.debugLevel = 3
+        
         res = 0
         try:
             res = self.__class__.__dict__[methodName](self, *args, **kw)
@@ -14,11 +20,11 @@ class CommandBase(object):
             sys.stderr.writelines('\nError: %s\n' % str(ex))
             sys.exit(3)
         except KeyboardInterrupt, ex:
-            raise
+            self.raiseOrDisplayError(ex)
         except SystemExit, ex:
-            raise
+            self.raiseOrDisplayError(ex)
         except Exception, ex:
-            raise
+            self.raiseOrDisplayError(ex)
         return res
     
     def parse(self):
@@ -32,4 +38,10 @@ class CommandBase(object):
 
     def usageExitWrongNumberOfArguments(self):
         return self.parser.error('Wrong number of arguments')
-
+    
+    def raiseOrDisplayError(self, errorMsg):
+        if self.debugLevel > 2:
+            raise
+        else:
+            printError(errorMsg)
+            

@@ -13,6 +13,8 @@ class BaseSystem(object):
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
         self.workOnFrontend()
+        # TODO: Initialize attributes
+        # TODO: Rename private methods to start with _
     
     # -------------------------------------------
     #     Packages manager and related

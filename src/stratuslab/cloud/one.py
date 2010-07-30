@@ -112,7 +112,15 @@ class OneConnector(object):
             
     def waitUntilVmRunningOrTimeout(self, vmId, timeout, ticks=True):
         start = time.time()
-        while self.getVmState(vmId) < self.status.get('running'):
+        # FIXME: Hack to wait for VM completely started
+        vmBooting = True
+        vmRunning = False
+        initPhase = 15
+        while not vmRunning:
+            vmBooting = self.getVmState(vmId) < self.status.get('running')
+            if not vmBooting:
+                initPhase -= 1
+            vmRunning = initPhase == 0 and not vmBooting
             if ticks:
                 sys.stdout.flush()
                 sys.stdout.write('.')
@@ -120,11 +128,8 @@ class OneConnector(object):
             
             if time.time() - start > timeout:
                 return False
-            
-        # Wait VM to be completely started
-        time.sleep(3)
 
-        return self.getVmState(vmId) == 3
+        return self.getVmState(vmId) == self.status.get('running')
     
     # -------------------------------------------
     #    Virtual network management
