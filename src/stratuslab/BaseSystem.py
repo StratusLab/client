@@ -151,7 +151,7 @@ class BaseSystem(object):
         oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
                                        oneKeyPub)
-        
+        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, 0600)
         self._configureCloudAdminSsh()
 
     def configureCloudAdminAccount(self):
@@ -289,6 +289,9 @@ class BaseSystem(object):
     def _filePutContentAsOneAdmin(self, filename, content):
         self.filePutContentsCmd(filename, content)
         self.setOwnerCmd(filename)
+
+    def _remoteChmod(self, path, mode):
+        return self._nodeShell('chmod %s %s' % (path, mode))
         
     # -------------------------------------------
     #     General
@@ -316,6 +319,7 @@ class BaseSystem(object):
         self.copyCmd = shutil.copy
         self.createDirsCmd = self._createDirs
         self.filePutContentsCmd = filePutContent
+        self.chmodCmd = os.chmod
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
@@ -324,6 +328,8 @@ class BaseSystem(object):
         self.copyCmd = self._remoteCopyFile
         self.createDirsCmd = self._remoteCreateDirs
         self.filePutContentsCmd = self._remoteFilePutContents
+        self.chmodCmd = self._remoteChmod
+        
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
         self._generateTempSshConfig(self.tempSshConf)
         
