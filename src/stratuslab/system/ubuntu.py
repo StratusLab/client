@@ -7,7 +7,7 @@ class Ubuntu(BaseSystem):
         self.installCmd = 'apt-get -q -y install' 
         self.frontendDeps = [
             'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
-            'scons', 'g++', 'git-core', 'ssh', 'libvirt-bin'
+            'scons', 'g++', 'git-core', 'ssh', 'libvirt-bin', 'genisoimage'
         ]
         self.nodeDeps = ['ruby']
         self.hypervisorDeps = {
