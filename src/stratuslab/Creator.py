@@ -1,11 +1,11 @@
-import shutil
 import os
-
-from stratuslab.Util import fileGetContent, waitUntilPingOrTimeout
+import shutil
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.Util import fileGetContent
+from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import printAction
-from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.Util import waitUntilPingOrTimeout
 
 class Creator(object):
     
@@ -33,7 +33,7 @@ class Creator(object):
         
     def createMachineTemplate(self, template):
         self.vmTemplate = fileGetContent(template) % ({'vm_image': self.imagePath,
-                                                       'vm_name': self.imageName})
+                                                      'vm_name': self.imageName})
 
     def addPublicInterface(self):
         # We assume the is a public network

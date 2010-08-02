@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import os
 import sys
-from optparse import OptionParser, OptionGroup
+
+import os
+from optparse import OptionParser
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
@@ -20,29 +21,29 @@ class MainProgram(CommandBase):
 
     def parse(self):
         self.modulePath = os.path.abspath('%s/../' % os.path.abspath(
-            os.path.dirname(stratuslab.__file__)))
+                                          os.path.dirname(stratuslab.__file__)))
         
         usage = 'usage: %prog [options] stock-image'
         
         parser = OptionParser(usage=usage)
         parser.add_option('-c', '--config', dest='configFile',
-            help='configuration file', metavar='FILE',
-            default='%s/conf/stratuslab.cfg' % self.modulePath)
+                          help='configuration file', metavar='FILE',
+                          default='%s/conf/stratuslab.cfg' % self.modulePath)
         parser.add_option('-t', '--template', dest='oneTpl',
-            help='One VM template', metavar='PATH',
-            default=None)
+                          help='One VM template', metavar='PATH',
+                          default=None)
         parser.add_option('-d', '--destination', dest='destination',
-            help='The directory in which to create the image. Defaults set in the config', 
-            metavar='PATH', default=None)
+                          help='The directory in which to create the image. Defaults set in the config',
+                          metavar='PATH', default=None)
         parser.add_option('-s', '--scripts', dest='scripts',
-            help='Scripts to execute on the VM (separate by space)',
-            default='', metavar='FILE')
+                          help='Scripts to execute on the VM (separate by space)',
+                          default='', metavar='FILE')
         parser.add_option('-p', '--packages', dest='packages',
-            help='Packages to install on the machine (name separate by space)',
-            default='', metavar='NAME')
+                          help='Packages to install on the machine (name separate by space)',
+                          default='', metavar='NAME')
         parser.add_option('-n', '--no-shutdown', dest='shutdownVm',
-            help='Leave the VM running. A public IP will be created.',
-            action='store_false', default=True)
+                          help='Leave the VM running. A public IP will be created.',
+                          action='store_false', default=True)
         self.options, self.args = parser.parse_args()
 
     def parseOptions(self):

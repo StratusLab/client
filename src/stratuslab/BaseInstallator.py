@@ -1,7 +1,9 @@
-import stratuslab
 import os
-from stratuslab.Util import setPythonPath, printError, printAction,\
-    printStep
+import stratuslab
+from stratuslab.Util import printAction
+from stratuslab.Util import printError
+from stratuslab.Util import printStep
+from stratuslab.Util import setPythonPath
 
 class BaseInstallator(object):
     def __init__(self):
@@ -37,7 +39,7 @@ class BaseInstallator(object):
             
         printAction('Installation completed')
         print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.frontend.stdout.name, 
-                                                                        self.frontend.stderr.name) 
+                                                                        self.frontend.stderr.name)
           
     def runInstallNodes(self):
         self.propagateNodeInfos()
@@ -45,7 +47,7 @@ class BaseInstallator(object):
         printStep('Checking node connectivity')
         if not self.nodeAlive():
             raise ValueError('Unable to connect the node %s' %
-                self.options.nodeAddr)
+                             self.options.nodeAddr)
 
         printStep('Creating cloud admin account')
         self.createCloudAdmin(self.node)
@@ -90,7 +92,7 @@ class BaseInstallator(object):
     def getSystemMethods(self, system):
         if not os.path.isfile('%s/%s.py' % (self.systemsDir, system)):
             raise ValueError('Specified system %s not available' %
-                system)
+                             system)
 
         setPythonPath(self.systemsDir)
 
@@ -148,5 +150,4 @@ class BaseInstallator(object):
     
     def addDefaultNetworks(self):
         pass
-    
     

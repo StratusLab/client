@@ -1,11 +1,9 @@
 import os
 import shutil
-
 from ConfigParser import SafeConfigParser
-
 from Util import defaultConfigSection
-from Util import validateConfig
 from Util import parseConfig
+from Util import validateConfig
 
 class Configurator(object):
 
@@ -36,16 +34,16 @@ class Configurator(object):
         userConfig = parseConfig(self.userConfigFile)
 
         print ' %s|  %s|  %s' % (
-            'Config key'.ljust(columnSize), 
-            'Current value'.ljust(columnSize),
-            'Default value')
-        print '-' * (columnSize*3+1)
+                                 'Config key'.ljust(columnSize),
+                                 'Current value'.ljust(columnSize),
+                                 'Default value')
+        print '-' * (columnSize * 3 + 1)
 
         for key in defaultConfig.keys():
             print ' %s|  %s|  %s' % (
-                key.ljust(columnSize), 
-                userConfig.get(key).ljust(columnSize),
-                defaultConfig.get(key))
+                                     key.ljust(columnSize),
+                                     userConfig.get(key).ljust(columnSize),
+                                     defaultConfig.get(key))
 
     def setOption(self, key, value):
         if not self.userConfig.has_option(defaultConfigSection, key):

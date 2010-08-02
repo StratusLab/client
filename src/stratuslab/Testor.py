@@ -1,8 +1,8 @@
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
+from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import  printError
 
 class Testor(object):
     

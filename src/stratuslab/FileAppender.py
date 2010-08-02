@@ -26,12 +26,12 @@ class FileAppender(object):
                 self._appendNewLine(line)
                 continue
             if self._containsExit(line):
-                self._insertLines(line,newLine)
+                self._insertLines(line, newLine)
                 continue
             if self.foundExit:
                 self._appendNewLine(line)
                 continue
-            self._insertLines(newLine,line)
+            self._insertLines(newLine, line)
         
         self.newLines.reverse()
         
@@ -59,7 +59,7 @@ class FileAppender(object):
         self._appendNewLine(second)
     
     def _writeAndClose(self):
-        newfile = open(self.filename,'w')
+        newfile = open(self.filename, 'w')
         newfile.writelines(self.newLines)
         newfile.close()
         os.chmod(self.filename, 0755)

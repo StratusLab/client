@@ -1,7 +1,9 @@
-import xmlrpclib
-import time
 import sys
+import time
+
+import xmlrpclib
 from stratuslab.Util import shaHexDigest
+#import xml
 
 try:
     from lxml import etree
@@ -29,22 +31,22 @@ class OneConnector(object):
     
     def __init__(self):
         # TODO: Verify status with ONE's guys
-        self.status = { 'prolog': 1,
-                        'boot':  2,
-                        'running': 3,
-                        'migrate': 4,
-                        'save_stop': 5,
-                        'save_suspend': 6,
-                        'save_migrate': 7,
-                        'prolog_migrate': 8,
-                        'prolog_resume': 9,
-                        'epilog_stop': 10,
-                        'epilog': 11,
-                        'shutdown': 12,
-                        'cancel': 13,
-                        'failure': 14,
-                        'delete': 15,
-                        'unknown': 16 }
+        self.status = {'prolog': 1,
+            'boot':  2,
+            'running': 3,
+            'migrate': 4,
+            'save_stop': 5,
+            'save_suspend': 6,
+            'save_migrate': 7,
+            'prolog_migrate': 8,
+            'prolog_resume': 9,
+            'epilog_stop': 10,
+            'epilog': 11,
+            'shutdown': 12,
+            'cancel': 13,
+            'failure': 14,
+            'delete': 15,
+            'unknown': 16}
         
         self._sessionString = None
         self._rpc = None

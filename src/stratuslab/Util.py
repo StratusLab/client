@@ -1,8 +1,9 @@
-import os
 import sys
-import urllib2
-import subprocess
 import time
+
+import os
+import subprocess
+import urllib2
 from ConfigParser import SafeConfigParser
 
 defaultConfigSection = 'stratuslab'
@@ -15,7 +16,7 @@ def validateConfig(config):
 def parseConfig(configFile):
     if not os.path.isfile(configFile):
         raise ValueError('Configuration file %s does not exists' %
-            configFile)
+                         configFile)
 
     config = SafeConfigParser()
     config.read(configFile)    
@@ -27,9 +28,9 @@ def wget(url, savePath):
     filePutContent(savePath, fd.read())
     fd.close()
     
-def ping(host, timeout=5, number=1, **kwargs):
+def ping(host, timeout=5, number=1, ** kwargs):
     '''Ping <host> and return True if successful'''
-    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], **kwargs)
+    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
     p.wait()
     return p.returncode == 0
 

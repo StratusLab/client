@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import sys
+
+import os
 import subprocess
 from optparse import OptionParser
 
@@ -10,37 +11,37 @@ class StratusSimpleRun(object):
 
     def __init__(self):
         self.rootPath = os.path.abspath('%s/../' %
-            os.path.abspath(os.path.dirname(__file__)))
+                                        os.path.abspath(os.path.dirname(__file__)))
         usage = 'usage: %prog [options]'
         self.parser = OptionParser(usage=usage)
 
         self.parser.add_option('-n', '--nodes', dest='nodes',
-            help='node list, separate by space', default='localhost')
+                               help='node list, separate by space', default='localhost')
         self.parser.add_option('-p', '--port', dest='sshPort',
-            help='ssh port of the frontend', default=22)
+                               help='ssh port of the frontend', default=22)
         self.parser.add_option('-k', '--key', dest='sshKey',
-            help='ssh key to connect to the frontend',
-            metavar='KEY_PATH',
-            default=os.path.expandvars("$HOME/.ssh/root_hudson_id_rsa.key"))
+                               help='ssh key to connect to the frontend',
+                               metavar='KEY_PATH',
+                               default=os.path.expandvars("$HOME/.ssh/root_hudson_id_rsa.key"))
         self.parser.add_option('--ssh-options', dest='sshOptions',
-            default='-p %(sshPort)s -i %(sshKey)s -l root', metavar='OPTIONS')
+                               default='-p %(sshPort)s -i %(sshKey)s -l root', metavar='OPTIONS')
         self.parser.add_option('--scp-options', dest='scpOptions',
-            default='-P %(sshPort)s -i %(sshKey)s -q -r',
-            metavar='OPTIONS')
+                               default='-P %(sshPort)s -i %(sshKey)s -q -r',
+                               metavar='OPTIONS')
         self.parser.add_option('-f', '--frontend', dest='frontend',
-            help='frontend endpoint', metavar='ENDPOINT',
-            default='localhost')
+                               help='frontend endpoint', metavar='ENDPOINT',
+                               default='localhost')
         self.parser.add_option('-u', '--upload-dir', metavar='PATH',
-            dest='uploadDir', help='remote source directory',
-            default='stratuslab')
+                               dest='uploadDir', help='remote source directory',
+                               default='stratuslab')
         self.parser.add_option('-c', '--config', dest='config', 
-            help='additional config "key:value#key:value"',
-            default=None)  
+                               help='additional config "key:value#key:value"',
+                               default=None)
 
         (self.options, self.args) = self.parser.parse_args()
 
-        sshSub = { 'sshPort': self.options.sshPort,
-                   'sshKey': self.options.sshKey, }
+        sshSub = {'sshPort': self.options.sshPort,
+            'sshKey': self.options.sshKey,}
         self.options.sshOptions = self.options.sshOptions % (sshSub)
         self.options.scpOptions = self.options.scpOptions % (sshSub)
 
@@ -82,22 +83,22 @@ class StratusSimpleRun(object):
 
     def multiInstallWorkaround(self):
         self.ssh(['su', '-l', 'oneadmin', '-c', '"one stop"'],
-            exitOnError=False)
+                 exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/lib'], 
-            exitOnError=False)
+                 exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/var'], 
-            exitOnError=False)
+                 exitOnError=False)
         self.ssh(['rm', '-rf', '/srv/cloud/one/.ssh'],
-            exitOnError=False)
+                 exitOnError=False)
 
     def uploadStratuslab(self):
         self.ssh(['rm', '-rf', self.options.uploadDir], 
-            exitOnError=False)
+                 exitOnError=False)
         self.ssh(['mkdir', '-p', self.options.uploadDir])
         self.scp('%s/src/' % self.rootPath, '%s:%s' % (
-            self.options.frontend, self.options.uploadDir))
+                 self.options.frontend, self.options.uploadDir))
         self.scp('%s/scripts/' % self.rootPath, '%s:%s' % (
-            self.options.frontend, self.options.uploadDir))
+                 self.options.frontend, self.options.uploadDir))
 
     def configureStratuslab(self):
         baseConfigCmd = ['python', '%s/scripts/stratus-config' 
@@ -115,16 +116,16 @@ class StratusSimpleRun(object):
 
     def copySshPrivateKey(self):
         self.scp(self.options.sshKey, '%s:.ssh/id_rsa' 
-             % self.options.frontend)
+                 % self.options.frontend)
 
     def installStratuslabFrontend(self):
         self.ssh(['python', '%s/scripts/stratus-install' 
-            % self.options.uploadDir])
+                 % self.options.uploadDir])
 
     def installStratuslabNodes(self):
         for node in self.options.nodes.split(' '):
             self.ssh(['python', '%s/scripts/stratus-install' 
-                % self.options.uploadDir, '-n', node])
+                     % self.options.uploadDir, '-n', node])
 
 
 if __name__ == '__main__':
@@ -132,4 +133,3 @@ if __name__ == '__main__':
         StratusSimpleRun()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
-

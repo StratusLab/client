@@ -1,8 +1,8 @@
 import os
-
-from stratuslab.Util import filePutContent, printError
-from stratuslab.Util import fileGetContent
 from stratuslab.BaseInstallator import BaseInstallator
+from stratuslab.Util import fileGetContent
+from stratuslab.Util import filePutContent
+from stratuslab.Util import printError
 
 class OneInstallator(BaseInstallator):
     
@@ -24,7 +24,7 @@ class OneInstallator(BaseInstallator):
         system.createCloudGroup(self.config.get('one_group'),
                                 self.config.get('one_gid'))
         system.createCloudAdmin(self.config.get('one_username'),
-                                self.config.get('one_uid'), 
+                                self.config.get('one_uid'),
                                 self.config.get('one_home'),
                                 self.config.get('one_password'))
 
@@ -45,9 +45,9 @@ class OneInstallator(BaseInstallator):
     def installCloudSystem(self):
         self.frontend.installFrontendDependencies()
         self.frontend.cloneGitRepository(self.config.get('one_build_dir'),
-                                         self.config.get('one_git_repo'), 
+                                         self.config.get('one_git_repo'),
                                          self.config.get('one_clone_name'),
-                                         self.config.get('one_branch'))  
+                                         self.config.get('one_branch'))
         self.frontend.buildCloudSystem()
         self.frontend.installCloudSystem()
         
@@ -58,7 +58,7 @@ class OneInstallator(BaseInstallator):
     def configureCloudSystem(self):
         if not os.path.isfile(self.onedConfTemplate):
             printError('ONe daemon configuration template '
-                '%s does not exists' % self.onedConfTemplate)
+                       '%s does not exists' % self.onedConfTemplate)
     
         filePutContent('%s/etc/oned.conf' % self.config.get('one_home'),
                        fileGetContent(self.onedConfTemplate) % self.config)
@@ -66,9 +66,9 @@ class OneInstallator(BaseInstallator):
     def addCloudNode(self):
         # TODO: Use XML RPC methods
         self.frontend._cloudAdminExecute(['onehost create %s %s %s %s' % 
-            (self.nodeAddr, self.infoDriver, self.virtDriver,
-            self.transfertDriver)
-        ])
+                                         (self.nodeAddr, self.infoDriver, self.virtDriver,
+                                         self.transfertDriver)
+                                         ])
         
     def addDefaultNetworks(self):
         # TODO: Use XML RPC methods
@@ -88,16 +88,16 @@ class OneInstallator(BaseInstallator):
         leases = ['LEASES = [ IP="%s"]' % i for i in self.config.get('one_%s_network_addr' % networkName).split(' ')]
         
         vnetTpl = vnetTpl % ({'network_name': networkName,
-                              'bridge': self.config.get('node_bridge_name'),
-                              'leases': '\n'.join(leases)})
+                             'bridge': self.config.get('node_bridge_name'),
+                             'leases': '\n'.join(leases)})
         return vnetTpl
     
     def _buildRangedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent('%s/share/vnet/ranged.net' % self.modulePath)
         vnetTpl = vnetTpl % ({'network_name': networkName,
-                              'bridge': self.config.get('node_bridge_name'),
-                              'network_size': self.config.get('one_%s_network_size' % networkName),
-                              'network_addr': self.config.get('one_%s_network' % networkName)})
+                             'bridge': self.config.get('node_bridge_name'),
+                             'network_size': self.config.get('one_%s_network_size' % networkName),
+                             'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
         
     # -------------------------------------------
@@ -119,11 +119,11 @@ class OneInstallator(BaseInstallator):
     def _configureNfsServer(self):
         if self._nfsShareAlreadyExists():
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), 
-                                            self._getNfsDefaultMountPoint())
+                                                    self._getNfsDefaultMountPoint())
         else:
             self.frontend.configureNewNfsServer(self._getNfsDefaultMountPoint(),
-                                             self.config['network_addr'],
-                                             self.config['network_mask'])
+                                                self.config['network_addr'],
+                                                self.config['network_mask'])
 
     def _nfsShareAlreadyExists(self):
         return not (self.config.get('existing_nfs', '') == '')

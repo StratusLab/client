@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import os
 import sys
+
+import os
 from optparse import OptionParser
-from optparse import OptionGroup
+#from optparse import OptionGroup
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
@@ -25,11 +26,11 @@ class MainProgram(CommandBase):
 
         self.parser = OptionParser(usage=usage)
         self.parser.add_option('-c', '--config', dest='configFile', 
-            help='configuration file', metavar='PATH', 
-            default='%s/conf/stratuslab.cfg' % modulePath)
+                               help='configuration file', metavar='PATH',
+                               default='%s/conf/stratuslab.cfg' % modulePath)
         self.parser.add_option('-t', '--template', dest='vmTemplate', 
-            help='VM template used for tests', metavar='PATH', 
-            default='%s/share/vm/ttylinux-test.one' % modulePath)
+                               help='VM template used for tests', metavar='PATH',
+                               default='%s/share/vm/ttylinux-test.one' % modulePath)
         
         #testsGroup = OptionGroup(self.parser, 'Available tests',
         #    'Order of these options doesn\'t matter')

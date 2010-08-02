@@ -1,6 +1,5 @@
 import os
 import tarfile
-
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import wget
 
@@ -23,7 +22,7 @@ class CentOS(BaseSystem):
             ('git', '1.7.1.1', 'http://kernel.org/pub/software/scm/git', 'tar.gz'),
             ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
         ]
-        self.frontendDeps = [ 
+        self.frontendDeps = [
             'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'libvirt'
         ]
         self.nodeDeps = ['ruby']
@@ -68,7 +67,7 @@ class CentOS(BaseSystem):
     def installNodePackages(self, packages):
         if len(packages) > 0:
             self._nodeShell('%s %s' % 
-                (self.installCmd, ' '.join(packages)))
+                            (self.installCmd, ' '.join(packages)))
 
     def installFrontendDependencies(self):
         super(CentOS, self).installFrontendDependencies()
@@ -140,7 +139,7 @@ class CentOS(BaseSystem):
         self.executeCmd(['service', 'libvirtd', 'start'])
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
         self.executeCmd(['chown', 'root:kvm', 
-                         '/var/run/libvirt/libvirt-sock'])
+                        '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
         
@@ -150,13 +149,13 @@ class CentOS(BaseSystem):
         
     def configureNetwork(self, networkInterface, bridge):
         self.filePutContentsCmd(
-            '/etc/sysconfig/network-scripts/ifcfg-%s' % networkInterface, 
-            'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge)
-        )
+                                '/etc/sysconfig/network-scripts/ifcfg-%s' % networkInterface,
+                                'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge)
+                                )
         self.filePutContentsCmd(
-            '/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
-            'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge
-        )
+                                '/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
+                                'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge
+                                )
         self.executeCmd(['service', 'network', 'restart'])
 
 system = CentOS()

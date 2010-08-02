@@ -1,4 +1,5 @@
 import sys
+
 from stratuslab.Util import printError
 
 class CommandBase(object):
