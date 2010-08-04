@@ -62,7 +62,9 @@ class QEmuConnector(object):
 
         return True
 
+    def createMachineTemplate(self, imagePath, template):
+        return imagePath
 
-
-
-
+    def addPublicInterface(self, vmTpl):
+        return vmTpl
+    

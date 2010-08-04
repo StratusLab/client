@@ -1,3 +1,4 @@
+from stratuslab.FileAppender import FileAppender
 import os
 import shutil
 import subprocess
@@ -5,6 +6,7 @@ from datetime import datetime
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import getSystemMethods
+from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
@@ -25,8 +27,8 @@ class Creator(object):
         self.manifest = '%s.manifest.xml' % self.imageName
         
         cloudFactory = CloudConnectorFactory()
-#        self.cloud = cloudFactory.getCloud()
-        self.cloud = cloudFactory.getDummyCloud()
+        self.cloud = cloudFactory.getCloud('dummy')
+
         self.cloud.setFrontend(self.config.get('frontend_ip'),
                                self.config.get('one_port'))
 #        self.cloud.setCredentials(self.config.get('one_username'),
@@ -46,16 +48,6 @@ class Creator(object):
         self.publicAddress = None
         self.vmSshPort = None
         self.system = None
-        
-    def _createMachineTemplate(self, template):
-        pass
-        #self.vmTemplate = fileGetContent(template) % ({'vm_image': self.imagePath,
-        #                                              'vm_name': self.imageName})
-
-    def _addPublicInterface(self):
-        pass
-        # We assume the is a public network
-        #self.vmTemplate += '\nNIC = [ NETWORK = "public" ]\n'
         
     def _duplicateStockImage(self):
         # TODO: Handle remote (http) images
@@ -111,21 +103,35 @@ class Creator(object):
             if ret != 0:
                 printError('An error occured while executing script %s' % script)
 
+    def _setupContextualisation(self):
+        oneContext = '/usr/local/bin/onecontext'
+        scp('%s/share/one/onecontext' % modulePath, 'root@%s:%s' % (self.vmAddress, oneContext),
+            self.sshKey, self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
+
+        tmpRcLocal = '/tmp/stratus-rclocal.tmp'
+        scp('root@%s:/etc/rc.local' % self.vmAddress, tmpRcLocal, self.sshKey,
+            self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
+
+        fileAppender = FileAppender(tmpRcLocal)
+        fileAppender.insertAtTheEnd('bash %s' % oneContext)
+
+        scp(tmpRcLocal, 'root@%s:/etc/rc.local' % self.vmAddress, self.sshKey,
+            self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
+
     def create(self):
         printAction('Starting image creation')
         
         printStep('Copying stock image')
-        self._duplicateStockImage()
+        #self._duplicateStockImage()
 
         printStep('Creating machine template')
-        self._createMachineTemplate(self.options.oneTpl)
+        self.vmTemplate = self.cloud.createMachineTemplate(self.imagePath, self.options.oneTpl)
         
         if not self.options.shutdownVm:
-            self._addPublicInterface()
+            self.vmTemplate = self.cloud.addPublicInterface(self.vmTemplate)
 
         printStep('Booting new machine')
-#        self.vmId = self.cloud.vmStart(self.vmTemplate)
-        self.vmId = self.cloud.vmStart(self.imagePath)
+        self.vmId = self.cloud.vmStart(self.vmTemplate)
         
         if not self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 60):
             printError('Unable to boot VM')
@@ -143,6 +149,7 @@ class Creator(object):
         self._populateManifest()
 
         printStep('Installing ONE contextualisation mechanism')
+        self._setupContextualisation()
 
         printStep('Installing user packages')
         self._installPackages()
@@ -153,7 +160,7 @@ class Creator(object):
         if self.options.shutdownVm:
             printStep('Shutting down machine')
             self.cloud.vmStop(self.vmId)
-        else:
+        else:bash /usr/local/bin/onecontext
             printStep('Machine ready for your usage')
             print '\n\tMachine IP: %s' % self.publicAddress
             print '\tRemember to stop the machine when finished',

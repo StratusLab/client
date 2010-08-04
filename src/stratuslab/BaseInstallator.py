@@ -91,7 +91,7 @@ class BaseInstallator(object):
         self.frontend.setCloudAdminName(self.config.get('one_username'))
         
     def nodeAlive(self):
-        return self.node._nodeShell('exit 0') == 0
+        return self.node._nodeShell('exit 42') == 42
     
     def startCloudSystem(self):
         self.frontend.startCloudSystem()

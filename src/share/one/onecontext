@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+mount -t iso9660 /dev/sdc /mnt
+
+if [ -f /mnt/context.sh ]
+then
+  . /mnt/init.sh
+fi
+
+umount /mnt
+
+exit 0

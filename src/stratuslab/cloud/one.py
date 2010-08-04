@@ -134,6 +134,11 @@ class OneConnector(object):
                 return False
 
         return self.getVmState(vmId) == self.status.get('running')
+
+
+    def createMachineTemplate(self, imagePath, template):
+        return fileGetContent(template) % ({'vm_image': imagePath,
+                                            'vm_name': os.path.basename(imagePath)})
     
     # -------------------------------------------
     #    Virtual network management
@@ -168,4 +173,9 @@ class OneConnector(object):
             raise Exception(info)
         else:
             return info
+
+    def addPublicInterface(self, vmTpl):
+        # We assume the is a public network
+        vmTpl += '\nNIC = [ NETWORK = "public" ]\n'
+        return vmTpl
         
