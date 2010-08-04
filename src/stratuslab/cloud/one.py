@@ -110,7 +110,9 @@ class OneConnector(object):
             vmAddress[nic.find('NETWORK').text] = nic.find('IP').text
         
         return vmAddress
-    
+
+    def getVmSshPort(self, *args, **kwargs):
+        return 22
             
     def waitUntilVmRunningOrTimeout(self, vmId, timeout, ticks=True):
         start = time.time()

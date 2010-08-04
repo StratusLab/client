@@ -1,3 +1,4 @@
+import os.path
 import sys
 import time
 
@@ -7,6 +8,9 @@ import urllib2
 from ConfigParser import SafeConfigParser
 
 defaultConfigSection = 'stratuslab'
+
+modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
+systemsDir = '%s/stratuslab/system' % modulePath
 
 
 def validateConfig(config):
@@ -86,18 +90,18 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
         stderr = open('/dev/null', 'w')
     
     start = time.time()
-    retCode = False
-    while not retCode:
+    hostUp = False
+    while not hostUp:
         if ticks:
             sys.stdout.flush()
             sys.stdout.write('.')
-        retCode = ping(host, stdout=stdout, stderr=stderr)
+        hostUp = ping(host, stdout=stdout, stderr=stderr)
         time.sleep(1)
         
         if time.time() - start > timeout:
             return False
         
-    return retCode == 0
+    return hostUp
 
 def setPythonPath(path):
     if not path in sys.path:
@@ -114,7 +118,64 @@ def printStep(msg):
 def printError(msg, exitCode=1, exit=True):
     sys.stdout.flush()
     print ('\n  ** %s' % msg),
+    sys.stdout.flush()
     
     if exit:
         sys.exit(exitCode)
+
+def execute(*cmd, **kwargs):
+    wait = not kwargs.get('noWait', False)
+
+    if kwargs.has_key('noWait'):
+        del kwargs['noWait']
+
+    process = subprocess.Popen(cmd, **kwargs)
+
+    if wait:
+        process.wait()
+        return process.returncode
+
+    return process
+
+def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
+    sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout]
+
+    if not sshKey and os.path.isfile(sshKey):
+        sshCmd.append('-i')
+        sshCmd.append(sshKey)
+
+    sshCmd.append('%s@%s' % (user, host))
+    sshCmd.append(cmd)
+
+    return execute(*sshCmd, **kwargs)
+
+def scp(src, dest, sshKey=None, port=22, **kwargs):
+    scpCmd = ['scp', '-P', str(port)]
+
+    if not sshKey and os.path.isfile(sshKey):
+        scpCmd.append('-i')
+        scpCmd.append(sshKey)
+
+    scpCmd.append(src)
+    scpCmd.append(dest)
     
+    return execute(*scpCmd, **kwargs)
+
+def getSystemMethods(system):
+    if not os.path.isfile('%s/%s.py' % (systemsDir, system)):
+        raise ValueError('Specified system %s not available' %
+                         system)
+
+    setPythonPath(systemsDir)
+
+    module = importSystem(system)
+    return getattr(module, 'system')
+
+def importSystem(system):
+    module = None
+    try:
+        module = __import__(system)
+    except:
+        printError('Error while importing system module')
+    else:
+        return module

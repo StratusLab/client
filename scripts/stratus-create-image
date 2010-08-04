@@ -14,7 +14,14 @@ from stratuslab.Creator import Creator
 from stratuslab.Util import parseConfig, printError
 
 class MainProgram(CommandBase):
-    '''A command-line program to create StratusLab image.'''
+    '''A command-line program to create StratusLab image.
+
+        Points which are missing for the moment:
+            - How to start the VM on the cloud
+               => start for now with qemu
+            - How to access to the VM without contextualisation
+               => do for now a port redir
+    '''
 
     def __init__(self):
         super(MainProgram, self).__init__()

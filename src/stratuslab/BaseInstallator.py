@@ -1,15 +1,9 @@
-import os
-import stratuslab
+from stratuslab.Util import getSystemMethods
 from stratuslab.Util import printAction
-from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import setPythonPath
 
 class BaseInstallator(object):
     def __init__(self):
-        self.modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(stratuslab.__file__)))
-        self.systemsDir = '%s/stratuslab/system' % self.modulePath
-        
         # Default network added automatically at installation
         # Make sure one_%(name)s_* exist in the config 
         self.defaultNetworks = ['private', 'public']    
@@ -27,8 +21,8 @@ class BaseInstallator(object):
         self.shareType = self.config.get('share_type')
         
         # TODO: Automatically determine system
-        self.frontend = self.getSystemMethods(self.config.get('frontend_system'))
-        self.node = self.getSystemMethods(self.config.get('node_system'))
+        self.frontend = getSystemMethods(self.config.get('frontend_system'))
+        self.node = getSystemMethods(self.config.get('node_system'))
 
         if self.nodeAddr:
             printAction('Starting node installation')
@@ -88,25 +82,6 @@ class BaseInstallator(object):
         
         printStep('Adding default networks')
         self.addDefaultNetworks()
-
-    def getSystemMethods(self, system):
-        if not os.path.isfile('%s/%s.py' % (self.systemsDir, system)):
-            raise ValueError('Specified system %s not available' %
-                             system)
-
-        setPythonPath(self.systemsDir)
-
-        module = self.importSystem(system)
-        return getattr(module, 'system')
-
-    def importSystem(self, system):
-        module = None
-        try:
-            module = __import__(system)
-        except:
-            printError('Error while importing system module')
-        else:
-            return module
 
     def propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)
