@@ -1,7 +1,9 @@
 import os
+
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
+from stratuslab.Util import modulePath
 from stratuslab.Util import printError
 
 class OneInstallator(BaseInstallator):
@@ -83,7 +85,7 @@ class OneInstallator(BaseInstallator):
             os.remove(vnetTpl)
         
     def _buildFixedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % self.modulePath)
+        vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % modulePath)
         
         leases = ['LEASES = [ IP="%s"]' % i for i in self.config.get('one_%s_network_addr' % networkName).split(' ')]
         
@@ -93,7 +95,7 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
     
     def _buildRangedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent('%s/share/vnet/ranged.net' % self.modulePath)
+        vnetTpl = fileGetContent('%s/share/vnet/ranged.net' % modulePath)
         vnetTpl = vnetTpl % ({'network_name': networkName,
                              'bridge': self.config.get('node_bridge_name'),
                              'network_size': self.config.get('one_%s_network_size' % networkName),

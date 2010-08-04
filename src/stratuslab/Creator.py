@@ -115,7 +115,7 @@ class Creator(object):
         printAction('Starting image creation')
         
         printStep('Copying stock image')
-        #self._duplicateStockImage()
+        self._duplicateStockImage()
 
         printStep('Creating machine template')
         self._createMachineTemplate(self.options.oneTpl)
