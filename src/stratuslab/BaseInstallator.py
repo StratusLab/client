@@ -40,8 +40,7 @@ class BaseInstallator(object):
 
         printStep('Checking node connectivity')
         if not self.nodeAlive():
-            raise ValueError('Unable to connect the node %s' %
-                             self.options.nodeAddr)
+            raise ValueError('Unable to connect the node %s' % self.nodeAddr)
 
         printStep('Creating cloud admin account')
         self.createCloudAdmin(self.node)
