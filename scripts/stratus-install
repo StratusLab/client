@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import sys
-
 import os
+import sys
 from optparse import OptionParser
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
-import stratuslab
+from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
 from stratuslab.Util import parseConfig
@@ -20,7 +19,6 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(stratuslab.__file__)))
         usage = 'usage: %prog [options]'
 
         parser = OptionParser(usage=usage)

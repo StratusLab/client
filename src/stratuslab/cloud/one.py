@@ -137,6 +137,7 @@ class OneConnector(object):
 
 
     def createMachineTemplate(self, imagePath, template):
+        # TODO: move method to Creator
         return fileGetContent(template) % ({'vm_image': imagePath,
                                             'vm_name': os.path.basename(imagePath)})
     

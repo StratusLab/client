@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/usr/lib/stratuslab')
+sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
+
+from stratuslab.Util import modulePath
+from stratuslab.Runner import Runner
+from stratuslab.CommandBase import CommandBase
+from stratuslab.Util import parseConfig
+
+class MainProgram(CommandBase):
+    '''A command-line program to run a virtual machine.'''
+
+    def __init__(self):
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        usage = 'usage: %prog [options] image'
+
+        self.parser = OptionParser(usage=usage)
+        self.parser.add_option('-c', '--config', dest='configFile',
+                          help='configuration file', metavar='FILE',
+                          default='%s/conf/stratuslab.cfg' % modulePath)
+        self.parser.add_option('-k', '--key', dest='userKey',
+                          help='SSH key to log on the machine. By default STRATUS_KEY', metavar='FILE',
+                          default=None)
+        self.parser.add_option('-n', '--number', dest='instanceNumber',
+                          help='number of machine to start', metavar='INT',
+                          default=1, type='int')
+        self.parser.add_option('-t', '--type', dest='instanceType',
+                          help='instance type to start', metavar='TYPE',
+                          default='m1.small')
+        self.parser.add_option('-l', '--list-type', dest='listType',
+                          help='list available instance type',
+                          default=False, action='store_true')
+
+        self.options, self.args = self.parser.parse_args()
+
+    def parseOptions(self):
+        if self.options.listType:
+            self.displayInstanceType()
+
+        if len(self.args) != 1:
+            self.parser.error('Please specify the machine image to start')
+        elif not os.path.isfile(self.args[0]):
+            self.parser.error('Specified machine image does not exists')
+
+        self.image = self.args[0]
+
+        if not self.options.userKey:
+            self.options.userKey = os.getenv('STRATUS_KEY', '')
+
+        if not os.path.isfile(self.options.userKey):
+            self.parser.error('Key `%s` does not exist' % self.options.userKey)
+
+        if self.options.instanceType not in Runner.getInstanceType().keys():
+            self.parser.error('Specified instance type not available')
+
+    def displayInstanceType(self):
+        types = Runner.getInstanceType()
+        columnSize = 10
+
+        print 'Type'.ljust(columnSize),
+        print 'CPU'.ljust(columnSize),
+        print 'RAM'.ljust(columnSize),
+        print 'SWAP'.ljust(columnSize)
+        for name, spec in types.items():
+            cpu, ram, swap = spec
+            print '%s %s %s %s' % (name.ljust(columnSize),
+                            ('%s CPU' % cpu).ljust(columnSize),
+                            ('%s MB' % ram).ljust(columnSize),
+                            ('%s MB' % swap).ljust(columnSize))
+        sys.exit(0)
+
+    def doWork(self):
+        self.parseOptions()
+        config = parseConfig(self.options.configFile)
+        runner = Runner(self.image, self.options, config)
+        runner.runInstance()
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

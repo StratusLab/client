@@ -1,0 +1,30 @@
+# ---- Stratuslab VM template ----
+
+CPU    = %(vm_cpu)s
+MEMORY = %(vm_ram)s
+
+%(xen_os_option)s
+
+DISK   = [
+  source   = "%(vm_image)s",
+  target   = "sda",
+  readonly = "no" ]
+
+DISK = [
+  type     = swap,
+  size     = %(vm_swap)s,
+  target   = "sdb",
+  readonly = "no" ]
+
+%(extra_disk)s
+
+NIC = [ network="public" ]
+%(extra_nic)s
+
+CONTEXT = [
+  hostname  = "$NAME",
+  ip_public = "$NIC[IP, NETWORK=\"private\"]",
+  root_pubkey = %(pub_key_name)s,
+  files     = "%(pub_key_path)s %(one_home)s/share/scripts/init.sh %(extra_file)s",
+  target    = "sdc"
+]
