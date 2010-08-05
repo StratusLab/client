@@ -2,6 +2,8 @@ import os.path
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
+from stratuslab.Util import printAction
+from stratuslab.Util import printStep
 
 class Runner(object):
 
@@ -87,8 +89,16 @@ class Runner(object):
     def runInstance(self):
         vmTpl = self._populateTemplate(self.vmTemplatePath)
 
+        plurial = { True: 'machines',
+                    False: 'machine' }
+
+        printAction('Starting %s %s' % (self.instanceNumber,
+                                        plurial.get(self.instanceNumber > 1)))
+
         for i in range(self.instanceNumber):
             vmId = self.cloud.vmStart(vmTpl)
             vmIp = self.cloud.getVmIp(vmId).get('public', 'No public IP. So bad')
-            print 'VM %s: %s' % (vmId, vmIp)
+            printStep('VM %s: %s' % (vmId, vmIp))
 
+        printAction('Done!')
+        
