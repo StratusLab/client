@@ -9,9 +9,8 @@ class Testor(object):
     def __init__(self, config, options):
         self.config = config
         self.options = options
-        
-        cloudFactory = CloudConnectorFactory()
-        self.cloud = cloudFactory.getCloud()
+
+        self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'),
                                self.config.get('one_port'))
         self.cloud.setCredentials(self.config.get('one_username'),

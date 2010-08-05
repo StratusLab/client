@@ -2,8 +2,9 @@ from stratuslab.cloud import one
 from stratuslab.cloud import qemu
 
 class CloudConnectorFactory:
-    
-    def getCloud(self, type='one'):
+
+    @staticmethod
+    def getCloud(type='one'):
         if type == 'one':
             return one.OneConnector()
         elif type == 'dummy':
