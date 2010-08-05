@@ -30,23 +30,26 @@ class MainProgram(CommandBase):
         
         self.parser = OptionParser(usage=usage)
         self.parser.add_option('-c', '--config', dest='configFile',
-                          help='configuration file', metavar='FILE',
-                          default='%s/conf/stratuslab.cfg' % modulePath)
+                help='configuration file', metavar='FILE',
+                default='%s/conf/stratuslab.cfg' % modulePath)
         self.parser.add_option('-t', '--template', dest='oneTpl',
-                          help='One VM template', metavar='PATH',
-                          default=None)
+                help='One VM template', metavar='PATH',
+                default=None)
         self.parser.add_option('-d', '--destination', dest='destination',
-                          help='The directory in which to create the image. Defaults set in the config',
-                          metavar='PATH', default=None)
+                help='The directory in which to create the image. Defaults set in the config',
+                metavar='PATH', default=None)
         self.parser.add_option('-s', '--scripts', dest='scripts',
-                          help='Scripts to execute on the VM (separate by space)',
-                          default='', metavar='FILE')
+                help='Scripts to execute on the VM (separate by space)',
+                default='', metavar='FILE')
         self.parser.add_option('-p', '--packages', dest='packages',
-                          help='Packages to install on the machine (name separate by space)',
-                          default='', metavar='NAME')
+                help='Packages to install on the machine (name separate by space)',
+                default='', metavar='NAME')
         self.parser.add_option('-n', '--no-shutdown', dest='shutdownVm',
-                          help='Leave the VM running. A public IP will be created.',
-                          action='store_false', default=True)
+                help='Leave the VM running. A public IP will be created.',
+                action='store_false', default=True)
+        self.parser.add_option('--username', dest='username',
+                help='cloud username. Default STRATUS_USER',
+                default=os.getenv('STRATUS_USER', os.getenv('USERNAME', 'nobody')))
         self.options, self.args = self.parser.parse_args()
 
     def parseOptions(self):

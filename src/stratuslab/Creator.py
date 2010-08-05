@@ -1,9 +1,10 @@
-from stratuslab.FileAppender import FileAppender
+from stratuslab.Util import filePutContent
 import os
 import shutil
 import subprocess
 from datetime import datetime
 
+from stratuslab.FileAppender import FileAppender
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import getSystemMethods
 from stratuslab.Util import modulePath
@@ -20,6 +21,7 @@ class Creator(object):
         self.config = config
         self.options = options
         self.stockImg = stockImg
+        self.username = options.username
         
         self.imageName = os.path.basename(self.stockImg)
         self.imagePath = '%s/%s' % (self.options.destination,
@@ -55,27 +57,55 @@ class Creator(object):
         shutil.copy(self.stockImg, self.options.destination)
 
     def _populateManifest(self):
-        system = self._getVmSystem()
+        system, version = self._getVmSystem()
         self.system = getSystemMethods(system)
         
         arch = self._getVmArch()
 
+        manifest = '\t<create>%s</create>\n' % datetime.now()
+        manifest += '\t<type>machine</type>\n'
+        manifest += '\t<name>%s</name>\n' % self.imageName
+        manifest += '\t<architecture>%s</architecture>\n' % arch
+        manifest += '\t<user>%s</user>\n' % self.username
+        manifest += '\t<system>%s</version>\n' % system
+        manifest += '\t<version>%s</version>\n' % version
+        
+        filePutContent(self.manifest, '<manifest>\n%s</manifest>\n' % manifest)
+
+
     def _getVmSystem(self):
-        uname = sshCmd('uname -a', self.vmAddress, self.sshKey, self.vmSshPort,
-                                noWait=True, stdout=subprocess.PIPE).communicate()[0]
+        # TODO: Maybe use this to automatically determine config for install?
 
-        # Very simple determination for the moment as we don't support many distro
+        devNull = open('/dev/null', 'w')
+        redHatDistro = sshCmd('cat /etc/redhat-release', self.vmAddress,
+                              self.sshKey, self.vmSshPort, noWait=True,
+                              stdout=subprocess.PIPE, stderr=devNull).communicate()[0]
+
+        debianDistro = sshCmd('cat /etc/lsb-release', self.vmAddress,
+                              self.sshKey, self.vmSshPort, noWait=True,
+                              stdout=subprocess.PIPE, stderr=devNull).communicate()[0]
+        devNull.close()
+
         system = 'unknow'
-        if uname.find('Ubuntu') != -1:
-            system = 'ubuntu'
-        elif uname.find('el5') != -1:
-            system = 'centos'
+        version = '0'
 
-        return system
+        if redHatDistro != '':
+            system = redHatDistro.split(' ')[0].lower()
+            version = redHatDistro.split(' ')[2]
+        elif debianDistro != '':
+            for line in debianDistro.split('\n'):
+                if line.startswith('DISTRIB_ID'):
+                    system = line.split('=')[1].lower()
+                elif line.startswith('DISTRIB_RELEASE'):
+                    version = line.split('=')[1]
+
+        return system, version
 
     def _getVmArch(self):
-        return sshCmd('uname -m', self.vmAddress, self.sshKey, self.vmSshPort,
-                                noWait=True, stdout=subprocess.PIPE).communicate()[0]
+        arch = sshCmd('uname -m', self.vmAddress, self.sshKey, self.vmSshPort,
+                      noWait=True, stdout=subprocess.PIPE).communicate()[0]
+        arch = arch.replace('\n', '') # Remove line break at the end
+        return arch
 
     def _installPackages(self):
         if len(self.options.packages) == 0:
@@ -122,7 +152,7 @@ class Creator(object):
         printAction('Starting image creation')
         
         printStep('Copying stock image')
-        #self._duplicateStockImage()
+        self._duplicateStockImage()
 
         printStep('Creating machine template')
         self.vmTemplate = self.cloud.createMachineTemplate(self.imagePath, self.options.oneTpl)
@@ -160,13 +190,14 @@ class Creator(object):
         if self.options.shutdownVm:
             printStep('Shutting down machine')
             self.cloud.vmStop(self.vmId)
-        else:bash /usr/local/bin/onecontext
+        else:
             printStep('Machine ready for your usage')
             print '\n\tMachine IP: %s' % self.publicAddress
+            print '\tSSH port: %s' % self.vmSshPort
             print '\tRemember to stop the machine when finished',
             
         printAction('Image creation finished')
         print '\n\tManifest: %s' % self.manifest,
-        print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
+        print '\n\tInstallation details can be found at: \n\t%s, %s\n' % (self.stdout.name,
                                                                         self.stderr.name)
             

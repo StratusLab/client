@@ -107,19 +107,20 @@ def setPythonPath(path):
     if not path in sys.path:
         sys.path.append(path)
 
-def printAction(msg):
+def printAndFlush(msg):
     sys.stdout.flush()
-    print ('\n> %s' % msg),
+    print msg,
+    sys.stdout.flush()
+
+def printAction(msg):
+    printAndFlush('\n> %s' % msg)
     
 def printStep(msg):
-    sys.stdout.flush()
-    print ('\n :: %s' % msg),
+    printAndFlush('\n :: %s' % msg)
 
 def printError(msg, exitCode=1, exit=True):
-    sys.stdout.flush()
-    print ('\n  ** %s' % msg),
-    sys.stdout.flush()
-    
+    printAndFlush('\n  ** %s' % msg)
+
     if exit:
         sys.exit(exitCode)
 
