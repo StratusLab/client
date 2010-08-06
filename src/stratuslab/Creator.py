@@ -22,6 +22,7 @@ class Creator(object):
         self.options = options
         self.stockImg = stockImg
         self.username = options.username
+        self.category = options.category
         
         self.imageName = os.path.basename(self.stockImg)
         self.imagePath = '%s/%s' % (self.options.destination,
@@ -67,7 +68,8 @@ class Creator(object):
         manifest += '\t<name>%s</name>\n' % self.imageName
         manifest += '\t<architecture>%s</architecture>\n' % arch
         manifest += '\t<user>%s</user>\n' % self.username
-        manifest += '\t<system>%s</version>\n' % system
+        manifest += '\t<system>%s</system>\n' % system
+        manifest += '\t<category>%s</category>' % self.category
         manifest += '\t<version>%s</version>\n' % version
         
         filePutContent(self.manifest, '<manifest>\n%s</manifest>\n' % manifest)
@@ -198,6 +200,6 @@ class Creator(object):
             
         printAction('Image creation finished')
         print '\n\tManifest: %s' % self.manifest,
-        print '\n\tInstallation details can be found at: \n\t%s, %s\n' % (self.stdout.name,
+        print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
                                                                         self.stderr.name)
             

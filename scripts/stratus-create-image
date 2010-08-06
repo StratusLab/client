@@ -36,16 +36,18 @@ class MainProgram(CommandBase):
                 help='One VM template', metavar='PATH',
                 default=None)
         self.parser.add_option('-d', '--destination', dest='destination',
-                help='The directory in which to create the image. Defaults set in the config',
+                help='the directory in which to create the image. Defaults set in the config',
                 metavar='PATH', default=None)
         self.parser.add_option('-s', '--scripts', dest='scripts',
-                help='Scripts to execute on the VM (separate by space)',
+                help='scripts to execute on the VM (separate by space)',
                 default='', metavar='FILE')
+        self.parser.add_option('-c', '--category', dest='category',
+                help='category of the image such as base, grid/se', default='base')
         self.parser.add_option('-p', '--packages', dest='packages',
                 help='Packages to install on the machine (name separate by space)',
                 default='', metavar='NAME')
         self.parser.add_option('-n', '--no-shutdown', dest='shutdownVm',
-                help='Leave the VM running. A public IP will be created.',
+                help='leave the VM running. A public IP will be created.',
                 action='store_false', default=True)
         self.parser.add_option('--username', dest='username',
                 help='cloud username. Default STRATUS_USER',
