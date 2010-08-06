@@ -13,6 +13,7 @@ from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
+from stratuslab.Util import wget
 from stratuslab.Util import waitUntilPingOrTimeout
 
 class Creator(object):
@@ -53,9 +54,10 @@ class Creator(object):
         self.system = None
         
     def _duplicateStockImage(self):
-        # TODO: Handle remote (http) images
-        # TODO: Handle compressed images
-        shutil.copy(self.stockImg, self.options.destination)
+        if self.stockImg.startswith('http'):
+            wget(self.stockImg, self.imagePath)
+        else:
+            shutil.copy(self.stockImg, self.options.destination)
 
     def _populateManifest(self):
         system, version = self._getVmSystem()

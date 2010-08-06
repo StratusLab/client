@@ -70,8 +70,8 @@ node_bridge_name = br0
 ;; TODO: Use certificate for auth
 app_repo_username = foo
 app_repo_password = bar
-app_repo_url = appliances.stratuslab.eu/images
-app_repo_tree = #category#/#system#/#architecture#/#version#
+app_repo_url = appliances.stratuslab.eu
+app_repo_tree = images/#category#/#system#/#architecture#/#version#
 image_dir = ./
 
 ;

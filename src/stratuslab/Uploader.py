@@ -1,8 +1,6 @@
-from stratuslab.Util import printError
-import sys
 from stratuslab.Util import execute
-from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
+from stratuslab.Util import printError
 from stratuslab.Util import printStep
 
 try:
