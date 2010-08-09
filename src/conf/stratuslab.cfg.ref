@@ -71,7 +71,7 @@ node_bridge_name = br0
 app_repo_username = foo
 app_repo_password = bar
 app_repo_url = appliances.stratuslab.eu
-app_repo_tree = images/#type_#/#os#-#arch#-#osversion#/#version#
+app_repo_tree = images/#type_#/#os#-#osversion#-#arch#-#type#/#version#
 app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img
 image_dir = ./
 
