@@ -32,26 +32,32 @@ class MainProgram(CommandBase):
         self.parser.add_option('-c', '--config', dest='configFile',
                 help='configuration file', metavar='FILE',
                 default='%s/conf/stratuslab.cfg' % modulePath)
-        self.parser.add_option('-t', '--template', dest='oneTpl',
-                help='One VM template', metavar='PATH',
-                default=None)
         self.parser.add_option('-d', '--destination', dest='destination',
                 help='the directory in which to create the image. Defaults set in the config',
                 metavar='PATH', default=None)
         self.parser.add_option('-s', '--scripts', dest='scripts',
                 help='scripts to execute on the VM (separate by space)',
                 default='', metavar='FILE')
-        self.parser.add_option('-c', '--category', dest='category',
-                help='category of the image such as base, grid/se', default='base')
+        self.parser.add_option('-t', '--type', dest='imageType', metavar='TYPE',
+                help='image type (e.g. base grid.se, grid.wn, ...)', default='base')
         self.parser.add_option('-p', '--packages', dest='packages',
-                help='Packages to install on the machine (name separate by space)',
+                help='packages to install on the machine (name separate by space)',
                 default='', metavar='NAME')
         self.parser.add_option('-n', '--no-shutdown', dest='shutdownVm',
-                help='leave the VM running. A public IP will be created.',
+                help='leave the VM running. A public IP will be assigned.',
                 action='store_false', default=True)
+        self.parser.add_option('-v', '--img-version', dest='imageVersion',
+                help='revision number of the image', metavar='INT', type='float',
+                default=1.0)
+        self.parser.add_option('-r', '--rename', dest='userImageName',
+                help='rename localy the image else take the name of the base image',
+                default=None, metavar='NAME')
         self.parser.add_option('--username', dest='username',
                 help='cloud username. Default STRATUS_USER',
                 default=os.getenv('STRATUS_USER', os.getenv('USERNAME', 'nobody')))
+        self.parser.add_option('--template', dest='oneTpl',
+                help='One VM template', metavar='PATH',
+                default=None)
         self.options, self.args = self.parser.parse_args()
 
     def parseOptions(self):
@@ -72,7 +78,7 @@ class MainProgram(CommandBase):
             if not os.path.isfile(self.options.oneTpl):
                 self.parser.error('ONE template %s does not exist' % self.options.oneTpl)
         else:
-            self.options.oneTpl = '%s/share/vm/img-creation-%s.one' % (modulePath, 
+            self.options.oneTpl = '%s/share/vm/img-creation-%s.one' % (modulePath,
                                                                        self.config.get('hypervisor'))
 
         if self.options.destination:

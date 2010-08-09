@@ -35,6 +35,10 @@ class Uploader(object):
         self.uploadOption = options.option
         self.protocol = options.uploadProtocol
         self.repo = options.repoAddress
+        self.manifestExt = '.manifest.xml'
+        
+        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.username,
+                                                             self.password)]
 
         # Attribute initialization
         self.system = None
@@ -42,41 +46,42 @@ class Uploader(object):
         self.category = None
         self.architecture = None
         self.uploadCmd = None
+        self.uploadUrl = None
 
     def _parseManifest(self):
         xml = etree.ElementTree()
         xml.parse(self.manifest)
-        self.system = xml.find('system').text
+        self.os = xml.find('os').text
+        self.osversion = xml.find('osversion').text
+        self.arch = xml.find('arch').text
+        self.type = xml.find('type').text
         self.version = xml.find('version').text
-        self.architecture = xml.find('architecture').text
-        self.category = xml.find('category').text
 
-    def _uploadFile(self, filename):
+    def _uploadFile(self, filename, manifest=False):
         # See in the future for additional methods
-        self._curlUpload(filename)
+        self._curlUpload(filename, manifest)
 
-    def _curlUpload(self, filename):
-        repoTree = self.config.get('app_repo_tree')
-        for part in ('category', 'system', 'architecture', 'version'):
-            if repoTree.find(part) != -1:
-                repoTree = repoTree.replace('#%s#' % part, getattr(self, part, ''))
+    def _curlUpload(self, filename, manifest):
+        imageDirectory = self._parseRepoStructure(self.config.get('app_repo_tree'))
+        imageName = self._parseRepoStructure(self.config.get('app_repo_filename'))
 
-        repoUrl = '%s://%s/%s' % (self.protocol, self.repo, repoTree)
+        repoUrl = '%s://%s/%s' % (self.protocol, self.repo, imageDirectory)
+        extension = manifest and self.manifestExt or ''
 
-        curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.username,
-                                                        self.password)]
+        self.uploadUrl = '%s/%s%s' % (repoUrl, imageName, extension)
 
         # We have to create in a first time the directories before uploading
         # the appliance and his manifest.
         newDirs = self._listRecursiveUrlDirs(repoUrl)
-        self._curlCreateRecursiveDirs(newDirs, curlCmd)
+        self._curlCreateRecursiveDirs(newDirs, self.curlCmd)
 
-        curlUploadCmd = curlCmd + ['-T', filename]
+        curlUploadCmd = self.curlCmd + ['-T', filename]
 
         if self.uploadOption:
-            curlUploadCmd.append(repoUrl)
+            curlUploadCmd.append(self.uploadOption)
             
-        curlUploadCmd.append(repoUrl)
+        curlUploadCmd.append(self.uploadUrl)
+
         devNull = open('/dev/null', 'w')
         ret = execute(*curlUploadCmd, stdout=devNull, stderr=devNull)
         devNull.close()
@@ -100,6 +105,18 @@ class Uploader(object):
 #
 #        opener.open(request)
 #        urllib2.install_opener(opener)
+
+    def _parseRepoStructure(self, structure):
+        varPattern = '#%s#'
+        dirVarPattern = '#%s_#'
+        for part in ('type', 'os', 'arch', 'version', 'osversion'):
+            if structure.find(varPattern % part) != -1:
+                structure = structure.replace(varPattern % part, getattr(self, part, ''))
+
+            if structure.find(dirVarPattern % part) != -1:
+                structure = structure.replace(dirVarPattern % part, getattr(self, part, '').replace('.', '/'))
+
+        return structure
 
     def _listRecursiveUrlDirs(self, url):
         urlDirs = '/'.join(url.split('//')[1:])
@@ -133,9 +150,11 @@ class Uploader(object):
         self._parseManifest()
 
         printStep('Uploading appliance')
-        self._uploadFile(self.manifest.replace('.manifest.xml', ''))
+        self._uploadFile(self.manifest.replace(self.manifestExt, ''))
 
         printStep('Uploading manifest')
-        self._uploadFile(self.manifest)
+        self._uploadFile(self.manifest, manifest=True)
 
-        printAction('Upload finished successfuly')
+        printAction('Appliance uploaded successfully')
+        print '\n\t%s' % self.uploadUrl
+        print '\t%s' % self.uploadUrl.replace(self.manifestExt, '')

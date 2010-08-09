@@ -23,15 +23,19 @@ class Creator(object):
         self.options = options
         self.stockImg = stockImg
         self.username = options.username
-        self.category = options.category
-        
-        self.imageName = os.path.basename(self.stockImg)
+        self.imageType = options.imageType
+        self.imageVersion = options.imageVersion
+
+        if options.userImageName:
+            self.imageName = options.userImageName
+        else:
+            self.imageName = os.path.basename(self.stockImg)
+
         self.imagePath = '%s/%s' % (self.options.destination,
                                     self.imageName)
-        self.manifest = '%s.manifest.xml' % self.imageName
+        self.manifest = '%s/%s.manifest.xml' % (self.options.destination, self.imageName)
         
-        cloudFactory = CloudConnectorFactory()
-        self.cloud = cloudFactory.getCloud('dummy')
+        self.cloud = CloudConnectorFactory.getCloud('dummy')
 
         self.cloud.setFrontend(self.config.get('frontend_ip'),
                                self.config.get('one_port'))
@@ -57,7 +61,8 @@ class Creator(object):
         if self.stockImg.startswith('http'):
             wget(self.stockImg, self.imagePath)
         else:
-            shutil.copy(self.stockImg, self.options.destination)
+            shutil.copy(self.stockImg, '%s/%s' % (self.options.destination,
+                                                  self.imageName))
 
     def _populateManifest(self):
         system, version = self._getVmSystem()
@@ -65,14 +70,13 @@ class Creator(object):
         
         arch = self._getVmArch()
 
-        manifest = '\t<create>%s</create>\n' % datetime.now()
-        manifest += '\t<type>machine</type>\n'
-        manifest += '\t<name>%s</name>\n' % self.imageName
-        manifest += '\t<architecture>%s</architecture>\n' % arch
+        manifest = '\t<created>%s</created>\n' % datetime.now()
+        manifest += '\t<type>%s</type>\n' % self.imageType
+        manifest += '\t<version>%s</version>\n' % self.imageVersion
+        manifest += '\t<arch>%s</arch>\n' % arch
         manifest += '\t<user>%s</user>\n' % self.username
-        manifest += '\t<system>%s</system>\n' % system
-        manifest += '\t<category>%s</category>' % self.category
-        manifest += '\t<version>%s</version>\n' % version
+        manifest += '\t<os>%s</os>\n' % system
+        manifest += '\t<osversion>%s</osversion>\n' % version
         
         filePutContent(self.manifest, '<manifest>\n%s</manifest>\n' % manifest)
 
