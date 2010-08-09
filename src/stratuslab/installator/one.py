@@ -1,3 +1,4 @@
+import os.path
 import os
 
 from stratuslab.BaseInstallator import BaseInstallator
@@ -156,9 +157,9 @@ class OneInstallator(BaseInstallator):
          
     def _configureNfsClient(self):
         if self._nfsShareAlreadyExists():
-            host = self.config.get('existing_nfs')
+            host = '%s/%s/var' % (self.config.get('existing_nfs'),
+                                  os.path.basename(self.config.get('one_home')))
         else:
-            host = '%s:%s' % (self.config['frontend_ip'], 
-                              self._getNfsDefaultMountPoint())
+            host = '%s:%s/var' % (self.config['frontend_ip'], self.config.get('one_home'))
 
-        self.node.configureExistingNfsShare(host, self._getNfsDefaultMountPoint())
+        self.node.configureExistingNfsShare(host, self.config.get(self.config.get('node_mount_point')))

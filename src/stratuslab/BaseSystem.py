@@ -15,6 +15,10 @@ class BaseSystem(object):
         self.workOnFrontend()
         # TODO: Initialize attributes
         # TODO: Rename private methods to start with _
+
+    def __del__(self):
+        self.stderr.close()
+        self.stdout.close()
     
     # -------------------------------------------
     #     Packages manager and related
