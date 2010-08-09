@@ -1,5 +1,6 @@
 import os.path
 
+from stratuslab.Util import printError
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
@@ -96,8 +97,12 @@ class Runner(object):
                                         plurial.get(self.instanceNumber > 1)))
 
         for i in range(self.instanceNumber):
-            vmId = self.cloud.vmStart(vmTpl)
-            vmIp = self.cloud.getVmIp(vmId).get('public', 'No public IP. So bad')
+            try:
+                vmId = self.cloud.vmStart(vmTpl)
+            except Exception, e:
+                printError(e)
+                
+            vmIp = self.cloud.getVmIp(vmId).get('public', 'No public IP')
             printStep('VM %s: %s' % (vmId, vmIp))
 
         printAction('Done!')
