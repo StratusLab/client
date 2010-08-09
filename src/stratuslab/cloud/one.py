@@ -172,11 +172,31 @@ class OneConnector(object):
         
         if not ret:
             raise Exception(info)
-        else:
-            return info
+
+        return info
 
     def addPublicInterface(self, vmTpl):
         # We assume the is a public network
         vmTpl += '\nNIC = [ NETWORK = "public" ]\n'
         return vmTpl
         
+    # -------------------------------------------
+    #    Host management
+    # -------------------------------------------
+
+    def hostCreate(self, hostname, im, vmm, tm, inDomain=True):
+        ret, id = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, tm, inDomain)
+
+        if not ret:
+            raise Exception(id)
+
+        return id
+
+    def getHostInfo(self, id):
+        ret, info = self._rpc.one.host.info(self._sessionString, id)
+
+        if not ret:
+            raise Exception(info)
+
+        return info
+    

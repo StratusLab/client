@@ -15,6 +15,12 @@ class OneInstallator(BaseInstallator):
         self.transfertDriver = (True and options.transfertDriver) or ('tm_%s' % config.get('share_type'))
         
         self.onedConfTemplate = options.onedTpl
+
+        self.cloud = CloudConnectorFactory.getCloud()
+        self.cloud.setFrontend(self.config.get('frontend_ip'),
+                               self.config.get('one_port'))
+        self.cloud.setCredentials(self.config.get('one_username'),
+                                  self.config.get('one_password'))
         
         super(OneInstallator, self).runInstall(options, config)
         
@@ -67,20 +73,14 @@ class OneInstallator(BaseInstallator):
                        fileGetContent(self.onedConfTemplate) % self.config)
     
     def addCloudNode(self):
-        # TODO: Use XML RPC methods
-        self.frontend._cloudAdminExecute(['onehost create %s %s %s %s' % 
-                                         (self.nodeAddr, self.infoDriver, self.virtDriver,
-                                         self.transfertDriver)
-                                         ])
+        self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
         
     def addDefaultNetworks(self):
-        # TODO: Use XML RPC methods
         for vnet in self.defaultNetworks:
-            vnetTpl = '/tmp/stratus-vnet'
             if self.config.get('one_%s_network_addr' % vnet, '') == '':
-                filePutContent(vnetTpl, self._buildRangedNetworkTemplate(vnet))
+                self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
             else:
-                filePutContent(vnetTpl, self._buildFixedNetworkTemplate(vnet))
+                self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
                 
             self.frontend._cloudAdminExecute(['onevnet create %s' % vnetTpl])
             os.remove(vnetTpl)
@@ -105,7 +105,7 @@ class OneInstallator(BaseInstallator):
 
     def _copyContextualizationScript(self, oneHome):
         self.frontend.createDirsCmd('%s/share/scripts/' % oneHome)
-        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome, fileGetContent('%s/share/scripts/init.sh' % oneHome))
+        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome, fileGetContent('%s/share/one/init.sh' % modulePath))
 
     # -------------------------------------------
     #   Front-end file sharing management
