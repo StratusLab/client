@@ -33,7 +33,7 @@ HOST_MONITORING_INTERVAL = %(host_monitoring_interval)s
 
 VM_POLLING_INTERVAL      = %(vm_polling_interval)s
 
-#VM_DIR=%(vm_dir)s 
+VM_DIR=%(vm_dir)s 
 
 PORT=%(one_port)s
 

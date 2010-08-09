@@ -1,7 +1,8 @@
-import os.path
 import os
+import os.path
 
 from stratuslab.BaseInstallator import BaseInstallator
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
@@ -16,15 +17,9 @@ class OneInstallator(BaseInstallator):
         self.transfertDriver = (True and options.transfertDriver) or ('tm_%s' % config.get('share_type'))
         
         self.onedConfTemplate = options.onedTpl
-
-        self.cloud = CloudConnectorFactory.getCloud()
-        self.cloud.setFrontend(self.config.get('frontend_ip'),
-                               self.config.get('one_port'))
-        self.cloud.setCredentials(self.config.get('one_username'),
-                                  self.config.get('one_password'))
         
         super(OneInstallator, self).runInstall(options, config)
-        
+
     # -------------------------------------------
     #    Cloud admin management
     # -------------------------------------------
@@ -82,9 +77,6 @@ class OneInstallator(BaseInstallator):
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
             else:
                 self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
-                
-            self.frontend._cloudAdminExecute(['onevnet create %s' % vnetTpl])
-            os.remove(vnetTpl)
         
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % modulePath)
@@ -127,17 +119,14 @@ class OneInstallator(BaseInstallator):
     def _configureNfsServer(self):
         if self._nfsShareAlreadyExists():
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), 
-                                                    self._getNfsDefaultMountPoint())
+                                                    os.path.dirname(self.config.get('one_home')))
         else:
-            self.frontend.configureNewNfsServer(self._getNfsDefaultMountPoint(),
+            self.frontend.configureNewNfsServer('%s/var' % self.config.get('one_home'),
                                                 self.config['network_addr'],
                                                 self.config['network_mask'])
 
     def _nfsShareAlreadyExists(self):
         return not (self.config.get('existing_nfs', '') == '')
-
-    def _getNfsDefaultMountPoint(self):
-        return os.path.dirname(self.config.get('one_home'))
     
     # -------------------------------------------
     #    Node file sharing management
@@ -162,4 +151,4 @@ class OneInstallator(BaseInstallator):
         else:
             host = '%s:%s/var' % (self.config['frontend_ip'], self.config.get('one_home'))
 
-        self.node.configureExistingNfsShare(host, self.config.get(self.config.get('node_mount_point')))
+        self.node.configureExistingNfsShare(host, self.config.get('node_mount_point'))

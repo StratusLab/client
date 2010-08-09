@@ -1,3 +1,4 @@
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import getSystemMethods
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
@@ -6,7 +7,7 @@ class BaseInstallator(object):
     def __init__(self):
         # Default network added automatically at installation
         # Make sure one_%(name)s_* exist in the config 
-        self.defaultNetworks = ['private', 'public']    
+        self.defaultNetworks = ['private', 'public']
         
         # Attributes initialization
         self.config = None
@@ -20,6 +21,12 @@ class BaseInstallator(object):
         self.nodeAddr = options.nodeAddr
         self.shareType = self.config.get('share_type')
         
+        self.cloud = CloudConnectorFactory.getCloud()
+        self.cloud.setFrontend(self.config.get('frontend_ip'),
+                               self.config.get('one_port'))
+        self.cloud.setCredentials(self.config.get('one_username'),
+                                  self.config.get('one_password'))
+
         # TODO: Automatically determine system
         self.frontend = getSystemMethods(self.config.get('frontend_system'))
         self.node = getSystemMethods(self.config.get('node_system'))
