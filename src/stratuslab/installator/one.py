@@ -52,6 +52,7 @@ class OneInstallator(BaseInstallator):
                                          self.config.get('one_branch'))
         self.frontend.buildCloudSystem()
         self.frontend.installCloudSystem()
+        self._copyContextualizationScript(self.config.get('one_home'))
         
     # -------------------------------------------
     #    Cloud configuration management
@@ -101,7 +102,11 @@ class OneInstallator(BaseInstallator):
                              'network_size': self.config.get('one_%s_network_size' % networkName),
                              'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
-        
+
+    def _copyContextualizationScript(self, oneHome):
+        self.frontend.createDirsCmd('%s/share/scripts/' % oneHome)
+        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome, fileGetContent('%s/share/scripts/init.sh' % oneHome))
+
     # -------------------------------------------
     #   Front-end file sharing management
     # -------------------------------------------

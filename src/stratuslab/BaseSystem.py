@@ -284,7 +284,7 @@ class BaseSystem(object):
         self._nodeShell(['cp -rf %s %s' % (src, dest)])
         
     def _remoteFilePutContents(self, filename, data):
-        self._nodeShell('echo "%s" >> %s' % (data, filename))
+        self._nodeShell('echo \'%s\' >> %s' % (data, filename))
         
     def _filePutContentAsOneAdmin(self, filename, content):
         self.filePutContentsCmd(filename, content)
