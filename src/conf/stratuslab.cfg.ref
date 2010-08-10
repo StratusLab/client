@@ -16,7 +16,6 @@ existing_nfs =
 ;existing_nfs = hudson.stratuslab.eu:/srv/cloud
 network_addr = 127.0.0.0
 network_mask = 24
-node_mount_point = /srv/one
 
 ;
 ; OpenNebula build
@@ -47,7 +46,7 @@ host_monitoring_interval = 60
 vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
-vm_dir = %(node_mount_point)s
+vm_dir = /instances
 
 ;
 ; Systems

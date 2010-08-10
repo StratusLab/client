@@ -171,6 +171,7 @@ class BaseSystem(object):
     # -------------------------------------------
 
     def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
+        self.createDirsCmd(mountPoint)
         self.appendOrReplaceInFileCmd('/etc/exports', 
                                       mountPoint, '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' %
                                       (mountPoint, networkAddr, networkMask))
