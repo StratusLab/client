@@ -68,9 +68,13 @@ class OneInstallator(BaseInstallator):
         if not os.path.isfile(self.onedConfTemplate):
             printError('ONe daemon configuration template '
                        '%s does not exists' % self.onedConfTemplate)
-    
+
+        conf = self.config.copy()
+        if conf.get('vm_dir') == '':
+            conf['vm_dir'] = '%s/var' % conf.get('one_home')
+
         filePutContent('%s/etc/oned.conf' % self.config.get('one_home'),
-                       fileGetContent(self.onedConfTemplate) % self.config)
+                       fileGetContent(self.onedConfTemplate) % conf)
     
     def addCloudNode(self):
         self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
