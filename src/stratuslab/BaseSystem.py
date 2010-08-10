@@ -123,7 +123,6 @@ class BaseSystem(object):
         self.executeCmd(['sed -i \'s/\[ -z \\\"\$PS1\\\" \\] \\&\\& ' 
                         'return/#&/\' %s/.bashrc' % self.ONeHome], shell=True)
 
-
     def _configureCloudAdminSsh(self):
         self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
                                       'Host', 'Host *')
@@ -296,7 +295,7 @@ class BaseSystem(object):
         self.setOwnerCmd(filename)
 
     def _remoteChmod(self, path, mode):
-        return self._nodeShell('chmod %s %s' % (path, mode))
+        return self._nodeShell('chmod %s %s' % (mode, path))
         
     # -------------------------------------------
     #     General

@@ -41,6 +41,10 @@ class OneInstallator(BaseInstallator):
         self.frontend.configureCloudAdminEnv(self.config.get('one_port'))
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
+
+        if self.config.get('vm_dir') != '':
+            self.frontend.createDirsCmd(self.config.get('vm_dir'))
+            self.frontend.setOwnerCmd(self.config.get('vm_dir'))
         
     # -------------------------------------------
     #    Cloud installation management
