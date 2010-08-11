@@ -71,6 +71,9 @@ class Uploader(object):
         repoUrl = '%s://%s/%s' % (self.protocol, self.repo, imageDirectory)
         extension = manifest and manifestExt or ''
 
+        if manifest and imageName.endswith('.%s' % self.compressionFormat):
+            imageName = imageName.replace('.%s' % self.compressionFormat, '')
+
         self.uploadUrl = '%s/%s%s' % (repoUrl, imageName, extension)
 
         # We have to create in a first time the directories before uploading
