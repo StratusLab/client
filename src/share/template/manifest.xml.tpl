@@ -1,0 +1,9 @@
+<manifest>
+    <created>%(created)s</created>
+    <type>%(type)s</type>
+    <version>%(version)s</version>
+    <arch>%(arch)s</arch>
+    <user>%(user)s</user>
+    <os>%(os)s</os>
+    <osversion>%(osversion)s</osversion>
+</manifest>

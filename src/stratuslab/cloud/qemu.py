@@ -7,7 +7,7 @@ from stratuslab.Util import sshCmd
 
 
 class QEmuConnector(object):
-    '''Dummy interface to run a machine in QEmu'''
+    '''Connector to run a machine in QEmu'''
     
     def __init__(self):
         self.host = None

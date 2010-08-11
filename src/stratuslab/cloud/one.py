@@ -1,7 +1,9 @@
+import os
 import sys
 import time
-
 import xmlrpclib
+
+from stratuslab.Util import fileGetContent
 from stratuslab.Util import shaHexDigest
 #import xml
 

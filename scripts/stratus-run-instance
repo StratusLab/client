@@ -54,6 +54,7 @@ class MainProgram(CommandBase):
         self.parser.add_option('--context', dest='extraContext', metavar='VALUE',
                 help='additional contextualization value. Linebreak symbol are interpreted',
                 default='')
+        # TODO: Use runner dict to display variable list
         self.parser.add_option( '--template', dest='vmTemplate', metavar='FILE',
                 help=('machine template. Available substitution variables: '
                         'vm_image, vm_pu, vm_ram, vm_ram, user_key_name, '
@@ -63,7 +64,7 @@ class MainProgram(CommandBase):
 
         self.options, self.args = self.parser.parse_args()
 
-    def parseOptions(self):
+    def checkOptions(self):
         if self.options.listType:
             self.displayInstanceType()
 
@@ -97,7 +98,7 @@ class MainProgram(CommandBase):
         sys.exit(0)
 
     def doWork(self):
-        self.parseOptions()
+        self.checkOptions()
         config = parseConfig(self.options.configFile)
         runner = Runner(self.image, self.options, config)
         runner.runInstance()

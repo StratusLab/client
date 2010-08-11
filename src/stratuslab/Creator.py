@@ -1,11 +1,13 @@
-from stratuslab.Util import filePutContent
 import os
 import shutil
 import subprocess
 from datetime import datetime
 
-from stratuslab.FileAppender import FileAppender
+from softwareproperties.MirrorTest import arch
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.FileAppender import FileAppender
+from stratuslab.Util import fileGetContent
+from stratuslab.Util import filePutContent
 from stratuslab.Util import getSystemMethods
 from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
@@ -13,8 +15,8 @@ from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
-from stratuslab.Util import wget
 from stratuslab.Util import waitUntilPingOrTimeout
+from stratuslab.Util import wget
 
 class Creator(object):
     
@@ -35,8 +37,7 @@ class Creator(object):
                                     self.imageName)
         self.manifest = '%s/%s.manifest.xml' % (self.options.destination, self.imageName)
         
-        self.cloud = CloudConnectorFactory.getCloud('dummy')
-
+        self.cloud = CloudConnectorFactory.getCloud('qemu')
         self.cloud.setFrontend(self.config.get('frontend_ip'),
                                self.config.get('one_port'))
 #        self.cloud.setCredentials(self.config.get('one_username'),
@@ -56,6 +57,10 @@ class Creator(object):
         self.publicAddress = None
         self.vmSshPort = None
         self.system = None
+
+    def __del__(self):
+        self.stderr.close()
+        self.stdout.close()
         
     def _duplicateStockImage(self):
         if self.stockImg.startswith('http'):
@@ -65,21 +70,19 @@ class Creator(object):
                                                   self.imageName))
 
     def _populateManifest(self):
-        system, version = self._getVmSystem()
-        self.system = getSystemMethods(system)
-        
-        arch = self._getVmArch()
+        os, osversion = self._getVmSystem()
+        self.system = getSystemMethods(os)
 
-        manifest = '\t<created>%s</created>\n' % datetime.now()
-        manifest += '\t<type>%s</type>\n' % self.imageType
-        manifest += '\t<version>%s</version>\n' % self.imageVersion
-        manifest += '\t<arch>%s</arch>\n' % arch
-        manifest += '\t<user>%s</user>\n' % self.username
-        manifest += '\t<os>%s</os>\n' % system
-        manifest += '\t<osversion>%s</osversion>\n' % version
-        
-        filePutContent(self.manifest, '<manifest>\n%s</manifest>\n' % manifest)
+        manifest = fileGetContent('%s/share/template/manifest.xml.tpl')
+        manifest = manifest % {'create': datetime.now(),
+                               'type': self.imageType,
+                               'version': self.imageVersion,
+                               'arch': arch,
+                               'user': self.username,
+                               'os': os,
+                               'osversion': osversion }
 
+        filePutContent(self.manifest, manifest)
 
     def _getVmSystem(self):
         # TODO: Maybe use this to automatically determine config for install?
@@ -120,8 +123,8 @@ class Creator(object):
             return
         
         ret = sshCmd('%s %s' % (self.system.installCmd, self.options.packages),
-                        self.vmAddress, self.sshKey, self.vmSshPort,
-                        stderr=self.stderr, stdout=self.stdout)
+                      self.vmAddress, self.sshKey, self.vmSshPort,
+                      stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
             printError('An error occured while installing packages')
@@ -143,7 +146,7 @@ class Creator(object):
 
     def _setupContextualisation(self):
         oneContext = '/usr/local/bin/onecontext'
-        scp('%s/share/one/onecontext' % modulePath, 'root@%s:%s' % (self.vmAddress, oneContext),
+        scp('%s/share/context/onecontext' % modulePath, 'root@%s:%s' % (self.vmAddress, oneContext),
             self.sshKey, self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
 
         tmpRcLocal = '/tmp/stratus-rclocal.tmp'
@@ -155,6 +158,8 @@ class Creator(object):
 
         scp(tmpRcLocal, 'root@%s:/etc/rc.local' % self.vmAddress, self.sshKey,
             self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
+
+        os.remove(tmpRcLocal)
 
     def create(self):
         printAction('Starting image creation')

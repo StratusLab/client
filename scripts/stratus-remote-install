@@ -48,6 +48,7 @@ class StratusSimpleRun(object):
         self.launchSimpleRun()
         
     def execute(self, command, shell=False, exitOnError=True):
+        # TODO: Use functions in Util
     	process = subprocess.Popen(command, shell=shell)
         process.wait()
         if process.returncode != 0 and exitOnError:
@@ -55,6 +56,7 @@ class StratusSimpleRun(object):
             sys.exit(1)
 
     def sshCmd(self, command, shell=False, exitOnError=True):
+        # TODO: Use functions in Util
         sshCmd = ['ssh']
         sshCmd.extend(self.options.sshOptions.split(' '))
         sshCmd.append(self.options.frontend)
@@ -62,6 +64,7 @@ class StratusSimpleRun(object):
         self.execute(sshCmd, shell, exitOnError)
 
     def scp(self, src, dest):
+        # TODO: Use functions in Util
         scpCmd = ['scp']
         scpCmd.extend(self.options.scpOptions.split(' '))
         scpCmd.append(src)
@@ -69,6 +72,7 @@ class StratusSimpleRun(object):
         self.execute(scpCmd)
 
     def launchSimpleRun(self):
+        # TODO: Use standart function to display message
         print 'Multi-install workaround...'
         self.multiInstallWorkaround()
         print 'Upload stratuslab...'

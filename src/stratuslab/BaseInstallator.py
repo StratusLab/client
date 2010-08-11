@@ -4,6 +4,7 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 
 class BaseInstallator(object):
+    
     def __init__(self):
         # Default network added automatically at installation
         # Make sure one_%(name)s_* exist in the config 

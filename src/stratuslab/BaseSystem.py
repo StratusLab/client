@@ -1,10 +1,11 @@
 import os
 import shutil
 import subprocess
+from datetime import datetime
+
 from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
-from datetime import datetime
 
 class BaseSystem(object):
     

@@ -4,3 +4,4 @@ class InstallatorFactory(object):
     
     def getInstallator(self):
         return one.OneInstallator()
+    

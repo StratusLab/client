@@ -23,16 +23,19 @@ class Testor(object):
         
     def runTests(self):
         printAction('Launching smoke test')
+        
+        printStep('Starting VM')
         self.startVmTest()
+        
+        printStep('Shutting down VM')
         self.stopVmTest()
+
         printAction('Smoke test finished')
     
     def buildVmTemplate(self):
         self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
     
     def startVmTest(self):
-        printStep('Starting VM')
-        
         self.buildVmTemplate()
         self.vmId = self.cloud.vmStart(self.vmTemplate)
         
@@ -42,9 +45,7 @@ class Testor(object):
             printError('Failing to start VM')
         
     def stopVmTest(self):
-        printStep('Shutting down VM')
         vmStopped = self.cloud.vmStop(self.vmId)
         
         if not vmStopped:
             printError('Failing to stop VM')
-    

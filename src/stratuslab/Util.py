@@ -1,14 +1,13 @@
+import os
 import os.path
+import subprocess
 import sys
 import time
-
-import os
-import subprocess
 import urllib2
 from ConfigParser import SafeConfigParser
 
-defaultConfigSection = 'stratuslab'
 
+defaultConfigSection = 'stratuslab'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
 
@@ -76,7 +75,7 @@ def shaHexDigest(string):
     try:
         import hashlib
         shaMethod = hashlib.sha1
-    except:
+    except ImportError:
         import sha
         shaMethod = sha.new
 

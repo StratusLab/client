@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-import sys
-
 import os
+import sys
 from optparse import OptionParser
+
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
-import stratuslab
+from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase   
 from stratuslab.Configurator import Configurator
 
@@ -19,12 +19,19 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(stratuslab.__file__)))
         usage = 'usage: %prog [options] [key value]'
         self.parser = OptionParser(usage=usage)
-        self.parser.add_option('-c', '--config', dest='configFile', help='default configuration file', metavar='FILE', default='%s/conf/stratuslab.cfg.ref' % self.modulePath)
-        self.parser.add_option('-k', '--keys', dest='showDefaultKeys', help='display keys and default value', action="store_true", default=False)
-        self.parser.add_option('-r', action='store_true', dest='revert', default=False, help='remove previous configuration')
+
+        self.parser.add_option('-c', '--config', dest='configFile',
+                help='default configuration file', metavar='FILE',
+                default='%s/conf/stratuslab.cfg.ref' % modulePath)
+        self.parser.add_option('-k', '--keys', dest='showDefaultKeys',
+                help='display keys and default value', action="store_true",
+                default=False)
+        self.parser.add_option('-r', action='store_true', dest='revert',
+                help='remove previous configuration',
+                default=False)
+
         self.options, self.args = self.parser.parse_args()
 
     def doWork(self):

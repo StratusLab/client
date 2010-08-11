@@ -20,8 +20,8 @@ class MainProgram(CommandBase):
 
     def parse(self):
         usage = 'usage: %prog [options] manifest'
-
         self.parser = OptionParser(usage=usage)
+
         self.parser.add_option('-c', '--config', dest='configFile',
                 help='configuration file', metavar='FILE',
                 default='%s/conf/stratuslab.cfg' % modulePath)
@@ -31,7 +31,7 @@ class MainProgram(CommandBase):
         self.parser.add_option('-t', '--protocol', dest='uploadProtocol',
                 help='upload protocol', default='https', metavar='NAME')
         self.parser.add_option('-o', '--option', dest='option',
-                help='additional option for upload', default='')
+                help='additional upload option (curl for the moment)', default='')
         self.parser.add_option('-u', '--username', dest='username',
                 default=os.getenv('STRATUS_USER', None))
         self.parser.add_option('-p', '--password', dest='password',
@@ -39,7 +39,7 @@ class MainProgram(CommandBase):
 
         self.options, self.args = self.parser.parse_args()
 
-    def parseOptions(self):
+    def checkOptions(self):
         if not os.path.isfile(self.options.configFile):
             self.parser.error('Configuration file does not exist')
 
@@ -70,7 +70,7 @@ class MainProgram(CommandBase):
         
 
     def doWork(self):
-        self.parseOptions()
+        self.checkOptions()
         uploader = Uploader(self.config, self.manifest, self.options)
         uploader.start()
         

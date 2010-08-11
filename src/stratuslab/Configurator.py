@@ -9,6 +9,7 @@ class Configurator(object):
 
     def __init__(self, configFile):
         self.baseConfigFile = configFile
+        
         if not os.path.isfile(self.baseConfigFile):
             raise ValueError('Base configuration file does not exist')
 

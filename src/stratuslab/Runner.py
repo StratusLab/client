@@ -1,9 +1,9 @@
 import os.path
 
-from stratuslab.Util import printError
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
+from stratuslab.Util import printError
 from stratuslab.Util import printStep
 
 class Runner(object):

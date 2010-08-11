@@ -2,7 +2,6 @@ import os
 import os.path
 
 from stratuslab.BaseInstallator import BaseInstallator
-from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
@@ -106,7 +105,8 @@ class OneInstallator(BaseInstallator):
 
     def _copyContextualizationScript(self, oneHome):
         self.frontend.createDirsCmd('%s/share/scripts/' % oneHome)
-        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome, fileGetContent('%s/share/one/init.sh' % modulePath))
+        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome,
+                fileGetContent('%s/share/context/init.sh' % modulePath))
 
     # -------------------------------------------
     #   Front-end file sharing management

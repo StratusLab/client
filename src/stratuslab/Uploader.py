@@ -150,7 +150,7 @@ class Uploader(object):
         self._parseManifest()
 
         printStep('Uploading appliance')
-        #self._uploadFile(self.manifest.replace(self.manifestExt, ''))
+        self._uploadFile(self.manifest.replace(self.manifestExt, ''))
 
         printStep('Uploading manifest')
         self._uploadFile(self.manifest, manifest=True)
@@ -158,3 +158,4 @@ class Uploader(object):
         printAction('Appliance uploaded successfully')
         print '\n\t%s' % self.uploadUrl
         print '\t%s' % self.uploadUrl.replace(self.manifestExt, '')
+        

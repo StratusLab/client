@@ -148,15 +148,10 @@ class CentOS(BaseSystem):
     # -------------------------------------------
         
     def configureNetwork(self, networkInterface, bridge):
-        self.filePutContentsCmd(
-                                '/etc/sysconfig/network-scripts/ifcfg-%s' % networkInterface,
-                                'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge)
-                                )
-        self.filePutContentsCmd(
-                                '/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
-                                'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge
-                                )
+        self.filePutContentsCmd('/etc/sysconfig/network-scripts/ifcfg-%s' % networkInterface,
+                'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge))
+        self.filePutContentsCmd('/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
+                'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge)
         self.executeCmd(['service', 'network', 'restart'])
 
 system = CentOS()
-

@@ -27,8 +27,8 @@ class MainProgram(CommandBase):
 
     def parse(self):        
         usage = 'usage: %prog [options] stock-image'
-        
         self.parser = OptionParser(usage=usage)
+
         self.parser.add_option('-c', '--config', dest='configFile',
                 help='configuration file', metavar='FILE',
                 default='%s/conf/stratuslab.cfg' % modulePath)
@@ -58,9 +58,10 @@ class MainProgram(CommandBase):
         self.parser.add_option('--template', dest='oneTpl',
                 help='One VM template', metavar='PATH',
                 default=None)
+                
         self.options, self.args = self.parser.parse_args()
 
-    def parseOptions(self):
+    def checkOptions(self):
         if not os.path.isfile(self.options.configFile):
             self.parser.error('Configuration file does not exist')
 
@@ -74,21 +75,19 @@ class MainProgram(CommandBase):
         if not os.path.isfile(self.stockImg):
             self.parser.error('Stock image %s does not exist' % self.stockImg)
 
-        if self.options.oneTpl:
-            if not os.path.isfile(self.options.oneTpl):
-                self.parser.error('ONE template %s does not exist' % self.options.oneTpl)
+        if self.options.oneTpl and not os.path.isfile(self.options.oneTpl):
+            self.parser.error('ONE template %s does not exist' % self.options.oneTpl)
         else:
             self.options.oneTpl = '%s/share/vm/img-creation-%s.one' % (modulePath,
                                                                        self.config.get('hypervisor'))
 
-        if self.options.destination:
-            if not os.path.isdir(self.options.destination):
-                self.parser.error('Manifest directory %s does not exist' % self.options.destination)
+        if self.options.destination and not os.path.isdir(self.options.destination):
+            self.parser.error('Manifest directory %s does not exist' % self.options.destination)
         else:
             self.options.destination = self.config.get('image_dir')
             
     def doWork(self):
-        self.parseOptions()
+        self.checkOptions()
         self.creator = Creator(self.config, self.options, self.stockImg)
         self.creator.create()
         

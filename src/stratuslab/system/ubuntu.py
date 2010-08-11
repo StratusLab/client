@@ -1,3 +1,4 @@
+from stratuslab.Util import fileGetContent
 from stratuslab.BaseSystem import BaseSystem
 
 class Ubuntu(BaseSystem):
@@ -60,17 +61,7 @@ class Ubuntu(BaseSystem):
             self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
         
         self.filePutContentsCmd('/etc/network/interfaces',
-            'auto %(bridge)s\n'
-            'iface %(bridge)s inet dhcp\n'
-            'pre-up ifconfig %(iface)s down\n'
-            'pre-up brctl addbr %(bridge)s\n'
-            'pre-up brctl addif %(bridge)s %(iface)s\n'
-            'pre-up ifconfig %(iface)s 0.0.0.0\n'
-            'post-down ifconfig %(iface)s down\n'
-            'post-down ifconfig %(bridge)s down\n'
-            'post-down brctl delif %(bridge)s %(iface)s\n'
-            'post-down brctl delbr %(bridge)s\n'
-            % ({'bridge': bridge, 'iface': networkInterface}))
+                fileGetContent('%s/share/template/debian.br.tpl') % ({'bridge': bridge, 'iface': networkInterface}))
 
 system = Ubuntu()
 
