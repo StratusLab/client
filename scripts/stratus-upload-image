@@ -33,9 +33,16 @@ class MainProgram(CommandBase):
                 help='upload protocol', default='https', metavar='NAME')
         self.parser.add_option('-o', '--option', dest='option',
                 help='additional upload option (curl for the moment)', default='')
-        self.parser.add_option('-u', '--username', dest='username',
+        self.parser.add_option('-a', '--archive', dest='archiveFormat', 
+                help='archive and compression format (e.g. tar.gz, tar.bz2, ...)',
+                default='tar.gz', metavar='FORMAT')
+        self.parser.add_option('--upload-protocol', dest='listUploadProtocol',
+                help='list available upload protocol', default=False, action='store_true')
+        self.parser.add_option('--compression-format', dest='listCompressFormat',
+                help='list available compression format', default=False, action='store_true')
+        self.parser.add_option('--username', dest='username',
                 default=os.getenv('STRATUS_USERNAME', None))
-        self.parser.add_option('-p', '--password', dest='password',
+        self.parser.add_option('--password', dest='password',
                 default=os.getenv('STRATUS_PASSWORD', None))
 
         self.options, self.args = self.parser.parse_args()
@@ -60,8 +67,11 @@ class MainProgram(CommandBase):
         if not os.path.isfile(self.manifest.replace(manifestExt, '')):
             self.parser.error('Appliance does not exist')
 
-        if not self.options.uploadProtocol in Uploader.availableProtocol():
-            self.parser.error('Unknow upload protocol.\nAvalable: %s' % ', '.join(Uploader.availableProtocol()))
+        if not self.options.uploadProtocol in Uploader.availableUploadProtocol():
+            self.parser.error('Unknow upload protocol.\n')
+
+        if self.options.archiveFormat not in Uploader.availableCompressionFormat():
+            self.parser.error('Unknow compression format')
 
         if not self.options.repoAddress:
             self.options.repoAddress = self.config.get('app_repo_url')
@@ -71,12 +81,16 @@ class MainProgram(CommandBase):
 
         if not self.options.password:
             self.options.password = self.config.get('app_repo_password')
-        
 
     def doWork(self):
-        self.checkOptions()
-        uploader = Uploader(self.config, self.manifest, self.options)
-        uploader.start()
+        if self.options.listCompressFormat:
+            Uploader.availableCompressionFormat(True)
+        elif self.options.listUploadProtocol:
+            Uploader.availableUploadProtocol(True)
+        else:
+            self.checkOptions()
+            uploader = Uploader(self.config, self.manifest, self.options)
+            uploader.start()
         
 
 if __name__ == '__main__':

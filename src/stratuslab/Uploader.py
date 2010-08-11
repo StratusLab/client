@@ -31,11 +31,13 @@ class Uploader(object):
     def __init__(self, config, manifest, options):
         self.config = config
         self.manifest = manifest
+        self.appliance = self.manifest.replace(manifestExt, '')
         self.username = options.username
         self.password = options.password
         self.uploadOption = options.option
         self.protocol = options.uploadProtocol
         self.repo = options.repoAddress
+        self.compressionFormat = options.archiveFormat
         
         self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.username,
                                                              self.password)]
@@ -56,6 +58,7 @@ class Uploader(object):
         self.arch = xml.find('arch').text
         self.type = xml.find('type').text
         self.version = xml.find('version').text
+        self.compression = xml.find('compression').text
 
     def _uploadFile(self, filename, manifest=False):
         # See in the future for additional methods
@@ -89,27 +92,10 @@ class Uploader(object):
         if ret != 0:
             printError('An error occured while uploading %s' % filename)
 
-#        passwordMgr =  urllib2.HTTPPasswordMgrWithDefaultRealm()
-#        passwordMgr.add_password(None, '%s://%s' % (self.protocol, self.repo),
-#                                 self.password, self.username)
-#        handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
-#        opener = urllib2.build_opener(handler)
-#
-#        file = open(filename, 'r+')
-#        size = os.path.getsize(filename)
-#        data = mmap.mmap(file.fileno(), size)
-#
-#        request = urllib2.Request(repoUrl, data=data)
-#        request.add_header('Content-Type', 'application/octet-stream')
-#        request.get_method = lambda: 'PUT'
-#
-#        opener.open(request)
-#        urllib2.install_opener(opener)
-
     def _parseRepoStructure(self, structure):
         varPattern = '#%s#'
         dirVarPattern = '#%s_#'
-        for part in ('type', 'os', 'arch', 'version', 'osversion'):
+        for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
             if structure.find(varPattern % part) != -1:
                 structure = structure.replace(varPattern % part, getattr(self, part, ''))
 
@@ -139,18 +125,68 @@ class Uploader(object):
             curlCreateDirCmd.pop()
         devNull.close()
 
+    def _compressFile(self, archiveName, format, *files):
+        fileList = ' '.join(files)
+
+
+        formatLetter = ''
+        if format == 'tar.gz':
+            formatLetter = 'z'
+        elif format == 'tar.bz2':
+            formatLetter = 'j'
+        elif format == 'tar.xz':
+            formatLetter = 'J'
+
+        devNull = open('/dev/null', 'w')
+        execute('tar', '-c%sf' % formatLetter, archiveName, fileList,
+                stderr=devNull, stdout=devNull)
+        devNull.close()
+
+    def _compressAppliance(self):
+        self._compressFile('%s.%s' % (self.appliance, self.compressionFormat),
+                           self.compressionFormat, self.appliance)
+        self.appliance = '%s.%s' % (self.appliance, self.compressionFormat)
+        self._addCompressFormatManifest()
+
+    def _addCompressFormatManifest(self):
+        compressionElem = etree.Element('compression')
+        compressionElem.text = self.compressionFormat
+
+        xml = etree.ElementTree()
+        manifest = xml.parse(self.manifest)
+        manifest.append(compressionElem)
+
+        xml.write(self.manifest)
+
     @staticmethod
-    def availableProtocol():
-        return ('http', 'https')
+    def availableCompressionFormat(printIt=False):
+        list = ('tar.gz', 'tar.bz2', 'tar.xz')
+
+        if printIt:
+            print 'Available compression format: %s' % ', '.join(list)
+        else:
+            return list
+
+    @staticmethod
+    def availableUploadProtocol(printIt=False):
+        list = ('http', 'https')
+
+        if printIt:
+            print 'Available upload protocol: %s' % ', '.join(list)
+        else:
+            return list
 
     def start(self):
         printAction('Starting appliance upload')
+
+        printStep('Compressing appliance')
+        self._compressAppliance()
 
         printStep('Parsing manifest')
         self._parseManifest()
 
         printStep('Uploading appliance')
-        self._uploadFile(self.manifest.replace(manifestExt, ''))
+        self._uploadFile(self.appliance)
 
         printStep('Uploading manifest')
         self._uploadFile(self.manifest, manifest=True)

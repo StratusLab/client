@@ -39,7 +39,7 @@ class MainProgram(CommandBase):
                 help='scripts to execute on the VM (separate by space)',
                 default='', metavar='FILE')
         self.parser.add_option('-t', '--type', dest='imageType', metavar='TYPE',
-                help='image type (e.g. base grid.se, grid.wn, ...)', default='base')
+                help='image type (e.g. base, grid.se, grid.wn, ...)', default='base')
         self.parser.add_option('-p', '--packages', dest='packages',
                 help='packages to install on the machine (name separate by space)',
                 default='', metavar='NAME')
@@ -47,8 +47,7 @@ class MainProgram(CommandBase):
                 help='leave the VM running. A public IP will be assigned.',
                 action='store_false', default=True)
         self.parser.add_option('-v', '--img-version', dest='imageVersion',
-                help='revision number of the image', metavar='INT', type='float',
-                default=1.0)
+                help='revision number of the image', metavar='INT', default="1.0")
         self.parser.add_option('-r', '--rename', dest='userImageName',
                 help='rename localy the image else take the name of the base image',
                 default=None, metavar='NAME')
