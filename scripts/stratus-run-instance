@@ -38,8 +38,8 @@ class MainProgram(CommandBase):
                 help='list available instance type',
                 default=False, action='store_true')
         self.parser.add_option('--username', dest='username',
-                help='cloud username. Default STRATUS_USER',
-                default=os.getenv('STRATUS_USER', ''))
+                help='cloud username. Default STRATUS_USERNAME',
+                default=os.getenv('STRATUS_USERNAME', ''))
         self.parser.add_option('--password', dest='password',
                 help='cloud password. Default STRATUS_PASSWORD',
                 default=os.getenv('STRATUS_PASSWORD', ''))

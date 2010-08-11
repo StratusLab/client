@@ -53,8 +53,8 @@ class MainProgram(CommandBase):
                 help='rename localy the image else take the name of the base image',
                 default=None, metavar='NAME')
         self.parser.add_option('--username', dest='username',
-                help='cloud username. Default STRATUS_USER',
-                default=os.getenv('STRATUS_USER', os.getenv('USERNAME', 'nobody')))
+                help='cloud username. Default STRATUS_USERNAME',
+                default=os.getenv('STRATUS_USERNAME', os.getenv('USERNAME', 'nobody')))
         self.parser.add_option('--template', dest='oneTpl',
                 help='One VM template', metavar='PATH',
                 default=None)

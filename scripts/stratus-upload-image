@@ -34,7 +34,7 @@ class MainProgram(CommandBase):
         self.parser.add_option('-o', '--option', dest='option',
                 help='additional upload option (curl for the moment)', default='')
         self.parser.add_option('-u', '--username', dest='username',
-                default=os.getenv('STRATUS_USER', None))
+                default=os.getenv('STRATUS_USERNAME', None))
         self.parser.add_option('-p', '--password', dest='password',
                 default=os.getenv('STRATUS_PASSWORD', None))
 
