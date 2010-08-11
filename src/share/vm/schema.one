@@ -16,13 +16,12 @@ DISK = [
   target   = "sdb",
   readonly = "no" ]
 
-NIC = [ network="public" ]
-%(extra_nic)s
-
+%(vm_nic)s
 %(raw_data)s
 
 CONTEXT = [
-  ip_public = "$NIC[IP, NETWORK=\"private\"]",
+  ip_private = "$NIC[IP, NETWORK=\"private\"]",
+  %(nic_ip)s
   root_pubkey = %(user_key_name)s,
   files     = "%(user_key_path)s %(one_home)s/share/scripts/init.sh",
   %(extra_context)s

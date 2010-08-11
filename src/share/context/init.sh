@@ -1,16 +1,31 @@
 #!/bin/sh -e
 
-if [ -f /mnt/context.sh ]
-then
+if [ -f /mnt/context.sh ]; then
   . /mnt/context.sh
 fi
 
-if [ -n "$IP_PUBLIC" ]; then
-	ifconfig eth0 $IP_PUBLIC
+if [ -n "$IP_PRIVATE" ]; then
+    ifconfig eth0 $IP_PRIVATE
+
+    if [ -n "$PRIVATE_NETMASK" ]; then
+        ifconfig eth0 netmask $PRIVATE_NETMASK
+    fi
 fi
 
-if [ -n "$NETMASK" ]; then
-	ifconfig eth0 netmask $NETMASK
+if [ -n "$IP_PUBLIC" ]; then
+	ifconfig eth1 $IP_PUBLIC
+
+    if [ -n "$PUBLIC_NETMASK" ]; then
+        ifconfig eth1 netmask $PUBLIC_NETMASK
+    fi
+fi
+
+if [ -n "$IP_EXTRA" ]; then
+	ifconfig eth2 $IP_EXTRA
+
+    if [ -n "$EXTRA_NETMASK" ]; then
+        ifconfig eth2 netmask $EXTRA_NETMASK
+    fi
 fi
 
 if [ -f /mnt/$ROOT_PUBKEY ]; then

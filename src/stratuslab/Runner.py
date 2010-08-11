@@ -1,10 +1,12 @@
 import os.path
+import sys
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
+from stratuslab.Util import validateIp
 
 class Runner(object):
 
@@ -20,6 +22,13 @@ class Runner(object):
         self.vmKernel = options.vmKernel
         self.vmRamdisk = options.vmRamdisk
         self.extraContext = options.extraContext.replace('\\n', '\n')
+        self.addressing = options.addressing
+
+        self.defaultVmNic = ['public', 'private']
+
+        # Will contain the NIC string 
+        self.vmNic = ''
+        self.nicIpContext = 'ip_public = "$NIC[IP, NETWORK=\"public\"]",\n'
 
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'), 
@@ -45,9 +54,9 @@ class Runner(object):
         
         vmTemplate = fileGetContent(template)
         cpu, ram, swap = self.getInstanceType().get(self.instanceType)
-            
+
         self._formatOsOptions()
-        self._formatExtraNic()
+        self._formatNicList()
         self._formatRawData()
 
         vmTemplate = vmTemplate % {
@@ -56,12 +65,13 @@ class Runner(object):
             'vm_swap': swap,
             'vm_image': self.image,
             'os_options': self.osOptions,
-            'extra_nic': self.extraNic,
+            'vm_nic': self.vmNic,
             'raw_data': self.rawData,
             'user_key_path': self.userKey,
             'user_key_name': os.path.basename(self.userKey),
             'one_home': self.config.get('one_home'),
             'extra_context': self.extraContext,
+            'nic_ip': self.nicIpContext,
         }
 
         return vmTemplate
@@ -78,9 +88,21 @@ class Runner(object):
 
             self.osOptions += '\n]'
 
-    def _formatExtraNic(self):
+    def _formatNicList(self):
+        if validateIp(self.addressing):
+            self.vmNic += 'NIC = [ network = "public", ip = "%s" ]\n' % self.addressing
+            self.defaultVmNic.remove('public')
+
+        if self.addressing == 'private':
+            self.defaultVmNic.remove('public')
+            self.nicIpContext = ''
+
         if self.extraNic:
-            self.extraNic = 'NIC = [ network = "%s" ]' % self.extraNic
+            self.defaultVmNic.append(self.extraNic)
+            self.nicIpContext += '  ip_extra = "$NIC[IP, NETWORK=\"%s\"]",\n' % self.extraNic
+
+        for nic in self.defaultVmNic:
+            self.vmNic += 'NIC = [ network = "%s" ]\n' % nic
 
     def _formatRawData(self):
         if self.rawData:
