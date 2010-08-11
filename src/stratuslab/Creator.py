@@ -3,7 +3,6 @@ import shutil
 import subprocess
 from datetime import datetime
 
-from softwareproperties.MirrorTest import arch
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.FileAppender import FileAppender
 from stratuslab.Util import fileGetContent
@@ -73,11 +72,11 @@ class Creator(object):
         os, osversion = self._getVmSystem()
         self.system = getSystemMethods(os)
 
-        manifest = fileGetContent('%s/share/template/manifest.xml.tpl')
-        manifest = manifest % {'create': datetime.now(),
+        manifest = fileGetContent('%s/share/template/manifest.xml.tpl' % modulePath)
+        manifest = manifest % {'created': datetime.now(),
                                'type': self.imageType,
                                'version': self.imageVersion,
-                               'arch': arch,
+                               'arch': self._getVmArch(),
                                'user': self.username,
                                'os': os,
                                'osversion': osversion }

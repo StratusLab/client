@@ -1,5 +1,6 @@
-from stratuslab.Util import fileGetContent
 from stratuslab.BaseSystem import BaseSystem
+from stratuslab.Util import fileGetContent
+from stratuslab.Util import modulePath
 
 class Ubuntu(BaseSystem):
 
@@ -61,7 +62,7 @@ class Ubuntu(BaseSystem):
             self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
         
         self.filePutContentsCmd('/etc/network/interfaces',
-                fileGetContent('%s/share/template/debian.br.tpl') % ({'bridge': bridge, 'iface': networkInterface}))
+                fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
 
 system = Ubuntu()
 

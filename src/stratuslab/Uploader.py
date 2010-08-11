@@ -1,4 +1,5 @@
 from stratuslab.Util import execute
+from stratuslab.Util import manifestExt
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
@@ -35,7 +36,6 @@ class Uploader(object):
         self.uploadOption = options.option
         self.protocol = options.uploadProtocol
         self.repo = options.repoAddress
-        self.manifestExt = '.manifest.xml'
         
         self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.username,
                                                              self.password)]
@@ -66,7 +66,7 @@ class Uploader(object):
         imageName = self._parseRepoStructure(self.config.get('app_repo_filename'))
 
         repoUrl = '%s://%s/%s' % (self.protocol, self.repo, imageDirectory)
-        extension = manifest and self.manifestExt or ''
+        extension = manifest and manifestExt or ''
 
         self.uploadUrl = '%s/%s%s' % (repoUrl, imageName, extension)
 
@@ -150,12 +150,12 @@ class Uploader(object):
         self._parseManifest()
 
         printStep('Uploading appliance')
-        self._uploadFile(self.manifest.replace(self.manifestExt, ''))
+        self._uploadFile(self.manifest.replace(manifestExt, ''))
 
         printStep('Uploading manifest')
         self._uploadFile(self.manifest, manifest=True)
 
         printAction('Appliance uploaded successfully')
         print '\n\t%s' % self.uploadUrl
-        print '\t%s' % self.uploadUrl.replace(self.manifestExt, '')
+        print '\t%s' % self.uploadUrl.replace(manifestExt, '')
         

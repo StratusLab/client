@@ -7,6 +7,7 @@ from optparse import OptionParser
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
+from stratuslab.Util import manifestExt
 from stratuslab.Uploader import Uploader
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
@@ -50,10 +51,13 @@ class MainProgram(CommandBase):
 
         self.manifest = self.args[0]
 
+        if not self.manifest.endswith(manifestExt):
+            self.parser.error('Manifest must ends with %s' % manifestExt)
+
         if not os.path.isfile(self.manifest):
             self.parser.error('Appliance manifest does not exist')
 
-        if not os.path.isfile(self.manifest.replace('.manifest.xml', '')):
+        if not os.path.isfile(self.manifest.replace(manifestExt, '')):
             self.parser.error('Appliance does not exist')
 
         if not self.options.uploadProtocol in Uploader.availableProtocol():
