@@ -6,3 +6,4 @@ target
 *.deb
 *~
 nbproject
+src/conf/stratuslab.cfg
