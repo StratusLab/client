@@ -21,8 +21,9 @@ class Runner(object):
         self.rawData = options.rawData
         self.vmKernel = options.vmKernel
         self.vmRamdisk = options.vmRamdisk
-        self.extraContext = options.extraContext.replace('\\n', '\n')
         self.addressing = options.addressing
+        self.extraContextFile = options.extraContext
+        self.extraContext = ''
 
         self.defaultVmNic = ['public', 'private']
 
@@ -58,6 +59,7 @@ class Runner(object):
         self._formatOsOptions()
         self._formatNicList()
         self._formatRawData()
+        self._formatExtraContext()
 
         vmTemplate = vmTemplate % {
             'vm_cpu': cpu,
@@ -99,7 +101,7 @@ class Runner(object):
 
         if self.extraNic:
             self.defaultVmNic.append(self.extraNic)
-            self.nicIpContext += '  ip_extra = "$NIC[IP, NETWORK=\"%s\"]",\n' % self.extraNic
+            self.nicIpContext += 'ip_extra = "$NIC[IP, NETWORK=\"%s\"]",\n' % self.extraNic
 
         for nic in self.defaultVmNic:
             self.vmNic += 'NIC = [ network = "%s" ]\n' % nic
@@ -108,6 +110,14 @@ class Runner(object):
         if self.rawData:
             self.rawData = 'RAW = [ type="%s", data="%s" ]' % (self.config.get('hypervisor'),
                                                                self.rawData)
+
+    def _formatExtraContext(self):
+        if not self.extraContextFile:
+            return
+        
+        extraContext = open(self.extraContextFile, 'rb')
+        self.extraContext = ',\n'.join(extraContext.read().split('\n'))
+        extraContext.close()
 
     def runInstance(self):
         vmTpl = self._populateTemplate(self.vmTemplatePath)
