@@ -1,9 +1,8 @@
 #!/bin/sh -e
 
-mount -t iso9660 /dev/sdc /mnt
+mount -t iso9660 /dev/sdn /mnt
 
-if [ -f /mnt/context.sh ]
-then
+if [ -f /mnt/context.sh ]; then
   . /mnt/init.sh
 fi
 

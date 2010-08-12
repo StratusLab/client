@@ -5,25 +5,27 @@ MEMORY = %(vm_ram)s
 
 %(os_options)s
 
-DISK   = [
-  source   = "%(vm_image)s",
-  target   = "sda",
-  readonly = "no" ]
+DISK = [
+source   = "%(vm_image)s",
+target   = "sda",
+readonly = "no"
+]
 
 DISK = [
-  type     = swap,
-  size     = %(vm_swap)s,
-  target   = "sdb",
-  readonly = "no" ]
+type     = swap,
+size     = %(vm_swap)s,
+target   = "sdb",
+readonly = "no"
+]
 
 %(vm_nic)s
 %(raw_data)s
 
 CONTEXT = [
-  ip_private = "$NIC[IP, NETWORK=\"private\"]",
-  %(nic_ip)s
-  root_pubkey = %(user_key_name)s,
-  files     = "%(user_key_path)s %(one_home)s/share/scripts/init.sh",
-  %(extra_context)s
-  target    = "sdc"
+ip_private = "$NIC[IP, NETWORK=\"private\"]",
+%(nic_ip)s
+root_pubkey = %(user_key_name)s,
+files     = "%(user_key_path)s %(one_home)s/share/scripts/init.sh",
+%(extra_context)s
+target    = "sdn"
 ]
