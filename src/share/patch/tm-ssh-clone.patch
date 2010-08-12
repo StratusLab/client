@@ -1,0 +1,31 @@
+diff --git a/src/tm_mad/ssh/tm_clone.sh b/src/tm_mad/ssh/tm_clone.sh
+index b853119..e828376 100755
+--- a/src/tm_mad/ssh/tm_clone.sh
++++ b/src/tm_mad/ssh/tm_clone.sh
+@@ -43,9 +43,24 @@ log "Creating directory $DST_DIR"
+ exec_and_log "ssh $DST_HOST mkdir -p $DST_DIR"
+ 
+ case $SRC in
+-http://*)
++http*.tar.gz|http*.tgz)
++    log "Downloading tar.gz archive $SRC"
++    exec_and_log "download_extract $SRC $DST_PATH.tar.gz $DST_PATH"
++    ;;
++
++http*.bz2)
++    log "Downloading tar.bz2 archive $SRC"
++    exec_and_log "download_extract $SRC $DST_PATH.tar.bz2 $DST_PATH"
++    ;;
++
++http*.xz)
++    log "Downloading tar.xz archive $SRC"
++    exec_and_log "download_extract $SRC $DST_PATH.tar.xz $DST_PATH"
++    ;;
++
++http*)
+     log "Downloading $SRC"
+-    exec_and_log "ssh $DST_HOST wget -O $DST_PATH $SRC"
++    exec_and_log "curl -k -o $DST_PATH $SRC"
+     ;;
+ 
+ *)
