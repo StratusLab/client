@@ -1,8 +1,8 @@
 diff --git a/src/tm_mad/tm_common.sh b/src/tm_mad/tm_common.sh
-index 0f589fe..2cf6fb0 100644
+index 0f589fe..1e98122 100644
 --- a/src/tm_mad/tm_common.sh
 +++ b/src/tm_mad/tm_common.sh
-@@ -145,3 +145,51 @@ function timeout_exec_and_log
+@@ -145,3 +145,56 @@ function timeout_exec_and_log
          exit $CMD_CODE
      fi
  }
@@ -12,8 +12,13 @@ index 0f589fe..2cf6fb0 100644
 +    URL=$1
 +    ARCHIVE=$2
 +    FILENAME=$3
++    HOST=$4
 +
-+    curl -k -o $ARCHIVE $URL
++    if [ "x$HOST" != "x" ]; then
++        HOST="ssh $HOST"
++    fi
++
++    $HOST curl -k -o $ARCHIVE $URL
 +
 +    extract_tar $ARCHIVE $FILENAME
 +

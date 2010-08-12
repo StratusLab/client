@@ -11,7 +11,7 @@ class Ubuntu(BaseSystem):
             'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
             'scons', 'g++', 'git-core', 'ssh', 'libvirt-bin', 'genisoimage'
         ]
-        self.nodeDeps = ['ruby']
+        self.nodeDeps = ['ruby', 'curl']
         self.hypervisorDeps = {
             'xen': ['xen-hypervisor-3.3'],
             'kvm': ['qemu-kvm'],
