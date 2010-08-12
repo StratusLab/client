@@ -14,7 +14,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.Util import parseConfig
 
 class MainProgram(CommandBase):
-    '''A command-line program to upload StratusLab image.'''
+    '''A command-line program to upload StratusLab appliance.'''
 
     def __init__(self):
         super(MainProgram, self).__init__()
@@ -32,10 +32,13 @@ class MainProgram(CommandBase):
         self.parser.add_option('-t', '--protocol', dest='uploadProtocol',
                 help='upload protocol', default='https', metavar='NAME')
         self.parser.add_option('-o', '--option', dest='option',
-                help='additional upload option (curl for the moment)', default='')
+                help='additional curl option', default='')
         self.parser.add_option('-a', '--archive', dest='archiveFormat', 
                 help='archive and compression format (e.g. tar.gz, tar.bz2, ...)',
                 default='tar.gz', metavar='FORMAT')
+        self.parser.add_option('-f', '--force', dest='forceUpload',
+                help='force upload of the appliance even if already exist.',
+                default=False, action='store_true')
         self.parser.add_option('--upload-protocol', dest='listUploadProtocol',
                 help='list available upload protocol', default=False, action='store_true')
         self.parser.add_option('--compression-format', dest='listCompressFormat',
