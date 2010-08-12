@@ -12,6 +12,7 @@ defaultConfigSection = 'stratuslab'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
 manifestExt = '.manifest.xml'
+cliLineSplitChar = '#'
 
 
 def validateConfig(config):

@@ -1,6 +1,3 @@
-import os.path
-#!/usr/bin/env python
-
 import os
 import sys
 from optparse import OptionParser
@@ -8,6 +5,7 @@ from optparse import OptionParser
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
+from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import validateIp
 from stratuslab.Util import modulePath
 from stratuslab.Runner import Runner
@@ -39,8 +37,10 @@ class MainProgram(CommandBase):
         self.parser.add_option('-l', '--list-type', dest='listType',
                 help='list available instance type',
                 default=False, action='store_true')
-        self.parser.add_option('--context', dest='extraContext', metavar='FILE',
+        self.parser.add_option('--context-file', dest='extraContextFile', metavar='FILE',
                 help='extra context file with one key=value per line')
+        self.parser.add_option('--context', dest='extraContext', metavar='CONTEXT',
+                help='extra context string (separate by %s)' % cliLineSplitChar)
         self.parser.add_option('--username', dest='username',
                 help='cloud username. Default STRATUS_USERNAME',
                 default=os.getenv('STRATUS_USERNAME', ''))
@@ -57,12 +57,9 @@ class MainProgram(CommandBase):
                 help='machine ramdisk', default=None)
         self.parser.add_option('--kernel', dest='vmKernel', metavar='PATH',
                 help='machine kernel', default=None)
-        # TODO: Use runner dict to display variable list
         self.parser.add_option( '--template', dest='vmTemplate', metavar='FILE',
-                help=('machine template. Available substitution variables: '
-                        'vm_image, vm_pu, vm_ram, vm_ram, user_key_name, '
-                        'user_key_path, extra_context, extra_nic, '
-                        'raw_data, os_options'),
+                help='machine template. Available substitution variables: %s' % (
+                ', '.join(Runner.getVmTemplatesParameters())),
                 default='%s/share/vm/schema.one' % modulePath)
 
         self.options, self.args = self.parser.parse_args()
@@ -73,8 +70,6 @@ class MainProgram(CommandBase):
 
         if len(self.args) != 1:
             self.parser.error('Please specify the machine image to start')
-        #elif not os.path.isfile(self.args[0]):
-        #    self.parser.error('Specified machine image does not exists')
 
         self.image = self.args[0]
 
@@ -87,7 +82,7 @@ class MainProgram(CommandBase):
         if (self.options.addressing not in ('', 'private')) and not validateIp(self.options.addressing):
             self.parser.error('Invalide addressing')
 
-        if self.options.extraContext and not os.path.isfile(self.options.extraContext):
+        if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
 
     def displayInstanceType(self):

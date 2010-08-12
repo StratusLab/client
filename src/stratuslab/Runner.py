@@ -1,7 +1,7 @@
-import os.path
-import sys
+import os
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
@@ -11,32 +11,39 @@ from stratuslab.Util import validateIp
 class Runner(object):
 
     def __init__(self, image, options, config):
-        self.image = image
         self.config = config
         self.instanceNumber = options.instanceNumber
         self.instanceType = options.instanceType
-        self.userKey = options.userKey
         self.vmTemplatePath = options.vmTemplate
         self.extraNic = options.extraNic
         self.rawData = options.rawData
         self.vmKernel = options.vmKernel
         self.vmRamdisk = options.vmRamdisk
         self.addressing = options.addressing
-        self.extraContextFile = options.extraContext
-        self.extraContext = ''
-
-        self.defaultVmNic = ['public', 'private']
-
-        # Will contain the NIC string 
-        self.vmNic = ''
-        self.nicIpContext = 'ip_public = "$NIC[IP, NETWORK=\"public\"]",\n'
+        self.extraContextFile = options.extraContextFile
+        self.extraContextData = options.extraContext
 
         self.cloud = CloudConnectorFactory.getCloud()
-        self.cloud.setFrontend(self.config.get('frontend_ip'), 
+        self.cloud.setFrontend(self.config.get('frontend_ip'),
                                self.config.get('one_port'))
         self.cloud.setCredentials(options.username, options.password)
 
-        self.osOptions = ''
+        # NIC which are set by default
+        self.defaultVmNic = ['public', 'private']
+
+        # VM template parameters initialization
+        self.vm_cpu = 0
+        self.vm_ram = 0
+        self.vm_swap = 0
+        self.vm_image = image
+        self.vm_nic = ''
+        self.os_options = ''
+        self.raw_data = ''
+        self.nic_ip = 'ip_public = "$NIC[IP, NETWORK=\\"public\\"]",\n'
+        self.extra_context = ''
+        self.one_home = ''
+        self.user_key_path = options.userKey
+        self.user_key_name = os.path.basename(options.userKey)
 
     @staticmethod
     def getInstanceType():
@@ -50,77 +57,109 @@ class Runner(object):
         }
         return types
 
-    def _populateTemplate(self, template):
-        # TODO: Additional NIC are not set for the moment by the init script. Need a way to do it
-        
-        vmTemplate = fileGetContent(template)
-        cpu, ram, swap = self.getInstanceType().get(self.instanceType)
+    @staticmethod
+    def getVmTemplatesParameters():
+        params = (
+            'vm_cpu',
+            'vm_ram',
+            'vm_swap',
+            'vm_image',
+            'vm_nic',
+            'os_options',
+            'raw_data',
+            'nic_ip',
+            'extra_context',
+            'one_home',
+            'user_key_path',
+            'user_key_name'
+        )
+        return params
 
-        self._formatOsOptions()
-        self._formatNicList()
-        self._formatRawData()
-        self._formatExtraContext()
+    def _buildVmTemplate(self, template):
+        baseVmTemplate = fileGetContent(template)
+        self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
 
-        vmTemplate = vmTemplate % {
-            'vm_cpu': cpu,
-            'vm_ram': ram,
-            'vm_swap': swap,
-            'vm_image': self.image,
-            'os_options': self.osOptions,
-            'vm_nic': self.vmNic,
-            'raw_data': self.rawData,
-            'user_key_path': self.userKey,
-            'user_key_name': os.path.basename(self.userKey),
-            'one_home': self.config.get('one_home'),
-            'extra_context': self.extraContext,
-            'nic_ip': self.nicIpContext,
-        }
+        self._manageOsOptions()
+        self._manageNic()
+        self._manageRawData()
+        self._manageExtraContext()
 
-        return vmTemplate
+        return baseVmTemplate % self._vmParamDict()
 
-    def _formatOsOptions(self):
-        if self.vmKernel or self.vmRamdisk:
-            self.osOptions = 'OS = ['
+    def _vmParamDict(self):
+        params = {}
+        for param in self.getVmTemplatesParameters():
+            params[param] = getattr(self, param, '')
 
+        return params
+
+    def _manageOsOptions(self):
+        if not self.vmKernel and not self.vmRamdisk:
+            return
+
+        if self.vmKernel:
+            self.os_options += 'kernel = "%s"' % self.vmKernel
+
+        if self.vmRamdisk:
             if self.vmKernel:
-                self.osOptions += '\nkernel = "%s",' % self.vmKernel
+                self.os_options += ', '
+            self.os_options += 'initrd = "%s"' % self.vmRamdisk
 
-            if self.vmRamdisk:
-                self.osOptions += '\ninitrd = "%s",' % self.vmRamdisk
+        self.os_options = 'OS = [ %s ]' % self.os_options
 
-            self.osOptions += '\n]'
-
-    def _formatNicList(self):
+    def _manageNic(self):
         if validateIp(self.addressing):
-            self.vmNic += 'NIC = [ network = "public", ip = "%s" ]\n' % self.addressing
+            self.vm_nic += 'NIC = [ network = "public", ip = "%s" ]\n' % self.addressing
             self.defaultVmNic.remove('public')
 
         if self.addressing == 'private':
             self.defaultVmNic.remove('public')
-            self.nicIpContext = ''
+            self.nic_ip = ''
 
         if self.extraNic:
             self.defaultVmNic.append(self.extraNic)
-            self.nicIpContext += 'ip_extra = "$NIC[IP, NETWORK=\"%s\"]",\n' % self.extraNic
+            self.nic_ip += 'ip_extra = "$NIC[IP, NETWORK=\\"%s\\"]",\n' % self.extraNic
 
         for nic in self.defaultVmNic:
-            self.vmNic += 'NIC = [ network = "%s" ]\n' % nic
+            self.vm_nic += 'NIC = [ network = "%s" ]\n' % nic
 
-    def _formatRawData(self):
+    def _manageRawData(self):
         if self.rawData:
-            self.rawData = 'RAW = [ type="%s", data="%s" ]' % (self.config.get('hypervisor'),
-                                                               self.rawData)
+            self.raw_data = 'RAW = [ type="%s", data="%s" ]' % (self.config.get('hypervisor'),
+                                                                self.rawData)
 
-    def _formatExtraContext(self):
-        if not self.extraContextFile:
-            return
-        
-        extraContext = open(self.extraContextFile, 'rb')
-        self.extraContext = ',\n'.join(extraContext.read().split('\n'))
-        extraContext.close()
+    def _manageExtraContext(self):
+        extraContext = {}
+        contextElems = []
+
+        if self.extraContextFile:
+            contextFile = open(self.extraContextFile, 'rb')
+            contextFileData = contextFile.read()
+            contextFile.close()
+            contextElems.extend(contextFileData.split('\n'))
+
+        if self.extraContextData:
+            contextElems.extend(self.extraContextData.split(cliLineSplitChar))
+
+        for line in contextElems:
+            if len(line) == 0:
+                continue
+
+            contextLine = line.split('=')
+
+            if len(contextLine) < 2:
+                printError('Error while parsing contextualization file.\n'
+                           'Syntax error in line `%s`' % line)
+
+            extraContext[contextLine[0]] = ('%s' % cliLineSplitChar).join(contextLine[1:])
+
+        print extraContext
+        contextData = ['%s = %s,' % (key, value) for key, value in extraContext.items()]
+
+        self.extra_context = '\n'.join(contextData)
 
     def runInstance(self):
-        vmTpl = self._populateTemplate(self.vmTemplatePath)
+        vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 
         plurial = { True: 'machines',
                     False: 'machine' }
@@ -128,14 +167,14 @@ class Runner(object):
         printAction('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
-        for i in range(self.instanceNumber):
+        for vm in range(self.instanceNumber):
             try:
                 vmId = self.cloud.vmStart(vmTpl)
             except Exception, e:
                 printError(e)
                 
             vmIp = self.cloud.getVmIp(vmId).get('public', 'No public IP')
-            printStep('VM %s: %s' % (vmId, vmIp))
+            printStep('VM %s : ID %s, IP %s' % (vm, vmId, vmIp))
 
         printAction('Done!')
         
