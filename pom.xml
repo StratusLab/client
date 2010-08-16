@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>eu.stratuslab</groupId>
-	<artifactId>stratuslab</artifactId>
-	<packaging>pom</packaging>
-	<version>0.1.0-SNAPSHOT</version>
-	<name>stratuslab</name>
+	<groupId>stratuslab-integration</groupId>
+	<artifactId>StratusLab</artifactId>
+	<packaging>rpm</packaging>
+	<version>0.1-StratusLab.SNAPSHOT</version>
+	<name>StratusLab</name>
 	<url>http://stratuslab.eu/</url>
 
 	<distributionManagement>
@@ -30,10 +31,11 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>rpm-maven-plugin</artifactId>
+					    <extensions>true</extensions>
 						<executions>
 							<execution>
 								<goals>
-									<goal>attached-rpm</goal>
+									<goal>rpm</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -49,15 +51,32 @@
 		<plugins>
 
 			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-deploy-plugin</artifactId>
+			  <version>2.5</version>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>rpm-maven-plugin</artifactId>
 				<configuration>
-					<copyright>StratusLab Collaboration</copyright>
-					<distribution>StratusLab</distribution>
-					<group>StratusLab</group>
-					<packager>StratusLab</packager>
-					<changelogFile>src/changelog</changelogFile>
-					<buildarch>noarch</buildarch>
+				  <release>${RELEASE}</release>
+				  <summary>StratusLab</summary>
+				  <name>stratuslab</name>
+				  <group>System</group>
+				  <vendor>StratusLab</vendor>
+				  <packager>StratusLab</packager>
+				  <copyright>StratusLab Collaboration</copyright>
+				  <url>http://stratuslab.eu/</url>
+				  <provides>
+				  </provides>
+				  <requires>
+				  	<require>one</require>
+				  </requires>
+				  <distribution>StratusLab</distribution>
+				  <group>StratusLab</group>
+				  <packager>StratusLab</packager>
+			      <buildarch>noarch</buildarch>
 					<mappings>
 						<mapping>
 							<directory>/usr/bin</directory>
@@ -137,5 +156,10 @@ export RPM_BUILD_ROOT=
 		</plugins>
 
 	</build>
+
+  <properties>
+    <maven.build.timestamp.format>yyyyMMdd.HHmmss</maven.build.timestamp.format>
+    <RELEASE>StratusLab.0.${maven.build.timestamp}</RELEASE>
+  </properties>
 
 </project>
