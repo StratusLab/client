@@ -1,4 +1,6 @@
 import os
+import os.path
+import re
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
@@ -125,6 +127,11 @@ class Runner(object):
 
     def _manageRawData(self):
         if self.rawData:
+            if os.path.isfile(self.rawData):
+                dataFile = open(self.rawData, 'rb')
+                self.rawData = dataFile.read()
+                dataFile.close()
+            self.rawData = re.escape(self.rawData)
             self.raw_data = 'RAW = [ type="%s", data="%s" ]' % (self.config.get('hypervisor'),
                                                                 self.rawData)
 
