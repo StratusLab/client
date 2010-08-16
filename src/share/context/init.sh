@@ -1,31 +1,18 @@
 #!/bin/sh -e
 
-if [ -f /mnt/context.sh ]; then
-  . /mnt/context.sh
-fi
+source /mnt/context.sh
 
-if [ -n "$IP_PRIVATE" ]; then
-    ifconfig eth0 $IP_PRIVATE
-
-    if [ -n "$PRIVATE_NETMASK" ]; then
-        ifconfig eth0 netmask $PRIVATE_NETMASK
-    fi
-fi
+ifconfig eth0 ${IP_PRIVATE}/${NETMASK_PRIVATE}
+route add -net ${NETWORK_PRIVATE}/${NETMASK_PRIVATE} dev eth0
 
 if [ -n "$IP_PUBLIC" ]; then
-	ifconfig eth1 $IP_PUBLIC
-
-    if [ -n "$PUBLIC_NETMASK" ]; then
-        ifconfig eth1 netmask $PUBLIC_NETMASK
-    fi
+    ifconfig eth1 ${IP_PUBLIC}/${NETMASK_PUBLIC}
+    route add -net ${NETWORK_PUBLIC}/${NETMASK_PUBLIC} dev eth1
 fi
 
 if [ -n "$IP_EXTRA" ]; then
-	ifconfig eth2 $IP_EXTRA
-
-    if [ -n "$EXTRA_NETMASK" ]; then
-        ifconfig eth2 netmask $EXTRA_NETMASK
-    fi
+    ifconfig eth2 ${IP_EXTRA}/${NETMASK_EXTRA}
+    route add -net ${NETWORK_EXTRA}/${NETMASK_EXTRA} dev eth2
 fi
 
 if [ -f /mnt/$ROOT_PUBKEY ]; then
@@ -43,3 +30,4 @@ if [ -n "$USERNAME" ]; then
 		chmod -R 600 /home/$USERNAME/.ssh/authorized_keys
 	fi
 fi
+

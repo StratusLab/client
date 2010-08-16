@@ -1,6 +1,6 @@
 import os
-import os.path
 import re
+import sys
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
@@ -31,7 +31,16 @@ class Runner(object):
         self.cloud.setCredentials(options.username, options.password)
 
         # NIC which are set by default
-        self.defaultVmNic = ['public', 'private']
+        # networkType: { 'name': 'MyNetworkNameInOne', 'ip': 'ForcedIp' }, ...
+        # Set ip != 0 to force assignation
+        # networkType are public, private and extra (can be other but not used in init.sh)
+        self.defaultVmNic = { 'public': {
+                                'name': 'public',
+                                'ip': 0 },
+                              'private': {
+                                'name': 'private',
+                                'ip': 0 },
+                            }
 
         # VM template parameters initialization
         self.vm_cpu = 0
@@ -41,7 +50,9 @@ class Runner(object):
         self.vm_nic = ''
         self.os_options = ''
         self.raw_data = ''
-        self.nic_ip = 'ip_public = "$NIC[IP, NETWORK=\\"public\\"]",\n'
+        self.nic_ip = ''
+        self.nic_netmask = ''
+        self.nic_network = ''
         self.extra_context = ''
         self.one_home = self.config.get('one_home')
         self.user_key_path = options.userKey
@@ -70,6 +81,8 @@ class Runner(object):
             'os_options',
             'raw_data',
             'nic_ip',
+            'nic_netmask',
+            'nic_network',
             'extra_context',
             'one_home',
             'user_key_path',
@@ -111,19 +124,25 @@ class Runner(object):
 
     def _manageNic(self):
         if validateIp(self.addressing):
-            self.vm_nic += 'NIC = [ network = "public", ip = "%s" ]\n' % self.addressing
-            self.defaultVmNic.remove('public')
+            self.defaultVmNic['public']['ip'] = self.addressing
 
         if self.addressing == 'private':
-            self.defaultVmNic.remove('public')
-            self.nic_ip = ''
+            del self.defaultVmNic['public']
 
         if self.extraNic:
-            self.defaultVmNic.append(self.extraNic)
-            self.nic_ip += 'ip_extra = "$NIC[IP, NETWORK=\\"%s\\"]",\n' % self.extraNic
+            if self.extraNic not in self.cloud.getNetworkPoolNames():
+                printError('Network %s does not exist' % self.extraNic)
 
-        for nic in self.defaultVmNic:
-            self.vm_nic += 'NIC = [ network = "%s" ]\n' % nic
+            extraNic = {'name': self.extraNic, 'ip': 0}
+            self.defaultVmNic['extra'] = extraNic
+
+        for type, nicInfo in self.defaultVmNic.items():
+            nicIp = (nicInfo['ip'] != 0) and (', ip = "%s"' % nicInfo['ip']) or ''
+            vnetId = self.cloud.networkNameToId(nicInfo['name'])
+            self.vm_nic += ('NIC = [ network = "%s" %s ]\n' % (nicInfo['name'], nicIp))
+            self.nic_ip += ('\nip_%s = "$NIC[IP, NETWORK=\\"%s\\"]",' % (type, nicInfo['name']))
+            self.nic_network += ('\nnetwork_%s = "%s"' % (type, self.cloud.getNetworkAddress(vnetId)))
+            self.nic_netmask += ('\nnetmask_%s = "%s"' % (type, self.cloud.getNetworkNetmask(vnetId)))
 
     def _manageRawData(self):
         if self.rawData:

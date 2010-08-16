@@ -22,10 +22,11 @@ readonly = "no"
 %(raw_data)s
 
 CONTEXT = [
-ip_private = "$NIC[IP, NETWORK=\"private\"]",
 %(nic_ip)s
+%(nic_netmask)s
+%(nic_network)s
 root_pubkey = %(user_key_name)s,
-files     = "%(user_key_path)s %(one_home)s/share/scripts/init.sh",
+files = "%(user_key_path)s %(one_home)s/share/scripts/init.sh",
 %(extra_context)s
-target    = "sdn"
+target = "sdn"
 ]

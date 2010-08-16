@@ -177,6 +177,31 @@ class OneConnector(object):
 
         return info
 
+    def networkNameToId(self, vnetName):
+        xml = etree.fromstring(self.getNetworkPoolInfo())
+        names = xml.findall('VNET/NAME')
+        ids = xml.findall('VNET/ID')
+        vnets = zip(names, ids)
+
+        for name, id in vnets:
+            if name.text == vnetName:
+                return int(id.text)
+
+    def getNetworkAddress(self, vnetId):
+        xml = etree.fromstring(self.getNetworkInfo(vnetId))
+
+        return xml.find('TEMPLATE/NETWORK_ADDRESS').text
+
+    def getNetworkNetmask(self, vnetId):
+        xml = etree.fromstring(self.getNetworkInfo(vnetId))
+        netmask = xml.find('TEMPLATE/NETWORK_SIZE').text 
+        classes = { 'A': '8', 'B': '16', 'C': '24' }
+
+        for letter, mask in classes.items():
+            netmask = netmask.replace(letter, mask)
+
+        return netmask
+
     def addPublicInterface(self, vmTpl):
         # We assume the is a public network
         vmTpl += '\nNIC = [ NETWORK = "public" ]\n'
