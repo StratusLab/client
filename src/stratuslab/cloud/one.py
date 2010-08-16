@@ -5,7 +5,7 @@ import xmlrpclib
 
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import shaHexDigest
-#import xml
+from stratuslab.Util import unifyNetmask
 
 try:
     from lxml import etree
@@ -194,11 +194,7 @@ class OneConnector(object):
 
     def getNetworkNetmask(self, vnetId):
         xml = etree.fromstring(self.getNetworkInfo(vnetId))
-        netmask = xml.find('TEMPLATE/NETWORK_SIZE').text 
-        classes = { 'A': '8', 'B': '16', 'C': '24' }
-
-        for letter, mask in classes.items():
-            netmask = netmask.replace(letter, mask)
+        netmask = unifyNetmask(xml.find('TEMPLATE/NETWORK_SIZE').text)
 
         return netmask
 

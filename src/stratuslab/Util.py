@@ -255,3 +255,11 @@ def isValidIpV6(ip):
         $
     """, re.VERBOSE | re.IGNORECASE | re.DOTALL)
     return pattern.match(ip) is not None
+
+def unifyNetmask(netmask):
+    classes = { 'A': '8', 'B': '16', 'C': '24' }
+
+    for letter, mask in classes.items():
+        netmask = netmask.replace(letter, mask)
+
+    return netmask

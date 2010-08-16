@@ -1,11 +1,11 @@
 import os
-import os.path
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
 from stratuslab.Util import printError
+from stratuslab.Util import unifyNetmask
 
 class OneInstallator(BaseInstallator):
     
@@ -84,6 +84,7 @@ class OneInstallator(BaseInstallator):
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
             else:
                 self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
+        self._addPrivateNetworkRoute()
         
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % modulePath)
@@ -102,6 +103,27 @@ class OneInstallator(BaseInstallator):
                              'network_size': self.config.get('one_%s_network_size' % networkName),
                              'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
+
+    def _addPrivateNetworkRoute(self):
+        routesTmp = '/tmp/stratus-route.tmp'
+        routesFd = open(routesTmp, 'wb')
+        routes = self.frontend.executeCmd(['route', '-n'], stdout=routesFd)
+        routesFd.close()
+
+        routesFd = open(routesTmp, 'rb')
+        routes = routesFd.readlines()
+        routesFd.close()
+
+        addRoute = True
+        for line in routes:
+            if line.startswith(self.config.get('one_private_network')):
+                addRoute = False
+                break
+
+        if addRoute:
+            self.frontend.executeCmd(['route', 'add', '-net', '%s/%s' % (
+                self.config.get('one_private_network'), unifyNetmask(self.config.get('one_private_network_size'))),
+                'dev', 'eth0'])
 
     def _copyContextualizationScript(self, oneHome):
         self.frontend.createDirsCmd('%s/share/scripts/' % oneHome)
