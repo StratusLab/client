@@ -155,7 +155,7 @@ class BaseSystem(object):
         oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
                                        oneKeyPub)
-        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, 0600)
+        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, '0600')
         self._configureCloudAdminSsh()
 
     def configureCloudAdminAccount(self):

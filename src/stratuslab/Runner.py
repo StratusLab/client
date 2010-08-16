@@ -41,7 +41,7 @@ class Runner(object):
         self.raw_data = ''
         self.nic_ip = 'ip_public = "$NIC[IP, NETWORK=\\"public\\"]",\n'
         self.extra_context = ''
-        self.one_home = ''
+        self.one_home = self.config.get('one_home')
         self.user_key_path = options.userKey
         self.user_key_name = os.path.basename(options.userKey)
 
@@ -153,7 +153,6 @@ class Runner(object):
 
             extraContext[contextLine[0]] = ('%s' % cliLineSplitChar).join(contextLine[1:])
 
-        print extraContext
         contextData = ['%s = %s,' % (key, value) for key, value in extraContext.items()]
 
         self.extra_context = '\n'.join(contextData)
