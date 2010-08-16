@@ -49,6 +49,13 @@ class MainProgram(CommandBase):
         self.parser.add_option('--password', dest='password',
                 help='cloud password. Default STRATUS_PASSWORD',
                 default=os.getenv('STRATUS_PASSWORD', ''))
+        self.parser.add_option('--vnc-port', dest='vncPort', metavar='PORT',
+                type='int',
+                help='VNC port number. Note for KVM it\'s the real one , not the '
+                     'VNC port. So for VNC port 0 you should specify 5900, for '
+                     'port 1 is 5901 and so on. ')
+        self.parser.add_option('--vnc-listen', dest='vncListen', metavar='ADDRESS',
+                help='IP to listen on')
         self.parser.add_option('--addressing', dest='addressing', default='',
                 help='specifies the addressing type to use for the instances (private or requested IP)')
         self.parser.add_option('--nic', dest='extraNic', metavar='NAME',
@@ -86,6 +93,9 @@ class MainProgram(CommandBase):
 
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
+
+        if self.options.vncListen and not validateIp(self.options.vncListen):
+            self.parser.error('VNC listen IP is not valid')
 
     def displayInstanceType(self):
         types = Runner.getInstanceType()

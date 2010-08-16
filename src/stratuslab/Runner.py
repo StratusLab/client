@@ -24,6 +24,8 @@ class Runner(object):
         self.addressing = options.addressing
         self.extraContextFile = options.extraContextFile
         self.extraContextData = options.extraContext
+        self.vncPort = options.vncPort
+        self.vncListen = options.vncListen
 
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'),
@@ -54,6 +56,7 @@ class Runner(object):
         self.nic_netmask = ''
         self.nic_network = ''
         self.extra_context = ''
+        self.graphics = ''
         self.one_home = self.config.get('one_home')
         self.user_key_path = options.userKey
         self.user_key_name = os.path.basename(options.userKey)
@@ -84,6 +87,7 @@ class Runner(object):
             'nic_netmask',
             'nic_network',
             'extra_context',
+            'graphics',
             'one_home',
             'user_key_path',
             'user_key_name'
@@ -98,6 +102,7 @@ class Runner(object):
         self._manageNic()
         self._manageRawData()
         self._manageExtraContext()
+        self._manageVnc()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -141,8 +146,8 @@ class Runner(object):
             vnetId = self.cloud.networkNameToId(nicInfo['name'])
             self.vm_nic += ('NIC = [ network = "%s" %s ]\n' % (nicInfo['name'], nicIp))
             self.nic_ip += ('\nip_%s = "$NIC[IP, NETWORK=\\"%s\\"]",' % (type, nicInfo['name']))
-            self.nic_network += ('\nnetwork_%s = "%s"' % (type, self.cloud.getNetworkAddress(vnetId)))
-            self.nic_netmask += ('\nnetmask_%s = "%s"' % (type, self.cloud.getNetworkNetmask(vnetId)))
+            self.nic_network += ('\nnetwork_%s = "%s",' % (type, self.cloud.getNetworkAddress(vnetId)))
+            self.nic_netmask += ('\nnetmask_%s = "%s",' % (type, self.cloud.getNetworkNetmask(vnetId)))
 
     def _manageRawData(self):
         if self.rawData:
@@ -183,6 +188,20 @@ class Runner(object):
 
         self.extra_context = '\n'.join(contextData)
 
+    def _manageVnc(self):
+        vncInfo = []
+
+        if self.vncPort:
+            vncInfo.append('port = "%s"' % self.vncPort)
+
+        if self.vncListen:
+            vncInfo.append('listen = "%s"' % self.vncListen)
+
+        if len(vncInfo) > 0:
+            vncInfo.append('type = "vnc"')
+
+            self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
+
     def runInstance(self):
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 
@@ -192,14 +211,15 @@ class Runner(object):
         printAction('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
-        for vm in range(self.instanceNumber):
+        for vmNb in range(self.instanceNumber):
             try:
                 vmId = self.cloud.vmStart(vmTpl)
             except Exception, e:
                 printError(e)
-                
-            vmIp = self.cloud.getVmIp(vmId).get('public', 'No public IP')
-            printStep('VM %s : ID %s, IP %s' % (vm, vmId, vmIp))
+
+            vmIps = ['\t%s IP: %s' % (name, ip)
+                        for name, ip in self.cloud.getVmIp(vmId).items()]
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, '\n'.join(vmIps)))
 
         printAction('Done!')
         

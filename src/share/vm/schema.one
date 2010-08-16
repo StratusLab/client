@@ -19,6 +19,7 @@ readonly = "no"
 ]
 
 %(vm_nic)s
+%(graphics)s
 %(raw_data)s
 
 CONTEXT = [
