@@ -109,7 +109,7 @@ class StratusSimpleRun(object):
             % self.options.uploadDir]
         
         if self.options.config:
-            for item in self.options.config.split('#'):
+            for item in self.options.config.split(cliLineSplitChar):
                 # hack to make a real copy of the var
                 currentCmd = baseConfigCmd[:]
                 currentCmd.append(item.split(':')[0])
