@@ -55,6 +55,7 @@ vm_dir = /instances
 frontend_ip = 127.0.0.1
 frontend_system = ubuntu
 node_system = ubuntu
+default_gateway = 62.217.120.129
 
 ;
 ; Node network
