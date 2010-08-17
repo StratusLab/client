@@ -1,5 +1,6 @@
 import os
 import traceback
+import datetime
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
@@ -49,14 +50,21 @@ class Testor(object):
         except Exception, ex:
             printError(ex, exit=False)
             logFile = '/tmp/smoke-test.err'
-            stack = traceback.format_stack()
-            log = open(logFile,'aw')
-            log.write('\n'.join(stack))
+            log = self.prepareLog(logFile)
+            traceback.print_exc(file=log)
             log.close()
             printError('For details see %s' % logFile, exit=False)
             printError('Smoke test failed :-(')
 
         printAction('Smoke test finished')
+        
+    def prepareLog(self, logFile):
+        log = open(logFile,'aw')
+        log.write('\n'*3 + '=' * 60 + '\n')
+        log.write(str(datetime.datetime.now()) + '\n')
+        log.write('=' * 60 + '\n'*3)
+        return log
+
         
     def startVm(self):
         self.buildVmTemplate()
