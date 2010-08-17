@@ -50,6 +50,7 @@ class Runner(object):
         self.one_home = self.config.get('one_home')
         self.user_key_path = options.userKey
         self.user_key_name = os.path.basename(options.userKey)
+        self.context_script = options.contextScript % self.config
 
     def assignAttributes(self, dictionary):        
         for key, value in dictionary.items():
@@ -84,7 +85,8 @@ class Runner(object):
             'graphics',
             'one_home',
             'user_key_path',
-            'user_key_name'
+            'user_key_name',
+            'context_script'
         )
         return params
 
