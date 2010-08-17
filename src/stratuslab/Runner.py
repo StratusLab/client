@@ -20,7 +20,8 @@ class Runner(object):
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'),
                                self.config.get('one_port'))
-        self.cloud.setCredentials(options.username, options.password)
+        
+        self.cloud.setCredentials(self.username, self.password)
 
         # NIC which are set by default
         # networkType: { 'name': 'MyNetworkNameInOne', 'ip': 'ForcedIp' }, ...
@@ -48,9 +49,9 @@ class Runner(object):
         self.extra_context = ''
         self.graphics = ''
         self.one_home = self.config.get('one_home')
-        self.user_key_path = options.userKey
-        self.user_key_name = os.path.basename(options.userKey)
-        self.context_script = options.contextScript % self.config
+        self.user_key_path = self.userKey
+        self.user_key_name = os.path.basename(self.userKey)
+        self.context_script = self.contextScript % self.config
 
     def assignAttributes(self, dictionary):        
         for key, value in dictionary.items():
@@ -91,10 +92,11 @@ class Runner(object):
         return params
 
     @staticmethod        
-    def defaultRunOptions(self):
+    def defaultRunOptions():
         options = {'configFile': '%s/conf/stratuslab.cfg' % modulePath,
                    'userKey': os.getenv('STRATUS_KEY', ''),
-                   
+                   'username': os.getenv('STRATUS_USERNAME', ''),
+                   'password': os.getenv('STRATUS_PASSWORD', ''),
                    'instanceNumber': 1,
                    'instanceType': 'm1.small',
                    'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
@@ -105,8 +107,9 @@ class Runner(object):
                    'addressing': '',
                    'extraContextFile': '',
                    'extraContextData': '',
-                   'vncPort': '',
-                   'vncListen': ''}
+                   'vncPort': None,
+                   'vncListen': '',
+                   'contextScript': '%(one_home)s/share/scripts/init.sh'}
         return options
 
 

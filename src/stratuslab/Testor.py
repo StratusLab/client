@@ -4,6 +4,7 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import modulePath
+from stratuslab.Runner import Runner
 
 class Testor(object):
     
@@ -42,10 +43,12 @@ class Testor(object):
     def startVmTest(self):
         self.buildVmTemplate()
 
-        options = self.defaultRunOptions()
-        
+        options = Runner.defaultRunOptions()
+        options['username'] = self.config['one_username']
+        options['password'] = self.config['one_password']
+
         image = 'https://appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
-        runner = Runner(image, self.options.__dict__, self.config)
+        runner = Runner(image, options, self.config)
         runner.runInstance()
         
         self.vmId = self.cloud.vmStart(self.vmTemplate)
