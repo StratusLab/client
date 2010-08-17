@@ -1,3 +1,4 @@
+from stratuslab.Util import networkSizeToNetmask
 import os
 import sys
 import time
@@ -205,7 +206,7 @@ class OneConnector(object):
         
         try:
             addr = xml.find('TEMPLATE/NETWORK_SIZE').text
-            netmask = unifyNetmask(addr)
+            netmask = networkSizeToNetmask(unifyNetmask(addr))
         except:
             pass
 

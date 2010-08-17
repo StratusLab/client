@@ -1,15 +1,14 @@
 import os
 import re
-import sys
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
+from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
-from stratuslab.Util import modulePath
 
 class Runner(object):
 

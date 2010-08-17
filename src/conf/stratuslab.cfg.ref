@@ -22,7 +22,7 @@ network_mask = 24
 ;
 ;; TODO: Don't build ONE each time
 one_git_repo = git://opennebula.org/one.git
-one_branch = one-1.4
+one_branch = one-2.0
 one_build_dir = /tmp/one
 one_clone_name = two
 
@@ -88,6 +88,6 @@ one_public_network_addr =
 
 ; Private network configuration
 one_private_network = 172.16.0.0
-one_private_network_size = 16
+one_private_network_size = 65536
 one_private_network_addr =
 
