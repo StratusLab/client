@@ -40,9 +40,11 @@ class MainProgram(CommandBase):
                 help='force upload of the appliance even if already exist.',
                 default=False, action='store_true')
         self.parser.add_option('--upload-protocol', dest='listUploadProtocol',
-                help='list available upload protocol', default=False, action='store_true')
+                help='list available upload protocol',
+                default=False, action='store_true')
         self.parser.add_option('--compression-format', dest='listCompressFormat',
-                help='list available compression format', default=False, action='store_true')
+                help='list available compression format',
+                default=False, action='store_true')
         self.parser.add_option('--username', dest='username',
                 help='repository username. Default STRATUSLAB_USERNAME',
                 default=os.getenv('STRATUSLAB_USERNAME', ''))
