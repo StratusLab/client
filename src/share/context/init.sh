@@ -2,19 +2,18 @@
 
 source /mnt/context.sh
 
-ifconfig eth0 ${IP_PRIVATE}/${NETMASK_PRIVATE}
-#route add -net ${NETWORK_PRIVATE}/${NETMASK_PRIVATE} dev eth0
+ifconfig eth0 ${IP_PRIVATE}${NETMASK_PRIVATE}
+
+route add -net ${GLOBAL_NETWORK}/${GLOBAL_NETMASK} dev eth0
 
 route add default gw ${DEFAULT_GATEWAY}
 
 if [ -n "$IP_PUBLIC" ]; then
-    ifconfig eth1 ${IP_PUBLIC}/${NETMASK_PUBLIC}
-    #route add -net ${NETWORK_PUBLIC}/${NETMASK_PUBLIC} dev eth1
+    ifconfig eth1 ${IP_PUBLIC}${NETMASK_PUBLIC}
 fi
 
 if [ -n "$IP_EXTRA" ]; then
-    ifconfig eth2 ${IP_EXTRA}/${NETMASK_EXTRA}
-    #route add -net ${NETWORK_EXTRA}/${NETMASK_EXTRA} dev eth2
+    ifconfig eth2 ${IP_EXTRA}${NETMASK_EXTRA}
 fi
 
 if [ -f /mnt/$ROOT_PUBKEY ]; then
