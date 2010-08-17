@@ -1,0 +1,182 @@
+diff --git a/SConstruct b/SConstruct
+index dd9d942..a93cc41 100644
+--- a/SConstruct
++++ b/SConstruct
+@@ -63,7 +63,8 @@ main_env.Append(LIBPATH=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/authm/test/SConstruct b/src/authm/test/SConstruct
+index d254d0d..e1605f0 100644
+--- a/src/authm/test/SConstruct
++++ b/src/authm/test/SConstruct
+@@ -66,7 +66,8 @@ main_env.Append(LIBS=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # MYSQL
+diff --git a/src/common/test/SConstruct b/src/common/test/SConstruct
+index dada640..b414b5e 100644
+--- a/src/common/test/SConstruct
++++ b/src/common/test/SConstruct
+@@ -53,7 +53,8 @@ main_env.Append(LIBS=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/host/test/SConstruct b/src/host/test/SConstruct
+index 295c230..f3406c9 100644
+--- a/src/host/test/SConstruct
++++ b/src/host/test/SConstruct
+@@ -85,7 +85,8 @@ if mysql=='yes':
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/image/test/SConstruct b/src/image/test/SConstruct
+index ac843f7..19db958 100644
+--- a/src/image/test/SConstruct
++++ b/src/image/test/SConstruct
+@@ -97,7 +97,8 @@ if mysql=='yes':
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/pool/test/SConstruct b/src/pool/test/SConstruct
+index 615372a..a8c47d0 100644
+--- a/src/pool/test/SConstruct
++++ b/src/pool/test/SConstruct
+@@ -62,7 +62,8 @@ main_env.Append(LIBS=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # MYSQL
+diff --git a/src/scheduler/SConstruct b/src/scheduler/SConstruct
+index faf7577..eec3424 100644
+--- a/src/scheduler/SConstruct
++++ b/src/scheduler/SConstruct
+@@ -50,7 +50,8 @@ main_env.Append(LIBPATH=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/scheduler/src/pool/test/SConstruct b/src/scheduler/src/pool/test/SConstruct
+index 3475b06..bca8de5 100644
+--- a/src/scheduler/src/pool/test/SConstruct
++++ b/src/scheduler/src/pool/test/SConstruct
+@@ -44,7 +44,8 @@ main_env.Append(LIBPATH=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/scheduler/src/xml/test/SConstruct b/src/scheduler/src/xml/test/SConstruct
+index 4172156..f17f7e4 100644
+--- a/src/scheduler/src/xml/test/SConstruct
++++ b/src/scheduler/src/xml/test/SConstruct
+@@ -41,7 +41,8 @@ main_env.Append(LIBPATH=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/template/test/SConstruct b/src/template/test/SConstruct
+index fafa6a6..c54377f 100644
+--- a/src/template/test/SConstruct
++++ b/src/template/test/SConstruct
+@@ -59,7 +59,8 @@ main_env.Append(LIBS=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # libxml2
+diff --git a/src/um/test/SConstruct b/src/um/test/SConstruct
+index 0c42681..e6f5135 100644
+--- a/src/um/test/SConstruct
++++ b/src/um/test/SConstruct
+@@ -69,7 +69,8 @@ main_env.Append(LIBS=[
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/vm/test/SConstruct b/src/vm/test/SConstruct
+index 9b966d6..ff30b8b 100644
+--- a/src/vm/test/SConstruct
++++ b/src/vm/test/SConstruct
+@@ -97,7 +97,8 @@ if mysql=='yes':
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags
+diff --git a/src/vnm/test/SConstruct b/src/vnm/test/SConstruct
+index a30ec39..cbd1a53 100644
+--- a/src/vnm/test/SConstruct
++++ b/src/vnm/test/SConstruct
+@@ -90,7 +90,8 @@ if mysql=='yes':
+ # Compile flags
+ main_env.Append(CPPFLAGS=[
+     "-g",
+-    "-Wall"
++    "-Wall",
++    "-Werror"
+ ])
+ 
+ # Linking flags

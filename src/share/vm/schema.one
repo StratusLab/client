@@ -7,14 +7,14 @@ MEMORY = %(vm_ram)s
 
 DISK = [
 source   = "%(vm_image)s",
-target   = "sda",
+target   = "hda",
 readonly = "no"
 ]
 
 DISK = [
 type     = swap,
 size     = %(vm_swap)s,
-target   = "sdb",
+target   = "hdb",
 readonly = "no"
 ]
 
@@ -29,5 +29,5 @@ CONTEXT = [
 root_pubkey = %(user_key_name)s,
 files = "%(user_key_path)s %(context_script)s",
 %(extra_context)s
-target = "sdn"
+target = "hdc"
 ]

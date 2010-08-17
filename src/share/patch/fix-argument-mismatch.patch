@@ -1,0 +1,14 @@
+diff --git a/src/scheduler/src/sched/Scheduler.cc b/src/scheduler/src/sched/Scheduler.cc
+index c66ad3f..f58a39c 100644
+--- a/src/scheduler/src/sched/Scheduler.cc
++++ b/src/scheduler/src/sched/Scheduler.cc
+@@ -310,7 +310,8 @@ void Scheduler::match()
+ 
+             vm->get_requirements(vm_cpu,vm_memory,vm_disk);
+ 
+-            host->get_capacity(host_cpu, host_memory, threshold);
++	    // FIXME: Is truncating the threshold correct? 
++            host->get_capacity(host_cpu, host_memory, (int) threshold);
+ 
+             if ((vm_memory <= host_memory) && (vm_cpu <= host_cpu))
+             {

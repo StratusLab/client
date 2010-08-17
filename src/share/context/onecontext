@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-mount -t iso9660 /dev/sdn /mnt
+mount -t iso9660 /dev/hdc /mnt
 
 if [ -f /mnt/context.sh ]; then
   . /mnt/init.sh

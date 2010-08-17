@@ -44,9 +44,11 @@ class MainProgram(CommandBase):
         self.parser.add_option('--compression-format', dest='listCompressFormat',
                 help='list available compression format', default=False, action='store_true')
         self.parser.add_option('--username', dest='username',
-                default=os.getenv('STRATUS_USERNAME', None))
+                help='repository username. Default STRATUSLAB_USERNAME',
+                default=os.getenv('STRATUSLAB_USERNAME', ''))
         self.parser.add_option('--password', dest='password',
-                default=os.getenv('STRATUS_PASSWORD', None))
+                help='repository password. Default STRATUSLAB_PASSWORD',
+                default=os.getenv('STRATUSLAB_PASSWORD', ''))
 
         self.options, self.args = self.parser.parse_args()
 
