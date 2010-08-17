@@ -1,15 +1,14 @@
 import os
 import re
-import sys
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
+from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
-from stratuslab.Util import modulePath
 
 class Runner(object):
 
@@ -45,7 +44,6 @@ class Runner(object):
         self.raw_data = ''
         self.nic_ip = ''
         self.nic_netmask = ''
-        self.nic_network = ''
         self.extra_context = ''
         self.graphics = ''
         self.one_home = self.config.get('one_home')
@@ -54,6 +52,9 @@ class Runner(object):
         self.context_script = self.contextScript % self.config
         self.vmId = None
         self.vmIps = None
+        self.default_gateway = self.config.get('default_gateway')
+        self.global_network = self.config.get('network_addr')
+        self.global_netmask = self.config.get('network_mask')
 
     def assignAttributes(self, dictionary):        
         for key, value in dictionary.items():
@@ -73,6 +74,7 @@ class Runner(object):
 
     @staticmethod
     def getVmTemplatesParameters():
+        # [r.sub(r'%\((\w+)\)s', r'\1', i) for i in r.findall('%\(\w+\)s', c)]
         params = (
             'vm_cpu',
             'vm_ram',
@@ -83,22 +85,24 @@ class Runner(object):
             'raw_data',
             'nic_ip',
             'nic_netmask',
-            'nic_network',
             'extra_context',
             'graphics',
             'one_home',
             'user_key_path',
             'user_key_name',
-            'context_script'
+            'default_gateway',
+            'context_script',
+            'global_network',
+            'global_netmask'
         )
         return params
 
     @staticmethod        
     def defaultRunOptions():
         options = {'configFile': '%s/conf/stratuslab.cfg' % modulePath,
-                   'userKey': os.getenv('STRATUS_KEY', ''),
-                   'username': os.getenv('STRATUS_USERNAME', ''),
-                   'password': os.getenv('STRATUS_PASSWORD', ''),
+                   'userKey': os.getenv('STRATUSLAB_KEY', ''),
+                   'username': os.getenv('STRATUSLAB_USERNAME', ''),
+                   'password': os.getenv('STRATUSLAB_PASSWORD', ''),
                    'instanceNumber': 1,
                    'instanceType': 'm1.small',
                    'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
@@ -165,10 +169,13 @@ class Runner(object):
         for type, nicInfo in self.defaultVmNic.items():
             nicIp = (nicInfo['ip'] != 0) and (', ip = "%s"' % nicInfo['ip']) or ''
             vnetId = self.cloud.networkNameToId(nicInfo['name'])
+            
             self.vm_nic += ('NIC = [ network = "%s" %s ]\n' % (nicInfo['name'], nicIp))
             self.nic_ip += ('\nip_%s = "$NIC[IP, NETWORK=\\"%s\\"]",' % (type, nicInfo['name']))
-            self.nic_network += ('\nnetwork_%s = "%s",' % (type, self.cloud.getNetworkAddress(vnetId)))
-            self.nic_netmask += ('\nnetmask_%s = "%s",' % (type, self.cloud.getNetworkNetmask(vnetId)))
+
+            netmask = self.cloud.getNetworkNetmask(vnetId)
+            if netmask:
+                self.nic_netmask += ('\nnetmask_%s = "/%s",' % (type, netmask))
 
     def _manageRawData(self):
         if self.rawData:

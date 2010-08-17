@@ -257,9 +257,17 @@ def isValidIpV6(ip):
     return pattern.match(ip) is not None
 
 def unifyNetmask(netmask):
-    classes = { 'A': '8', 'B': '16', 'C': '24' }
+    classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
 
     for letter, mask in classes.items():
-        netmask = netmask.replace(letter, mask)
+        netmask = netmask.replace(letter, str(mask))
 
     return netmask
+
+def networkSizeToNetmask(netsize):
+    MAX_MASK_POW_TWO = 24
+    MAX_MASK_LENTGH = 32
+    for pow in range(MAX_MASK_POW_TWO):
+        if 2**pow >= netsize:
+            return MAX_MASK_LENTGH - pow
+    return MAX_MASK_LENTGH

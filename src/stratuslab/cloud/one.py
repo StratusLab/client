@@ -1,3 +1,4 @@
+from stratuslab.Util import networkSizeToNetmask
 import os
 import sys
 import time
@@ -190,11 +191,24 @@ class OneConnector(object):
     def getNetworkAddress(self, vnetId):
         xml = etree.fromstring(self.getNetworkInfo(vnetId))
 
-        return xml.find('TEMPLATE/NETWORK_ADDRESS').text
+        addresses = []
+        try:
+            addresses = xml.find('TEMPLATE/NETWORK_ADDRESS').text
+        except:
+            pass
+
+        return addresses
 
     def getNetworkNetmask(self, vnetId):
         xml = etree.fromstring(self.getNetworkInfo(vnetId))
-        netmask = unifyNetmask(xml.find('TEMPLATE/NETWORK_SIZE').text)
+
+        netmask = ''
+        
+        try:
+            addr = xml.find('TEMPLATE/NETWORK_SIZE').text
+            netmask = networkSizeToNetmask(unifyNetmask(addr))
+        except:
+            pass
 
         return netmask
 

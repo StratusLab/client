@@ -25,7 +25,9 @@ readonly = "no"
 CONTEXT = [
 %(nic_ip)s
 %(nic_netmask)s
-%(nic_network)s
+default_gateway = %(default_gateway)s,
+global_network = %(global_network)s,
+global_netmask = %(global_netmask)s,
 root_pubkey = %(user_key_name)s,
 files = "%(user_key_path)s %(context_script)s",
 %(extra_context)s
