@@ -1,0 +1,13 @@
+diff --git a/src/vmm/LibVirtDriver.cc b/src/vmm/LibVirtDriver.cc
+index c55468d..abdbf0e 100644
+--- a/src/vmm/LibVirtDriver.cc
++++ b/src/vmm/LibVirtDriver.cc
+@@ -243,7 +243,7 @@ int LibVirtDriver::deployment_description(
+ 
+     if (emulator == "kvm")
+     {
+-        file << "\t\t<emulator>/usr/bin/kvm</emulator>" << endl;
++        file << "\t\t<emulator>/usr/libexec/qemu-kvm</emulator>" << endl;
+     }
+ 
+     num = vm->get_template_attribute("DISK",attrs);

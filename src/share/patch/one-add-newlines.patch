@@ -1,0 +1,70 @@
+diff -ur one-2.0-beta1/include/History.h one-2.0-beta1-fixed/include/History.h
+--- one-2.0-beta1/include/History.h     2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/include/History.h       2010-08-04 09:02:13.000000000 +0200
+@@ -217,4 +217,4 @@
+     static int dump(ostringstream& oss, int  num, char **names, char **values);
+ };
+ 
+-#endif /*HISTORY_H_*/
+\ No newline at end of file
++#endif /*HISTORY_H_*/
+diff -ur one-2.0-beta1/include/MySqlDB.h one-2.0-beta1-fixed/include/MySqlDB.h
+--- one-2.0-beta1/include/MySqlDB.h     2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/include/MySqlDB.h       2010-08-04 09:02:47.000000000 +0200
+@@ -126,4 +126,4 @@
+ };
+ #endif
+ 
+-#endif /*MYSQL_DB_H_*/
+\ No newline at end of file
++#endif /*MYSQL_DB_H_*/
+diff -ur one-2.0-beta1/include/ObjectSQL.h one-2.0-beta1-fixed/include/ObjectSQL.h
+--- one-2.0-beta1/include/ObjectSQL.h   2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/include/ObjectSQL.h     2010-08-04 09:02:36.000000000 +0200
+@@ -68,4 +68,4 @@
+         SqlDB * db) = 0;
+ };
+ 
+-#endif /*OBJECT_SQL_H_*/
+\ No newline at end of file
++#endif /*OBJECT_SQL_H_*/
+diff -ur one-2.0-beta1/include/RangedLeases.h one-2.0-beta1-fixed/include/RangedLeases.h
+--- one-2.0-beta1/include/RangedLeases.h        2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/include/RangedLeases.h  2010-08-04 09:09:50.000000000 +0200
+@@ -106,4 +106,4 @@
+ 
+ };
+ 
+-#endif /*RANGED_LEASES_H_*/
+\ No newline at end of file
++#endif /*RANGED_LEASES_H_*/
+diff -ur one-2.0-beta1/include/UserPool.h one-2.0-beta1-fixed/include/UserPool.h
+--- one-2.0-beta1/include/UserPool.h    2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/include/UserPool.h      2010-08-04 09:02:22.000000000 +0200
+@@ -186,4 +186,4 @@
+     int init_cb(void *nil, int num, char **values, char **names);
+ };
+ 
+-#endif /*USER_POOL_H_*/
+\ No newline at end of file
++#endif /*USER_POOL_H_*/
+diff -ur one-2.0-beta1/src/log/NebulaLog.cc one-2.0-beta1-fixed/src/log/NebulaLog.cc
+--- one-2.0-beta1/src/log/NebulaLog.cc  2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/src/log/NebulaLog.cc    2010-08-04 09:03:09.000000000 +0200
+@@ -23,4 +23,4 @@
+ Log * NebulaLog::logger;
+ 
+ /* -------------------------------------------------------------------------- */
+-/* -------------------------------------------------------------------------- */
+\ No newline at end of file
++/* -------------------------------------------------------------------------- */
+diff -ur one-2.0-beta1/src/rm/RequestManagerPoolInfo.cc one-2.0-beta1-fixed/src/rm/RequestManagerPoolInfo.cc
+--- one-2.0-beta1/src/rm/RequestManagerPoolInfo.cc      2010-07-27 16:34:04.000000000 +0200
++++ one-2.0-beta1-fixed/src/rm/RequestManagerPoolInfo.cc        2010-08-04 09:03:37.000000000 +0200
+@@ -109,4 +109,4 @@
+ }
+ 
+ /* -------------------------------------------------------------------------- */
+-/* -------------------------------------------------------------------------- */
+\ No newline at end of file
++/* -------------------------------------------------------------------------- */
