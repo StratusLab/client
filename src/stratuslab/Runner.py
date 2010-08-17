@@ -9,23 +9,13 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
+from stratuslab.Util import modulePath
 
 class Runner(object):
 
     def __init__(self, image, options, config):
         self.config = config
-        self.instanceNumber = options.instanceNumber
-        self.instanceType = options.instanceType
-        self.vmTemplatePath = options.vmTemplate
-        self.extraNic = options.extraNic
-        self.rawData = options.rawData
-        self.vmKernel = options.vmKernel
-        self.vmRamdisk = options.vmRamdisk
-        self.addressing = options.addressing
-        self.extraContextFile = options.extraContextFile
-        self.extraContextData = options.extraContext
-        self.vncPort = options.vncPort
-        self.vncListen = options.vncListen
+        self.assignAttributes(options)
 
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'),
@@ -61,6 +51,10 @@ class Runner(object):
         self.user_key_path = options.userKey
         self.user_key_name = os.path.basename(options.userKey)
 
+    def assignAttributes(self, dictionary):        
+        for key, value in dictionary.items():
+            setattr(self, key, value)
+
     @staticmethod
     def getInstanceType():
         types = {
@@ -93,6 +87,26 @@ class Runner(object):
             'user_key_name'
         )
         return params
+
+    @staticmethod        
+    def defaultRunOptions(self):
+        options = {'configFile': '%s/conf/stratuslab.cfg' % modulePath,
+                   'userKey': os.getenv('STRATUS_KEY', ''),
+                   
+                   'instanceNumber': 1,
+                   'instanceType': 'm1.small',
+                   'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
+                   'extraNic': '',
+                   'rawData': '',
+                   'vmKernel': '',
+                   'vmRamdisk': '',
+                   'addressing': '',
+                   'extraContextFile': '',
+                   'extraContextData': '',
+                   'vncPort': '',
+                   'vncListen': ''}
+        return options
+
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)

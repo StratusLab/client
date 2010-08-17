@@ -3,6 +3,7 @@ from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
+from stratuslab.Util import modulePath
 
 class Testor(object):
     
@@ -27,23 +28,57 @@ class Testor(object):
         printStep('Starting VM')
         self.startVmTest()
         
+        printStep('Ping VM')
+        self.ping()
+        
+        printStep('Logging to VM via SSH')
+        self.loginViaSsh()
+        
         printStep('Shutting down VM')
         self.stopVmTest()
 
         printAction('Smoke test finished')
     
-    def buildVmTemplate(self):
-        self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
-    
     def startVmTest(self):
         self.buildVmTemplate()
+
+        options = self.defaultRunOptions()
+        
+        image = 'https://appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
+        runner = Runner(image, self.options.__dict__, self.config)
+        runner.runInstance()
+        
         self.vmId = self.cloud.vmStart(self.vmTemplate)
         
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 120)
-            
+        
         if not vmStarted:
             printError('Failing to start VM')
         
+    def buildVmTemplate(self):
+        self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
+    
+    def ping(self):
+
+        for endpoint in self.getIpAddresses():
+            print 'Pinging', endpoint
+            res = Util.ping(endpoint)
+            if res:
+                raise Exception('Failed to ping %s with return code %s' % (endpoint, res))
+        
+    def loginViaSsh(self):
+
+        loginCommand = 'ls /tmp'
+
+        for networkName, ip in self.getIpAddresses().items():
+            print 'SSHing into machine at via address %s at ip %s' % (networkName, ip)
+            res = Util.sshCmd(loginCommand, ip, self.config.get('node_private_key'))
+            if res:
+                raise Exception('Failed to SSH into machine for %s with return code %s' % (endpoint, res))
+        
+    def getIpAddresses(self):
+        return self.cloud.getVmIp(self.vmId)
+    
     def stopVmTest(self):
         vmStopped = self.cloud.vmStop(self.vmId)
         
