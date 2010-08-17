@@ -238,9 +238,9 @@ class Runner(object):
             except Exception, e:
                 printError(e)
 
-            self.vmIps = ['\t%s IP: %s' % (name, ip)
-                        for name, ip in self.cloud.getVmIp(self.vmId).items()]
-            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(self.vmIps)))
+            self.vmIps = self.cloud.getVmIp(self.vmId).items()
+            vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(vmIpsPretty)))
 
         printStep('Done!')
         
