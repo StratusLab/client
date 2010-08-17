@@ -73,6 +73,7 @@ class Runner(object):
 
     @staticmethod
     def getVmTemplatesParameters():
+        # [r.sub(r'%\((\w+)\)s', r'\1', i) for i in r.findall('%\(\w+\)s', c)]
         params = (
             'vm_cpu',
             'vm_ram',
