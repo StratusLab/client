@@ -206,7 +206,7 @@ class OneConnector(object):
         
         try:
             addr = xml.find('TEMPLATE/NETWORK_SIZE').text
-            netmask = networkSizeToNetmask(unifyNetmask(addr))
+            netmask = networkSizeToNetmask(unifyNetsize(addr))
         except:
             pass
 

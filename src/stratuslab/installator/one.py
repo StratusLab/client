@@ -124,7 +124,7 @@ class OneInstallator(BaseInstallator):
         if addRoute:
             self.frontend.executeCmd(['route', 'add', '-net', '%s/%s' % (
                 self.config.get('one_private_network'),
-                networkSizeToNetmask(unifyNetmask(self.config.get('one_private_network_size')))),
+                networkSizeToNetmask(unifyNetsize(self.config.get('one_private_network_size')))),
                 'dev', 'eth0'])
 
     def _copyContextualizationScript(self, oneHome):

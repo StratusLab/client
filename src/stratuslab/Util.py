@@ -256,13 +256,14 @@ def isValidIpV6(ip):
     """, re.VERBOSE | re.IGNORECASE | re.DOTALL)
     return pattern.match(ip) is not None
 
-def unifyNetmask(netmask):
+def unifyNetsize(netsize):
     classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
 
     for letter, mask in classes.items():
-        netmask = netmask.replace(letter, str(mask))
-
-    return netmask
+        if netsize == str(mask):
+            return mask
+        
+    return netsize
 
 def networkSizeToNetmask(netsize):
     MAX_MASK_POW_TWO = 24
