@@ -50,6 +50,8 @@ class Runner(object):
         self.user_key_path = self.userKey
         self.user_key_name = os.path.basename(self.userKey)
         self.context_script = self.contextScript % self.config
+        self.vmId = None
+        self.vmIps = None
         self.default_gateway = self.config.get('default_gateway')
         self.global_network = self.config.get('network_addr')
         self.global_netmask = self.config.get('network_mask')
@@ -227,13 +229,13 @@ class Runner(object):
 
         for vmNb in range(self.instanceNumber):
             try:
-                vmId = self.cloud.vmStart(vmTpl)
+                self.vmId = self.cloud.vmStart(vmTpl)
             except Exception, e:
                 printError(e)
 
-            vmIps = ['\t%s IP: %s' % (name, ip)
-                        for name, ip in self.cloud.getVmIp(vmId).items()]
-            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, '\n'.join(vmIps)))
+            self.vmIps = self.cloud.getVmIp(self.vmId).items()
+            vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(vmIpsPretty)))
 
-        printAction('Done!')
+        printStep('Done!')
         

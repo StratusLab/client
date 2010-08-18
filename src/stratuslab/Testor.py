@@ -1,10 +1,18 @@
+import os
+import traceback
+import datetime
+
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import modulePath
+from stratuslab.Util import execute
+from stratuslab.Util import sshCmd
+from stratuslab.Util import ping
 from stratuslab.Runner import Runner
+
 
 class Testor(object):
     
@@ -20,70 +28,103 @@ class Testor(object):
         
         # Attributes initialization
         self.vmTemplate = None
+        self.vmIps = {}
         self.vmId = None
-        
+        self.sshKey = '/tmp/id_rsa_smoke_test'
         
     def runTests(self):
         printAction('Launching smoke test')
         
-        printStep('Starting VM')
-        self.startVmTest()
-        
-        printStep('Ping VM')
-        self.ping()
-        
-        printStep('Logging to VM via SSH')
-        self.loginViaSsh()
-        
-        printStep('Shutting down VM')
-        self.stopVmTest()
+        try:
+            printStep('Starting VM')
+            self.startVm()
+            
+            printStep('Ping VM')
+            self.ping()
+            
+            printStep('Logging to VM via SSH')
+            self.loginViaSsh()
+            
+            printStep('Shutting down VM')
+            self.stopVmTest()
+        except Exception, ex:
+            printError(ex, exit=False)
+            logFile = '/tmp/smoke-test.err'
+            log = self.prepareLog(logFile)
+            traceback.print_exc(file=log)
+            log.close()
+            printError('For details see %s' % logFile, exit=False)
+            printError('Smoke test failed :-(')
 
         printAction('Smoke test finished')
-    
-    def startVmTest(self):
+        
+    def prepareLog(self, logFile):
+        log = open(logFile,'aw')
+        log.write('\n'*3 + '=' * 60 + '\n')
+        log.write(str(datetime.datetime.now()) + '\n')
+        log.write('=' * 60 + '\n'*3)
+        return log
+
+        
+    def startVm(self):
         self.buildVmTemplate()
+
+        self.generateTestSshKeyPair()
 
         options = Runner.defaultRunOptions()
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
+        options['userKey'] = self.sshKey
 
-        image = 'https://appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
+        image = 'https://appliances.stratuslab.org/images/base/centos-5.5-i386-base/1.0/centos-5.5-i386-base-1.0.img.tar.gz'
         runner = Runner(image, options, self.config)
         runner.runInstance()
         
-        self.vmId = self.cloud.vmStart(self.vmTemplate)
+        self.vmId = runner.vmId
+        self.vmIps = runner.vmIps
         
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 120)
         
         if not vmStarted:
-            printError('Failing to start VM')
+            printError('Failed to start VM')
+        else:
+            print 'Successfully started image', self.vmId
         
     def buildVmTemplate(self):
         self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
     
     def ping(self):
 
-        for endpoint in self.getIpAddresses():
-            print 'Pinging', endpoint
-            res = Util.ping(endpoint)
+        for networkName, ip in self.vmIps:
+            print 'Pinging %s at ip %s' % (networkName, ip)
+            res = ping(ip)
             if res:
-                raise Exception('Failed to ping %s with return code %s' % (endpoint, res))
+                raise Exception('Failed to ping %s with return code %s' % (ip, res))
         
     def loginViaSsh(self):
 
         loginCommand = 'ls /tmp'
 
-        for networkName, ip in self.getIpAddresses().items():
+        for networkName, ip in self.vmIps:
             print 'SSHing into machine at via address %s at ip %s' % (networkName, ip)
-            res = Util.sshCmd(loginCommand, ip, self.config.get('node_private_key'))
+            res = sshCmd(loginCommand, ip, self.config.get('node_private_key'))
             if res:
-                raise Exception('Failed to SSH into machine for %s with return code %s' % (endpoint, res))
+                raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
-    def getIpAddresses(self):
-        return self.cloud.getVmIp(self.vmId)
-    
     def stopVmTest(self):
         vmStopped = self.cloud.vmStop(self.vmId)
         
         if not vmStopped:
             printError('Failing to stop VM')
+
+    def generateTestSshKeyPair(self):
+        self.generateSshKeyPair(self.sshKey)
+        execute('chown %s %s' % (self.config['one_username'], self.sshKey), shell=True)
+
+    def generateSshKeyPair(self, key):
+        try:
+            os.remove(key)
+        except(OSError):
+            pass
+        sshCmd = 'ssh-keygen -f %s -N "" -q' % key
+        execute(sshCmd, shell=True)
