@@ -71,29 +71,17 @@ class Runner(object):
         return types
 
     @staticmethod
-    def getVmTemplatesParameters():
-        # [r.sub(r'%\((\w+)\)s', r'\1', i) for i in r.findall('%\(\w+\)s', c)]
-        params = (
-            'vm_cpu',
-            'vm_ram',
-            'vm_swap',
-            'vm_image',
-            'vm_nic',
-            'os_options',
-            'raw_data',
-            'nic_ip',
-            'nic_netmask',
-            'extra_context',
-            'graphics',
-            'one_home',
-            'user_key_path',
-            'user_key_name',
-            'default_gateway',
-            'context_script',
-            'global_network',
-            'global_netmask'
-        )
-        return params
+    def getVmTemplatesParameters(instance=None):
+        if instance and hasattr(instance, 'vmTemplatePath'):
+            vmTemplate = instance.vmTemplatePath
+        else:
+            vmTemplate = Runner.defaultRunOptions().get('vmTemplatePath')
+
+        fd = open(vmTemplate, 'rb')
+        template = fd.read()
+        fd.close()
+
+        return [re.sub(r'%\((\w+)\)s', r'\1', i) for i in re.findall('%\(\w+\)s', template)]
 
     @staticmethod        
     def defaultRunOptions():
@@ -131,7 +119,7 @@ class Runner(object):
 
     def _vmParamDict(self):
         params = {}
-        for param in self.getVmTemplatesParameters():
+        for param in self.getVmTemplatesParameters(self):
             params[param] = getattr(self, param, '')
 
         return params
