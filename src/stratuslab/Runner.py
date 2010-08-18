@@ -28,10 +28,12 @@ class Runner(object):
         # networkType are public, private and extra (can be other but not used in init.sh)
         self.defaultVmNic = { 'public': {
                                 'name': 'public',
-                                'ip': 0 },
+                                'ip': 0,
+                                'dev': 'eth1' },
                               'private': {
                                 'name': 'private',
-                                'ip': 0 },
+                                'ip': 0,
+                                'dev': 'eth0'},
                             }
 
         # VM template parameters initialization
@@ -151,14 +153,14 @@ class Runner(object):
             if self.extraNic not in self.cloud.getNetworkPoolNames():
                 printError('Network %s does not exist' % self.extraNic)
 
-            extraNic = {'name': self.extraNic, 'ip': 0}
+            extraNic = {'name': self.extraNic, 'ip': 0, 'dev': 'eth2' }
             self.defaultVmNic['extra'] = extraNic
 
         for type, nicInfo in self.defaultVmNic.items():
             nicIp = (nicInfo['ip'] != 0) and (', ip = "%s"' % nicInfo['ip']) or ''
             vnetId = self.cloud.networkNameToId(nicInfo['name'])
             
-            self.vm_nic += ('NIC = [ network = "%s" %s ]\n' % (nicInfo['name'], nicIp))
+            self.vm_nic += ('NIC = [ network = "%s", target="%s" %s ]\n' % (nicInfo['name'], nicInfo['dev'], nicIp))
             self.nic_ip += ('\nip_%s = "$NIC[IP, NETWORK=\\"%s\\"]",' % (type, nicInfo['name']))
 
             netmask = self.cloud.getNetworkNetmask(vnetId)
