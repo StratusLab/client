@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
-mount -t iso9660 /dev/hdc /mnt
+[ -e /dev/hdc ] && DEVICE=hdc || DEVICE=sr0
+
+mount -t iso9660 /dev/$DEVICE /mnt
 
 if [ -f /mnt/context.sh ]; then
   . /mnt/init.sh
