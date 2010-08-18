@@ -217,5 +217,5 @@ class Uploader(object):
         self._uploadFile(self.manifest, manifest=True)
 
         printAction('Appliance uploaded successfully')
-        print '\n%s\n' % '\t'.join(self.uploadedFile)
+        print '\n\t%s' % '\n\t'.join(self.uploadedFile)
         
