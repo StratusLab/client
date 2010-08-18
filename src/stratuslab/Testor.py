@@ -78,7 +78,10 @@ class Testor(object):
         options['userKey'] = self.sshKeyPub
         options['vncPort'] = 5901
         
-        image = 'https://%(app_repo_username)s:%(app_repo_password)s@appliances.stratuslab.org/images/base/centos-5.5-i386-base/1.0/centos-5.5-i386-base-1.0.img.tar.gz' % self.config
+        image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
+        image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
+        image = image % self.config
+
         runner = Runner(image, options, self.config)
         runner.runInstance()
         
