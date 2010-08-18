@@ -38,7 +38,8 @@ def ping(host, timeout=5, number=1, ** kwargs):
     '''Ping <host> and return True if successful'''
     p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
     p.wait()
-    return p.returncode == 0
+    success = p.returncode == 0
+    return success
 
 def appendOrReplaceInFile(filename, search, replace):
     if not os.path.isfile(filename):

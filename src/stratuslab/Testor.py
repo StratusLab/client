@@ -1,13 +1,13 @@
 import os
 import traceback
 import datetime
+import time
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import modulePath
 from stratuslab.Util import execute
 from stratuslab.Util import sshCmd
 from stratuslab.Util import ping
@@ -31,6 +31,7 @@ class Testor(object):
         self.vmIps = {}
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
+        self.sshKeyPub = self.sshKey + '.pub'
         
     def runTests(self):
         printAction('Launching smoke test')
@@ -40,10 +41,10 @@ class Testor(object):
             self.startVm()
             
             printStep('Ping VM')
-            self.ping()
+            self.repeatCall(self.ping)
             
             printStep('Logging to VM via SSH')
-            self.loginViaSsh()
+            self.repeatCall(self.loginViaSsh)
             
             printStep('Shutting down VM')
             self.stopVmTest()
@@ -74,9 +75,10 @@ class Testor(object):
         options = Runner.defaultRunOptions()
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
-        options['userKey'] = self.sshKey
-
-        image = 'https://appliances.stratuslab.org/images/base/centos-5.5-i386-base/1.0/centos-5.5-i386-base-1.0.img.tar.gz'
+        options['userKey'] = self.sshKeyPub
+        options['vncPort'] = 5901
+        
+        image = 'https://%(app_repo_username)s:%(app_repo_password)s@appliances.stratuslab.org/images/base/centos-5.5-i386-base/1.0/centos-5.5-i386-base-1.0.img.tar.gz' % self.config
         runner = Runner(image, options, self.config)
         runner.runInstance()
         
@@ -93,19 +95,36 @@ class Testor(object):
     def buildVmTemplate(self):
         self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
     
+    def repeatCall(self, method):
+        numberOfRepetition = 5
+        for _ in range(numberOfRepetition):
+            failed = False
+            try:
+                method()
+            except Exception:
+                failed = True
+                time.sleep(1)
+            else:
+                break
+                
+        if failed:
+            printError('Failed executing method %s %s times, giving-up' , exit=False)
+            raise
+        
+        
     def ping(self):
 
-        for networkName, ip in self.vmIps:
+        for networkName, ip in self.vmIps[1:]:
             print 'Pinging %s at ip %s' % (networkName, ip)
             res = ping(ip)
-            if res:
-                raise Exception('Failed to ping %s with return code %s' % (ip, res))
+            if not res:
+                raise Exception('Failed to ping %s' % ip)
         
     def loginViaSsh(self):
 
         loginCommand = 'ls /tmp'
 
-        for networkName, ip in self.vmIps:
+        for networkName, ip in self.vmIps[1:]:
             print 'SSHing into machine at via address %s at ip %s' % (networkName, ip)
             res = sshCmd(loginCommand, ip, self.config.get('node_private_key'))
             if res:
@@ -128,3 +147,4 @@ class Testor(object):
             pass
         sshCmd = 'ssh-keygen -f %s -N "" -q' % key
         execute(sshCmd, shell=True)
+
