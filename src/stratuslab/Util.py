@@ -127,7 +127,7 @@ def printError(msg, exitCode=1, exit=True):
     if exit:
         sys.exit(exitCode)
 
-def execute(*cmd, **kwargs):
+def execute(cmd, **kwargs):
     wait = not kwargs.get('noWait', False)
 
     if kwargs.has_key('noWait'):
