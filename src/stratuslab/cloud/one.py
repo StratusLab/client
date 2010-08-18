@@ -1,12 +1,12 @@
-from stratuslab.Util import networkSizeToNetmask
 import os
 import sys
 import time
 import xmlrpclib
 
 from stratuslab.Util import fileGetContent
+from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import shaHexDigest
-from stratuslab.Util import unifyNetmask
+from stratuslab.Util import unifyNetsize
 
 try:
     from lxml import etree
@@ -206,7 +206,7 @@ class OneConnector(object):
         
         try:
             addr = xml.find('TEMPLATE/NETWORK_SIZE').text
-            netmask = networkSizeToNetmask(unifyNetmask(addr))
+            netmask = networkSizeToNetmask(unifyNetsize(addr))
         except:
             pass
 

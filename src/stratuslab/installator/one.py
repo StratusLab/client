@@ -1,12 +1,12 @@
-from stratuslab.Util import networkSizeToNetmask
 import os
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
+from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import printError
-from stratuslab.Util import unifyNetmask
+from stratuslab.Util import unifyNetsize
 
 class OneInstallator(BaseInstallator):
     
@@ -124,7 +124,7 @@ class OneInstallator(BaseInstallator):
         if addRoute:
             self.frontend.executeCmd(['route', 'add', '-net', '%s/%s' % (
                 self.config.get('one_private_network'),
-                networkSizeToNetmask(unifyNetmask(self.config.get('one_private_network_size')))),
+                networkSizeToNetmask(unifyNetsize(self.config.get('one_private_network_size')))),
                 'dev', 'eth0'])
 
     def _copyContextualizationScript(self, oneHome):
