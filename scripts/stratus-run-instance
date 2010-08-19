@@ -75,6 +75,9 @@ class MainProgram(CommandBase):
         self.parser.add_option('--kernel', dest='vmKernel', metavar='PATH',
                 help='machine kernel',
                 default=options['vmKernel'])
+        self.parser.add_option('--save', dest='saveDisk', action='store_true',
+                help='save image after shutting down the VM',
+                default=False)
         self.parser.add_option('--context-script', dest='contextScript', metavar='FILE',
                 help='contextualization script',
                 default=options['contextScript'])

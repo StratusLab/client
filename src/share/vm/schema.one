@@ -8,6 +8,7 @@ MEMORY = %(vm_ram)s
 DISK = [
 source   = "%(vm_image)s",
 target   = "hda",
+save     = %(save_disk)s,
 readonly = "no"
 ]
 

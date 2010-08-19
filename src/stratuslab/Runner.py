@@ -56,6 +56,7 @@ class Runner(object):
         self.default_gateway = self.config.get('default_gateway')
         self.global_network = self.config.get('network_addr')
         self.global_netmask = self.config.get('network_mask')
+        self.save_disk = self.saveDisk and 'yes' or 'no'
 
     def assignAttributes(self, dictionary):        
         for key, value in dictionary.items():
@@ -104,6 +105,7 @@ class Runner(object):
                    'extraContextData': '',
                    'vncPort': None,
                    'vncListen': '',
+                   'saveDisk': 'no',
                    'contextScript': '%(one_home)s/share/scripts/init.sh'}
         return options
 
