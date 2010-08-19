@@ -28,10 +28,10 @@ def buildUploadParser(parser):
             help='list available compression format',
             default=False, action='store_true')
 
-    parser.add_option('-U', '--repo-username', dest='username',
+    parser.add_option('-U', '--repo-username', dest='repoUsername',
             help='repository username. Default STRATUSLAB_REPO_USERNAME',
             default=os.getenv('STRATUSLAB_REPO_USERNAME', ''))
-    parser.add_option('-P', '--repo-password', dest='password',
+    parser.add_option('-P', '--repo-password', dest='repoPassword',
             help='repository password. Default STRATUSLAB_REPO_PASSWORD',
             default=os.getenv('STRATUSLAB_REPO_PASSWORD', ''))
 
@@ -45,11 +45,11 @@ def checkUploadOptions(options, config, parser):
     if not options.repoAddress:
         options.repoAddress = config.get('app_repo_url')
 
-    if not options.username:
-        options.username = config.get('app_repo_username')
+    if not options.repoUsername:
+        options.repoUsername = config.get('app_repo_username')
 
-    if not options.password:
-        options.password = config.get('app_repo_password')
+    if not options.repoPassword:
+        options.repoPassword = config.get('app_repo_password')
 
 def displayUploadOptions(options):
     if options.listCompressFormat:

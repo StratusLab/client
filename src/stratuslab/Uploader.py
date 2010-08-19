@@ -34,8 +34,8 @@ class Uploader(object):
         self.config = config
         self.manifest = manifest
         self.appliance = self.manifest.replace(manifestExt, '')
-        self.username = options.username
-        self.password = options.password
+        self.repoUsername = options.repoUsername
+        self.repoPassword = options.repoPassword
         self.uploadOption = options.option
         self.protocol = options.uploadProtocol
         self.repo = options.repoAddress
@@ -44,8 +44,8 @@ class Uploader(object):
         
         self.uploadedFile = []
         
-        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.username,
-                                                             self.password)]
+        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.repoUsername,
+                                                             self.repoPassword)]
 
         # Attribute initialization
         self.os = None
@@ -167,7 +167,7 @@ class Uploader(object):
         applianceRepoUrl = '%s://%s' % (self.protocol, self.repo)
 
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, applianceRepoUrl, self.username, self.password)
+        passwordMgr.add_password(None, applianceRepoUrl, self.repoUsername, self.password)
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)

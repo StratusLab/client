@@ -6,6 +6,8 @@ import sys
 import time
 import urllib2
 from ConfigParser import SafeConfigParser
+from random import sample
+from string import ascii_lowercase
 
 
 defaultConfigSection = 'stratuslab'
@@ -277,4 +279,6 @@ def networkSizeToNetmask(netsize):
 def assignAttributes(instance, dictionary):
     for key, value in dictionary.items():
         setattr(instance, key, value)
-        
+
+def randomString(length=10):
+    return ''.join(sample(list(ascii_lowercase), length))

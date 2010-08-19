@@ -75,6 +75,14 @@ class Runnable(CommandBase):
                 help='machine kernel',
                 default=options['vmKernel'])
 
+        self.parser.add_option('--context-script', dest='contextScript', metavar='FILE',
+                help='contextualization script',
+                default=options['contextScript'])
+        self.parser.add_option( '--template', dest='vmTemplatePath', metavar='FILE',
+                help='machine template. Available substitution variables: %s' % (
+                ', '.join(Runner.getVmTemplatesParameters())),
+                default=options['vmTemplatePath'])
+
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
