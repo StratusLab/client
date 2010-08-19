@@ -27,7 +27,6 @@ class Testor(object):
                                   self.config.get('one_password'))
         
         # Attributes initialization
-        self.vmTemplate = None
         self.vmIps = {}
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
@@ -68,8 +67,6 @@ class Testor(object):
 
         
     def startVm(self):
-        self.buildVmTemplate()
-
         self.generateTestSshKeyPair()
 
         options = Runner.defaultRunOptions()
@@ -95,23 +92,20 @@ class Testor(object):
         else:
             print 'Successfully started image', self.vmId
         
-    def buildVmTemplate(self):
-        self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
-    
     def repeatCall(self, method):
-        numberOfRepetition = 5
+        numberOfRepetition = 60
         for _ in range(numberOfRepetition):
             failed = False
             try:
                 method()
             except Exception:
                 failed = True
-                time.sleep(1)
+                time.sleep(10)
             else:
                 break
                 
         if failed:
-            printError('Failed executing method %s %s times, giving-up' , exit=False)
+            printError('Failed executing method %s %s times, giving-up' % (method, numberOfRepetition), exit=False)
             raise
         
         
@@ -128,8 +122,8 @@ class Testor(object):
         loginCommand = 'ls /tmp'
 
         for networkName, ip in self.vmIps[1:]:
-            print 'SSHing into machine at via address %s at ip %s' % (networkName, ip)
-            res = sshCmd(loginCommand, ip, self.config.get('node_private_key'))
+            print 'SSHing into machine via address %s at ip %s' % (networkName, ip)
+            res = sshCmd(loginCommand, ip, self.sshKey)
             if res:
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
