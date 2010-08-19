@@ -11,10 +11,8 @@ from stratuslab.Util import unifyNetsize
 class OneInstallator(BaseInstallator):
     
     def runInstall(self, options, config):
-        self.privateKey = (True and options.privateKey) or (config.get('node_private_key'))
-        self.infoDriver = (True and options.infoDriver) or ('im_%s' % config.get('hypervisor'))
-        self.virtDriver = (True and options.virtDriver) or ('vmm_%s' % config.get('hypervisor'))
-        self.transfertDriver = (True and options.transfertDriver) or ('tm_%s' % config.get('share_type'))
+        self.assignKey(options, config)
+        self.assignDrivers(options, config)
         
         self.onedConfTemplate = options.onedTpl
         

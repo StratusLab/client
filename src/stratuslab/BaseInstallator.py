@@ -132,4 +132,11 @@ class BaseInstallator(object):
     
     def addDefaultNetworks(self):
         pass
+
+    def assignKey(self, options, config):
+        self.privateKey = (True and options.privateKey) or (config.get('node_private_key'))
     
+    def assignDrivers(self, options, config):
+        self.infoDriver = (True and options.infoDriver) or ('im_%s' % config.get('hypervisor'))
+        self.virtDriver = (True and options.virtDriver) or ('vmm_%s' % config.get('hypervisor'))
+        self.transfertDriver = (True and options.transfertDriver) or ('tm_%s' % config.get('share_type'))
