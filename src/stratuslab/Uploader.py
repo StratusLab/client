@@ -1,9 +1,9 @@
+import urllib2
+
 from stratuslab.Util import execute
 from stratuslab.Util import manifestExt
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
-from gwibber.microblog.jaiku import urllib2
-from xml.sax.saxutils import urllib
 from stratuslab.Util import printStep
 
 try:
