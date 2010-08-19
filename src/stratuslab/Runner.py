@@ -48,8 +48,7 @@ class Runner(object):
         self.extra_context = ''
         self.graphics = ''
         self.one_home = self.config.get('one_home')
-        self.user_key_path = self.userKey
-        self.user_key_name = os.path.basename(self.userKey)
+        self.public_key = fileGetContent(self.userKey)
         self.context_script = self.contextScript % self.config
         self.vmId = None
         self.vmIps = None
@@ -85,7 +84,15 @@ class Runner(object):
         template = fd.read()
         fd.close()
 
-        return [re.sub(r'%\((\w+)\)s', r'\1', i) for i in re.findall('%\(\w+\)s', template)]
+        return [Runner._extractTokenName(token) for token in Runner._findTokensInTemplate(template)]
+
+    @staticmethod
+    def _findTokensInTemplate(template):
+        return re.findall('%\(\w+\)s', template)
+
+    @staticmethod
+    def _extractTokenName(token):
+        return re.sub(r'%\((\w+)\)s', r'\1', token)
 
     @staticmethod        
     def defaultRunOptions():
@@ -243,5 +250,5 @@ class Runner(object):
             vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
             printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(vmIpsPretty)))
 
-        printStep('Done!')
+        printAction('%s started successfully!' % (plurial.get(self.instanceNumber > 1)).title())
         
