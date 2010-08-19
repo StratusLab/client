@@ -273,3 +273,8 @@ def networkSizeToNetmask(netsize):
         if 2**pow >= netsize:
             return MAX_MASK_LENTGH - pow
     return MAX_MASK_LENTGH
+
+def assignAttributes(instance, dictionary):
+    for key, value in dictionary.items():
+        setattr(instance, key, value)
+        

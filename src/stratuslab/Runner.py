@@ -2,6 +2,7 @@ import os
 import re
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.Util import assignAttributes
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
@@ -14,7 +15,7 @@ class Runner(object):
 
     def __init__(self, image, options, config):
         self.config = config
-        self.assignAttributes(options)
+        assignAttributes(self, options)
 
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'),
@@ -56,10 +57,6 @@ class Runner(object):
         self.global_network = self.config.get('network_addr')
         self.global_netmask = self.config.get('network_mask')
         self.save_disk = self.saveDisk and 'yes' or 'no'
-
-    def assignAttributes(self, dictionary):        
-        for key, value in dictionary.items():
-            setattr(self, key, value)
 
     @staticmethod
     def getInstanceType():
