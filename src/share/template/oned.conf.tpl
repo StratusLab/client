@@ -251,24 +251,16 @@ TM_MAD = [
 HM_MAD = [
     executable = "one_hm" ]
 
-#-------------------------------- Hook Examples --------------------------------
-#VM_HOOK = [
-#    name      = "dhcp",
-#    on        = "create",
-#    command   = "/bin/echo",
-#    arguments = "$NAME > /tmp/test.$VMID" ]
-#-------------------------------------------------------------------------------
-#VM_HOOK = [
-#    name      = "ebtables",
-#    on        = "running",
-#    command   = "/usr/local/one/bin/set_net",
-#    arguments = '$NIC[MAC, Network = "Private"]',
-#    remote    = "yes" ]
-#-------------------------------------------------------------------------------
-#VM_HOOK = [
-#    name      = "mail",
-#    on        = "running",
-#    command   = "/usr/local/one/bin/send_mail",
-#    arguments = "$VMID $NAME",
-#    remote    = "no" ]
-#------------------------------------------------------------------------------
+VM_HOOK = [
+    name      = "keygen",
+    on        = "create",
+    command   = "%(one_home)s/share/hooks/keygen.sh",
+    arguments = "$CONTEXT[STRATUSLAB_SSH_KEY]",
+    remote    = "yes" ]
+
+VM_HOOK = [
+    name      = "upload",
+    on        = "shutdown",
+    command   = "%(one_home)s/share/hooks/upload",
+    arguments = "%s(vm_dir)s/$VMID/images/disk.0 $NIC[network="private"] $CONTEXT[STRATUSLAB_SSH_KEY] $CONTEXT[STRATUSLAB_CREATE_IMAGE]",
+    remote    = "yes" ]

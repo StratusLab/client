@@ -6,6 +6,7 @@ from datetime import datetime
 from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
+from stratuslab.Util import fileAppendContent
 
 class BaseSystem(object):
     
@@ -201,7 +202,7 @@ class BaseSystem(object):
             self._configureKvm()
 
     def _configureKvm(self):
-        pass
+        self.executeCmd(['modprobe', 'kvm'])
 
     def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
@@ -289,6 +290,9 @@ class BaseSystem(object):
         self._nodeShell(['cp -rf %s %s' % (src, dest)])
         
     def _remoteFilePutContents(self, filename, data):
+        self._nodeShell('echo \'%s\' > %s' % (data, filename))
+
+    def _remoteFileAppendContents(self, filename, data):
         self._nodeShell('echo \'%s\' >> %s' % (data, filename))
         
     def _filePutContentAsOneAdmin(self, filename, content):
@@ -324,6 +328,7 @@ class BaseSystem(object):
         self.copyCmd = shutil.copy
         self.createDirsCmd = self._createDirs
         self.filePutContentsCmd = filePutContent
+        self.fileAppendContentsCmd = fileAppendContent
         self.chmodCmd = os.chmod
         
     def workOnNode(self):
@@ -333,6 +338,7 @@ class BaseSystem(object):
         self.copyCmd = self._remoteCopyFile
         self.createDirsCmd = self._remoteCreateDirs
         self.filePutContentsCmd = self._remoteFilePutContents
+        self.fileAppendContentsCmd = self._remoteFileAppendContents
         self.chmodCmd = self._remoteChmod
         
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'

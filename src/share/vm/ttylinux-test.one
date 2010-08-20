@@ -1,7 +1,0 @@
-CPU    = 0.1
-MEMORY = 64
-
-DISK   = [
-  source   = "http://%(app_repo_username)s:%(app_repo_password)s@%(app_repo_url)s/images/base/ttylinux-9.0-i686-base/1.0/ttylinux-9.0-i686-base-1.0.img",
-  target   = "hda",
-  readonly = "no" ]

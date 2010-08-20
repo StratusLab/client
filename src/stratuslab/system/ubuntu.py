@@ -9,9 +9,9 @@ class Ubuntu(BaseSystem):
         self.installCmd = 'apt-get -q -y install' 
         self.frontendDeps = [
             'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
-            'scons', 'g++', 'git-core', 'ssh', 'libvirt-bin', 'genisoimage'
+            'scons', 'g++', 'git-core', 'ssh', 'genisoimage', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl']
+        self.nodeDeps = ['ssh', 'ruby', 'curl', 'libvirt-bin', 'genisoimage' ]
         self.hypervisorDeps = {
             'xen': ['xen-hypervisor-3.3'],
             'kvm': ['qemu-kvm'],
@@ -51,6 +51,7 @@ class Ubuntu(BaseSystem):
     # -------------------------------------------
             
     def _configureKvm(self):
+        super(Ubuntu, self)._configureKvm()
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
         
     # -------------------------------------------
@@ -61,8 +62,9 @@ class Ubuntu(BaseSystem):
         for iface in (networkInterface, bridge):
             self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
         
-        self.filePutContentsCmd('/etc/network/interfaces',
+        self.fileAppendContentsCmd('/etc/network/interfaces',
                 fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
+        self.executeCmd(['service', 'networking', 'restart'])
 
 system = Ubuntu()
 

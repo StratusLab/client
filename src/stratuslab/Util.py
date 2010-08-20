@@ -6,6 +6,8 @@ import sys
 import time
 import urllib2
 from ConfigParser import SafeConfigParser
+from random import sample
+from string import ascii_lowercase
 
 
 defaultConfigSection = 'stratuslab'
@@ -71,6 +73,11 @@ def fileGetContent(filename):
 
 def filePutContent(filename, data):
     fd = open(filename, 'wb')
+    fd.write(data)
+    fd.close()
+
+def fileAppendContent(filename, data):
+    fd = open(filename, 'a')
     fd.write(data)
     fd.close()
         
@@ -144,7 +151,7 @@ def execute(*cmd, **kwargs):
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout]
 
-    if not sshKey and os.path.isfile(sshKey):
+    if sshKey and os.path.isfile(sshKey):
         sshCmd.append('-i')
         sshCmd.append(sshKey)
 
@@ -156,7 +163,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port)]
 
-    if not sshKey and os.path.isfile(sshKey):
+    if sshKey and os.path.isfile(sshKey):
         scpCmd.append('-i')
         scpCmd.append(sshKey)
 
@@ -273,3 +280,10 @@ def networkSizeToNetmask(netsize):
         if 2**pow >= netsize:
             return MAX_MASK_LENTGH - pow
     return MAX_MASK_LENTGH
+
+def assignAttributes(instance, dictionary):
+    for key, value in dictionary.items():
+        setattr(instance, key, value)
+
+def randomString(length=10):
+    return ''.join(sample(list(ascii_lowercase), length))

@@ -1,17 +1,19 @@
-import os
-import traceback
+import os.path
 import datetime
+import os
 import time
+import traceback
+from distutils.command.upload import upload
+import urllib2
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.Util import fileGetContent
+from stratuslab.Runner import Runner
+from stratuslab.Util import execute
+from stratuslab.Util import ping
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import execute
 from stratuslab.Util import sshCmd
-from stratuslab.Util import ping
-from stratuslab.Runner import Runner
 
 
 class Testor(object):
@@ -27,11 +29,11 @@ class Testor(object):
                                   self.config.get('one_password'))
         
         # Attributes initialization
-        self.vmTemplate = None
         self.vmIps = {}
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
+        self.repoUrl = 'http://%s/images/base/' % self.config.get('app_repo_url')
         
     def runTests(self):
         printAction('Launching smoke test')
@@ -39,15 +41,22 @@ class Testor(object):
         try:
             printStep('Starting VM')
             self.startVm()
-            
+
             printStep('Ping VM')
             self.repeatCall(self.ping)
-            
+
             printStep('Logging to VM via SSH')
             self.repeatCall(self.loginViaSsh)
-            
+
             printStep('Shutting down VM')
             self.stopVmTest()
+
+            printStep('Appliance repository authentication')
+            self._testRepoConnection()
+
+            printStep('Uploading dummy image')
+            self._testUploadDummyImage()
+
         except Exception, ex:
             printError(ex, exit=False)
             logFile = '/tmp/smoke-test.err'
@@ -68,15 +77,12 @@ class Testor(object):
 
         
     def startVm(self):
-        self.buildVmTemplate()
-
         self.generateTestSshKeyPair()
 
         options = Runner.defaultRunOptions()
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
-        options['vncPort'] = 5901
         
         image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
@@ -95,11 +101,8 @@ class Testor(object):
         else:
             print 'Successfully started image', self.vmId
         
-    def buildVmTemplate(self):
-        self.vmTemplate = fileGetContent(self.options.vmTemplate) % self.config
-    
     def repeatCall(self, method):
-        numberOfRepetition = 30
+        numberOfRepetition = 60
         for _ in range(numberOfRepetition):
             failed = False
             try:
@@ -128,8 +131,8 @@ class Testor(object):
         loginCommand = 'ls /tmp'
 
         for networkName, ip in self.vmIps[1:]:
-            print 'SSHing into machine at via address %s at ip %s' % (networkName, ip)
-            res = sshCmd(loginCommand, ip, self.config.get('node_private_key'))
+            print 'SSHing into machine via address %s at ip %s' % (networkName, ip)
+            res = sshCmd(loginCommand, ip, self.sshKey)
             if res:
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
@@ -151,3 +154,39 @@ class Testor(object):
         sshCmd = 'ssh-keygen -f %s -N "" -q' % key
         execute(sshCmd, shell=True)
 
+    def _testRepoConnection(self):
+        passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        passwordMgr.add_password(None, self.repoUrl,
+                                 self.config.get('app_repo_username'),
+                                 self.config.get('app_repo_password'))
+
+        handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
+        opener = urllib2.build_opener(handler)
+
+        try:
+            opener.open(self.repoUrl)
+        except RuntimeError:
+            raise Exception('Authentication to appliance repository failed')
+
+    def _generateDummyImage(self, filename, size=2):
+        devNull = open('/dev/null', 'w')
+        execute('dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1M', 'count=%s' % size,
+        stdout=devNull, stderr=devNull)
+        devNull.close()
+
+    def _testUploadDummyImage(self):
+        devNull = open('/dev/null', 'w')
+
+        dummyFile = '/tmp/stratus-dummy.img'
+        self._generateDummyImage(dummyFile)
+
+        baseCurlCmd = ['curl', '-u', '%s:%s' % (self.config.get('app_repo_username'), self.config.get('app_repo_password'))]
+
+        uploadCmd = baseCurlCmd + ['-T', dummyFile, self.repoUrl, '-k']
+        ret = execute(*uploadCmd, stdout = devNull, stderr = devNull)
+
+        if ret != 0:
+            raise Exception('Failed to upload dummy image')
+
+        deleteCmd = baseCurlCmd + [ '-X', 'DELETE', '%s/%s' % (self.repoUrl, os.path.basename(dummyFile)), '-k', '-q']
+        execute(*deleteCmd, stdout = devNull, stderr = devNull)

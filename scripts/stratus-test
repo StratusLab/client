@@ -27,16 +27,6 @@ class MainProgram(CommandBase):
         self.parser.add_option('-c', '--config', dest='configFile', 
                                help='configuration file', metavar='PATH',
                                default='%s/conf/stratuslab.cfg' % modulePath)
-        self.parser.add_option('-t', '--template', dest='vmTemplate', 
-                               help='VM template used for tests', metavar='PATH',
-                               default='%s/share/vm/ttylinux-test.one' % modulePath)
-        
-        #testsGroup = OptionGroup(self.parser, 'Available tests',
-        #    'Order of these options doesn\'t matter')
-        #testsGroup.add_option('-s', '--run-machine', dest='runMachineTest',
-        #    help='deploy a VM checks it run and stop it', action='store_true',
-        #    default=False)
-        #self.parser.add_option_group(testsGroup)
         
         self.options, _ = self.parser.parse_args()
 

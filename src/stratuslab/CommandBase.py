@@ -1,11 +1,14 @@
 import sys
+from optparse import OptionParser
 
 from stratuslab.Util import printError
 
 class CommandBase(object):
     
     def __init__(self):
+        self.parser = OptionParser()
         self.parse()
+        self.checkOptions()
         self._callAndHandleErrorsForCommands(self.doWork.__name__)
 
     def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
@@ -29,6 +32,9 @@ class CommandBase(object):
         return res
     
     def parse(self):
+        pass
+
+    def checkOptions(self):
         pass
 
     def usageExitTooFewArguments(self):

@@ -23,9 +23,9 @@ class CentOS(BaseSystem):
             ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
         ]
         self.frontendDeps = [
-            'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'libvirt', 'mkisofs'
+            'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'mkisofs', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl']
+        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh', 'brctl']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
             'kvm': ['kvm'],
@@ -136,6 +136,7 @@ class CentOS(BaseSystem):
     # -------------------------------------------
 
     def _configureKvm(self):
+        super(CentOS, self)._configureKvm()
         self.executeCmd(['service', 'libvirtd', 'start'])
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
         self.executeCmd(['chown', 'root:kvm', 

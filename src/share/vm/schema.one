@@ -8,6 +8,7 @@ MEMORY = %(vm_ram)s
 DISK = [
 source   = "%(vm_image)s",
 target   = "hda",
+save     = %(save_disk)s,
 readonly = "no"
 ]
 
@@ -25,11 +26,12 @@ readonly = "no"
 CONTEXT = [
 %(nic_ip)s
 %(nic_netmask)s
+%(creator_context)s
 default_gateway = %(default_gateway)s,
 global_network = %(global_network)s,
 global_netmask = %(global_netmask)s,
-root_pubkey = %(user_key_name)s,
-files = "%(user_key_path)s %(context_script)s",
+public_key = "%(public_key)s",
+files = "%(context_script)s %(creator_key)s",
 %(extra_context)s
 target = "hdc"
 ]
