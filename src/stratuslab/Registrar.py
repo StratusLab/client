@@ -1,6 +1,5 @@
 from stratuslab.installator.one import OneInstallator
 from stratuslab.Util import printAction
-from stratuslab.Util import printStep
 
 class Registrar(OneInstallator):
 
@@ -25,7 +24,10 @@ class Registrar(OneInstallator):
         self._register(hostname)
 
     def _deRegister(self, hostname):
-        pass
+        self.nodeAddr = hostname
+        printAction('Registering node: %s', hostname)
+        self.addCloudNode()
+        printAction('Registration successful')
 
     def _register(self, hostname):
         

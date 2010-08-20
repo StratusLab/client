@@ -77,6 +77,9 @@ class OneInstallator(BaseInstallator):
     def addCloudNode(self):
         self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
         
+    def removeCloudNode(self):
+        self.cloud.hostCreate(self.nodeAddr)
+        
     def addDefaultNetworks(self):
         for vnet in self.defaultNetworks:
             if self.config.get('one_%s_network_addr' % vnet, '') == '':

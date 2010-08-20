@@ -129,7 +129,7 @@ class Testor(object):
 
         for networkName, ip in self.vmIps[1:]:
             print 'SSHing into machine at via address %s at ip %s' % (networkName, ip)
-            res = sshCmd(loginCommand, ip, self.config.get('node_private_key'))
+            res = sshCmd(loginCommand, ip, self.sshKey)
             if res:
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
