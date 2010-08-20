@@ -7,7 +7,7 @@ index c55468d..e579e10 100644
      if (emulator == "kvm")
      {
 -        file << "\t\t<type>hvm</type>" << endl;
-+        file << "\t\t<type machine='pc'>hvm</type>" << endl;
++        file << "\t\t<type machine='pc' arch='i386'>hvm</type>" << endl;
      }
 
      num = vm->get_template_attribute("OS",attrs);
