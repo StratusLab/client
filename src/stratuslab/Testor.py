@@ -83,7 +83,6 @@ class Testor(object):
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
-        options['vncPort'] = 5901
         
         image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
