@@ -137,12 +137,6 @@ class OneConnector(object):
                 return False
 
         return self.getVmState(vmId) == self.status.get('running')
-
-
-    def createMachineTemplate(self, imagePath, template):
-        # TODO: move method to Creator
-        return fileGetContent(template) % ({'vm_image': imagePath,
-                                            'vm_name': os.path.basename(imagePath)})
     
     # -------------------------------------------
     #    Virtual network management
