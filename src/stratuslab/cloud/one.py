@@ -223,6 +223,14 @@ class OneConnector(object):
 
         return id
 
+    def hostRemove(self, hostname):
+        ret, id = self._rpc.one.host.delete(self._sessionString, hostname)
+
+        if not ret:
+            raise Exception(id)
+
+        return id
+
     def getHostInfo(self, id):
         ret, info = self._rpc.one.host.info(self._sessionString, id)
 
