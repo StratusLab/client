@@ -149,7 +149,7 @@ def execute(*cmd, **kwargs):
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout]
 
-    if not sshKey and os.path.isfile(sshKey):
+    if sshKey and os.path.isfile(sshKey):
         sshCmd.append('-i')
         sshCmd.append(sshKey)
 
@@ -161,7 +161,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port)]
 
-    if not sshKey and os.path.isfile(sshKey):
+    if sshKey and os.path.isfile(sshKey):
         scpCmd.append('-i')
         scpCmd.append(sshKey)
 
