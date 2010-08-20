@@ -262,5 +262,5 @@ VM_HOOK = [
     name      = "upload",
     on        = "shutdown",
     command   = "%(one_home)s/share/hooks/upload",
-    arguments = "%s(vm_dir)s/$VMID/images/disk.0 $NIC[network="private"] $CONTEXT[STRATUSLAB_SSH_KEY] $CONTEXT[STRATUSLAB_CREATE_IMAGE]",
+    arguments = "%(vm_dir)s/$VMID/images/disk.0 $NIC[network="private"] $CONTEXT[STRATUSLAB_SSH_KEY] $CONTEXT[STRATUSLAB_CREATE_IMAGE]",
     remote    = "yes" ]
