@@ -63,7 +63,7 @@ def appendOrReplaceInFile(filename, search, replace):
     if insertionMade is False:
         newContent.append('%s\n' % replace)
     
-    fileAppendContent(filename, '\n'.join(newContent))
+    filePutContent(filename, '\n'.join(newContent))
 
 def fileGetContent(filename):
     fd = open(filename, 'rb')
