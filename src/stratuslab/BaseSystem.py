@@ -281,7 +281,7 @@ class BaseSystem(object):
             self._nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
                             search, replace, filename)], shell=True)
         else:
-            self._remoteFilePutContents(filename, replace)
+            self._remoteFileAppendContents(filename, replace)
 
     def _patternExists(self, returnCode):
         return returnCode == 0
