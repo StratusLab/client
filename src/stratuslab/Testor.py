@@ -39,17 +39,17 @@ class Testor(object):
         printAction('Launching smoke test')
         
         try:
-#            printStep('Starting VM')
-#            self.startVm()
-#
-#            printStep('Ping VM')
-#            self.repeatCall(self.ping)
-#
-#            printStep('Logging to VM via SSH')
-#            self.repeatCall(self.loginViaSsh)
-#
-#            printStep('Shutting down VM')
-#            self.stopVmTest()
+            printStep('Starting VM')
+            self.startVm()
+
+            printStep('Ping VM')
+            self.repeatCall(self.ping)
+
+            printStep('Logging to VM via SSH')
+            self.repeatCall(self.loginViaSsh)
+
+            printStep('Shutting down VM')
+            self.stopVmTest()
 
             printStep('Appliance repository authentication')
             self._testRepoConnection()

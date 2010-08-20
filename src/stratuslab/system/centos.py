@@ -25,7 +25,7 @@ class CentOS(BaseSystem):
         self.frontendDeps = [
             'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'mkisofs', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh']
+        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh', 'brctl']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
             'kvm': ['kvm'],
