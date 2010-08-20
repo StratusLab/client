@@ -73,6 +73,11 @@ def filePutContent(filename, data):
     fd = open(filename, 'wb')
     fd.write(data)
     fd.close()
+
+def fileAppendContent(filename, data):
+    fd = open(filename, 'a')
+    fd.write(data)
+    fd.close()
         
 def shaHexDigest(string):
     shaMethod = None

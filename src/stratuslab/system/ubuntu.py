@@ -61,7 +61,7 @@ class Ubuntu(BaseSystem):
         for iface in (networkInterface, bridge):
             self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
         
-        self.filePutContentsCmd('/etc/network/interfaces',
+        self.fileAppendContentsCmd('/etc/network/interfaces',
                 fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
 
 system = Ubuntu()
