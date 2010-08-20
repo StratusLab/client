@@ -23,9 +23,9 @@ class CentOS(BaseSystem):
             ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
         ]
         self.frontendDeps = [
-            'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'libvirt', 'mkisofs'
+            'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'mkisofs', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl']
+        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
             'kvm': ['kvm'],

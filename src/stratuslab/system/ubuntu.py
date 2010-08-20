@@ -9,9 +9,9 @@ class Ubuntu(BaseSystem):
         self.installCmd = 'apt-get -q -y install' 
         self.frontendDeps = [
             'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
-            'scons', 'g++', 'git-core', 'ssh', 'libvirt-bin', 'genisoimage'
+            'scons', 'g++', 'git-core', 'ssh', 'genisoimage', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl']
+        self.nodeDeps = ['ssh', 'ruby', 'curl', 'libvirt-bin', 'genisoimage' ]
         self.hypervisorDeps = {
             'xen': ['xen-hypervisor-3.3'],
             'kvm': ['qemu-kvm'],
