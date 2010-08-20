@@ -136,6 +136,7 @@ class CentOS(BaseSystem):
     # -------------------------------------------
 
     def _configureKvm(self):
+        super(CentOS, self)._configureKvm()
         self.executeCmd(['service', 'libvirtd', 'start'])
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
         self.executeCmd(['chown', 'root:kvm', 

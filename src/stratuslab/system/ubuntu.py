@@ -51,6 +51,7 @@ class Ubuntu(BaseSystem):
     # -------------------------------------------
             
     def _configureKvm(self):
+        super(Ubuntu, self)._configureKvm()
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
         
     # -------------------------------------------
