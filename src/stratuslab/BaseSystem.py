@@ -202,7 +202,8 @@ class BaseSystem(object):
             self._configureKvm()
 
     def _configureKvm(self):
-        self.executeCmd(['modprobe', 'kvm'])
+        self.executeCmd(['modprobe', 'kvm_intel'])
+        self.executeCmd(['modprobe', 'kvm_amd'])
 
     def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
