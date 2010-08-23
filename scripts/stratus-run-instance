@@ -14,7 +14,6 @@ class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
 
     def parse(self):
-        super(MainProgram, self).parse()
         options = Runner.defaultRunOptions()
         
         self.parser.add_option('-n', '--number', dest='instanceNumber',
@@ -24,6 +23,8 @@ class MainProgram(Runnable):
         self.parser.add_option('--save', dest='saveDisk', action='store_true',
                 help='save image after shutting down the VM',
                 default=False)
+
+        super(MainProgram, self).parse()
 
     def doWork(self):
         config = parseConfig(self.options.configFile)
