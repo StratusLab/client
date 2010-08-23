@@ -157,6 +157,6 @@ class CentOS(BaseSystem):
                 'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge))
         self.filePutContentsCmd('/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
                 'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge)
-        self.executeCmd(['/etc/init.d/network', 'restart'])
+        self.executeCmd(['/etc/init.d/network restart'])
 
 system = CentOS()

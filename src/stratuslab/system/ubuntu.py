@@ -68,8 +68,7 @@ class Ubuntu(BaseSystem):
                 fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
 
         currentTime = datetime.now()
-        self.executeCmd(['at', '%s:%s' % (currentTime.hour, currentTime.minute+1),
-                         '/etc/init.d/networking', 'restart'])
+        self.executeCmd(['/etc/init.d/networking restart'])
 
 system = Ubuntu()
 
