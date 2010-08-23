@@ -26,7 +26,7 @@ class MainProgram(CommandBase):
                 help='default configuration file', metavar='FILE',
                 default='%s/conf/stratuslab.cfg.ref' % modulePath)
         self.parser.add_option('-k', '--keys', dest='showDefaultKeys',
-                help='display keys and default value', action="store_true",
+                help='display keys and default value', action='store_true',
                 default=False)
         self.parser.add_option('-r', action='store_true', dest='revert',
                 help='remove previous configuration',
@@ -44,10 +44,10 @@ class MainProgram(CommandBase):
         elif len(self.args) == 0:
             configurator.writeUserConfig()
         else:
-            self.checkArgumentsLength(len)
+            self.checkArgumentsLength()
             configurator.setOption(key=self.args[0], value=self.args[1])
 
-    def checkArgumentsLength(self, len):
+    def checkArgumentsLength(self):
         if len(self.args) < 2:
             raise self.usageExitTooFewArguments()
         elif len(self.args) > 2:
