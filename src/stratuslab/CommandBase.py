@@ -1,4 +1,5 @@
 import sys
+import socket
 from optparse import OptionParser
 
 from stratuslab.Util import printError
@@ -6,16 +7,18 @@ from stratuslab.Util import printError
 class CommandBase(object):
     
     def __init__(self):
+        self.defaultDebugLevel = 0
         self.parser = OptionParser()
         self.parse()
         self.checkOptions()
         self._callAndHandleErrorsForCommands(self.doWork.__name__)
 
     def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
+        
         if hasattr(self, 'config'):
-            self.debugLevel = self.config.get('debug_level', 3)
+            self.debugLevel = self.config.get('debug_level', self.defaultDebugLevel)
         else:
-            self.debugLevel = 3
+            self.debugLevel = self.defaultDebugLevel
         
         res = 0
         try:
@@ -27,6 +30,8 @@ class CommandBase(object):
             self.raiseOrDisplayError(ex)
         except SystemExit, ex:
             self.raiseOrDisplayError(ex)
+        except socket.error, ex:
+            self.raiseOrDisplayError(ex)
         except Exception, ex:
             self.raiseOrDisplayError(ex)
         return res
@@ -35,6 +40,9 @@ class CommandBase(object):
         pass
 
     def checkOptions(self):
+        pass
+
+    def checkArgumentsLength(self):
         pass
 
     def usageExitTooFewArguments(self):
