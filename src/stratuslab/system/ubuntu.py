@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
@@ -64,7 +66,10 @@ class Ubuntu(BaseSystem):
         
         self.fileAppendContentsCmd('/etc/network/interfaces',
                 fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
-        self.executeCmd(['/etc/init.d/networking', 'restart'])
+
+        currentTime = datetime.now()
+        self.executeCmd(['at', '%s:%s' % (currentTime.hour, currentTime.minute+1),
+                         '/etc/init.d/networking', 'restart'])
 
 system = Ubuntu()
 
