@@ -64,7 +64,7 @@ class Ubuntu(BaseSystem):
         
         self.fileAppendContentsCmd('/etc/network/interfaces',
                 fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
-        self.executeCmd(['service', 'networking', 'restart'])
+        self.executeCmd(['/etc/init.d/networking', 'restart'])
 
 system = Ubuntu()
 
