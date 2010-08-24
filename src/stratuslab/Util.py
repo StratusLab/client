@@ -11,6 +11,8 @@ from string import ascii_lowercase
 
 
 defaultConfigSection = 'stratuslab'
+defaultRepoConfigSection = 'stratuslab_repo'
+defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
 manifestExt = '.manifest.xml'

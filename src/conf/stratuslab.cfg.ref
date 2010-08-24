@@ -20,7 +20,6 @@ network_mask = 24
 ;
 ; OpenNebula build
 ;
-;; TODO: Don't build ONE each time
 one_git_repo = git://opennebula.org/one.git
 one_branch = one-2.0
 one_build_dir = /tmp/one
@@ -69,13 +68,9 @@ node_bridge_name = br0
 ;
 ; Default appliances repository
 ;
-;; TODO: Use certificate for auth
 app_repo_username = foo
 app_repo_password = bar
-app_repo_url = appliances.stratuslab.eu
-app_repo_tree = images/#type_#/#os#-#osversion#-#arch#-#type#/#version#
-app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img.#compression#
-image_dir = ./
+app_repo_url = https://appliances.stratuslab.eu/images
 
 ;
 ; Available ONE networks
