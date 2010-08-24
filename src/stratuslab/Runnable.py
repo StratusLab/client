@@ -110,7 +110,7 @@ class Runnable(CommandBase):
             self.parser.error('Unspecified cloud password')
         if not self.options.endpoint:
             self.parser.error('Unspecified cloud endpoint')
-        if not self.options.endpoint.startwith('http'):
+        if not self.options.endpoint.startswith('http'):
             self.parser.error('Cloud endpoint must be an URL (begin with "http")')
 
     def displayInstanceType(self):

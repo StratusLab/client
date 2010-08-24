@@ -14,7 +14,6 @@ from stratuslab.Util import validateIp
 class Runner(object):
 
     def __init__(self, image, options):
-        self.config = config
         assignAttributes(self, options)
 
         self.cloud = CloudConnectorFactory.getCloud()
@@ -91,7 +90,7 @@ class Runner(object):
                    'userKey': os.getenv('STRATUSLAB_KEY', ''),
                    'username': os.getenv('STRATUSLAB_USERNAME', ''),
                    'password': os.getenv('STRATUSLAB_PASSWORD', ''),
-                   'endpoint': os.getenv('STRATUSLAB_ENPOINT', ''),
+                   'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
                    'instanceNumber': 1,
                    'instanceType': 'm1.small',
                    'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
