@@ -1,0 +1,53 @@
+diff --git a/src/tm_mad/nfs/tm_context.sh b/src/tm_mad/nfs/tm_context.sh
+index b6c515d..f9c2080 100755
+--- a/src/tm_mad/nfs/tm_context.sh
++++ b/src/tm_mad/nfs/tm_context.sh
+@@ -31,8 +31,10 @@ done
+ 
+ if [ -z "${ONE_LOCATION}" ]; then
+     TMCOMMON=/usr/lib/one/mads/tm_common.sh
++    CONFIG_SCRIPT=/usr/share/one/scripts/configuration.sh
+ else
+     TMCOMMON=$ONE_LOCATION/lib/mads/tm_common.sh
++    CONFIG_SCRIPT=$ONE_LOCATION/share/scripts/configuration.sh
+ fi
+ 
+ . $TMCOMMON
+@@ -48,6 +50,8 @@ ISO_DIR=$DST_DIR/isofiles
+ 
+ exec_and_log "mkdir -p $ISO_DIR"
+ 
++exec_and_log "cp $CONFIG_SCRIPT $ISO_DIR"
++
+ for f in $SRC; do
+     case $f in
+     http://*)
+@@ -64,4 +68,3 @@ exec_and_log "$MKISOFS -o $DST_PATH -J -R $ISO_DIR"
+ 
+ exec_and_log "rm -rf $ISO_DIR"
+ 
+-
+diff --git a/src/tm_mad/ssh/tm_context.sh b/src/tm_mad/ssh/tm_context.sh
+index b420be3..ab7ca63 100755
+--- a/src/tm_mad/ssh/tm_context.sh
++++ b/src/tm_mad/ssh/tm_context.sh
+@@ -31,8 +31,10 @@ done
+ 
+ if [ -z "${ONE_LOCATION}" ]; then
+     TMCOMMON=/usr/lib/one/mads/tm_common.sh
++    CONFIG_SCRIPT=/usr/share/one/scripts/configuration.sh
+ else
+     TMCOMMON=$ONE_LOCATION/lib/mads/tm_common.sh
++    CONFIG_SCRIPT=$ONE_LOCATION/share/scripts/configuration.sh
+ fi
+ 
+ . $TMCOMMON
+@@ -48,6 +50,8 @@ ISO_DIR="$TMP_DIR/isofiles"
+ 
+ exec_and_log "mkdir -p $ISO_DIR"
+ 
++exec_and_log "cp $CONFIG_SCRIPT $ISO_DIR"
++
+ for f in $SRC; do
+     case $f in
+     http://*)

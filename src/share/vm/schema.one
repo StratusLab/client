@@ -26,12 +26,8 @@ readonly = "no"
 CONTEXT = [
 %(nic_ip)s
 %(nic_netmask)s
-%(creator_context)s
-default_gateway = %(default_gateway)s,
-global_network = %(global_network)s,
-global_netmask = %(global_netmask)s,
 public_key = "%(public_key)s",
-files = "%(context_script)s %(creator_key)s",
+files = "%(context_script)s",
 %(extra_context)s
 target = "hdc"
 ]
