@@ -36,8 +36,10 @@ class Testor(unittest.TestCase):
     def _setCloud(self):
         self.cloud = CloudConnectorFactory.getCloud()
 
-        if 'STRATUSLAB_ENDPOINT' in os.environ:
-            self.cloud.setEndpoint(os.environ['STRATUSLAB_ENDPOINT'])
+        endpointEnv = 'STRATUSLAB_ENDPOINT'
+
+        if endpointEnv in os.environ:
+            self.cloud.setEndpoint(os.environ[endpointEnv])
         else:
             self.cloud.setFrontend(self.config.get('frontend_ip'),
                                    self.config.get('one_port'))
