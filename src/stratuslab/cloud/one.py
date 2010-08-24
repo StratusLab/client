@@ -54,11 +54,18 @@ class OneConnector(object):
     
     def setFrontend(self, server, port):
         self.server = 'http://%s:%s/RPC2' % (server, port)
-        self._rpc = xmlrpclib.ServerProxy(self.server)
-    
+        self._createRpcConnection()
+
+    def setEndpoint(self, address):
+        self.server = address
+        self._createRpcConnection()
+
     def setCredentials(self, username, password):
         self._sessionString = '%s:%s' % (username, shaHexDigest(password))
-        
+
+    def _createRpcConnection(self):
+        self._rpc = xmlrpclib.ServerProxy(self.server)
+
     # -------------------------------------------
     #    Virtual machine management
     # -------------------------------------------

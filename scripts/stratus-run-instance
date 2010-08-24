@@ -8,7 +8,6 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 
 from stratuslab.Runner import Runner
 from stratuslab.Runnable import Runnable
-from stratuslab.Util import parseConfig
 
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
@@ -27,8 +26,7 @@ class MainProgram(Runnable):
         super(MainProgram, self).parse()
 
     def doWork(self):
-        config = parseConfig(self.options.configFile)
-        runner = Runner(self.image, self.options.__dict__, config)
+        runner = Runner(self.image, self.options.__dict__)
         runner.runInstance()
 
 if __name__ == '__main__':

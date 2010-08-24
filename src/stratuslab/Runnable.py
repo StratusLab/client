@@ -20,9 +20,6 @@ class Runnable(CommandBase):
         options = Runner.defaultRunOptions()
 
         self.parser.usage = 'usage: %prog [options] image'
-        self.parser.add_option('-c', '--config', dest='configFile',
-                help='configuration file', metavar='FILE',
-                default=options['configFile'])
 
         self.parser.add_option('-k', '--key', dest='userKey',
                 help='SSH key to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',
@@ -48,6 +45,10 @@ class Runnable(CommandBase):
         self.parser.add_option('-p', '--password', dest='password',
                 help='cloud password. Default STRATUSLAB_PASSWORD',
                 default=options['password'])
+
+        self.parser.add_option('--endpoint', dest='endpoint',
+                help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
+                default=options['endpoint'])
 
         self.parser.add_option('--vnc-port', dest='vncPort', metavar='PORT', type='int',
                 help='VNC port number. Note for KVM it\'s the real one , not the '
@@ -75,9 +76,6 @@ class Runnable(CommandBase):
                 help='machine kernel',
                 default=options['vmKernel'])
 
-        self.parser.add_option('--context-script', dest='contextScript', metavar='FILE',
-                help='contextualization script',
-                default=options['contextScript'])
         self.parser.add_option( '--template', dest='vmTemplatePath', metavar='FILE',
                 help='machine template. Available substitution variables: %s' % (
                 ', '.join(Runner.getVmTemplatesParameters())),
@@ -96,20 +94,24 @@ class Runnable(CommandBase):
 
         if not self.options.userKey:
             self.parser.error('Unspecified user private key. See --key option.')
-        elif not os.path.isfile(self.options.userKey):
+        if not os.path.isfile(self.options.userKey):
             self.parser.error('Key `%s` does not exist' % self.options.userKey)
-
         if self.options.instanceType not in Runner.getInstanceType().keys():
             self.parser.error('Specified instance type not available')
-
         if (self.options.addressing not in ('', 'private')) and not validateIp(self.options.addressing):
             self.parser.error('Invalide addressing')
-
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
-
         if self.options.vncListen and not validateIp(self.options.vncListen):
             self.parser.error('VNC listen IP is not valid')
+        if not self.options.username:
+            self.parser.error('Unspecified cloud username')
+        if not self.options.password:
+            self.parser.error('Unspecified cloud password')
+        if not self.options.endpoint:
+            self.parser.error('Unspecified cloud endpoint')
+        if not self.options.endpoint.startswith('http'):
+            self.parser.error('Cloud endpoint must be an URL (begin with "http")')
 
     def displayInstanceType(self):
         types = Runner.getInstanceType()

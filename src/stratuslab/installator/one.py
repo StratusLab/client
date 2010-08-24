@@ -1,4 +1,3 @@
-import os.path
 import os
 
 from stratuslab.BaseInstallator import BaseInstallator
@@ -131,11 +130,8 @@ class OneInstallator(BaseInstallator):
                 'dev', 'eth0'])
 
     def _copyContextualizationScript(self):
-        oneHome = self.config.get('one_home')
-        scriptPath = '%s/share/scripts/' % oneHome
-
-        self.frontend.createDirsCmd(os.path.basename(scriptPath))
-        self.frontend.filePutContentsCmd(scriptPath,
+        self.frontend.createDirsCmd(os.path.dirname(self.config.get('context_script')))
+        self.frontend.filePutContentsCmd(self.config.get('context_script'),
                 fileGetContent('%s/share/context/init.sh' % modulePath))
 
     def _createContextConfigurationScript(self):
@@ -143,9 +139,9 @@ class OneInstallator(BaseInstallator):
         scriptPath = '%s/share/scripts/configuration.sh' % oneHome
         configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
                         'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
-                        'DEFAULT_GATEWAY="%s"' % self.config.get('network_mask')]
+                        'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
                         
-        self.frontend.createDirsCmd(os.path.basename(scriptPath))
+        self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
         self.frontend.setOwnerCmd(scriptPath)
 

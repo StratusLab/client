@@ -80,12 +80,14 @@ class Testor(unittest.TestCase):
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
+        options['endpoint'] = 'http://%s:%s/RPC2' % (self.config['frontend_ip'],
+                                                     self.config['one_port'])
         
         image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
         image = image % self.config
 
-        runner = Runner(image, options, self.config)
+        runner = Runner(image, options)
         runner.runInstance()
         
         self.vmId = runner.vmId
