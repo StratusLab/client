@@ -8,38 +8,25 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 
 from stratuslab.UploadParser import buildUploadParser
 from stratuslab.UploadParser import checkUploadOptions
-from stratuslab.UploadParser import displayUploadOptions
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Util import manifestExt
 from stratuslab.Uploader import Uploader
-from stratuslab.Util import modulePath
-from stratuslab.Util import parseConfig
 
 class MainProgram(CommandBase):
     '''A command-line program to upload StratusLab appliance.'''
 
     def __init__(self):
-        self.config = None
         self.manifest = None
         super(MainProgram, self).__init__()
 
     def parse(self):
         self.parser.usage = 'usage: %prog [options] manifest'
         buildUploadParser(self.parser)
-
-        self.parser.add_option('-c', '--config', dest='configFile',
-                help='configuration file', metavar='FILE',
-                default='%s/conf/stratuslab.cfg' % modulePath)
                 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        if not os.path.isfile(self.options.configFile):
-            self.parser.error('Configuration file does not exist')
-
-        self.config = parseConfig(self.options.configFile)
-
-        checkUploadOptions(self.options, self.config, self.parser)
+        checkUploadOptions(self.options, self.parser)
 
         if len(self.args) != 1:
             self.parser.error('Please specify an appliance manifest')
@@ -56,9 +43,10 @@ class MainProgram(CommandBase):
             self.parser.error('Appliance does not exist')
 
     def doWork(self):
-        displayUploadOptions(self.options)
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
         
-        uploader = Uploader(self.config, self.manifest, self.options)
+        uploader = Uploader(self.manifest, self.options.__dict__)
         uploader.start()
         
 

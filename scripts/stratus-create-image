@@ -3,12 +3,13 @@
 import os
 import sys
 
+
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.UploadParser import buildUploadParser
 from stratuslab.UploadParser import checkUploadOptions
-from stratuslab.UploadParser import displayUploadOptions
+from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.Util import parseConfig
@@ -49,7 +50,9 @@ class MainProgram(Runnable):
             self.parser.error('Wrong network interface. Available: %s' % ', '.join(self.availableInterface()))
 
     def doWork(self):
-        displayUploadOptions(self.options)
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
+
         config = parseConfig(self.options.configFile)
         checkUploadOptions(self.options, config, self.parser)
         
