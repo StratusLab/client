@@ -106,7 +106,6 @@ class Runner(object):
                    'saveDisk': 'no' }
         return options
 
-
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)
         self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
