@@ -131,7 +131,7 @@ class OneInstallator(BaseInstallator):
 
     def _copyContextualizationScript(self):
         oneHome = self.config.get('one_home')
-        scriptPath = '%s/share/scripts/' % oneHome
+        scriptPath = '%s/share/scripts/init.sh' % oneHome
 
         self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath,
