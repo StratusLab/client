@@ -1,4 +1,3 @@
-import os.path
 import os
 
 from stratuslab.BaseInstallator import BaseInstallator
@@ -134,7 +133,7 @@ class OneInstallator(BaseInstallator):
         oneHome = self.config.get('one_home')
         scriptPath = '%s/share/scripts/' % oneHome
 
-        self.frontend.createDirsCmd(os.path.basename(scriptPath))
+        self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath,
                 fileGetContent('%s/share/context/init.sh' % modulePath))
 
@@ -145,7 +144,7 @@ class OneInstallator(BaseInstallator):
                         'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
                         'DEFAULT_GATEWAY="%s"' % self.config.get('network_mask')]
                         
-        self.frontend.createDirsCmd(os.path.basename(scriptPath))
+        self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
         self.frontend.setOwnerCmd(scriptPath)
 
