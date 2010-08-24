@@ -1,3 +1,4 @@
+import os.path
 import os
 
 from stratuslab.BaseInstallator import BaseInstallator
@@ -56,7 +57,8 @@ class OneInstallator(BaseInstallator):
                                          self.config.get('one_branch'))
         self.frontend.buildCloudSystem()
         self.frontend.installCloudSystem()
-        self._copyContextualizationScript(self.config.get('one_home'))
+        self._copyContextualizationScript()
+        self._createContextConfigurationScript()
         
     # -------------------------------------------
     #    Cloud configuration management
@@ -128,10 +130,24 @@ class OneInstallator(BaseInstallator):
                 networkSizeToNetmask(unifyNetsize(self.config.get('one_private_network_size')))),
                 'dev', 'eth0'])
 
-    def _copyContextualizationScript(self, oneHome):
-        self.frontend.createDirsCmd('%s/share/scripts/' % oneHome)
-        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome,
+    def _copyContextualizationScript(self):
+        oneHome = self.config.get('one_home')
+        scriptPath = '%s/share/scripts/' % oneHome
+
+        self.frontend.createDirsCmd(os.path.basename(scriptPath))
+        self.frontend.filePutContentsCmd(scriptPath,
                 fileGetContent('%s/share/context/init.sh' % modulePath))
+
+    def _createContextConfigurationScript(self):
+        oneHome = self.config.get('one_home')
+        scriptPath = '%s/share/scripts/configuration.sh' % oneHome
+        configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
+                        'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
+                        'DEFAULT_GATEWAY="%s"' % self.config.get('network_mask')]
+                        
+        self.frontend.createDirsCmd(os.path.basename(scriptPath))
+        self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
+        self.frontend.setOwnerCmd(scriptPath)
 
     # -------------------------------------------
     #   Front-end file sharing management

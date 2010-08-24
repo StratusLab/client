@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
@@ -52,6 +54,7 @@ class Ubuntu(BaseSystem):
             
     def _configureKvm(self):
         super(Ubuntu, self)._configureKvm()
+        self.executeCmd(['/etc/init.d/libvirt-bin start'])
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
         
     # -------------------------------------------
@@ -64,7 +67,9 @@ class Ubuntu(BaseSystem):
         
         self.fileAppendContentsCmd('/etc/network/interfaces',
                 fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
-        self.executeCmd(['service', 'networking', 'restart'])
+
+        currentTime = datetime.now()
+        self.executeCmd(['/etc/init.d/networking restart'])
 
 system = Ubuntu()
 

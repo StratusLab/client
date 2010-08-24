@@ -1,5 +1,7 @@
 import os
 import tarfile
+from time import sleep
+
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import wget
 
@@ -137,7 +139,7 @@ class CentOS(BaseSystem):
 
     def _configureKvm(self):
         super(CentOS, self)._configureKvm()
-        self.executeCmd(['service', 'libvirtd', 'start'])
+        self.executeCmd(['/etc/init.d/libvirtd start'])
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
         self.executeCmd(['chown', 'root:kvm', 
                         '/var/run/libvirt/libvirt-sock'])
@@ -153,6 +155,6 @@ class CentOS(BaseSystem):
                 'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge))
         self.filePutContentsCmd('/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
                 'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge)
-        self.executeCmd(['service', 'network', 'restart'])
+        self.executeCmd(['/etc/init.d/network restart'])
 
 system = CentOS()
