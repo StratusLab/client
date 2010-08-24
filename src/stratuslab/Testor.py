@@ -1,26 +1,28 @@
 import os.path
 import datetime
-import os
 import time
-import traceback
-from distutils.command.upload import upload
 import urllib2
+import unittest
+import inspect
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Runner import Runner
 from stratuslab.Util import execute
 from stratuslab.Util import ping
-from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import sshCmd
+from stratuslab.Registrar import Registrar
+from stratuslab.Monitor import Monitor
 
-
-class Testor(object):
+class Testor(unittest.TestCase):
     
-    def __init__(self, config, options):
-        self.config = config
-        self.options = options
+    config = {}
+    options = {}
+    testNames = []
+    
+    def __init__(self, methodName='dummy'):
+        super(Testor, self).__init__(methodName)
 
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setFrontend(self.config.get('frontend_ip'),
@@ -34,41 +36,50 @@ class Testor(object):
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
         self.repoUrl = 'http://%s/images/base/' % self.config.get('app_repo_url')
+
+        self.testsToRun = []
         
+    def dummy(self):
+        pass
+
     def runTests(self):
-        printAction('Launching smoke test')
         
-        try:
-            printStep('Starting VM')
-            self.startVm()
+        suite = unittest.TestSuite()
+        tests = []
+        if self.testNames:  
+            tests = self.testNames
+        else:
+            tests = self._extractTestMethodNames()
 
-            printStep('Ping VM')
-            self.repeatCall(self.ping)
+        for test in tests:
+            suite.addTest(Testor(test))
 
-            printStep('Logging to VM via SSH')
-            self.repeatCall(self.loginViaSsh)
+        unittest.TextTestRunner(verbosity=2).run(suite)
 
-            printStep('Shutting down VM')
-            self.stopVmTest()
+    def runMethod(self, method):
+        return method()
+    
+    def runInstanceTest(self):
+        '''Start new instance, ping it via private network and ssh into it, then stop it'''
+        printStep('Starting VM')
+        self._startVm()
 
-            printStep('Appliance repository authentication')
-            self._testRepoConnection()
+        printStep('Ping VM')
+        self._repeatCall(self._ping)
 
-            printStep('Uploading dummy image')
-            self._testUploadDummyImage()
+        printStep('Logging to VM via SSH')
+        self._repeatCall(self._loginViaSsh)
 
-        except Exception, ex:
-            printError(ex, exit=False)
-            logFile = '/tmp/smoke-test.err'
-            log = self.prepareLog(logFile)
-            traceback.print_exc(file=log)
-            log.close()
-            printError('For details see %s' % logFile, exit=False)
-            printError('Smoke test failed :-(')
+        printStep('Shutting down VM')
+        self._stopVm()
 
-        printAction('Smoke test finished')
+        printStep('Appliance repository authentication')
+        self._testRepoConnection()
+
+        printStep('Uploading dummy image')
+        self._testUploadDummyImage()
         
-    def prepareLog(self, logFile):
+    def _prepareLog(self, logFile):
         log = open(logFile,'aw')
         log.write('\n'*3 + '=' * 60 + '\n')
         log.write(str(datetime.datetime.now()) + '\n')
@@ -76,8 +87,8 @@ class Testor(object):
         return log
 
         
-    def startVm(self):
-        self.generateTestSshKeyPair()
+    def _startVm(self):
+        self._generateTestSshKeyPair()
 
         options = Runner.defaultRunOptions()
         options['username'] = self.config['one_username']
@@ -98,10 +109,8 @@ class Testor(object):
         
         if not vmStarted:
             printError('Failed to start VM')
-        else:
-            print 'Successfully started image', self.vmId
         
-    def repeatCall(self, method):
+    def _repeatCall(self, method):
         numberOfRepetition = 60
         for _ in range(numberOfRepetition):
             failed = False
@@ -118,7 +127,7 @@ class Testor(object):
             raise
         
         
-    def ping(self):
+    def _ping(self):
 
         for networkName, ip in self.vmIps[1:]:
             print 'Pinging %s at ip %s' % (networkName, ip)
@@ -126,7 +135,7 @@ class Testor(object):
             if not res:
                 raise Exception('Failed to ping %s' % ip)
         
-    def loginViaSsh(self):
+    def _loginViaSsh(self):
 
         loginCommand = 'ls /tmp'
 
@@ -136,17 +145,17 @@ class Testor(object):
             if res:
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
-    def stopVmTest(self):
+    def _stopVm(self):
         vmStopped = self.cloud.vmStop(self.vmId)
         
         if not vmStopped:
             printError('Failing to stop VM')
 
-    def generateTestSshKeyPair(self):
-        self.generateSshKeyPair(self.sshKey)
+    def _generateTestSshKeyPair(self):
+        self._generateSshKeyPair(self.sshKey)
         execute('chown %s %s' % (self.config['one_username'], self.sshKey), shell=True)
 
-    def generateSshKeyPair(self, key):
+    def _generateSshKeyPair(self, key):
         try:
             os.remove(key)
         except(OSError):
@@ -183,10 +192,52 @@ class Testor(object):
         baseCurlCmd = ['curl', '-u', '%s:%s' % (self.config.get('app_repo_username'), self.config.get('app_repo_password'))]
 
         uploadCmd = baseCurlCmd + ['-T', dummyFile, self.repoUrl, '-k']
-        ret = execute(*uploadCmd, stdout = devNull, stderr = devNull)
+        ret = execute(tuple(uploadCmd), stdout = devNull, stderr = devNull)
 
         if ret != 0:
             raise Exception('Failed to upload dummy image')
 
         deleteCmd = baseCurlCmd + [ '-X', 'DELETE', '%s/%s' % (self.repoUrl, os.path.basename(dummyFile)), '-k', '-q']
-        execute(*deleteCmd, stdout = devNull, stderr = devNull)
+        execute(tuple(deleteCmd), stdout = devNull, stderr = devNull)
+
+    def registrarTest(self):
+        '''Register a new node with ONE server, check that it is properly registered and remove it'''
+        options = self.options.copy()
+        options['infoDriver'] = 'kvm'
+        options['virtDriver'] = 'kvm'
+        options['transfertDriver'] = 'nfs'
+        options['password'] = self.config['one_password']
+        registrar = Registrar(options, self.config)
+        hostname = 'registrar.ip.test'
+        id = registrar.register([hostname])
+        monitor = Monitor(options, self.config)
+        info = monitor.monitor([id])[0]
+        self.assertEqual(hostname, info.name)
+        registrar.deregister(hostname)
+        self.assertRaises(Exception, monitor.monitor,[id])
+
+    def listTests(self):
+        print 'Available tests:'
+        for testName, testDoc in self._extractTestDescriptions():
+            print '    - %s: %s' % (testName, testDoc)
+
+    def _extractTestDescriptions(self):
+        methods = []
+        for attrib in self.__class__.__dict__:
+            if self._isTestMethod(attrib):
+                methods.append((attrib,self.__class__.__dict__[attrib].__doc__))
+        return methods
+    
+    def _extractTestMethodNames(self):
+        methods = []
+        for attrib in self.__class__.__dict__:
+            if self._isTestMethod(attrib):
+                methods.append(attrib)
+        return methods
+    
+    def _isTestMethod(self, attrib):
+        return inspect.ismethod(getattr(self, attrib)) and \
+               (attrib.lower().startswith('test') or attrib.lower().endswith('test')) and \
+               not attrib.startswith('_')
+                                                     
+                                                

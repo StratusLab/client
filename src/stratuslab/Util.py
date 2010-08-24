@@ -38,7 +38,8 @@ def wget(url, savePath):
     
 def ping(host, timeout=5, number=1, ** kwargs):
     '''Ping <host> and return True if successful'''
-    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
+    #    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
+    p = subprocess.Popen(['ping', '-q', '-c', str(number), host], ** kwargs)
     p.wait()
     success = p.returncode == 0
     return success
@@ -267,7 +268,7 @@ def isValidIpV6(ip):
 def unifyNetsize(netsize):
     classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
 
-    for letter, mask in classes.items():
+    for _, mask in classes.items():
         if netsize == str(mask):
             return mask
         
@@ -287,3 +288,6 @@ def assignAttributes(instance, dictionary):
 
 def randomString(length=10):
     return ''.join(sample(list(ascii_lowercase), length))
+
+def runMethodByName(obj, methodName, *args, **kw):
+    return obj.__class__.__dict__[methodName](obj, *args, **kw)

@@ -75,10 +75,10 @@ class OneInstallator(BaseInstallator):
                        fileGetContent(self.onedConfTemplate) % conf)
     
     def addCloudNode(self):
-        self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+        return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
         
-    def removeCloudNode(self):
-        self.cloud.hostCreate(self.nodeAddr)
+    def removeCloudNode(self, id):
+        self.cloud.hostRemove(id)
         
     def addDefaultNetworks(self):
         for vnet in self.defaultNetworks:

@@ -3,11 +3,12 @@ import socket
 from optparse import OptionParser
 
 from stratuslab.Util import printError
+from stratuslab.Exceptions import InputException
 
 class CommandBase(object):
     
     def __init__(self):
-        self.defaultDebugLevel = 0
+        self.defaultDebugLevel = 3
         self.parser = OptionParser()
         self.parse()
         self.checkOptions()
@@ -22,10 +23,12 @@ class CommandBase(object):
         
         res = 0
         try:
-            res = self.__class__.__dict__[methodName](self, *args, **kw)
+            res = self.runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
             sys.stderr.writelines('\nError: %s\n' % str(ex))
             sys.exit(3)
+        except InputException, ex:
+            printError('%s' % ex)
         except KeyboardInterrupt, ex:
             self.raiseOrDisplayError(ex)
         except SystemExit, ex:
@@ -36,6 +39,9 @@ class CommandBase(object):
             self.raiseOrDisplayError(ex)
         return res
     
+    def runMethodByName(self, methodName, *args, **kw):
+        return self.__class__.__dict__[methodName](self, *args, **kw)
+        
     def parse(self):
         pass
 

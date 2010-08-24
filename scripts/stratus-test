@@ -21,19 +21,32 @@ class MainProgram(CommandBase):
 
     def parse(self):
         modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(stratuslab.__file__)))
-        usage = 'usage: %prog [options]'
+        usage = '''usage: %prog [options] [test] ...\n\n
+where test is a comma separated list of tests, according to the name provided by -l/--list.'''
+        
 
         self.parser = OptionParser(usage=usage)
         self.parser.add_option('-c', '--config', dest='configFile', 
                                help='configuration file', metavar='PATH',
                                default='%s/conf/stratuslab.cfg' % modulePath)
         
-        self.options, _ = self.parser.parse_args()
+        self.parser.add_option('-l', '--list', dest='listTests', 
+                               help='list available tests', action='store_true',
+                               default=False)
+        
+        self.options, self.tests = self.parser.parse_args()
 
     def doWork(self):
         config = parseConfig(self.options.configFile)
-        self.testor = Testor(config, self.options)
-        self.testor.runTests()
+        Testor.config = config
+        Testor.options = self.options.__dict__
+        Testor.testNames = self.tests
+        testor = Testor()
+        
+        if self.options.listTests:
+            testor.listTests()
+        else:
+            testor.runTests()
 
 
 if __name__ == '__main__':

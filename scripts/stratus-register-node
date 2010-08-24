@@ -11,15 +11,18 @@ from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
 from stratuslab.Util import parseConfig
+from stratuslab.Registrar import Registrar
+
 
 class MainProgram(CommandBase):
-    '''A command-line program to install StratusLab.'''
+    '''A command-line program to register ONE nodes with the ONE server.'''
 
     def __init__(self):
+        self.nodes = []
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = 'usage: %prog [options]'
+        usage = '''usage: %prog [options] node-ip ...'''
 
         parser = OptionParser(usage=usage)
         parser.add_option('-c', '--config', dest='configFile', 
@@ -30,22 +33,43 @@ class MainProgram(CommandBase):
                           help='de-register node', action='store_true',
                           default=False)
 
+        parser.add_option('-p', '--password', dest='password', 
+                          help='Cloud administrator password',
+                          default='')
+
         # ONE specific parameters
-        parser.add_option('-t', '--template', dest='onedTpl', 
-                          help='ONe daemon template', metavar='TEMPLATE',
-                          default='%s/share/template/oned.conf.tpl' % modulePath)
         parser.add_option('--im', dest='infoDriver', 
-                          help='information driver', metavar='IM_NAME', default=None)
+                          help='information driver', metavar='IM_NAME')
         parser.add_option('--vmm', dest='virtDriver',
-                          help='virtualization driver', metavar='VM_NAME', default=None)
+                          help='virtualization driver', metavar='VM_NAME')
         parser.add_option('--tm', dest='transfertDriver', 
-                          help='transfert driver', metavar='VM_NAME', default=None)
+                          help='transfert driver', metavar='VM_NAME')
         
-        self.options, _ = parser.parse_args()        
+        self.options, self.nodes = parser.parse_args()
+
+    def checkOptions(self):
+        if not self.options.infoDriver:
+            self.parser.error('Missing --im')
+        if not self.options.virtDriver:
+            self.parser.error('Missing --vmm')
+        if not self.options.transfertDriver:
+            self.parser.error('Missing --tm')
+        if not self.options.password:
+            self.parser.error('Missing --password')
+            
+        self.checkArgumentsLength()
+
+    def checkArgumentsLength(self):
+        if len(self.nodes) < 1:
+            raise self.usageExitTooFewArguments()
 
     def doWork(self):
-        self.checkOptions()
         config = parseConfig(self.options.configFile)
         registrar = Registrar(self.options.__dict__, config)
-        registrar.register(self.hostname)
+        registrar.register(self.nodes)
         
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

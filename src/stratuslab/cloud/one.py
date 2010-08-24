@@ -1,9 +1,7 @@
-import os
 import sys
 import time
 import xmlrpclib
 
-from stratuslab.Util import fileGetContent
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import shaHexDigest
 from stratuslab.Util import unifyNetsize
@@ -223,8 +221,8 @@ class OneConnector(object):
 
         return id
 
-    def hostRemove(self, hostname):
-        ret, id = self._rpc.one.host.delete(self._sessionString, hostname)
+    def hostRemove(self, id):
+        ret = self._rpc.one.host.delete(self._sessionString, id)
 
         if not ret:
             raise Exception(id)
@@ -238,4 +236,11 @@ class OneConnector(object):
             raise Exception(info)
 
         return info
-    
+
+    def listHosts(self):
+        ret, info = self._rpc.one.hostpool.info(self._sessionString)
+
+        if not ret:
+            raise Exception(info)
+
+        return info
