@@ -92,7 +92,7 @@ class Uploader(object):
         curlUploadCmd.append(uploadUrl)
 
         devNull = open('/dev/null', 'w')
-        ret = execute(tuple(curlUploadCmd), stdout=devNull, stderr=devNull)
+        ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
         devNull.close()
         
         if ret != 0:
@@ -127,7 +127,7 @@ class Uploader(object):
                                                    # Find root address of the repo
                                                    self.repo.split('/')[0],
                                                    dir))
-            execute(tuple(curlCreateDirCmd), stderr=devNull, stdout=devNull)
+            execute(curlCreateDirCmd, stderr=devNull, stdout=devNull)
             curlCreateDirCmd.pop()
         devNull.close()
 

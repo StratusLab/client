@@ -61,23 +61,10 @@ class Testor(unittest.TestCase):
     
     def runInstanceTest(self):
         '''Start new instance, ping it via private network and ssh into it, then stop it'''
-        printStep('Starting VM')
         self._startVm()
-
-        printStep('Ping VM')
         self._repeatCall(self._ping)
-
-        printStep('Logging to VM via SSH')
         self._repeatCall(self._loginViaSsh)
-
-        printStep('Shutting down VM')
         self._stopVm()
-
-        printStep('Appliance repository authentication')
-        self._testRepoConnection()
-
-        printStep('Uploading dummy image')
-        self._testUploadDummyImage()
         
     def _prepareLog(self, logFile):
         log = open(logFile,'aw')
@@ -86,7 +73,6 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n'*3)
         return log
 
-        
     def _startVm(self):
         self._generateTestSshKeyPair()
 
@@ -163,6 +149,11 @@ class Testor(unittest.TestCase):
         sshCmd = 'ssh-keygen -f %s -N "" -q' % key
         execute(sshCmd, shell=True)
 
+    def applianceRepositoryTest(self):
+        '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
+        self._testRepoConnection()
+        self._uploadAndDeleteDummyImage()
+        
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
         passwordMgr.add_password(None, self.repoUrl,
@@ -177,13 +168,7 @@ class Testor(unittest.TestCase):
         except RuntimeError:
             raise Exception('Authentication to appliance repository failed')
 
-    def _generateDummyImage(self, filename, size=2):
-        devNull = open('/dev/null', 'w')
-        execute('dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1M', 'count=%s' % size,
-        stdout=devNull, stderr=devNull)
-        devNull.close()
-
-    def _testUploadDummyImage(self):
+    def _uploadAndDeleteDummyImage(self):
         devNull = open('/dev/null', 'w')
 
         dummyFile = '/tmp/stratus-dummy.img'
@@ -192,13 +177,19 @@ class Testor(unittest.TestCase):
         baseCurlCmd = ['curl', '-u', '%s:%s' % (self.config.get('app_repo_username'), self.config.get('app_repo_password'))]
 
         uploadCmd = baseCurlCmd + ['-T', dummyFile, self.repoUrl, '-k']
-        ret = execute(tuple(uploadCmd), stdout = devNull, stderr = devNull)
+        ret = execute(uploadCmd, stdout = devNull, stderr = devNull)
 
         if ret != 0:
             raise Exception('Failed to upload dummy image')
 
         deleteCmd = baseCurlCmd + [ '-X', 'DELETE', '%s/%s' % (self.repoUrl, os.path.basename(dummyFile)), '-k', '-q']
         execute(tuple(deleteCmd), stdout = devNull, stderr = devNull)
+
+    def _generateDummyImage(self, filename, size=2):
+        devNull = open('/dev/null', 'w')
+        execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1M', 'count=%s' % size],
+        stdout=devNull, stderr=devNull)
+        devNull.close()
 
     def registrarTest(self):
         '''Register a new node with ONE server, check that it is properly registered and remove it'''
