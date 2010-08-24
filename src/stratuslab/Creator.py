@@ -36,7 +36,7 @@ class Creator(object):
         self.sshKey = '/tmp/%s' % randomString()
         self.options['saveDisk'] = True
 
-        self.runner = Runner(self.image, self.options, self.config)
+        self.runner = Runner(self.image, self.options)
         self.runner.creator_context = '%s\n'.join(self._buildRunnerContext())
         self.runner.creator_key = self.sshKey
 

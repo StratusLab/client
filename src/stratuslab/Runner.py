@@ -13,13 +13,12 @@ from stratuslab.Util import validateIp
 
 class Runner(object):
 
-    def __init__(self, image, options, config):
+    def __init__(self, image, options):
         self.config = config
         assignAttributes(self, options)
 
         self.cloud = CloudConnectorFactory.getCloud()
-        self.cloud.setFrontend(self.config.get('frontend_ip'),
-                               self.config.get('one_port'))
+        self.cloud.setEndpoint(self.endpoint)
         
         self.cloud.setCredentials(self.username, self.password)
 
@@ -48,14 +47,9 @@ class Runner(object):
         self.nic_netmask = ''
         self.extra_context = ''
         self.graphics = ''
-        self.one_home = self.config.get('one_home')
         self.public_key = fileGetContent(self.userKey)
-        self.context_script = self.contextScript % self.config
         self.vmId = None
         self.vmIps = None
-        self.default_gateway = self.config.get('default_gateway')
-        self.global_network = self.config.get('network_addr')
-        self.global_netmask = self.config.get('network_mask')
         self.save_disk = self.saveDisk and 'yes' or 'no'
 
     @staticmethod
@@ -97,6 +91,7 @@ class Runner(object):
                    'userKey': os.getenv('STRATUSLAB_KEY', ''),
                    'username': os.getenv('STRATUSLAB_USERNAME', ''),
                    'password': os.getenv('STRATUSLAB_PASSWORD', ''),
+                   'endpoint': os.getenv('STRATUSLAB_ENPOINT', ''),
                    'instanceNumber': 1,
                    'instanceType': 'm1.small',
                    'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
@@ -109,8 +104,7 @@ class Runner(object):
                    'extraContextData': '',
                    'vncPort': None,
                    'vncListen': '',
-                   'saveDisk': 'no',
-                   'contextScript': '%(one_home)s/share/scripts/init.sh'}
+                   'saveDisk': 'no' }
         return options
 
 
@@ -247,5 +241,5 @@ class Runner(object):
             vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
             printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(vmIpsPretty)))
 
-        printAction('%s started successfully!' % (plurial.get(self.instanceNumber > 1)).title())
+        printAction('Done!')
         

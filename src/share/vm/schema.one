@@ -27,7 +27,6 @@ CONTEXT = [
 %(nic_ip)s
 %(nic_netmask)s
 public_key = "%(public_key)s",
-files = "%(context_script)s",
 %(extra_context)s
 target = "hdc"
 ]
