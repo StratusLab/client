@@ -47,6 +47,7 @@ vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
 vm_dir = /instances
+context_script = %(one_home)s/share/script/init.sh
 
 ;
 ; Systems
