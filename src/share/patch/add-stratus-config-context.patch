@@ -1,5 +1,5 @@
 diff --git a/src/tm_mad/nfs/tm_context.sh b/src/tm_mad/nfs/tm_context.sh
-index b6c515d..c1c230c 100755
+index b6c515d..0321d1e 100755
 --- a/src/tm_mad/nfs/tm_context.sh
 +++ b/src/tm_mad/nfs/tm_context.sh
 @@ -31,10 +31,19 @@ done
@@ -15,7 +15,7 @@ index b6c515d..c1c230c 100755
 +if [ -z "${STRATUSLAB_LOCATION}" ]; then
 +    STRATUS_CONFIG=/usr/bin/stratus-config
 +else
-+    STRATUS_CONFIG=$STRATUSLAB_LOCATION/scripts/stratus-config
++    STRATUS_CONFIG="python $STRATUSLAB_LOCATION/scripts/stratus-config"
 +fi
 +
 +
@@ -41,7 +41,7 @@ index b6c515d..c1c230c 100755
  
 -
 diff --git a/src/tm_mad/ssh/tm_context.sh b/src/tm_mad/ssh/tm_context.sh
-index b420be3..2c9a8ad 100755
+index b420be3..5bf83ba 100755
 --- a/src/tm_mad/ssh/tm_context.sh
 +++ b/src/tm_mad/ssh/tm_context.sh
 @@ -31,10 +31,19 @@ done
@@ -57,7 +57,7 @@ index b420be3..2c9a8ad 100755
 +if [ -z "${STRATUSLAB_LOCATION}" ]; then
 +    STRATUS_CONFIG=/usr/bin/stratus-config
 +else
-+    STRATUS_CONFIG=$STRATUSLAB_LOCATION/scripts/stratus-config
++    STRATUS_CONFIG="python $STRATUSLAB_LOCATION/scripts/stratus-config"
 +fi
 +
 +
