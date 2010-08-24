@@ -139,7 +139,7 @@ class OneInstallator(BaseInstallator):
         scriptPath = '%s/share/scripts/configuration.sh' % oneHome
         configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
                         'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
-                        'DEFAULT_GATEWAY="%s"' % self.config.get('network_mask')]
+                        'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
                         
         self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
