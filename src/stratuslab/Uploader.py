@@ -75,7 +75,7 @@ class Uploader(object):
             
         curlUploadCmd.append(uploadUrl)
         devNull = open('/dev/null', 'w')
-        ret = execute(*curlUploadCmd, stdout=devNull, stderr=devNull)
+        ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
         devNull.close()
         
         if ret != 0:
@@ -101,7 +101,7 @@ class Uploader(object):
             if dir == '':
                 continue
             curlCreateDirCmd.append('%s/%s' % (repoAddress, dir))
-            execute(*curlCreateDirCmd, stderr=devNull, stdout=devNull)
+            execute(curlCreateDirCmd, stderr=devNull, stdout=devNull)
             curlCreateDirCmd.pop()
         devNull.close()
 
@@ -171,7 +171,7 @@ class Uploader(object):
             printError('Compressed file %s already exists' % compressedFilename)
 
         devNull = open('/dev/null', 'w')
-        execute(compressionCmd, file, stderr=devNull, stdout=devNull)
+        execute([compressionCmd, file], stderr=devNull, stdout=devNull)
         devNull.close()
 
         return compressedFilename

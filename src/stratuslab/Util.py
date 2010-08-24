@@ -137,7 +137,7 @@ def printError(msg, exitCode=1, exit=True):
     if exit:
         sys.exit(exitCode)
 
-def execute(*cmd, **kwargs):
+def execute(cmd, **kwargs):
     wait = not kwargs.get('noWait', False)
 
     if kwargs.has_key('noWait'):
@@ -161,7 +161,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
-    return execute(*sshCmd, **kwargs)
+    return execute(sshCmd, **kwargs)
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port)]
