@@ -9,6 +9,8 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
+from stratuslab.Uploader import Uploader
+from stratuslab.Exceptions import NetworkException
 from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
@@ -23,17 +25,36 @@ class Testor(unittest.TestCase):
     
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
-
-        self._setCloud()        
-
+        
         self.vmIps = {}
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
-        self.repoUrl = 'http://%s/images/base/' % self.config.get('app_repo_url')
-
         self.testsToRun = []
-    
+        self.options = {}
+        
+        self._fillOptions()
+
+        self._setCloud()        
+
+    def _fillOptions(self):
+        self._fillSingleOptionParameter('repoUsername', 'app_repo_username', 'STRATUSLAB_REPO_USERNAME')
+        self._fillSingleOptionParameter('repoPassword', 'app_repo_password', 'STRATUSLAB_REPO_PASSWORD')
+        self._fillSingleOptionParameter('repoAddress', 'app_repo_url', 'STRATUSLAB_REPO_ADDRESS')
+        self._fillSingleOptionParameter('username', 'one_username', 'STRATUSLAB_USERNAME')
+        self._fillSingleOptionParameter('password', 'one_password', 'STRATUSLAB_PASSWORD')
+
+    def _fillSingleOptionParameter(self, optionKey, configKey, envKey):
+        if envKey in os.environ:
+            self._setOption(optionKey,os.environ[envKey])
+        elif configKey in self.config:
+            self._setOption(optionKey,self.config[configKey])
+        else:
+            raise Exception('Missing configuration for config key %s or env var %s' % (configKey, envKey))
+
+    def _setOption(self, key, value):
+        self.options[key] = value
+
     def _setCloud(self):
         self.cloud = CloudConnectorFactory.getCloud()
 
@@ -45,8 +66,8 @@ class Testor(unittest.TestCase):
             self.cloud.setFrontend(self.config.get('frontend_ip'),
                                    self.config.get('one_port'))
 
-        self.cloud.setCredentials(self.config.get('one_username'),
-                                  self.config.get('one_password'))
+        self.cloud.setCredentials(self.options['username'],
+                                  self.options['password'])
     
     def dummy(self):
         pass
@@ -63,7 +84,8 @@ class Testor(unittest.TestCase):
         for test in tests:
             suite.addTest(Testor(test))
 
-        unittest.TextTestRunner(verbosity=2).run(suite)
+        testResult = unittest.TextTestRunner(verbosity=2).run(suite)
+        return testResult.wasSuccessful()
 
     def runMethod(self, method):
         return method()
@@ -90,7 +112,7 @@ class Testor(unittest.TestCase):
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
         
-        image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
+        image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
         image = image % self.config
 
@@ -153,38 +175,38 @@ class Testor(unittest.TestCase):
         
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, self.repoUrl,
-                                 self.config.get('app_repo_username'),
-                                 self.config.get('app_repo_password'))
+        passwordMgr.add_password(None, self.options['repoAddress'],
+                                 self.options['repoUsername'],
+                                 self.options['repoUsername'])
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
 
         try:
-            opener.open(self.repoUrl)
+            opener.open(self.options['repoAddress'])
         except RuntimeError:
-            raise Exception('Authentication to appliance repository failed')
+            raise NetworkException('Authentication to appliance repository failed')
 
     def _uploadAndDeleteDummyImage(self):
-        devNull = open('/dev/null', 'w')
-
         dummyFile = '/tmp/stratus-dummy.img'
         self._generateDummyImage(dummyFile)
 
-        baseCurlCmd = ['curl', '-u', '%s:%s' % (self.config.get('app_repo_username'), self.config.get('app_repo_password'))]
+        manifest = ''
+        options = self.options.copy()
+        options['repoUsername'] = self.config['app_repo_username']
+        options['repoPassword'] = self.config['app_repo_password']
+        options['repoAddress'] = self.config['app_repo_url']
+        options['uploadOption'] = ''
+        uploader = Uploader(manifest, options)
+        uploader.uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
+        uploader.deleteFile(uploader.uploadedFile[-1])
 
-        uploadCmd = baseCurlCmd + ['-T', dummyFile, self.repoUrl, '-k']
-        ret = execute(uploadCmd, stdout = devNull, stderr = devNull)
-
-        if ret != 0:
-            raise Exception('Failed to upload dummy image')
-
-        deleteCmd = baseCurlCmd + [ '-X', 'DELETE', '%s/%s' % (self.repoUrl, os.path.basename(dummyFile)), '-k', '-q']
-        execute(deleteCmd, stdout = devNull, stderr = devNull)
+    def _openDevNull(self):
+        return open('/dev/null', 'w')
 
     def _generateDummyImage(self, filename, size=2):
         devNull = open('/dev/null', 'w')
-        execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1M', 'count=%s' % size],
+        execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1000000', 'count=%s' % size],
         stdout=devNull, stderr=devNull)
         devNull.close()
 

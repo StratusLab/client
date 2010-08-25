@@ -7,7 +7,7 @@ def buildUploadParser(parser):
 
     parser.add_option('-r', '--repository', dest='repoAddress',
             help='appliance repository address. Default STRATUSLAB_REPO',
-            default=os.getenv('STRATUSLAB_REPO'), metavar='ADDRESS')
+            default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
 
     parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
             help='additional curl option', default='')

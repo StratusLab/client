@@ -44,10 +44,18 @@ where test is a comma separated list of tests, according to the name provided by
         testor = Testor()
         
         if self.options.listTests:
-            testor.listTests()
+            self._listTests(testor)
         else:
-            testor.runTests()
+            self._runTests(testor)
 
+    def _listTests(self, testor):
+        testor.listTests()
+
+    def _runTests(self, testor):
+        wasSuccessful = testor.runTests()
+        if not wasSuccessful:
+            sys.exit(-1)
+        
 
 if __name__ == '__main__':
     try:
