@@ -25,16 +25,35 @@ class Testor(unittest.TestCase):
     
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
-
-        self._setCloud()        
-
+        
         self.vmIps = {}
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
-        self.repoUrl = self.config.get('app_repo_url')
-
         self.testsToRun = []
+        self.options = {}
+        
+        self._fillOptions()
+
+        self._setCloud()        
+
+    def _fillOptions(self):
+        self._fillSingleOptionParameter('repoUsername', 'app_repo_username', 'STRATUSLAB_REPO_USERNAME')
+        self._fillSingleOptionParameter('repoPassword', 'app_repo_password', 'STRATUSLAB_REPO_PASSWORD')
+        self._fillSingleOptionParameter('repoAddress', 'app_repo_url', 'STRATUSLAB_REPO_ADDRESS')
+        self._fillSingleOptionParameter('username', 'one_username', 'STRATUSLAB_USERNAME')
+        self._fillSingleOptionParameter('password', 'one_password', 'STRATUSLAB_PASSWORD')
+
+    def _fillSingleOptionParameter(self, optionKey, configKey, envKey):
+        if envKey in os.environ:
+            self._setOption(optionKey,os.environ[envKey])
+        elif configKey in self.config:
+            self._setOption(optionKey,self.config[configKey])
+        else:
+            raise Exception('Missing configuration for config key %s or env var %s' % (configKey, envKey))
+
+    def _setOption(self, key, value):
+        self.options[key] = value
 
     def _setCloud(self):
         self.cloud = CloudConnectorFactory.getCloud()
@@ -47,8 +66,8 @@ class Testor(unittest.TestCase):
             self.cloud.setFrontend(self.config.get('frontend_ip'),
                                    self.config.get('one_port'))
 
-        self.cloud.setCredentials(self.config.get('one_username'),
-                                  self.config.get('one_password'))
+        self.cloud.setCredentials(self.options['username'],
+                                  self.options['password'])
     
     def dummy(self):
         pass
@@ -155,15 +174,15 @@ class Testor(unittest.TestCase):
         
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, self.repoUrl,
-                                 self.config['app_repo_username'],
-                                 self.config['app_repo_password'])
+        passwordMgr.add_password(None, self.options['repoAddress'],
+                                 self.options['repoUsername'],
+                                 self.options['repoUsername'])
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
 
         try:
-            opener.open(self.repoUrl)
+            opener.open(self.options['repoAddress'])
         except RuntimeError:
             raise NetworkException('Authentication to appliance repository failed')
 
