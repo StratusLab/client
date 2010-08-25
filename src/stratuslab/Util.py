@@ -17,6 +17,12 @@ systemsDir = '%s/stratuslab/system' % modulePath
 manifestExt = '.manifest.xml'
 cliLineSplitChar = '#'
 
+# Environment variable names
+envEndpoint = 'STRATUSLAB_ENDPOINT'
+
+# Configuration parameter names
+configFrontEndIp = 'frontend_ip'
+
 
 def validateConfig(config):
     if not config.has_section(defaultConfigSection):
