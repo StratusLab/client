@@ -262,11 +262,6 @@ class BaseSystem(object):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
 
-        if type(command) == type(list()):
-            self.sshLog.write('_'.join(command))
-        else:
-            self.sshLog.write(command)
-
         if kwargs.has_key('stdout'):
             del kwargs['stdout']
         if kwargs.has_key('stderr'):
@@ -274,6 +269,8 @@ class BaseSystem(object):
 
         if type(command) == type(list()):
             command = ' '.join(command)
+
+        self.sshLog.write(command + '\n')
 
         return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
                       stdout=stdout, stderr=stderr, **kwargs)
