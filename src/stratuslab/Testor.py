@@ -157,7 +157,7 @@ class Testor(unittest.TestCase):
         
     def _stopVm(self, runner):
         for id in self.vmIds:
-            vmStopped = runner.stopInstance(self.vmIds)        
+            vmStopped = runner.stopInstance(id)        
             if not vmStopped:
                 printError('Failing to stop VM')
 
