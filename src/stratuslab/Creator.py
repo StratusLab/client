@@ -1,10 +1,13 @@
-import subprocess
+import os.path
+import pickle
 from datetime import datetime
 
 from stratuslab.Runner import Runner
 from stratuslab.Util import assignAttributes
+from stratuslab.Util import cliLineSplitChar
+from stratuslab.Util import fileGetContent
 from stratuslab.Util import generateSshKeyPair
-from stratuslab.Util import getSystemMethods
+from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
@@ -27,6 +30,10 @@ class Creator(object):
         self.sshKey = '/tmp/%s' % randomString()
         generateSshKeyPair(self.sshKey)
 
+        self.vmManifestPath = '/tmp/disk.0.manifest.xml' # Location of the manifest on the VM
+        self.packageInstallScript = '%s/share/creation/install-pkg.sh' % modulePath
+        self.manifestCreationScript = '%s/share/creation/create-manifest.sh' % modulePath
+
         self.runner = None
         self.vmIps = None
         self.vmId = None
@@ -39,7 +46,28 @@ class Creator(object):
         self.options['saveDisk'] = True
 
         self.runner = Runner(self.image, self.options)
-        # TODO: Extrat context
+        self._addCreationContext()
+        
+    def _addCreationContext(self):
+         context = [
+            'stratuslab_remote_key=%s' % (cliLineSplitChar + fileGetContent(self.sshKey + '.pub')),
+            'stratuslab_internal_key=%s' % randomString(),
+            'stratuslab_manifest=%s' % self.manifest,
+            'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
+         ]
+
+         context.extend(self.runner.extraContextData.split(cliLineSplitChar))
+         self.runner.extraContextData = cliLineSplitChar.join(context)
+
+    def _buildUploadInfoContext(self):
+        uploadInfoElem = [ 'repoAddress', 'compressFormat', 'forceUplad',
+                           'uploadOption', 'repoUsername', 'repoPassword' ]
+
+        uploadInfoDict = {}
+        for elem in uploadInfoElem:
+            uploadInfoDict[elem] = getattr(self, elem, '')
+
+        return pickle.dumps(uploadInfoDict)
 
     def _startMachine(self):
         try:
@@ -50,59 +78,30 @@ class Creator(object):
         if not self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 60):
             printError('Unable to boot VM')
 
-    def _getVmSystem(self):
-        system = 'unknow'
-        version = '0'
+    def _createImageManifest(self):
+        separatorChar = '%'
+        imageDefinition = [self.imageName, self.imageVersion, self.username, self.vmManifestPath]
 
-        try:
-            system, version = self._findRedHatSystem()
-        except:
-            try:
-                system, version = self._findDebianSystem()
-            except:
-                return
+        scp(self.manifestCreationScript, 'root@%s:' % self.vmAddress, self.sshKey,
+            stderr=self.stderr, stdout=self.stdout)
 
-        return system, version
+        ret = sshCmd('bash %s %s %s' % (os.path.basename(self.packageInstallScript),
+                                        separatorChar,
+                                        separatorChar.join(imageDefinition)),
+                     self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-    def _findRedHatSystem(self):
-        devNull = open('/dev/null', 'w')
-        redHatDistro = sshCmd('cat /etc/redhat-release', self.vmAddress, self.sshKey, noWait=True,
-                              stdout=subprocess.PIPE, stderr=devNull).communicate()[0]
-        devNull.close()
-
-        if redHatDistro:
-            raise
-
-        system = redHatDistro.split(' ')[0].lower()
-        version = redHatDistro.split(' ')[2]
-        return system, version
-
-    def _findDebianSystem(self):
-        devNull = open('/dev/null', 'w')
-        debianDistro = sshCmd('cat /etc/lsb-release', self.vmAddress, self.sshKey, noWait=True,
-                              stdout=subprocess.PIPE, stderr=devNull).communicate()[0]
-        devNull.close()
-
-        if debianDistro:
-            raise
-
-        for line in debianDistro.split('\n'):
-            if line.startswith('DISTRIB_ID'):
-                system = line.split('=')[1].lower()
-            elif line.startswith('DISTRIB_RELEASE'):
-                version = line.split('=')[1]
-                
-        return system, version
+        if ret != 0:
+            printError('An error occured while installing packages')
 
     def _installPackages(self):
-        os, _ = self._getVmSystem()
-        system = getSystemMethods(os)
-
         if len(self.packages) == 0:
             return
+
+        scp(self.packageInstallScript, 'root@%s:' % self.vmAddress, self.sshKey,
+            stderr=self.stderr, stdout=self.stdout)
         
-        ret = sshCmd('%s %s' % (system.installCmd, self.packages),
-                      self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
+        ret = sshCmd('bash %s %s' % (os.path.basename(self.packageInstallScript), self.packages),
+                     self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
             printError('An error occured while installing packages')
@@ -137,6 +136,9 @@ class Creator(object):
             self.cloud.vmStop(self.vmId)
             printError('Unable to ping VM')
 
+        printStep('Creating image manifest')
+        self._createImageManifest()
+
         printStep('Installing user packages')
         self._installPackages()
 
@@ -148,7 +150,7 @@ class Creator(object):
             self.cloud.vmStop(self.vmId)
         else:
             printStep('Machine ready for your usage')
-            print '\n\tMachine IP:'
+            print '\n\tMachine IP: %s' % ', '.join(self.cloud.getVmIp(self.vmId))
             print '\tRemember to stop the machine when finished',
             
         printAction('Image creation finished')
