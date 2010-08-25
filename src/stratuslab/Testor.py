@@ -5,7 +5,6 @@ import time
 import unittest
 import urllib2
 
-from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
@@ -16,6 +15,7 @@ from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
 from stratuslab.Util import printError
 from stratuslab.Util import sshCmd
+import Util
 
 class Testor(unittest.TestCase):
     
@@ -27,7 +27,7 @@ class Testor(unittest.TestCase):
         super(Testor, self).__init__(methodName)
         
         self.vmIps = {}
-        self.vmId = None
+        self.vmIds = []
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
@@ -35,15 +35,14 @@ class Testor(unittest.TestCase):
         
         self._fillOptions()
 
-        self._setCloud()        
-
     def _fillOptions(self):
         self._fillSingleOptionParameter('repoUsername', 'app_repo_username', 'STRATUSLAB_REPO_USERNAME')
         self._fillSingleOptionParameter('repoPassword', 'app_repo_password', 'STRATUSLAB_REPO_PASSWORD')
         self._fillSingleOptionParameter('repoAddress', 'app_repo_url', 'STRATUSLAB_REPO_ADDRESS')
         self._fillSingleOptionParameter('username', 'one_username', 'STRATUSLAB_USERNAME')
         self._fillSingleOptionParameter('password', 'one_password', 'STRATUSLAB_PASSWORD')
-
+        self._fillEndpointOption()
+        
     def _fillSingleOptionParameter(self, optionKey, configKey, envKey):
         if envKey in os.environ:
             self._setOption(optionKey,os.environ[envKey])
@@ -55,20 +54,14 @@ class Testor(unittest.TestCase):
     def _setOption(self, key, value):
         self.options[key] = value
 
-    def _setCloud(self):
-        self.cloud = CloudConnectorFactory.getCloud()
-
-        endpointEnv = 'STRATUSLAB_ENDPOINT'
-
-        if endpointEnv in os.environ:
-            self.cloud.setEndpoint(os.environ[endpointEnv])
+    def _fillEndpointOption(self):
+        if Util.envEndpoint in os.environ:
+            pass
+        elif Util.configFrontEndIp in self.config:
+            os.environ[Util.envEndpoint] = 'http://%s:2633/RPC2' % self.config[Util.configFrontEndIp]
         else:
-            self.cloud.setFrontend(self.config.get('frontend_ip'),
-                                   self.config.get('one_port'))
+            raise Exception('Missing environment variable %s or configuration parameter %s' % (Util.envEndpoint, Util.configFrontEndIp))
 
-        self.cloud.setCredentials(self.options['username'],
-                                  self.options['password'])
-    
     def dummy(self):
         pass
 
@@ -92,10 +85,10 @@ class Testor(unittest.TestCase):
     
     def runInstanceTest(self):
         '''Start new instance, ping it via private network and ssh into it, then stop it'''
-        self._startVm()
+        runner = self._startVm()
         self._repeatCall(self._ping)
         self._repeatCall(self._loginViaSsh)
-        self._stopVm()
+        self._stopVm(runner)
         
     def _prepareLog(self, logFile):
         log = open(logFile,'aw')
@@ -117,16 +110,16 @@ class Testor(unittest.TestCase):
         image = image % self.config
 
         runner = Runner(image, options)
-        runner.runInstance()
-        
-        self.vmId = runner.vmId
+        self.vmIds = runner.runInstance()        
         self.vmIps = runner.vmIps
         
-        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 120)
-        
-        if not vmStarted:
-            printError('Failed to start VM')
-        
+        for id in self.vmIds:
+            vmStarted = runner.waitUntilVmRunningOrTimeout(id)            
+            if not vmStarted:
+                printError('Failed to start VM id: %s' % id)
+                
+        return runner
+
     def _repeatCall(self, method):
         numberOfRepetition = 60
         for _ in range(numberOfRepetition):
@@ -162,11 +155,11 @@ class Testor(unittest.TestCase):
             if res:
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
-    def _stopVm(self):
-        vmStopped = self.cloud.vmStop(self.vmId)
-        
-        if not vmStopped:
-            printError('Failing to stop VM')
+    def _stopVm(self, runner):
+        for id in self.vmIds:
+            vmStopped = runner.stopInstance(id)        
+            if not vmStopped:
+                printError('Failing to stop VM')
 
     def applianceRepositoryTest(self):
         '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
