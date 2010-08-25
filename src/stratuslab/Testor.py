@@ -85,7 +85,7 @@ class Testor(unittest.TestCase):
             suite.addTest(Testor(test))
 
         testResult = unittest.TextTestRunner(verbosity=2).run(suite)
-        return testResult.wasSuccessful
+        return testResult.wasSuccessful()
 
     def runMethod(self, method):
         return method()
