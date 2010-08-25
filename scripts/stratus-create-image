@@ -19,7 +19,7 @@ class MainProgram(Runnable):
         self.parser.add_option('-s', '--scripts', dest='scripts',
                 help='scripts to execute on the VM (separate by space)',
                 default='', metavar='FILE')
-        self.parser.add_option('-N', '--image-name', dest='imageName', metavar='Name',
+        self.parser.add_option('-N', '--image-name', dest='imageName', metavar='NAME',
                 help='image name (e.g. base, grid.se, grid.wn, ...)', default='base')
         self.parser.add_option('-a', '--packages', dest='packages',
                 help='packages to install on the machine (name separate by space)',

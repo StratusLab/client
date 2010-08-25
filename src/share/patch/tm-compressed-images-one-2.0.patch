@@ -72,8 +72,8 @@ index 5caba58..758e847 100644
  SUDO=/usr/bin/sudo
  WGET=/usr/bin/wget
 +CURL=/usr/bin/curl
-+GUNZIP=/usr/bin/gunzip
-+BUNZIP2=/usr/bin/bunzip2
++GUNZIP=/bin/gunzip
++BUNZIP2=/bin/bunzip2
  
  function get_vmdir
  {
