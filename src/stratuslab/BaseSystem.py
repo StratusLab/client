@@ -17,6 +17,7 @@ class BaseSystem(object):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
+        self.sshLog = open('/tmp/log-ssh', 'a')
         self.workOnFrontend()
         # TODO: Initialize attributes
         # TODO: Rename private methods to start with _
@@ -24,6 +25,7 @@ class BaseSystem(object):
     def __del__(self):
         self.stderr.close()
         self.stdout.close()
+        self.sshLog.close()
     
     # -------------------------------------------
     #     Packages manager and related
@@ -245,9 +247,9 @@ class BaseSystem(object):
 
     def _copy(self, src, dst):
         if os.path.isfile(src):
-            return shutil.copytree(src, dst)
+            shutil.copy(src, dst)
         else:
-            return shutil.copy(src, dst)
+            shutil.copytree(src, dst)
 
     # -------------------------------------------
     #     Node related methods
@@ -257,13 +259,33 @@ class BaseSystem(object):
         pass
     
     def _nodeShell(self, command, **kwargs):
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+
         if type(command) == type(list()):
             command = ' '.join(command)
 
-        return sshCmd(command, self.nodeAddr, self.nodePrivateKey, **kwargs)
+        self.sshLog.write(command + '\n')
+
+        return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
+                      stdout=stdout, stderr=stderr, **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
-        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey, **kwargs)
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+
+        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey,
+                   stdout=stdout, stderr=stderr, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
