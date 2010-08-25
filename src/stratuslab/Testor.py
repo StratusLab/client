@@ -92,7 +92,7 @@ class Testor(unittest.TestCase):
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
         
-        image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
+        image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
         image = image % self.config
 
