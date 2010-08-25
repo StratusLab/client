@@ -245,9 +245,9 @@ class BaseSystem(object):
 
     def _copy(self, src, dst):
         if os.path.isfile(src):
-            shutil.copytree(src, dst)
-        else:
             shutil.copy(src, dst)
+        else:
+            shutil.copytree(src, dst)
 
     # -------------------------------------------
     #     Node related methods
