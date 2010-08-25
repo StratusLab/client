@@ -13,7 +13,7 @@ class CommandBase(object):
         self.parser = OptionParser()
         self.parse()
         self.checkOptions()
-        self._callAndHandleErrorsForCommands(self.doWork.__name__)
+        self._callAndHandleErrorsForCommands(self, self.doWork.__name__)
 
     def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
         

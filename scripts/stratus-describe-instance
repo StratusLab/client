@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/usr/lib/stratuslab')
+sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
+
+from stratuslab.Util import modulePath
+from stratuslab.CommandBase import CommandBase
+from stratuslab.InstallatorFactory import InstallatorFactory
+from stratuslab.Util import parseConfig
+from stratuslab.Monitor import Monitor
+
+
+class MainProgram(CommandBase):
+    '''A command-line program to monitor the state of virtual machines.'''
+
+    def __init__(self):
+        self.vmIds = []
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        usage = '''usage: %prog [options] [vm-id]
+Without the parameter [vm-id] the command lists the available vms'''
+
+        parser = OptionParser(usage=usage)
+        parser.add_option('-c', '--config', dest='configFile', 
+                          help='configuration file', metavar='FILE',
+                          default='%s/conf/stratuslab.cfg' % modulePath)
+        
+        parser.add_option('-p', '--password', dest='password', 
+                          help='Cloud administrator password',
+                          default='')
+
+        self.options, self.vmIds = parser.parse_args()
+
+    def checkOptions(self):
+        if not self.options.password:
+            self.parser.error('Missing --password')
+
+    def doWork(self):
+        config = parseConfig(self.options.configFile)
+        monitor = Monitor(self.options.__dict__, config)
+        if self.vmIds:
+            list = monitor.vmDetail(self.vmIds)
+            monitor.printVmDetails(list)
+        else:
+            list = monitor.listVms()
+            monitor.printVmList(list)
+            
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
