@@ -1,8 +1,9 @@
-import os
 import os.path
 import sys
 import urllib2
 from ConfigParser import RawConfigParser
+
+from stratuslab.Exceptions import NetworkException
 
 from stratuslab.Util import assignAttributes
 from stratuslab.Util import defaultRepoConfigPath
@@ -56,6 +57,27 @@ class Uploader(object):
         self.repoStructure = ''
         self.repoFilename = ''
 
+    def start(self):
+        printAction('Starting appliance upload')
+
+        printStep('Parsing manifest')
+        self._parseManifest()
+
+        printStep('Parsing repository configuration')
+        self._parseRepoConfig()
+
+        printStep('Compressing appliance')
+        self._compressAppliance()
+
+        printStep('Uploading appliance')
+        self._uploadAppliance()
+
+        printStep('Uploading manifest')
+        self._uploadManifest()
+
+        printAction('Appliance uploaded successfully')
+        print '\n\t%s' % '\n\t'.join(self.uploadedFile)
+        
     def _uploadAppliance(self):
         self.uploadFile(self.appliance, '%s/%s' % (self.repoStructure, self.repoFilename))
 
@@ -74,14 +96,25 @@ class Uploader(object):
             curlUploadCmd.append(self.uploadOption)
             
         curlUploadCmd.append(uploadUrl)
-        devNull = open('/dev/null', 'w')
+        devNull = self._openDevNull()
         ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
         devNull.close()
         
         if ret != 0:
-            printError('An error occured while uploading %s' % filename)
+            raise NetworkException('An error occurred while uploading %s' % uploadUrl)
 
         self.uploadedFile.append(uploadUrl)
+
+    def _openDevNull(self):
+        return open('/dev/null', 'w')
+
+    def deleteFile(self, url):
+        devNull = self._openDevNull()
+        deleteCmd = self.curlCmd + [ '-X', 'DELETE', url]
+        execute(deleteCmd, stdout = devNull, stderr = devNull)
+        devNull.close()
+        
+    
 
     def _getDirectoriesOfUrl(self, url):
         urlDirs = '/'.join(url.split('//')[1:])
@@ -92,7 +125,7 @@ class Uploader(object):
         return newDirs[1:]
 
     def _createRemoteDirectoryStructure(self, url):
-        devNull = open('/dev/null', 'w')
+        devNull = self._openDevNull()
         curlCreateDirCmd = self.curlCmd + ['-X', 'MKCOL']
         urlDirs = self._getDirectoriesOfUrl(url)
         repoAddress = '/'.join(url.split('/')[0:3])
@@ -170,7 +203,7 @@ class Uploader(object):
         if os.path.isfile(compressedFilename):
             printError('Compressed file %s already exists' % compressedFilename)
 
-        devNull = open('/dev/null', 'w')
+        devNull = self._openDevNull()
         execute([compressionCmd, file], stderr=devNull, stdout=devNull)
         devNull.close()
 
@@ -199,25 +232,3 @@ class Uploader(object):
             sys.exit(0)
         else:
             return list
-
-    def start(self):
-        printAction('Starting appliance upload')
-
-        printStep('Parsing manifest')
-        self._parseManifest()
-
-        printStep('Parsing repository configuration')
-        self._parseRepoConfig()
-
-        printStep('Compressing appliance')
-        self._compressAppliance()
-
-        printStep('Uploading appliance')
-        self._uploadAppliance()
-
-        printStep('Uploading manifest')
-        self._uploadManifest()
-
-        printAction('Appliance uploaded successfully')
-        print '\n\t%s' % '\n\t'.join(self.uploadedFile)
-        

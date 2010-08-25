@@ -9,6 +9,7 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
+from stratuslab.Uploader import Uploader
 from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
@@ -166,25 +167,19 @@ class Testor(unittest.TestCase):
             raise Exception('Authentication to appliance repository failed')
 
     def _uploadAndDeleteDummyImage(self):
-        devNull = open('/dev/null', 'w')
-
         dummyFile = '/tmp/stratus-dummy.img'
         self._generateDummyImage(dummyFile)
 
-        baseCurlCmd = ['curl', '-u', '%s:%s' % (self.config.get('app_repo_username'), self.config.get('app_repo_password'))]
+        uploader = Uploader(None, self.options)
+        uploader.uploadFile(dummyFile, os.path.basename(dummyFile))
+        uploader.deleteFile(uploader.uploadedFile[-1])
 
-        uploadCmd = baseCurlCmd + ['-T', dummyFile, self.repoUrl, '-k']
-        ret = execute(uploadCmd, stdout = devNull, stderr = devNull)
-
-        if ret != 0:
-            raise Exception('Failed to upload dummy image')
-
-        deleteCmd = baseCurlCmd + [ '-X', 'DELETE', '%s/%s' % (self.repoUrl, os.path.basename(dummyFile)), '-k', '-q']
-        execute(deleteCmd, stdout = devNull, stderr = devNull)
+    def _openDevNull(self):
+        return open('/dev/null', 'w')
 
     def _generateDummyImage(self, filename, size=2):
         devNull = open('/dev/null', 'w')
-        execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1M', 'count=%s' % size],
+        execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1000000', 'count=%s' % size],
         stdout=devNull, stderr=devNull)
         devNull.close()
 
