@@ -2,6 +2,7 @@ import os.path
 import pickle
 from datetime import datetime
 
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Runner import Runner
 from stratuslab.Util import assignAttributes
 from stratuslab.Util import cliLineSplitChar
@@ -27,6 +28,11 @@ class Creator(object):
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
 
+        self.cloud = CloudConnectorFactory.getCloud()
+        self.cloud.setEndpoint(self.endpoint)
+
+        self.cloud.setCredentials(self.username, self.password)
+
         self.sshKey = '/tmp/%s' % randomString()
         generateSshKeyPair(self.sshKey)
 
@@ -49,15 +55,15 @@ class Creator(object):
         self._addCreationContext()
         
     def _addCreationContext(self):
-         context = [
-            'stratuslab_remote_key=%s' % (cliLineSplitChar + fileGetContent(self.sshKey + '.pub')),
-            'stratuslab_internal_key=%s' % randomString(),
-            'stratuslab_manifest=%s' % self.manifest,
+        context = [
+            'stratuslab_remote_key=%s' % fileGetContent(self.sshKey + '.pub'),
+            'stratuslab_internal_key=/tmp/%s' % randomString(),
+            'stratuslab_manifest=%s' % self.vmManifestPath,
             'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
-         ]
+        ]
 
-         context.extend(self.runner.extraContextData.split(cliLineSplitChar))
-         self.runner.extraContextData = cliLineSplitChar.join(context)
+        context.extend(self.runner.extraContextData.split(cliLineSplitChar))
+        self.runner.extraContextData = cliLineSplitChar.join(context)
 
     def _buildUploadInfoContext(self):
         uploadInfoElem = [ 'repoAddress', 'compressFormat', 'forceUplad',
@@ -75,7 +81,7 @@ class Creator(object):
         except Exception, msg:
             printError('An error occured while starting machine: \n\t%s' % msg)
             
-        if not self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 60):
+        if not self.cloud.waitUntilVmRunningOrTimeout(self.runner.vmId, 600):
             printError('Unable to boot VM')
 
     def _createImageManifest(self):
@@ -132,7 +138,7 @@ class Creator(object):
         printStep('Waiting for network interface to be up')
         self.vmAddress = self.vmIps(self.vmId).get(self.interface)
         
-        if not waitUntilPingOrTimeout(self.vmAddress, 20):
+        if not waitUntilPingOrTimeout(self.vmAddress, 600):
             self.cloud.vmStop(self.vmId)
             printError('Unable to ping VM')
 

@@ -163,7 +163,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return execute(sshCmd, **kwargs)
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
-    scpCmd = ['scp', '-P', str(port)]
+    scpCmd = ['scp', '-P', str(port), '-r']
 
     if sshKey and os.path.isfile(sshKey):
         scpCmd.append('-i')

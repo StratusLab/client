@@ -200,9 +200,9 @@ class Runner(object):
                 printError('Error while parsing contextualization file.\n'
                            'Syntax error in line `%s`' % line)
 
-            extraContext[contextLine[0]] = ('%s' % cliLineSplitChar).join(contextLine[1:])
+            extraContext[contextLine[0]] = '='.join(contextLine[1:])
 
-        contextData = ['%s = %s,' % (key, value) for key, value in extraContext.items()]
+        contextData = ['%s = "%s",' % (key, value) for key, value in extraContext.items()]
 
         self.extra_context = '\n'.join(contextData)
 

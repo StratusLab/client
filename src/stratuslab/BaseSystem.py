@@ -1,3 +1,4 @@
+from stratuslab.Util import execute
 import os
 import shutil
 import subprocess
@@ -7,6 +8,7 @@ from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
 from stratuslab.Util import fileAppendContent
+from stratuslab.Util import sshCmd
 
 class BaseSystem(object):
     
@@ -226,9 +228,7 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
         
-        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, **kwargs)
-        process.wait()
-        return process.returncode
+        return execute(command, stdout=stdout, stderr=stderr, **kwargs)
 
     def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.ONeAdmin, '-c']
@@ -252,21 +252,11 @@ class BaseSystem(object):
     def _nodeShell(self, command, **kwargs):
         if type(command) == type(list()):
             command = ' '.join(command)
-            
-        return self._remoteCmd(self.nodeAddr, command,
-                               port=self.nodePort,
-                               privateKey=self.nodePrivateKey, **kwargs)
 
-    def _remoteCmd(self, hostAddr, command, user='root', port=22,
-                   privateKey=None, **kwargs):
-        sshCmd = ['ssh', '-p', str(port), '-l', user, '-F', self.tempSshConf]
-        if privateKey and os.path.isfile(privateKey):
-            sshCmd.extend(['-i', privateKey])
-        else:
-            print 'key %s does not exists, skip it' % privateKey
-        sshCmd.append(hostAddr)
-        sshCmd.append(command)
-        return self._execute(sshCmd, **kwargs)
+        return sshCmd(command, self.nodeAddr, self.nodePrivateKey, **kwargs)
+
+    def _nodeCopy(self, source, dest, **kwargs):
+        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
@@ -331,6 +321,7 @@ class BaseSystem(object):
         self.filePutContentsCmd = filePutContent
         self.fileAppendContentsCmd = fileAppendContent
         self.chmodCmd = os.chmod
+        self.copyCmd = shutil.copytree
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
@@ -341,6 +332,7 @@ class BaseSystem(object):
         self.filePutContentsCmd = self._remoteFilePutContents
         self.fileAppendContentsCmd = self._remoteFileAppendContents
         self.chmodCmd = self._remoteChmod
+        self.copyCmd = self._nodeCopy
         
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
         self._generateTempSshConfig(self.tempSshConf)
