@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/usr/lib/stratuslab')
+sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
+
+from stratuslab.Util import modulePath
+from stratuslab.CommandBase import CommandBase
+from stratuslab.AppRepo import AppRepo
+from stratuslab.Util import parseConfig
+
+class MainProgram(CommandBase):
+    '''A command-line program to create StratusLab appliance repository.'''
+
+    def __init__(self):
+        super(MainProgram, self).__init__()
+
+    def parse(self):        
+        usage = 'usage: %prog [options]'
+        self.parser = OptionParser(usage=usage)
+
+        self.parser.add_option('-d', '--image-dir', dest='imageDir',
+                help='the directory in which to store the images',
+                metavar='PATH', default='/images')
+        self.parser.add_option('--create-dirs', dest='create',
+                help='Create repository directory structure.',
+                action='store_true', default=True)
+        self.parser.add_option('--repo-structure', dest='repo_structure',
+                help='Structure of the repository', 
+                default='#type_#/#os#-#osversion#-#arch#-#type#/#version#')
+        self.parser.add_option('--repo-filename', dest='repo_filename', 
+                help='Repository image filename structure', 
+                default='#os#-#osversion#-#arch#-#type#-#version#.img.#compression#')
+        self.parser.add_option('--ldap-url', dest='ldapUrl',
+                help='URL of the LDAP server to use for authentication', metavar='URL',
+                default='ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid')
+        self.parser.add_option('--ldap', dest='ldap',
+                help='Enable LDAP authentication.',
+                action='store_true', default=False)
+        self.parser.add_option('--ldap-cert', dest='ldapCert', metavar='FILE',
+                help='Cert to use for authenticating the LDAP server', default=None)
+        self.parser.add_option('--ldap-bind', dest='ldapBind', metavar='DN',
+                help='LDAP Bind DN', default='cn=repo,ou=daemons,o=stratuslab')
+        self.parser.add_option('--ldap-passwd', dest='ldapPasswd', metavar='PASSWORD',
+                help='Password to use when connecting to the LDAP server', default=None)
+        self.parser.add_option('--apache-home', dest='apacheHome', metavar='PATH',
+                help='Location of Apache configuration', default='/etc/httpd')    
+        self.parser.add_option('--web-root', dest='webRoot', metavar='PATH',
+                help='Root of Apache web server', default='/var/www/html')
+        self.parser.add_option('--passwd', dest='passwdFile',
+                help='User password file', metavar='FILE',
+                default=None)            
+
+        self.options, self.args = self.parser.parse_args()
+
+    def checkOptions(self):
+        if not os.path.exists(self.options.apacheHome):
+            self.parser.error('Apache home not found')        
+
+        if self.options.ldap and self.options.ldapPasswd is None:
+            self.parser.error('LDAP authentication selected but no password for server specified')
+
+        if not self.options.ldap and self.options.passwdFile is None:
+            self.parser.error('No password file specified')
+            
+    def doWork(self):
+        self.checkOptions()
+        self.apprepo = AppRepo(self.options)
+        self.apprepo.install()
+        
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
