@@ -262,7 +262,10 @@ class BaseSystem(object):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
 
-        self.sshLog.write('_'.join(command))
+        if type(command) == type(list()):
+            self.sshLog.write('_'.join(command))
+        else:
+            self.sshLog.write(command)
 
         if kwargs.has_key('stdout'):
             del kwargs['stdout']
