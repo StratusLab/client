@@ -257,14 +257,31 @@ class BaseSystem(object):
         pass
     
     def _nodeShell(self, command, **kwargs):
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+
         if type(command) == type(list()):
             command = ' '.join(command)
 
         return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
-                      stdout=self.stdout, stderr=self.stderr, **kwargs)
+                      stdout=stdout, stderr=stderr, **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
-        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey, **kwargs)
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+
+        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey,
+                   stdout=stdout, stderr=stderr, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
