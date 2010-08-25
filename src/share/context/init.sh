@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
 source /mnt/context.sh
+source /mnt/configuration.sh
 
 ifconfig eth0 ${IP_PRIVATE}${NETMASK_PRIVATE}
 

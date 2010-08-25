@@ -19,14 +19,15 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = 'usage: %prog [options] [key value]'
+        usage = '''usage: %prog [options] [key [value]]
+If the [value] is not provided, the command returns the current value of the key.'''
         self.parser = OptionParser(usage=usage)
 
         self.parser.add_option('-c', '--config', dest='configFile',
                 help='default configuration file', metavar='FILE',
                 default='%s/conf/stratuslab.cfg.ref' % modulePath)
         self.parser.add_option('-k', '--keys', dest='showDefaultKeys',
-                help='display keys and default value', action="store_true",
+                help='display keys and default value', action='store_true',
                 default=False)
         self.parser.add_option('-r', action='store_true', dest='revert',
                 help='remove previous configuration',
@@ -43,16 +44,18 @@ class MainProgram(CommandBase):
             configurator.displayDefaultKeys()
         elif len(self.args) == 0:
             configurator.writeUserConfig()
+        elif len(self.args) == 1:
+            print configurator.getValue(self.args[0])
         else:
-            self.checkArgumentsLength(len)
+            self.checkArgumentsLength()
             configurator.setOption(key=self.args[0], value=self.args[1])
 
-    def checkArgumentsLength(self, len):
-        if len(self.args) < 2:
+    def checkArgumentsLength(self):
+        if len(self.args) < 1:
             raise self.usageExitTooFewArguments()
         elif len(self.args) > 2:
             raise self.usageExitTooManyArguments()
-            
+
 
 if __name__ == '__main__':
     try:

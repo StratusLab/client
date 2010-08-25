@@ -2,7 +2,6 @@ import os
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
-from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import printError
@@ -11,10 +10,8 @@ from stratuslab.Util import unifyNetsize
 class OneInstallator(BaseInstallator):
     
     def runInstall(self, options, config):
-        self.privateKey = (True and options.privateKey) or (config.get('node_private_key'))
-        self.infoDriver = (True and options.infoDriver) or ('im_%s' % config.get('hypervisor'))
-        self.virtDriver = (True and options.virtDriver) or ('vmm_%s' % config.get('hypervisor'))
-        self.transfertDriver = (True and options.transfertDriver) or ('tm_%s' % config.get('share_type'))
+        self.assignKey(options, config)
+        self.assignDrivers(options, config)
         
         self.onedConfTemplate = options.onedTpl
         
@@ -33,8 +30,7 @@ class OneInstallator(BaseInstallator):
                                 self.config.get('one_password'))
 
     def configureCloudAdminNode(self):
-        self.node.configureNetwork(self.config.get('node_network_interface'),
-                                   self.config.get('node_bridge_name'))
+        self.configureNodeNetwork()
         self.node.configureCloudAdminSshKeysNode()
 
     def configureCloudAdminFrontend(self):
@@ -58,7 +54,9 @@ class OneInstallator(BaseInstallator):
                                          self.config.get('one_branch'))
         self.frontend.buildCloudSystem()
         self.frontend.installCloudSystem()
-        self._copyContextualizationScript(self.config.get('one_home'))
+        self._copyContextualizationScript()
+        self._createContextConfigurationScript()
+        self._copyCloudHooks()
         
     # -------------------------------------------
     #    Cloud configuration management
@@ -73,11 +71,19 @@ class OneInstallator(BaseInstallator):
         if conf.get('vm_dir') == '':
             conf['vm_dir'] = '%s/var' % conf.get('one_home')
 
-        filePutContent('%s/etc/oned.conf' % self.config.get('one_home'),
-                       fileGetContent(self.onedConfTemplate) % conf)
-    
+        self.frontend.filePutContentsCmd('%s/etc/oned.conf' % self.config.get('one_home'),
+                                         fileGetContent(self.onedConfTemplate) % conf)
+
+    def configureNodeNetwork(self):
+        self._addPrivateNetworkRoute(self.node)
+        self.node.configureNetwork(self.config.get('node_network_interface'),
+                                   self.config.get('node_bridge_name'))
+
     def addCloudNode(self):
-        self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+        return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+        
+    def removeCloudNode(self, id):
+        self.cloud.hostRemove(id)
         
     def addDefaultNetworks(self):
         for vnet in self.defaultNetworks:
@@ -85,7 +91,7 @@ class OneInstallator(BaseInstallator):
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
             else:
                 self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
-        self._addPrivateNetworkRoute()
+        self._addPrivateNetworkRoute(self.frontend)
         
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % modulePath)
@@ -105,15 +111,16 @@ class OneInstallator(BaseInstallator):
                              'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
 
-    def _addPrivateNetworkRoute(self):
+    def _addPrivateNetworkRoute(self, system):
         routesTmp = '/tmp/stratus-route.tmp'
         routesFd = open(routesTmp, 'wb')
-        routes = self.frontend.executeCmd(['route', '-n'], stdout=routesFd)
+        routes = system.executeCmd(['route', '-n'], stdout=routesFd)
         routesFd.close()
 
         routesFd = open(routesTmp, 'rb')
         routes = routesFd.readlines()
         routesFd.close()
+        os.remove(routesTmp)
 
         addRoute = True
         for line in routes:
@@ -122,15 +129,29 @@ class OneInstallator(BaseInstallator):
                 break
 
         if addRoute:
-            self.frontend.executeCmd(['route', 'add', '-net', '%s/%s' % (
-                self.config.get('one_private_network'),
+            system.executeCmd(['route', 'add', '-net',
+                '%s/%s' % (self.config.get('one_private_network'),
                 networkSizeToNetmask(unifyNetsize(self.config.get('one_private_network_size')))),
                 'dev', 'eth0'])
 
-    def _copyContextualizationScript(self, oneHome):
-        self.frontend.createDirsCmd('%s/share/scripts/' % oneHome)
-        self.frontend.filePutContentsCmd('%s/share/scripts/init.sh' % oneHome,
-                fileGetContent('%s/share/context/init.sh' % modulePath))
+    def _copyContextualizationScript(self):
+        self.frontend.createDirsCmd(os.path.dirname(self.config.get('context_script')))
+        self.frontend.copyCmd('%s/share/context/init.sh' % modulePath, self.config.get('context_script'))
+
+    def _createContextConfigurationScript(self):
+        oneHome = self.config.get('one_home')
+        scriptPath = '%s/share/scripts/configuration.sh' % oneHome
+        configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
+                        'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
+                        'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
+                        
+        self.frontend.createDirsCmd(os.path.dirname(scriptPath))
+        self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
+        self.frontend.setOwnerCmd(scriptPath)
+
+    def _copyCloudHooks(self):
+        self.frontend.copyCmd('%s/share/hooks' % modulePath,
+                              '%s/share' % self.config.get('one_home'))
 
     # -------------------------------------------
     #   Front-end file sharing management

@@ -2,92 +2,68 @@
 
 import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
-from stratuslab.Util import modulePath
-from stratuslab.CommandBase import CommandBase
+from stratuslab.UploadParser import buildUploadParser
+from stratuslab.UploadParser import checkUploadOptions
+from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
-from stratuslab.Util import parseConfig
+from stratuslab.Runnable import Runnable
 
-class MainProgram(CommandBase):
-    '''A command-line program to create StratusLab image.
-
-        Points which are missing for the moment:
-            - How to start the VM on the cloud
-               => start for now with qemu
-            - How to access to the VM without contextualisation
-               => do for now a port redir
-    '''
-
-    def __init__(self):
-        super(MainProgram, self).__init__()
+class MainProgram(Runnable):
+    '''A command-line program to create StratusLab image.'''
 
     def parse(self):        
-        usage = 'usage: %prog [options] stock-image'
-        self.parser = OptionParser(usage=usage)
-
-        self.parser.add_option('-c', '--config', dest='configFile',
-                help='configuration file', metavar='FILE',
-                default='%s/conf/stratuslab.cfg' % modulePath)
-        self.parser.add_option('-d', '--destination', dest='destination',
-                help='the directory in which to create the image. Defaults set in the config',
-                metavar='PATH', default=None)
         self.parser.add_option('-s', '--scripts', dest='scripts',
                 help='scripts to execute on the VM (separate by space)',
                 default='', metavar='FILE')
-        self.parser.add_option('-t', '--type', dest='imageType', metavar='TYPE',
-                help='image type (e.g. base, grid.se, grid.wn, ...)', default='base')
-        self.parser.add_option('-p', '--packages', dest='packages',
+        self.parser.add_option('-N', '--image-name', dest='imageName', metavar='NAME',
+                help='image name (e.g. base, grid.se, grid.wn, ...)', default='base')
+        self.parser.add_option('-a', '--packages', dest='packages',
                 help='packages to install on the machine (name separate by space)',
                 default='', metavar='NAME')
-        self.parser.add_option('-n', '--no-shutdown', dest='shutdownVm',
+        self.parser.add_option('-H', '--no-shutdown', dest='shutdownVm',
                 help='leave the VM running. A public IP will be assigned.',
-                action='store_false', default=True)
-        self.parser.add_option('-v', '--img-version', dest='imageVersion',
-                help='revision number of the image', metavar='INT', default="1.0")
-        self.parser.add_option('-r', '--rename', dest='userImageName',
-                help='rename localy the image else take the name of the base image',
-                default=None, metavar='NAME')
-        self.parser.add_option('--username', dest='username',
-                help='cloud username. Default STRATUSLAB_USERNAME',
-                default=os.getenv('STRATUSLAB_USERNAME', os.getenv('USERNAME', 'nobody')))
-        self.parser.add_option('--template', dest='oneTpl',
-                help='One VM template', metavar='PATH',
-                default=None)
-                
+                default=True, action='store_false')
+        self.parser.add_option('-V', '--img-version', dest='imageVersion',
+                help='revision number of the image', metavar='VERSION',
+                default="1.0")
+        self.parser.add_option('--ip', dest='interface',
+                help='interface to use to connect to the machine. By default the public one.',
+                default="public")
+        self.parser.add_option('--list-interface', dest='listInterface',
+                help='list available machine interface',
+                default=False, action='store_true')
+        buildUploadParser(self.parser)
+        super(MainProgram, self).parse()
+
         self.options, self.args = self.parser.parse_args()
 
+    def availableInterface(self):
+        return ['public', 'private', 'extra']
+
+    def listInterface(self):
+        print 'Available network interface: %s' % ', '.join(self.availableInterface())
+        print ('\nNote that the extra interface refere to the network specified '
+              'with the --nic option')
+        sys.exit(0)
+
     def checkOptions(self):
-        if not os.path.isfile(self.options.configFile):
-            self.parser.error('Configuration file does not exist')
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
+        if self.options.listInterface:
+            self.listInterface()
 
-        self.config = parseConfig(self.options.configFile)
+        super(MainProgram, self).checkOptions()
+        checkUploadOptions(self.options, self.parser)
 
-        if len(self.args) != 1:
-            self.parser.error('Unspecified stock image to use')
-        else:
-            self.stockImg = os.path.abspath(self.args[0])
+        if self.options.interface not in self.availableInterface():
+            self.parser.error('Wrong network interface. Available: %s' % ', '.join(self.availableInterface()))
 
-        if not os.path.isfile(self.stockImg):
-            self.parser.error('Stock image %s does not exist' % self.stockImg)
-
-        if self.options.oneTpl and not os.path.isfile(self.options.oneTpl):
-            self.parser.error('ONE template %s does not exist' % self.options.oneTpl)
-        else:
-            self.options.oneTpl = '%s/share/vm/img-creation-%s.one' % (modulePath,
-                                                                       self.config.get('hypervisor'))
-
-        if self.options.destination and not os.path.isdir(self.options.destination):
-            self.parser.error('Manifest directory %s does not exist' % self.options.destination)
-        else:
-            self.options.destination = self.config.get('image_dir')
-            
-    def doWork(self):
-        self.checkOptions()
-        self.creator = Creator(self.config, self.options, self.stockImg)
+    def doWork(self):        
+        self.creator = Creator(self.image, self.options.__dict__)
         self.creator.create()
         
 

@@ -2,6 +2,7 @@ import os
 import re
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.Util import assignAttributes
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
@@ -12,13 +13,11 @@ from stratuslab.Util import validateIp
 
 class Runner(object):
 
-    def __init__(self, image, options, config):
-        self.config = config
-        self.assignAttributes(options)
+    def __init__(self, image, options):
+        assignAttributes(self, options)
 
         self.cloud = CloudConnectorFactory.getCloud()
-        self.cloud.setFrontend(self.config.get('frontend_ip'),
-                               self.config.get('one_port'))
+        self.cloud.setEndpoint(self.endpoint)
         
         self.cloud.setCredentials(self.username, self.password)
 
@@ -47,19 +46,10 @@ class Runner(object):
         self.nic_netmask = ''
         self.extra_context = ''
         self.graphics = ''
-        self.one_home = self.config.get('one_home')
         self.public_key = fileGetContent(self.userKey)
-        self.context_script = self.contextScript % self.config
-        self.vmId = None
         self.vmIps = None
-        self.default_gateway = self.config.get('default_gateway')
-        self.global_network = self.config.get('network_addr')
-        self.global_netmask = self.config.get('network_mask')
         self.save_disk = self.saveDisk and 'yes' or 'no'
-
-    def assignAttributes(self, dictionary):        
-        for key, value in dictionary.items():
-            setattr(self, key, value)
+        self.vmIds = []
 
     @staticmethod
     def getInstanceType():
@@ -100,6 +90,7 @@ class Runner(object):
                    'userKey': os.getenv('STRATUSLAB_KEY', ''),
                    'username': os.getenv('STRATUSLAB_USERNAME', ''),
                    'password': os.getenv('STRATUSLAB_PASSWORD', ''),
+                   'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
                    'instanceNumber': 1,
                    'instanceType': 'm1.small',
                    'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
@@ -112,10 +103,8 @@ class Runner(object):
                    'extraContextData': '',
                    'vncPort': None,
                    'vncListen': '',
-                   'saveDisk': 'no',
-                   'contextScript': '%(one_home)s/share/scripts/init.sh'}
+                   'saveDisk': 'no' }
         return options
-
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)
@@ -211,9 +200,9 @@ class Runner(object):
                 printError('Error while parsing contextualization file.\n'
                            'Syntax error in line `%s`' % line)
 
-            extraContext[contextLine[0]] = ('%s' % cliLineSplitChar).join(contextLine[1:])
+            extraContext[contextLine[0]] = '='.join(contextLine[1:])
 
-        contextData = ['%s = %s,' % (key, value) for key, value in extraContext.items()]
+        contextData = ['%s = "%s",' % (key, value) for key, value in extraContext.items()]
 
         self.extra_context = '\n'.join(contextData)
 
@@ -242,13 +231,21 @@ class Runner(object):
 
         for vmNb in range(self.instanceNumber):
             try:
-                self.vmId = self.cloud.vmStart(vmTpl)
+                vmId = self.cloud.vmStart(vmTpl)
             except Exception, e:
                 printError(e)
-
-            self.vmIps = self.cloud.getVmIp(self.vmId).items()
+            self.vmIds.append(vmId)
+            self.vmIps = self.cloud.getVmIp(vmId).items()
             vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
-            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(vmIpsPretty)))
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, '\n'.join(vmIpsPretty)))
 
-        printAction('%s started successfully!' % (plurial.get(self.instanceNumber > 1)).title())
-        
+        printAction('Done!')
+        return self.vmIds
+
+    def waitUntilVmRunningOrTimeout(self, vmId):
+        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, 120)
+        return vmStarted
+
+    def stopInstance(self, vmId):
+        vmStopped = self.cloud.vmStop(vmId)
+        return vmStopped

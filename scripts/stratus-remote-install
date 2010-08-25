@@ -37,7 +37,7 @@ class StratusSimpleRun(object):
                                default='localhost')
         self.parser.add_option('-u', '--upload-dir', metavar='PATH',
                                dest='uploadDir', help='remote source directory',
-                               default='stratuslab')
+                               default='/tmp/stratuslab-remote-install')
         self.parser.add_option('-c', '--config', dest='config', 
                                help='additional config "key:value#key:value"',
                                default=None)

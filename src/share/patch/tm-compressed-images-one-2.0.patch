@@ -1,140 +1,98 @@
 diff --git a/src/tm_mad/nfs/tm_clone.sh b/src/tm_mad/nfs/tm_clone.sh
-index 2bba596..603128a 100755
+index 2bba596..15ea47a 100755
 --- a/src/tm_mad/nfs/tm_clone.sh
 +++ b/src/tm_mad/nfs/tm_clone.sh
-@@ -44,9 +44,24 @@ exec_and_log "mkdir -p $DST_DIR"
+@@ -39,14 +39,25 @@ log "DST: $DST_PATH"
+ 
+ DST_DIR=`dirname $DST_PATH`
+ 
++
+ log "Creating directory $DST_DIR"
+ exec_and_log "mkdir -p $DST_DIR"
  exec_and_log "chmod a+w $DST_DIR"
  
  case $SRC in
 -http://*)
-+http*.tar.gz|http*.tgz)
-+    log "Downloading tar.gz archive $SRC"
-+    exec_and_log "download_extract $SRC $DST_PATH.tar.gz $DST_PATH"
++http://*.gz|https://*.gz)
++    log "Downloading GZip archive $SRC"
++    exec_and_log "download_and_extract $SRC $DST_PATH.gz $GUNZIP"
 +    ;;
 +
-+http*.bz2)
-+    log "Downloading tar.bz2 archive $SRC"
-+    exec_and_log "download_extract $SRC $DST_PATH.tar.bz2 $DST_PATH"
++http://*.bz2|https://*.bz2)
++    log "Downloading BZip2 archive $SRC"
++    exec_and_log "download_and_extract $SRC $DST_PATH.bz2 $BUNZIP2"
 +    ;;
 +
-+http*.xz)
-+    log "Downloading tar.xz archive $SRC"
-+    exec_and_log "download_extract $SRC $DST_PATH.tar.xz $DST_PATH"
-+    ;;
-+
-+http*)
++http://*|https://)
      log "Downloading $SRC"
 -    exec_and_log "$WGET -O $DST_PATH $SRC"
-+    exec_and_log "curl -k -o $DST_PATH $SRC"
++    exec_and_log "$CURL -k -o $DST_PATH $SRC"
      ;;
  
  *)
 diff --git a/src/tm_mad/ssh/tm_clone.sh b/src/tm_mad/ssh/tm_clone.sh
-index 9e6ff36..b13eef2 100755
+index 9e6ff36..960c59f 100755
 --- a/src/tm_mad/ssh/tm_clone.sh
 +++ b/src/tm_mad/ssh/tm_clone.sh
-@@ -43,16 +43,31 @@ log "Creating directory $DST_DIR"
+@@ -43,9 +43,19 @@ log "Creating directory $DST_DIR"
  exec_and_log "$SSH $DST_HOST mkdir -p $DST_DIR"
  
  case $SRC in
 -http://*)
-+http*.tar.gz|http*.tgz)
-+    log "Downloading tar.gz archive $SRC"
-+    exec_and_log "download_extract $SRC $DST_PATH.tar.gz $DST_PATH $DST_HOST"
++http://*.gz|https://*.gz)
++    log "Downloading GZip archive $SRC"
++    exec_and_log "download_and_extract $SRC $DST_PATH.gz $GUNZIP $DST_HOST"
 +    ;;
 +
-+http*.bz2)
-+    log "Downloading tar.bz2 archive $SRC"
-+    exec_and_log "download_extract $SRC $DST_PATH.tar.bz2 $DST_PATH $DST_HOST"
++http://*.bz2|https://*.bz2)
++    log "Downloading BZip2 archive $SRC"
++    exec_and_log "download_and_extract $SRC $DST_PATH.bz2 $BUNZIP2 $DST_HOST"
 +    ;;
 +
-+http*.xz)
-+    log "Downloading tar.xz archive $SRC"
-+    exec_and_log "download_extract $SRC $DST_PATH.tar.xz $DST_PATH $DST_HOST"
-+    ;;
-+
-+http*)
++http://*|https://)
      log "Downloading $SRC"
 -    exec_and_log "$SSH $DST_HOST $WGET -O $DST_PATH $SRC"
-+    exec_and_log "ssh $DST_HOST curl -k -o $DST_PATH $SRC"
++    exec_and_log "$SSH $DST_HOST $CURL -k -o $DST_PATH $SRC"
      ;;
  
  *)
-     log "Cloning $SRC"
--    exec_and_log "$SCP $SRC $DST"
-+    exec_and_log "scp $SRC $DST"
+@@ -54,5 +64,5 @@ http://*)
      ;;
  esac
  
 -exec_and_log "$SSH $DST_HOST chmod a+rw $DST_PATH"
-+exec_and_log "ssh $DST_HOST chmod a+w $DST_PATH"
++exec_and_log "$SSH $DST_HOST chmod a+w $DST_PATH"
  
 diff --git a/src/tm_mad/tm_common.sh b/src/tm_mad/tm_common.sh
-index 5caba58..4116f45 100644
+index 5caba58..758e847 100644
 --- a/src/tm_mad/tm_common.sh
 +++ b/src/tm_mad/tm_common.sh
-@@ -164,3 +164,64 @@ function timeout_exec_and_log
+@@ -39,6 +39,9 @@ SED=/bin/sed
+ SSH=/usr/bin/ssh
+ SUDO=/usr/bin/sudo
+ WGET=/usr/bin/wget
++CURL=/usr/bin/curl
++GUNZIP=/bin/gunzip
++BUNZIP2=/bin/bunzip2
+ 
+ function get_vmdir
+ {
+@@ -164,3 +167,18 @@ function timeout_exec_and_log
      fi
  }
  
-+function download_extract
++function download_and_extract
 +{
 +    URL=$1
 +    ARCHIVE=$2
-+    FILENAME=$3
++    EXTRACT_CMD=$3
 +    HOST=$4
 +
 +    if [ "x$HOST" != "x" ]; then
-+        SSH_CMD="ssh $HOST"
++        SSH_CMD="$SSH $HOST"
 +    fi
 +
-+    $SSH_CMD curl -k -o $ARCHIVE $URL
-+
-+    extract_tar $ARCHIVE $FILENAME $HOST
-+
-+    $SSH_CMD rm -rf $ARCHIVE
-+}
-+
-+function file_ends_with
-+{
-+    FILE=$1
-+    EXTENSION=$2
-+
-+    if [ "x$(echo $FILE | grep -E $EXTENSION)" != "x" ]; then
-+        echo 0
-+    else
-+        echo 1
-+    fi
-+}
-+
-+function extract_tar
-+{
-+    ARCHIVE=$1
-+    OUTPUT=$2
-+    HOST=$3
-+
-+    if [ $(file_ends_with $ARCHIVE '.tar.gz') = 0 ]; then
-+        FORMAT=z
-+    elif [ $(file_ends_with $ARCHIVE '.tar.bz2') = 0 ]; then
-+        FORMAT=j
-+    elif [ $(file_ends_with $ARCHIVE '.tar.xz') = 0 ]; then
-+        FORMAT=J
-+    fi
-+    
-+    TAR_CMD="tar -x${FORMAT}f $ARCHIVE"
-+
-+    if [ "x$HOST" != "x" ]; then
-+    SSH_CMD="ssh $HOST"
-+    fi
-+
-+    if [ "x$OUTPUT" != "x" ]; then
-+        if [ "x$HOST" != "x" ]; then
-+            $SSH_CMD "$TAR_CMD -O > $OUTPUT"
-+        else
-+            $TAR_CMD -O > $OUTPUT
-+        fi
-+    else
-+        $SSH_CMD $TAR_CMD 
-+    fi
++    $SSH_CMD $CURL -k -o $ARCHIVE $URL
++    $SSH_CMD $EXTRACT_CMD $ARCHIVE
 +}
 +

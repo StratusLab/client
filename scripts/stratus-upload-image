@@ -2,102 +2,49 @@
 
 import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
+from stratuslab.UploadParser import buildUploadParser
+from stratuslab.UploadParser import checkUploadOptions
+from stratuslab.CommandBase import CommandBase
 from stratuslab.Util import manifestExt
 from stratuslab.Uploader import Uploader
-from stratuslab.Util import modulePath
-from stratuslab.CommandBase import CommandBase
-from stratuslab.Util import parseConfig
 
 class MainProgram(CommandBase):
     '''A command-line program to upload StratusLab appliance.'''
 
     def __init__(self):
+        self.manifest = None
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = 'usage: %prog [options] manifest'
-        self.parser = OptionParser(usage=usage)
-
-        self.parser.add_option('-c', '--config', dest='configFile',
-                help='configuration file', metavar='FILE',
-                default='%s/conf/stratuslab.cfg' % modulePath)
-        self.parser.add_option('-r', '--repo', dest='repoAddress',
-                help='appliance repository address', metavar='FILE',
-                default=None)
-        self.parser.add_option('-t', '--protocol', dest='uploadProtocol',
-                help='upload protocol', default='https', metavar='NAME')
-        self.parser.add_option('-o', '--option', dest='option',
-                help='additional curl option', default='')
-        self.parser.add_option('-a', '--archive', dest='archiveFormat', 
-                help='archive and compression format (e.g. tar.gz, tar.bz2, ...)',
-                default='tar.gz', metavar='FORMAT')
-        self.parser.add_option('-f', '--force', dest='forceUpload',
-                help='force upload of the appliance even if already exist.',
-                default=False, action='store_true')
-        self.parser.add_option('--upload-protocol', dest='listUploadProtocol',
-                help='list available upload protocol',
-                default=False, action='store_true')
-        self.parser.add_option('--compression-format', dest='listCompressFormat',
-                help='list available compression format',
-                default=False, action='store_true')
-        self.parser.add_option('--username', dest='username',
-                help='repository username. Default STRATUSLAB_USERNAME',
-                default=os.getenv('STRATUSLAB_USERNAME', ''))
-        self.parser.add_option('--password', dest='password',
-                help='repository password. Default STRATUSLAB_PASSWORD',
-                default=os.getenv('STRATUSLAB_PASSWORD', ''))
-
+        self.parser.usage = 'usage: %prog [options] manifest'
+        buildUploadParser(self.parser)
+                
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        if not os.path.isfile(self.options.configFile):
-            self.parser.error('Configuration file does not exist')
-
-        self.config = parseConfig(self.options.configFile)
-
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
+        
         if len(self.args) != 1:
             self.parser.error('Please specify an appliance manifest')
-
         self.manifest = self.args[0]
+
+        checkUploadOptions(self.options, self.parser)
 
         if not self.manifest.endswith(manifestExt):
             self.parser.error('Manifest must ends with %s' % manifestExt)
-
         if not os.path.isfile(self.manifest):
             self.parser.error('Appliance manifest does not exist')
-
         if not os.path.isfile(self.manifest.replace(manifestExt, '')):
             self.parser.error('Appliance does not exist')
 
-        if not self.options.uploadProtocol in Uploader.availableUploadProtocol():
-            self.parser.error('Unknow upload protocol.\n')
-
-        if self.options.archiveFormat not in Uploader.availableCompressionFormat():
-            self.parser.error('Unknow compression format')
-
-        if not self.options.repoAddress:
-            self.options.repoAddress = self.config.get('app_repo_url')
-
-        if not self.options.username:
-            self.options.username = self.config.get('app_repo_username')
-
-        if not self.options.password:
-            self.options.password = self.config.get('app_repo_password')
-
     def doWork(self):
-        if self.options.listCompressFormat:
-            Uploader.availableCompressionFormat(True)
-        elif self.options.listUploadProtocol:
-            Uploader.availableUploadProtocol(True)
-        else:
-            self.checkOptions()
-            uploader = Uploader(self.config, self.manifest, self.options)
-            uploader.start()
+        uploader = Uploader(self.manifest, self.options.__dict__)
+        uploader.start()
         
 
 if __name__ == '__main__':

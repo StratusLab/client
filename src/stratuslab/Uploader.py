@@ -1,10 +1,20 @@
+import os.path
+import sys
 import urllib2
+from ConfigParser import RawConfigParser
 
+from stratuslab.Exceptions import NetworkException
+
+from stratuslab.Util import assignAttributes
+from stratuslab.Util import defaultRepoConfigPath
+from stratuslab.Util import defaultRepoConfigSection
 from stratuslab.Util import execute
 from stratuslab.Util import manifestExt
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
+from stratuslab.Util import wget
+from stratuslab.Exceptions import InputException
 
 try:
     from lxml import etree
@@ -30,22 +40,13 @@ except ImportError:
 
 class Uploader(object):
 
-    def __init__(self, config, manifest, options):
-        self.config = config
+    def __init__(self, manifest, options):
+        assignAttributes(self, options)
         self.manifest = manifest
-        self.appliance = self.manifest.replace(manifestExt, '')
-        self.username = options.username
-        self.password = options.password
-        self.uploadOption = options.option
-        self.protocol = options.uploadProtocol
-        self.repo = options.repoAddress
-        self.compressionFormat = options.archiveFormat
-        self.forceUpload = options.forceUpload
-        
+        self.appliance = self.manifest.replace(manifestExt, '')        
+        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.repoUsername,
+                                                             self.repoPassword)]
         self.uploadedFile = []
-        
-        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.username,
-                                                             self.password)]
 
         # Attribute initialization
         self.os = None
@@ -53,7 +54,108 @@ class Uploader(object):
         self.arch = None
         self.type = None
         self.version = None
-        self.compresion = None
+        self.compression = None
+        self.repoStructure = ''
+        self.repoFilename = ''
+
+    def start(self):
+        printAction('Starting appliance upload')
+
+        printStep('Compressing appliance')
+        self._compressAppliance()
+
+        printStep('Parsing manifest')
+        self._parseManifest()
+
+        printStep('Parsing repository configuration')
+        self._parseRepoConfig()
+
+        printStep('Uploading appliance')
+        self._uploadAppliance()
+
+        printStep('Uploading manifest')
+        self._uploadManifest()
+
+        printAction('Appliance uploaded successfully')
+        print '\n\t%s' % '\n\t'.join(self.uploadedFile)
+        
+    def _uploadAppliance(self):
+        self.uploadFile(self.appliance, '%s/%s' % (self.repoStructure, self.repoFilename))
+
+    def _uploadManifest(self):
+        repoFilename = self.repoFilename.replace('.%s' % self.compression, manifestExt)
+        self.uploadFile(self.manifest, '%s/%s' % (self.repoStructure, repoFilename))
+                                                       
+    def uploadFile(self, filename, remoteName):
+        uploadUrl = '%s/%s' % (self.repoAddress, remoteName)
+        curlUploadCmd = self.curlCmd + ['-T', filename]
+
+        self._checkFileAlreadyExists(remoteName)
+        self._createRemoteDirectoryStructure(os.path.dirname(uploadUrl))
+
+        if self.uploadOption:
+            curlUploadCmd.append(self.uploadOption)
+            
+        curlUploadCmd.append(uploadUrl)
+        devNull = self._openDevNull()
+        ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
+        devNull.close()
+        
+        if ret != 0:
+            raise NetworkException('An error occurred while uploading %s' % uploadUrl)
+
+        self.uploadedFile.append(uploadUrl)
+
+    def _openDevNull(self):
+        return open('/dev/null', 'w')
+
+    def deleteFile(self, url):
+        devNull = self._openDevNull()
+        deleteCmd = self.curlCmd + [ '-X', 'DELETE', url]
+        execute(deleteCmd, stdout = devNull, stderr = devNull)
+        devNull.close()
+        
+    
+
+    def _getDirectoriesOfUrl(self, url):
+        urlDirs = '/'.join(url.split('//')[1:])
+        newDirs = ['']
+        for dir in urlDirs.split('/')[1:]:
+            newDirs.append('%s%s/' % (newDirs[-1], dir))
+
+        return newDirs[1:]
+
+    def _createRemoteDirectoryStructure(self, url):
+        devNull = self._openDevNull()
+        curlCreateDirCmd = self.curlCmd + ['-X', 'MKCOL']
+        urlDirs = self._getDirectoriesOfUrl(url)
+        repoAddress = '/'.join(url.split('/')[0:3])
+
+        for dir in urlDirs:
+            if dir == '':
+                continue
+            curlCreateDirCmd.append('%s/%s' % (repoAddress, dir))
+            execute(curlCreateDirCmd, stderr=devNull, stdout=devNull)
+            curlCreateDirCmd.pop()
+        devNull.close()
+
+    def _checkFileAlreadyExists(self, filename):
+        passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        passwordMgr.add_password(None, self.repoAddress, self.repoUsername, self.repoPassword)
+
+        handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
+        opener = urllib2.build_opener(handler)
+
+        status = 0
+        try:
+            opener.open('%s/%s' % (self.repoAddress, filename))
+        except urllib2.HTTPError, e:
+            status = e.code
+
+        if status != 404 and not self.forceUpload:
+            raise InputException('An appliance already exist at this URL.\n'
+                       'Change the appliance version of force upload with '
+                       '-f --force option')
 
     def _parseManifest(self):
         xml = etree.ElementTree()
@@ -65,40 +167,21 @@ class Uploader(object):
         self.version = xml.find('version').text
         self.compression = xml.find('compression').text
 
-    def _uploadFile(self, filename, manifest=False):
-        repoTree = self._parseRepoStructure(self.config.get('app_repo_tree'))
-        repoFilename = self._parseRepoStructure(self.config.get('app_repo_filename'))
-        repoUrl = '%s://%s/%s' % (self.protocol, self.repo, repoTree)
-        extension = manifest and manifestExt or ''
+    def _parseRepoConfig(self):
+        tmpRepoCfg = '/tmp/stratus-repo.tmp'
+        wget('%s/%s' % (self.repoAddress, defaultRepoConfigPath), tmpRepoCfg)
 
-        # Hack to don' put the compression extension to the manifest filename
-        if manifest and repoFilename.endswith('.%s' % self.compressionFormat):
-            repoFilename = repoFilename.replace('.%s' % self.compressionFormat, '')
+        repoConf = RawConfigParser()
+        repoConf.read(tmpRepoCfg)
+        os.remove(tmpRepoCfg)
 
-        uploadUrl = '%s/%s%s' % (repoUrl, repoFilename, extension)
+        repoStructure = repoConf.get(defaultRepoConfigSection, 'repo_structure')
+        repoFilename = repoConf.get(defaultRepoConfigSection, 'repo_filename')
 
-        self._checkExistingApplianceOnRepo(uploadUrl)
-        self.uploadedFile.append(uploadUrl)
+        self.repoStructure = self._buildRepoNameStructure(repoStructure)
+        self.repoFilename = self._buildRepoNameStructure(repoFilename)
 
-        # Create the directory tree on the repo
-        newDirs = self._getDirectoriesOfUrl(repoUrl)
-        self._curlCreateRecursiveDirs(newDirs, self.curlCmd)
-
-        curlUploadCmd = self.curlCmd + ['-T', filename]
-
-        if self.uploadOption:
-            curlUploadCmd.append(self.uploadOption)
-            
-        curlUploadCmd.append(uploadUrl)
-
-        devNull = open('/dev/null', 'w')
-        ret = execute(*curlUploadCmd, stdout=devNull, stderr=devNull)
-        devNull.close()
-        
-        if ret != 0:
-            printError('An error occured while uploading %s' % filename)
-
-    def _parseRepoStructure(self, structure):
+    def _buildRepoNameStructure(self, structure):
         varPattern = '#%s#'
         dirVarPattern = '#%s_#'
         for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
@@ -107,53 +190,31 @@ class Uploader(object):
 
             if structure.find(dirVarPattern % part) != -1:
                 structure = structure.replace(dirVarPattern % part, getattr(self, part, '').replace('.', '/'))
-
         return structure
 
-    def _getDirectoriesOfUrl(self, url):
-        urlDirs = '/'.join(url.split('//')[1:])
-        newDirs = ['']
-        for dir in urlDirs.split('/')[1:]:
-            newDirs.append('%s/%s' % (newDirs[-1], dir))
+    def _compressFile(self, file, format):
+        if format == 'gz':
+            compressionCmd = 'gzip'
+        elif format == 'bz2':
+            compressionCmd = 'bzip2'
+        else:
+            raise NotImplementedError('Unknow compression format')
 
-        return newDirs[1:]
+        compressedFilename = '%s.%s' % (file, format)
+        if os.path.isfile(compressedFilename):
+            printError('Compressed file %s already exists' % compressedFilename)
 
-    def _curlCreateRecursiveDirs(self, dirs, curlBaseCmd):
-        devNull = open('/dev/null', 'w')
-        curlCreateDirCmd = curlBaseCmd + ['-X', 'MKCOL']
-
-        for dir in dirs:
-            curlCreateDirCmd.append('%s://%s%s/' % (self.protocol,
-                                                   # Find root address of the repo
-                                                   self.repo.split('/')[0],
-                                                   dir))
-            execute(*curlCreateDirCmd, stderr=devNull, stdout=devNull)
-            curlCreateDirCmd.pop()
+        devNull = self._openDevNull()
+        execute([compressionCmd, file], stderr=devNull, stdout=devNull)
         devNull.close()
 
-    def _compressFile(self, archiveName, format, *files):
-        fileList = ' '.join(files)
-
-        formatLetter = ''
-        if format == 'tar.gz':
-            formatLetter = 'z'
-        elif format == 'tar.bz2':
-            formatLetter = 'j'
-        elif format == 'tar.xz':
-            formatLetter = 'J'
-
-        devNull = open('/dev/null', 'w')
-        execute('tar', '-c%sf' % formatLetter, archiveName, fileList,
-                stderr=devNull, stdout=devNull)
-        devNull.close()
+        return compressedFilename
 
     def _compressAppliance(self):
-        self._compressFile('%s.%s' % (self.appliance, self.compressionFormat),
-                           self.compressionFormat, self.appliance)
-        self.appliance = '%s.%s' % (self.appliance, self.compressionFormat)
-        self._addCompressFormatManifest()
+        self.appliance = self._compressFile(self.appliance, self.compressionFormat)
+        self._addCompressionFormatToManifest()
 
-    def _addCompressFormatManifest(self):
+    def _addCompressionFormatToManifest(self):
         compressionElem = etree.Element('compression')
         compressionElem.text = self.compressionFormat
 
@@ -163,59 +224,12 @@ class Uploader(object):
 
         xml.write(self.manifest)
 
-    def _checkExistingApplianceOnRepo(self, url):
-        applianceRepoUrl = '%s://%s' % (self.protocol, self.repo)
-
-        passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, applianceRepoUrl, self.username, self.password)
-
-        handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
-        opener = urllib2.build_opener(handler)
-
-        status = 0
-        try:
-            opener.open(url)
-        except Exception, e:
-            status = e.getcode()
-
-        if status != 404 and not self.forceUpload:
-            printError('An appliance already exist at this URL.\n'
-                       'Change the appliance version of force upload with '
-                       '-f --force option')
-
     @staticmethod
     def availableCompressionFormat(printIt=False):
-        list = ('tar.gz', 'tar.bz2', 'tar.xz')
+        list = ('gz', 'bz2')
 
         if printIt:
             print 'Available compression format: %s' % ', '.join(list)
+            sys.exit(0)
         else:
             return list
-
-    @staticmethod
-    def availableUploadProtocol(printIt=False):
-        list = ('http', 'https')
-
-        if printIt:
-            print 'Available upload protocol: %s' % ', '.join(list)
-        else:
-            return list
-
-    def start(self):
-        printAction('Starting appliance upload')
-
-        printStep('Compressing appliance')
-        self._compressAppliance()
-
-        printStep('Parsing manifest')
-        self._parseManifest()
-
-        printStep('Uploading appliance')
-        self._uploadFile(self.appliance)
-
-        printStep('Uploading manifest')
-        self._uploadFile(self.manifest, manifest=True)
-
-        printAction('Appliance uploaded successfully')
-        print '\n\t%s' % '\n\t'.join(self.uploadedFile)
-        

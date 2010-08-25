@@ -43,7 +43,7 @@ class MainProgram(CommandBase):
         parser.add_option('--tm', dest='transfertDriver', 
                           help='transfert driver', metavar='VM_NAME', default=None)
         
-        self.options, _ = parser.parse_args()        
+        self.options, _ = parser.parse_args()
 
     def doWork(self):
         config = parseConfig(self.options.configFile)        

@@ -1,4 +1,3 @@
-import os
 import os.path
 import re
 import subprocess
@@ -6,13 +5,23 @@ import sys
 import time
 import urllib2
 from ConfigParser import SafeConfigParser
+from random import sample
+from string import ascii_lowercase
 
 
 defaultConfigSection = 'stratuslab'
+defaultRepoConfigSection = 'stratuslab_repo'
+defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
 manifestExt = '.manifest.xml'
 cliLineSplitChar = '#'
+
+# Environment variable names
+envEndpoint = 'STRATUSLAB_ENDPOINT'
+
+# Configuration parameter names
+configFrontEndIp = 'frontend_ip'
 
 
 def validateConfig(config):
@@ -36,7 +45,8 @@ def wget(url, savePath):
     
 def ping(host, timeout=5, number=1, ** kwargs):
     '''Ping <host> and return True if successful'''
-    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
+    #    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
+    p = subprocess.Popen(['ping', '-q', '-c', str(number), host], ** kwargs)
     p.wait()
     success = p.returncode == 0
     return success
@@ -71,6 +81,11 @@ def fileGetContent(filename):
 
 def filePutContent(filename, data):
     fd = open(filename, 'wb')
+    fd.write(data)
+    fd.close()
+
+def fileAppendContent(filename, data):
+    fd = open(filename, 'a')
     fd.write(data)
     fd.close()
         
@@ -127,7 +142,7 @@ def printError(msg, exitCode=1, exit=True):
     if exit:
         sys.exit(exitCode)
 
-def execute(*cmd, **kwargs):
+def execute(cmd, **kwargs):
     wait = not kwargs.get('noWait', False)
 
     if kwargs.has_key('noWait'):
@@ -142,21 +157,21 @@ def execute(*cmd, **kwargs):
     return process
 
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
-    sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout]
+    sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout, '-o', 'StrictHostKeyChecking=no']
 
-    if not sshKey and os.path.isfile(sshKey):
+    if sshKey and os.path.isfile(sshKey):
         sshCmd.append('-i')
         sshCmd.append(sshKey)
 
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
-    return execute(*sshCmd, **kwargs)
+    return execute(sshCmd, **kwargs)
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
-    scpCmd = ['scp', '-P', str(port)]
+    scpCmd = ['scp', '-P', str(port), '-r']
 
-    if not sshKey and os.path.isfile(sshKey):
+    if sshKey and os.path.isfile(sshKey):
         scpCmd.append('-i')
         scpCmd.append(sshKey)
 
@@ -260,7 +275,7 @@ def isValidIpV6(ip):
 def unifyNetsize(netsize):
     classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
 
-    for letter, mask in classes.items():
+    for _, mask in classes.items():
         if netsize == str(mask):
             return mask
         
@@ -273,3 +288,22 @@ def networkSizeToNetmask(netsize):
         if 2**pow >= netsize:
             return MAX_MASK_LENTGH - pow
     return MAX_MASK_LENTGH
+
+def assignAttributes(instance, dictionary):
+    for key, value in dictionary.items():
+        setattr(instance, key, value)
+
+def randomString(length=10):
+    return ''.join(sample(list(ascii_lowercase), length))
+
+def runMethodByName(obj, methodName, *args, **kw):
+    return obj.__class__.__dict__[methodName](obj, *args, **kw)
+
+def generateSshKeyPair(keyFilename):
+    try:
+        os.remove(keyFilename)
+        os.remove(keyFilename + '.pub')
+    except(OSError):
+        pass
+    sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
+    execute(sshCmd, shell=True)

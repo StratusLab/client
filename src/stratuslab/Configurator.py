@@ -19,6 +19,12 @@ class Configurator(object):
 
         self._buildUserConfig()
 
+    def getValue(self, key):
+        if not self.userConfig.has_option(defaultConfigSection, key):
+            raise ValueError('Specified key does not exist')
+
+        return self.userConfig.get(defaultConfigSection, key) 
+
     def _buildUserConfig(self):
         self.userConfigFile = self.baseConfigFile.replace('.ref', '')
         

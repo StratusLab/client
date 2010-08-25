@@ -1,197 +1,149 @@
-import os
-import shutil
-import subprocess
+import os.path
+import pickle
 from datetime import datetime
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.FileAppender import FileAppender
+from stratuslab.Runner import Runner
+from stratuslab.Util import assignAttributes
+from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
-from stratuslab.Util import filePutContent
-from stratuslab.Util import getSystemMethods
+from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
+from stratuslab.Util import randomString
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
 from stratuslab.Util import waitUntilPingOrTimeout
-from stratuslab.Util import wget
 
 class Creator(object):
-    
-    def __init__(self, config, options, stockImg):
-        self.config = config
-        self.options = options
-        self.stockImg = stockImg
-        self.username = options.username
-        self.imageType = options.imageType
-        self.imageVersion = options.imageVersion
-
-        if options.userImageName:
-            self.imageName = options.userImageName
-        else:
-            self.imageName = os.path.basename(self.stockImg)
-
-        self.imagePath = '%s/%s' % (self.options.destination,
-                                    self.imageName)
-        self.manifest = '%s/%s.manifest.xml' % (self.options.destination, self.imageName)
-        
-        self.cloud = CloudConnectorFactory.getCloud('qemu')
-        self.cloud.setFrontend(self.config.get('frontend_ip'),
-                               self.config.get('one_port'))
-#        self.cloud.setCredentials(self.config.get('one_username'),
-        self.cloud.setCredentials(self.config.get('node_private_key'),
-                                  self.config.get('one_password'))
-
-        self.sshKey = self.config.get('node_private_key')
+    def __init__(self, image, options):
+        self.image = image
+        self.options = Runner.defaultRunOptions()
+        self.options.update(options)
+        assignAttributes(self, self.options)
 
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
-        
-        # Attributes initialization
-        self.vmTemplate = None
+
+        self.cloud = CloudConnectorFactory.getCloud()
+        self.cloud.setEndpoint(self.endpoint)
+
+        self.cloud.setCredentials(self.username, self.password)
+
+        self.sshKey = '/tmp/%s' % randomString()
+        generateSshKeyPair(self.sshKey)
+
+        self.vmManifestPath = '/tmp/disk.0.manifest.xml' # Location of the manifest on the VM
+        self.packageInstallScript = '%s/share/creation/install-pkg.sh' % modulePath
+        self.manifestCreationScript = '%s/share/creation/create-manifest.sh' % modulePath
+
+        self.runner = None
+        self.vmIps = None
         self.vmId = None
-        self.vmAddress = None
-        self.publicAddress = None
-        self.vmSshPort = None
-        self.system = None
 
     def __del__(self):
         self.stderr.close()
         self.stdout.close()
+
+    def _buildRunner(self):
+        self.options['saveDisk'] = True
+
+        self.runner = Runner(self.image, self.options)
+        self._addCreationContext()
         
-    def _duplicateStockImage(self):
-        if self.stockImg.startswith('http'):
-            wget(self.stockImg, self.imagePath)
-        else:
-            shutil.copy(self.stockImg, '%s/%s' % (self.options.destination,
-                                                  self.imageName))
+    def _addCreationContext(self):
+        context = [
+            'stratuslab_remote_key=%s' % fileGetContent(self.sshKey + '.pub'),
+            'stratuslab_internal_key=/tmp/%s' % randomString(),
+            'stratuslab_manifest=%s' % self.vmManifestPath,
+            'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
+        ]
 
-    def _populateManifest(self):
-        os, osversion = self._getVmSystem()
-        self.system = getSystemMethods(os)
+        context.extend(self.runner.extraContextData.split(cliLineSplitChar))
+        self.runner.extraContextData = cliLineSplitChar.join(context)
 
-        manifest = fileGetContent('%s/share/template/manifest.xml.tpl' % modulePath)
-        manifest = manifest % {'created': datetime.now(),
-                               'type': self.imageType,
-                               'version': self.imageVersion,
-                               'arch': self._getVmArch(),
-                               'user': self.username,
-                               'os': os,
-                               'osversion': osversion }
+    def _buildUploadInfoContext(self):
+        uploadInfoElem = [ 'repoAddress', 'compressFormat', 'forceUplad',
+                           'uploadOption', 'repoUsername', 'repoPassword' ]
 
-        filePutContent(self.manifest, manifest)
+        uploadInfoDict = {}
+        for elem in uploadInfoElem:
+            uploadInfoDict[elem] = getattr(self, elem, '')
 
-    def _getVmSystem(self):
-        # TODO: Maybe use this to automatically determine config for install?
+        return pickle.dumps(uploadInfoDict)
 
-        devNull = open('/dev/null', 'w')
-        redHatDistro = sshCmd('cat /etc/redhat-release', self.vmAddress,
-                              self.sshKey, self.vmSshPort, noWait=True,
-                              stdout=subprocess.PIPE, stderr=devNull).communicate()[0]
+    def _startMachine(self):
+        try:
+            self.runner.runInstance()
+        except Exception, msg:
+            printError('An error occured while starting machine: \n\t%s' % msg)
+            
+        if not self.cloud.waitUntilVmRunningOrTimeout(self.runner.vmId, 600):
+            printError('Unable to boot VM')
 
-        debianDistro = sshCmd('cat /etc/lsb-release', self.vmAddress,
-                              self.sshKey, self.vmSshPort, noWait=True,
-                              stdout=subprocess.PIPE, stderr=devNull).communicate()[0]
-        devNull.close()
+    def _createImageManifest(self):
+        separatorChar = '%'
+        imageDefinition = [self.imageName, self.imageVersion, self.username, self.vmManifestPath]
 
-        system = 'unknow'
-        version = '0'
+        scp(self.manifestCreationScript, 'root@%s:' % self.vmAddress, self.sshKey,
+            stderr=self.stderr, stdout=self.stdout)
 
-        if redHatDistro != '':
-            system = redHatDistro.split(' ')[0].lower()
-            version = redHatDistro.split(' ')[2]
-        elif debianDistro != '':
-            for line in debianDistro.split('\n'):
-                if line.startswith('DISTRIB_ID'):
-                    system = line.split('=')[1].lower()
-                elif line.startswith('DISTRIB_RELEASE'):
-                    version = line.split('=')[1]
+        ret = sshCmd('bash %s %s %s' % (os.path.basename(self.packageInstallScript),
+                                        separatorChar,
+                                        separatorChar.join(imageDefinition)),
+                     self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-        return system, version
-
-    def _getVmArch(self):
-        arch = sshCmd('uname -m', self.vmAddress, self.sshKey, self.vmSshPort,
-                      noWait=True, stdout=subprocess.PIPE).communicate()[0]
-        arch = arch.replace('\n', '') # Remove line break at the end
-        return arch
+        if ret != 0:
+            printError('An error occured while installing packages')
 
     def _installPackages(self):
-        if len(self.options.packages) == 0:
+        if len(self.packages) == 0:
             return
+
+        scp(self.packageInstallScript, 'root@%s:' % self.vmAddress, self.sshKey,
+            stderr=self.stderr, stdout=self.stdout)
         
-        ret = sshCmd('%s %s' % (self.system.installCmd, self.options.packages),
-                      self.vmAddress, self.sshKey, self.vmSshPort,
-                      stderr=self.stderr, stdout=self.stdout)
+        ret = sshCmd('bash %s %s' % (os.path.basename(self.packageInstallScript), self.packages),
+                     self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
             printError('An error occured while installing packages')
 
     def _executeScripts(self):
-        if len(self.options.scripts) == 0:
+        if len(self.scripts) == 0:
             return
 
-        for script in self.options.scripts.split(' '):
-            scp(script, 'root@%s:' % self.vmAddress, self.sshKey, self.vmSshPort,
-                    stderr=self.stderr, stdout=self.stdout)
+        for script in self.scripts.split(' '):
+            scp(script, 'root@%s:' % self.vmAddress, self.sshKey, 
+                stderr=self.stderr, stdout=self.stdout)
 
-            ret = sshCmd('bash %s' % script, self.vmAddress, self.sshKey, self.vmSshPort,
-                        stderr=self.stderr, stdout=self.stdout)
-            sshCmd('rm -fr %s' % script, self.vmAddress, self.sshKey, self.vmSshPort)
+            ret = sshCmd('bash %s' % script, self.vmAddress, self.sshKey,
+                         stderr=self.stderr, stdout=self.stdout)
+            sshCmd('rm -fr %s' % script, self.vmAddress, self.sshKey)
 
             if ret != 0:
                 printError('An error occured while executing script %s' % script)
 
-    def _setupContextualisation(self):
-        oneContext = '/usr/local/bin/onecontext'
-        scp('%s/share/context/onecontext' % modulePath, 'root@%s:%s' % (self.vmAddress, oneContext),
-            self.sshKey, self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
-
-        tmpRcLocal = '/tmp/stratus-rclocal.tmp'
-        scp('root@%s:/etc/rc.local' % self.vmAddress, tmpRcLocal, self.sshKey,
-            self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
-
-        fileAppender = FileAppender(tmpRcLocal)
-        fileAppender.insertAtTheEnd('bash %s' % oneContext)
-
-        scp(tmpRcLocal, 'root@%s:/etc/rc.local' % self.vmAddress, self.sshKey,
-            self.vmSshPort, stderr=self.stderr, stdout=self.stdout)
-
-        os.remove(tmpRcLocal)
-
     def create(self):
         printAction('Starting image creation')
         
-        printStep('Copying stock image')
-        self._duplicateStockImage()
-
         printStep('Creating machine template')
-        self.vmTemplate = self.cloud.createMachineTemplate(self.imagePath, self.options.oneTpl)
-        
-        if not self.options.shutdownVm:
-            self.vmTemplate = self.cloud.addPublicInterface(self.vmTemplate)
+        self._buildRunner()
 
-        printStep('Booting new machine')
-        self.vmId = self.cloud.vmStart(self.vmTemplate)
-        
-        if not self.cloud.waitUntilVmRunningOrTimeout(self.vmId, 60):
-            printError('Unable to boot VM')
+        self._startMachine()
 
         printStep('Waiting for network interface to be up')
-        self.vmAddress = self.cloud.getVmIp(self.vmId).get('private')
-        self.publicAddress = self.cloud.getVmIp(self.vmId).get('public', 'No public address')
-        self.vmSshPort = self.cloud.getVmSshPort(self.vmId)
+        self.vmAddress = self.vmIps(self.vmId).get(self.interface)
         
-        if not waitUntilPingOrTimeout(self.vmAddress, 20):
+        if not waitUntilPingOrTimeout(self.vmAddress, 600):
             self.cloud.vmStop(self.vmId)
             printError('Unable to ping VM')
-            
-        printStep('Populating machine manifest')
-        self._populateManifest()
 
-        printStep('Installing ONE contextualisation mechanism')
-        self._setupContextualisation()
+        printStep('Creating image manifest')
+        self._createImageManifest()
 
         printStep('Installing user packages')
         self._installPackages()
@@ -199,17 +151,14 @@ class Creator(object):
         printStep('Executing user scripts')
         self._executeScripts()
 
-        if self.options.shutdownVm:
+        if self.shutdownVm:
             printStep('Shutting down machine')
             self.cloud.vmStop(self.vmId)
         else:
             printStep('Machine ready for your usage')
-            print '\n\tMachine IP: %s' % self.publicAddress
-            print '\tSSH port: %s' % self.vmSshPort
+            print '\n\tMachine IP: %s' % ', '.join(self.cloud.getVmIp(self.vmId))
             print '\tRemember to stop the machine when finished',
             
         printAction('Image creation finished')
-        print '\n\tManifest: %s' % self.manifest,
         print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
                                                                         self.stderr.name)
-            

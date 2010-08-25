@@ -1,11 +1,15 @@
 import os
+import os.path
 import shutil
-import subprocess
 from datetime import datetime
 
 from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
+from stratuslab.Util import execute
+from stratuslab.Util import fileAppendContent
+from stratuslab.Util import scp
+from stratuslab.Util import sshCmd
 
 class BaseSystem(object):
     
@@ -201,7 +205,8 @@ class BaseSystem(object):
             self._configureKvm()
 
     def _configureKvm(self):
-        pass
+        self.executeCmd(['modprobe', 'kvm_intel'])
+        self.executeCmd(['modprobe', 'kvm_amd'])
 
     def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
@@ -224,9 +229,7 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
         
-        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, **kwargs)
-        process.wait()
-        return process.returncode
+        return execute(command, stdout=stdout, stderr=stderr, **kwargs)
 
     def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.ONeAdmin, '-c']
@@ -239,7 +242,13 @@ class BaseSystem(object):
     def _createDirs(self, path):
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
-    
+
+    def _copy(self, src, dst):
+        if os.path.isfile(src):
+            return shutil.copytree
+        else:
+            return shutil.copy
+
     # -------------------------------------------
     #     Node related methods
     # -------------------------------------------
@@ -250,21 +259,11 @@ class BaseSystem(object):
     def _nodeShell(self, command, **kwargs):
         if type(command) == type(list()):
             command = ' '.join(command)
-            
-        return self._remoteCmd(self.nodeAddr, command,
-                               port=self.nodePort,
-                               privateKey=self.nodePrivateKey, **kwargs)
 
-    def _remoteCmd(self, hostAddr, command, user='root', port=22,
-                   privateKey=None, **kwargs):
-        sshCmd = ['ssh', '-p', str(port), '-l', user, '-F', self.tempSshConf]
-        if privateKey and os.path.isfile(privateKey):
-            sshCmd.extend(['-i', privateKey])
-        else:
-            print 'key %s does not exists, skip it' % privateKey
-        sshCmd.append(hostAddr)
-        sshCmd.append(command)
-        return self._execute(sshCmd, **kwargs)
+        return sshCmd(command, self.nodeAddr, self.nodePrivateKey, **kwargs)
+
+    def _nodeCopy(self, source, dest, **kwargs):
+        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
@@ -280,7 +279,7 @@ class BaseSystem(object):
             self._nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
                             search, replace, filename)], shell=True)
         else:
-            self._remoteFilePutContents(filename, replace)
+            self._remoteFileAppendContents(filename, replace)
 
     def _patternExists(self, returnCode):
         return returnCode == 0
@@ -289,6 +288,9 @@ class BaseSystem(object):
         self._nodeShell(['cp -rf %s %s' % (src, dest)])
         
     def _remoteFilePutContents(self, filename, data):
+        self._nodeShell('echo \'%s\' > %s' % (data, filename))
+
+    def _remoteFileAppendContents(self, filename, data):
         self._nodeShell('echo \'%s\' >> %s' % (data, filename))
         
     def _filePutContentAsOneAdmin(self, filename, content):
@@ -324,7 +326,9 @@ class BaseSystem(object):
         self.copyCmd = shutil.copy
         self.createDirsCmd = self._createDirs
         self.filePutContentsCmd = filePutContent
+        self.fileAppendContentsCmd = fileAppendContent
         self.chmodCmd = os.chmod
+        self.copyCmd = self._copy
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
@@ -333,7 +337,9 @@ class BaseSystem(object):
         self.copyCmd = self._remoteCopyFile
         self.createDirsCmd = self._remoteCreateDirs
         self.filePutContentsCmd = self._remoteFilePutContents
+        self.fileAppendContentsCmd = self._remoteFileAppendContents
         self.chmodCmd = self._remoteChmod
+        self.copyCmd = self._nodeCopy
         
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
         self._generateTempSshConfig(self.tempSshConf)

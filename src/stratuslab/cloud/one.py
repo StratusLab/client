@@ -1,9 +1,7 @@
-import os
 import sys
 import time
 import xmlrpclib
 
-from stratuslab.Util import fileGetContent
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import shaHexDigest
 from stratuslab.Util import unifyNetsize
@@ -56,11 +54,18 @@ class OneConnector(object):
     
     def setFrontend(self, server, port):
         self.server = 'http://%s:%s/RPC2' % (server, port)
-        self._rpc = xmlrpclib.ServerProxy(self.server)
-    
+        self._createRpcConnection()
+
+    def setEndpoint(self, address):
+        self.server = address
+        self._createRpcConnection()
+
     def setCredentials(self, username, password):
         self._sessionString = '%s:%s' % (username, shaHexDigest(password))
-        
+
+    def _createRpcConnection(self):
+        self._rpc = xmlrpclib.ServerProxy(self.server)
+
     # -------------------------------------------
     #    Virtual machine management
     # -------------------------------------------
@@ -88,25 +93,29 @@ class OneConnector(object):
         
         return self.vmAction(vmId, 'shutdown')
         
-    def getVmInfo(self, vmId, xml=False):
+    def listVms(self):
+        ret, info = self._rpc.one.vmpool.info(self._sessionString, 0)
+        
+        if not ret:
+            raise Exception(info)
+        
+        return info
+        
+    def getVmInfo(self, vmId):
         ret, info = self._rpc.one.vm.info(self._sessionString, vmId)
         
         if not ret:
             raise Exception(info)
         
-        # TODO: Return a dictionary
-        if not xml:
-            pass
-        
         return info
         
     def getVmState(self, vmId):
-        xml = etree.fromstring(self.getVmInfo(vmId, True))
+        xml = etree.fromstring(self.getVmInfo(vmId))
         status = xml.find('STATE')
         return int(status.text)
     
     def getVmIp(self, vmId):
-        xml = etree.fromstring(self.getVmInfo(vmId, True))
+        xml = etree.fromstring(self.getVmInfo(vmId))
         
         vmAddress = {}
         for nic in xml.findall('TEMPLATE/NIC'):
@@ -137,12 +146,6 @@ class OneConnector(object):
                 return False
 
         return self.getVmState(vmId) == self.status.get('running')
-
-
-    def createMachineTemplate(self, imagePath, template):
-        # TODO: move method to Creator
-        return fileGetContent(template) % ({'vm_image': imagePath,
-                                            'vm_name': os.path.basename(imagePath)})
     
     # -------------------------------------------
     #    Virtual network management
@@ -229,6 +232,14 @@ class OneConnector(object):
 
         return id
 
+    def hostRemove(self, id):
+        ret = self._rpc.one.host.delete(self._sessionString, id)
+
+        if not ret:
+            raise Exception(id)
+
+        return id
+
     def getHostInfo(self, id):
         ret, info = self._rpc.one.host.info(self._sessionString, id)
 
@@ -236,4 +247,11 @@ class OneConnector(object):
             raise Exception(info)
 
         return info
-    
+
+    def listHosts(self):
+        ret, info = self._rpc.one.hostpool.info(self._sessionString)
+
+        if not ret:
+            raise Exception(info)
+
+        return info
