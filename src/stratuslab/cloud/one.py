@@ -93,15 +93,19 @@ class OneConnector(object):
         
         return self.vmAction(vmId, 'shutdown')
         
-    def getVmInfo(self, vmId, xml=False):
-        ret, info = self._rpc.one.vm.info(self._sessionString, vmId)
+    def listVms(self):
+        ret, info = self._rpc.one.vmpool.info(self._sessionString, 0)
         
         if not ret:
             raise Exception(info)
         
-        # TODO: Return a dictionary
-        if not xml:
-            pass
+        return info
+        
+    def getVmInfo(self, vmId):
+        ret, info = self._rpc.one.vm.info(self._sessionString, vmId)
+        
+        if not ret:
+            raise Exception(info)
         
         return info
         
