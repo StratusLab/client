@@ -15,7 +15,7 @@ from stratuslab.Monitor import Monitor
 
 
 class MainProgram(CommandBase):
-    '''A command-line program to monitor the state of a node.'''
+    '''A command-line program to monitor the state of nodes.'''
 
     def __init__(self):
         self.nodes = []

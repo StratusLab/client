@@ -24,7 +24,7 @@ class Testor(unittest.TestCase):
         super(Testor, self).__init__(methodName)
 
         self._setCloud()        
-        # Attributes initialization
+
         self.vmIps = {}
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
