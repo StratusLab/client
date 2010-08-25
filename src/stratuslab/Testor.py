@@ -84,7 +84,8 @@ class Testor(unittest.TestCase):
         for test in tests:
             suite.addTest(Testor(test))
 
-        unittest.TextTestRunner(verbosity=2).run(suite)
+        testResult = unittest.TextTestRunner(verbosity=2).run(suite)
+        return testResult.wasSuccessful
 
     def runMethod(self, method):
         return method()
