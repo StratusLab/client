@@ -47,9 +47,9 @@ class Runner(object):
         self.extra_context = ''
         self.graphics = ''
         self.public_key = fileGetContent(self.userKey)
-        self.vmId = None
         self.vmIps = None
         self.save_disk = self.saveDisk and 'yes' or 'no'
+        self.vmIds = []
 
     @staticmethod
     def getInstanceType():
@@ -231,13 +231,21 @@ class Runner(object):
 
         for vmNb in range(self.instanceNumber):
             try:
-                self.vmId = self.cloud.vmStart(vmTpl)
+                vmId = self.cloud.vmStart(vmTpl)
             except Exception, e:
                 printError(e)
-
-            self.vmIps = self.cloud.getVmIp(self.vmId).items()
+            self.vmIds.append(vmId)
+            self.vmIps = self.cloud.getVmIp(vmId).items()
             vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
-            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, self.vmId, '\n'.join(vmIpsPretty)))
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, '\n'.join(vmIpsPretty)))
 
         printAction('Done!')
-        
+        return self.vmIds
+
+    def waitUntilVmRunningOrTimeout(self, vmId):
+        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, 120)
+        return vmStarted
+
+    def stopInstance(self, vmId):
+        vmStopped = self.cloud.vmStop(vmId)
+        return vmStopped
