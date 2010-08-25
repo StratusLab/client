@@ -29,19 +29,16 @@ class MainProgram(CommandBase):
         if self.options.listCompressionFormat:
             Uploader.availableCompressionFormat(True)
         
-        checkUploadOptions(self.options, self.parser)
-
         if len(self.args) != 1:
             self.parser.error('Please specify an appliance manifest')
-
         self.manifest = self.args[0]
+
+        checkUploadOptions(self.options, self.parser)
 
         if not self.manifest.endswith(manifestExt):
             self.parser.error('Manifest must ends with %s' % manifestExt)
-
         if not os.path.isfile(self.manifest):
             self.parser.error('Appliance manifest does not exist')
-
         if not os.path.isfile(self.manifest.replace(manifestExt, '')):
             self.parser.error('Appliance does not exist')
 

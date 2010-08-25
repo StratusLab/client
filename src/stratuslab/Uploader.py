@@ -203,14 +203,14 @@ class Uploader(object):
     def start(self):
         printAction('Starting appliance upload')
 
+        printStep('Compressing appliance')
+        self._compressAppliance()
+
         printStep('Parsing manifest')
         self._parseManifest()
 
         printStep('Parsing repository configuration')
         self._parseRepoConfig()
-
-        printStep('Compressing appliance')
-        self._compressAppliance()
 
         printStep('Uploading appliance')
         self._uploadAppliance()
