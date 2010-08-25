@@ -25,7 +25,7 @@ class MainProgram(CommandBase):
 where test is a comma separated list of tests, according to the name provided by -l/--list.'''
         
 
-        self.parser = OptionParser(usage=usage)
+        self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile', 
                                help='configuration file', metavar='PATH',
                                default='%s/conf/stratuslab.cfg' % modulePath)

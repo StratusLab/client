@@ -4,7 +4,7 @@ import os
 from stratuslab.installator.one import OneInstallator
 from stratuslab.Util import assignAttributes
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from HostInfo import HostInfo
+from stratuslab.CloudInfo import CloudInfo
 
 try:
     from lxml import etree
@@ -56,17 +56,17 @@ class Monitor(OneInstallator):
         self.cloud.setCredentials(self.config.get('one_username'),
                                   self.config.get('one_password'))
 
-    def monitor(self, nodeIds):
+    def nodeDetail(self, nodeIds):
         infoList = []
         for id in nodeIds:
-            infoList.append(self._monitor(id))
+            infoList.append(self._nodeDetail(id))
         return infoList
 
-    def _monitor(self, id):
+    def _nodeDetail(self, id):
         res = self.cloud.getHostInfo(int(id))
         host = etree.fromstring(res)
-        info = HostInfo()
-        info.populateHosts(host)
+        info = CloudInfo()
+        info.populate(host)
         return info
 
     def vmDetail(self, ids):
@@ -77,36 +77,28 @@ class Monitor(OneInstallator):
 
     def _vmDetail(self, id):
         res = self.cloud.getVmInfo(int(id))
-        host = etree.fromstring(res)
-        info = HostInfo()
-        info.populateHosts(host)
-        print info
+        vm = etree.fromstring(res)
+        info = CloudInfo()
+        info.populate(vm)
         return info
 
     def _printList(self, infoList):
         for info in infoList:
             self._printInfo(info, self.hostInfoListAttributes)
 
-    def list(self):
-        res = self.cloud.listHosts()
-        xml = etree.fromstring(res)
-        hosts = xml.findall('HOST')
-        infoList = []
-        for host in hosts:
-            info = HostInfo()
-            info.populateHosts(host)
-            infoList.append(info)
-        return infoList
-
+    def listNodes(self):
+        nodes = self.cloud.listHosts()
+        return self._iterate(etree.fromstring(nodes))
+        
     def listVms(self):
-        res = self.cloud.listVms()
-        xml = etree.fromstring(res)
-        print xml
-        hosts = xml.findall('VM')
+        vms = self.cloud.listVms()
+        return self._iterate(etree.fromstring(vms))
+
+    def _iterate(self, list):
         infoList = []
-        for host in hosts:
-            info = HostInfo()
-            info.populateHosts(host)
+        for item in list:
+            info = CloudInfo()
+            info.populate(item)
             infoList.append(info)
         return infoList
 

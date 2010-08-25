@@ -17,7 +17,7 @@ class StratusSimpleRun(object):
         self.rootPath = os.path.abspath('%s/../' %
                                         os.path.abspath(os.path.dirname(__file__)))
         usage = 'usage: %prog [options]'
-        self.parser = OptionParser(usage=usage)
+        self.parser.usage = usage
 
         self.parser.add_option('-n', '--nodes', dest='nodes',
                                help='node list, separate by space', default='localhost')

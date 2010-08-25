@@ -25,16 +25,16 @@ class MainProgram(CommandBase):
         usage = '''usage: %prog [options] [vm-id]
 Without the parameter [vm-id] the command lists the available vms'''
 
-        parser = OptionParser(usage=usage)
-        parser.add_option('-c', '--config', dest='configFile', 
-                          help='configuration file', metavar='FILE',
-                          default='%s/conf/stratuslab.cfg' % modulePath)
+        self.parser.usage=usage
+        self.parser.add_option('-c', '--config', dest='configFile', 
+                               help='configuration file', metavar='FILE',
+                               default='%s/conf/stratuslab.cfg' % modulePath)
         
-        parser.add_option('-p', '--password', dest='password', 
-                          help='Cloud administrator password',
-                          default='')
+        self.parser.add_option('-p', '--password', dest='password', 
+                               help='Cloud administrator password',
+                               default='')
 
-        self.options, self.vmIds = parser.parse_args()
+        self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
         if not self.options.password:

@@ -25,16 +25,20 @@ class MainProgram(CommandBase):
         usage = '''usage: %prog [options] [node-id]
 Without the parameter [node-id] the command lists the available nodes'''
 
-        parser = OptionParser(usage=usage)
-        parser.add_option('-c', '--config', dest='configFile', 
-                          help='configuration file', metavar='FILE',
-                          default='%s/conf/stratuslab.cfg' % modulePath)
+        self.parser.usage = usage
+        self.parser.add_option('-c', '--config', dest='configFile', 
+                               help='configuration file', metavar='FILE',
+                               default='%s/conf/stratuslab.cfg' % modulePath)
         
-        parser.add_option('-p', '--password', dest='password', 
-                          help='Cloud administrator password',
-                          default='')
+        self.parser.add_option('-p', '--password', dest='password', 
+                               help='Cloud administrator password',
+                               default='')
 
-        self.options, self.nodes = parser.parse_args()
+        self.parser.add_option('-x', '--xml', dest='rawxml', 
+                               help='Retrieve raw xml',
+                               default='')
+
+        self.options, self.nodes = self.parser.parse_args()
 
     def checkOptions(self):
         if not self.options.password:
@@ -44,10 +48,10 @@ Without the parameter [node-id] the command lists the available nodes'''
         config = parseConfig(self.options.configFile)
         monitor = Monitor(self.options.__dict__, config)
         if self.nodes:
-            list = monitor.monitor(self.nodes)
+            list = monitor.nodeDetail(self.nodes)
             monitor.printDetails(list)
         else:
-            list = monitor.list()
+            list = monitor.listNodes()
             monitor.printList(list)
             
 if __name__ == '__main__':

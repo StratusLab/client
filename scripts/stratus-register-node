@@ -24,28 +24,28 @@ class MainProgram(CommandBase):
     def parse(self):
         usage = '''usage: %prog [options] node-ip ...'''
 
-        parser = OptionParser(usage=usage)
-        parser.add_option('-c', '--config', dest='configFile', 
-                          help='configuration file', metavar='FILE',
-                          default='%s/conf/stratuslab.cfg' % modulePath)
+        self.parser.usage = usage
+        self.parser.add_option('-c', '--config', dest='configFile', 
+                               help='configuration file', metavar='FILE',
+                               default='%s/conf/stratuslab.cfg' % modulePath)
         
-        parser.add_option('-r', '--remove', dest='deRegister', 
-                          help='de-register node', action='store_true',
-                          default=False)
+        self.parser.add_option('-r', '--remove', dest='deRegister', 
+                               help='de-register node', action='store_true',
+                               default=False)
 
-        parser.add_option('-p', '--password', dest='password', 
-                          help='Cloud administrator password',
-                          default='')
+        self.parser.add_option('-p', '--password', dest='password', 
+                               help='Cloud administrator password',
+                               default='')
 
         # ONE specific parameters
-        parser.add_option('--im', dest='infoDriver', 
-                          help='information driver', metavar='IM_NAME')
-        parser.add_option('--vmm', dest='virtDriver',
-                          help='virtualization driver', metavar='VM_NAME')
-        parser.add_option('--tm', dest='transfertDriver', 
-                          help='transfert driver', metavar='VM_NAME')
+        self.parser.add_option('--im', dest='infoDriver', 
+                               help='information driver', metavar='IM_NAME')
+        self.parser.add_option('--vmm', dest='virtDriver',
+                               help='virtualization driver', metavar='VM_NAME')
+        self.parser.add_option('--tm', dest='transfertDriver', 
+                               help='transfert driver', metavar='VM_NAME')
         
-        self.options, self.nodes = parser.parse_args()
+        self.options, self.nodes = self.parser.parse_args()
 
     def checkOptions(self):
         if not self.options.infoDriver:
