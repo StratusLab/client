@@ -1,9 +1,10 @@
-import sys
 import socket
+import sys
 from optparse import OptionParser
 
-from stratuslab.Util import printError
 from stratuslab.Exceptions import InputException
+from stratuslab.Util import printError
+from stratuslab.Util import runMethodByName
 
 class CommandBase(object):
     
@@ -23,7 +24,7 @@ class CommandBase(object):
         
         res = 0
         try:
-            res = self.runMethodByName(methodName, *args, **kw)
+            res = runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
             sys.stderr.writelines('\nError: %s\n' % str(ex))
             sys.exit(3)
@@ -38,9 +39,6 @@ class CommandBase(object):
         except Exception, ex:
             self.raiseOrDisplayError(ex)
         return res
-    
-    def runMethodByName(self, methodName, *args, **kw):
-        return self.__class__.__dict__[methodName](self, *args, **kw)
         
     def parse(self):
         pass

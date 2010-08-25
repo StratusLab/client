@@ -1,19 +1,19 @@
-import os.path
 import datetime
-import time
-import urllib2
-import unittest
 import inspect
+import os.path
+import time
+import unittest
+import urllib2
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.Monitor import Monitor
+from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Util import execute
+from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
 from stratuslab.Util import printError
-from stratuslab.Util import printStep
 from stratuslab.Util import sshCmd
-from stratuslab.Registrar import Registrar
-from stratuslab.Monitor import Monitor
 
 class Testor(unittest.TestCase):
     
@@ -140,16 +140,8 @@ class Testor(unittest.TestCase):
             printError('Failing to stop VM')
 
     def _generateTestSshKeyPair(self):
-        self._generateSshKeyPair(self.sshKey)
+        generateSshKeyPair(self.sshKey)
         execute('chown %s %s' % (self.config['one_username'], self.sshKey), shell=True)
-
-    def _generateSshKeyPair(self, key):
-        try:
-            os.remove(key)
-        except(OSError):
-            pass
-        sshCmd = 'ssh-keygen -f %s -N "" -q' % key
-        execute(sshCmd, shell=True)
 
     def applianceRepositoryTest(self):
         '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
