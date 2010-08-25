@@ -110,12 +110,12 @@ class OneConnector(object):
         return info
         
     def getVmState(self, vmId):
-        xml = etree.fromstring(self.getVmInfo(vmId, True))
+        xml = etree.fromstring(self.getVmInfo(vmId))
         status = xml.find('STATE')
         return int(status.text)
     
     def getVmIp(self, vmId):
-        xml = etree.fromstring(self.getVmInfo(vmId, True))
+        xml = etree.fromstring(self.getVmInfo(vmId))
         
         vmAddress = {}
         for nic in xml.findall('TEMPLATE/NIC'):
