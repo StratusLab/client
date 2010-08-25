@@ -24,12 +24,7 @@ class Testor(unittest.TestCase):
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
 
-        self.cloud = CloudConnectorFactory.getCloud()
-        self.cloud.setFrontend(self.config.get('frontend_ip'),
-                               self.config.get('one_port'))
-        self.cloud.setCredentials(self.config.get('one_username'),
-                                  self.config.get('one_password'))
-        
+        self._setCloud()        
         # Attributes initialization
         self.vmIps = {}
         self.vmId = None
@@ -38,7 +33,21 @@ class Testor(unittest.TestCase):
         self.repoUrl = 'http://%s/images/base/' % self.config.get('app_repo_url')
 
         self.testsToRun = []
-        
+    
+    def _setCloud(self):
+        self.cloud = CloudConnectorFactory.getCloud()
+
+        endpointEnv = 'STRATUSLAB_ENDPOINT'
+
+        if endpointEnv in os.environ:
+            self.cloud.setEndpoint(os.environ[endpointEnv])
+        else:
+            self.cloud.setFrontend(self.config.get('frontend_ip'),
+                                   self.config.get('one_port'))
+
+        self.cloud.setCredentials(self.config.get('one_username'),
+                                  self.config.get('one_password'))
+    
     def dummy(self):
         pass
 
@@ -74,14 +83,12 @@ class Testor(unittest.TestCase):
         return log
 
     def _startVm(self):
-        self._generateTestSshKeyPair()
+        generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
-        options['endpoint'] = 'http://%s:%s/RPC2' % (self.config['frontend_ip'],
-                                                     self.config['one_port'])
         
         image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.tar.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
@@ -139,10 +146,6 @@ class Testor(unittest.TestCase):
         if not vmStopped:
             printError('Failing to stop VM')
 
-    def _generateTestSshKeyPair(self):
-        generateSshKeyPair(self.sshKey)
-        execute('chown %s %s' % (self.config['one_username'], self.sshKey), shell=True)
-
     def applianceRepositoryTest(self):
         '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
         self._testRepoConnection()
@@ -177,7 +180,7 @@ class Testor(unittest.TestCase):
             raise Exception('Failed to upload dummy image')
 
         deleteCmd = baseCurlCmd + [ '-X', 'DELETE', '%s/%s' % (self.repoUrl, os.path.basename(dummyFile)), '-k', '-q']
-        execute(tuple(deleteCmd), stdout = devNull, stderr = devNull)
+        execute(deleteCmd, stdout = devNull, stderr = devNull)
 
     def _generateDummyImage(self, filename, size=2):
         devNull = open('/dev/null', 'w')
