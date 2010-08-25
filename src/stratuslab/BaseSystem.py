@@ -17,6 +17,7 @@ class BaseSystem(object):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
+        self.sshLog = open('/tmp/log-ssh', 'a')
         self.workOnFrontend()
         # TODO: Initialize attributes
         # TODO: Rename private methods to start with _
@@ -24,6 +25,7 @@ class BaseSystem(object):
     def __del__(self):
         self.stderr.close()
         self.stdout.close()
+        self.sshLog.close()
     
     # -------------------------------------------
     #     Packages manager and related
@@ -259,6 +261,8 @@ class BaseSystem(object):
     def _nodeShell(self, command, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
+
+        self.sshLog.write(command)
 
         if kwargs.has_key('stdout'):
             del kwargs['stdout']
