@@ -293,3 +293,12 @@ def randomString(length=10):
 
 def runMethodByName(obj, methodName, *args, **kw):
     return obj.__class__.__dict__[methodName](obj, *args, **kw)
+
+def generateSshKeyPair(keyFilename):
+    try:
+        os.remove(keyFilename)
+        os.remove(keyFilename + '.pub')
+    except(OSError):
+        pass
+    sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
+    execute(sshCmd, shell=True)

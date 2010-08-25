@@ -3,6 +3,7 @@ from datetime import datetime
 
 from stratuslab.Runner import Runner
 from stratuslab.Util import assignAttributes
+from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import getSystemMethods
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
@@ -13,8 +14,7 @@ from stratuslab.Util import sshCmd
 from stratuslab.Util import waitUntilPingOrTimeout
 
 class Creator(object):
-    def __init__(self, image, options, config):
-        self.config = config
+    def __init__(self, image, options):
         self.image = image
         self.options = Runner.defaultRunOptions()
         self.options.update(options)
@@ -23,6 +23,9 @@ class Creator(object):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
+
+        self.sshKey = '/tmp/%s' % randomString()
+        generateSshKeyPair(self.sshKey)
 
         self.runner = None
         self.vmIps = None
@@ -33,28 +36,10 @@ class Creator(object):
         self.stdout.close()
 
     def _buildRunner(self):
-        self.sshKey = '/tmp/%s' % randomString()
         self.options['saveDisk'] = True
 
         self.runner = Runner(self.image, self.options)
-        self.runner.creator_context = '%s\n'.join(self._buildRunnerContext())
-        self.runner.creator_key = self.sshKey
-
-    def _buildRunnerContext(self):
-        context = {}
-        context['stratuslab_ssh_key'] = self.sshKey
-
-        createImgOpt = [
-            self.uploadProtocol,
-            self.repoAddress,
-            self.archiveFormat,
-            self.repoUsername,
-            self.repoPassword,
-            str(self.forceUpload),
-        ]
-        context['stratuslab_create_image'] = ' '.join(createImgOpt)
-
-        return ['%s = "%s",' % (key, value) for key, value in context.items()]
+        # TODO: Extrat context
 
     def _startMachine(self):
         try:

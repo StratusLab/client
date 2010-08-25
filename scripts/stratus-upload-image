@@ -26,6 +26,9 @@ class MainProgram(CommandBase):
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
+        
         checkUploadOptions(self.options, self.parser)
 
         if len(self.args) != 1:
@@ -43,9 +46,6 @@ class MainProgram(CommandBase):
             self.parser.error('Appliance does not exist')
 
     def doWork(self):
-        if self.options.listCompressionFormat:
-            Uploader.availableCompressionFormat(True)
-        
         uploader = Uploader(self.manifest, self.options.__dict__)
         uploader.start()
         

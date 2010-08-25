@@ -3,7 +3,6 @@
 import os
 import sys
 
-
 sys.path.append('/usr/lib/stratuslab')
 sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
@@ -12,7 +11,6 @@ from stratuslab.UploadParser import checkUploadOptions
 from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
-from stratuslab.Util import parseConfig
 
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
@@ -33,8 +31,11 @@ class MainProgram(Runnable):
                 help='revision number of the image', metavar='VERSION',
                 default="1.0")
         self.parser.add_option('--ip', dest='interface',
-                help='interface to use to connect to the machine (%s)' % ', '.join(self.availableInterface()),
+                help='interface to use to connect to the machine. By default the public one.',
                 default="public")
+        self.parser.add_option('--list-interface', dest='listInterface',
+                help='list available machine interface',
+                default=False, action='store_true')
         buildUploadParser(self.parser)
         super(MainProgram, self).parse()
 
@@ -43,20 +44,26 @@ class MainProgram(Runnable):
     def availableInterface(self):
         return ['public', 'private', 'extra']
 
+    def listInterface(self):
+        print 'Available network interface: %s' % ', '.join(self.availableInterface())
+        print ('\nNote that the extra interface refere to the network specified '
+              'with the --nic option')
+        sys.exit(0)
+
     def checkOptions(self):
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
+        if self.options.listInterface:
+            self.listInterface()
+
         super(MainProgram, self).checkOptions()
+        checkUploadOptions(self.options, self.parser)
 
         if self.options.interface not in self.availableInterface():
             self.parser.error('Wrong network interface. Available: %s' % ', '.join(self.availableInterface()))
 
-    def doWork(self):
-        if self.options.listCompressionFormat:
-            Uploader.availableCompressionFormat(True)
-
-        config = parseConfig(self.options.configFile)
-        checkUploadOptions(self.options, config, self.parser)
-        
-        self.creator = Creator(self.image, self.options.__dict__, config)
+    def doWork(self):        
+        self.creator = Creator(self.image, self.options.__dict__)
         self.creator.create()
         
 
