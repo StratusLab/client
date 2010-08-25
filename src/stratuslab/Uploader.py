@@ -14,6 +14,7 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import wget
+from stratuslab.Exceptions import InputException
 
 try:
     from lxml import etree
@@ -148,11 +149,11 @@ class Uploader(object):
         status = 0
         try:
             opener.open('%s/%s' % (self.repoAddress, filename))
-        except Exception, e:
-            status = e.getcode()
+        except urllib2.HTTPError, e:
+            status = e.code
 
         if status != 404 and not self.forceUpload:
-            printError('An appliance already exist at this URL.\n'
+            raise InputException('An appliance already exist at this URL.\n'
                        'Change the appliance version of force upload with '
                        '-f --force option')
 

@@ -10,6 +10,7 @@ from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
+from stratuslab.Exceptions import NetworkException
 from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
@@ -31,10 +32,10 @@ class Testor(unittest.TestCase):
         self.vmId = None
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
-        self.repoUrl = 'http://%s/images/base/' % self.config.get('app_repo_url')
+        self.repoUrl = self.config.get('app_repo_url')
 
         self.testsToRun = []
-    
+
     def _setCloud(self):
         self.cloud = CloudConnectorFactory.getCloud()
 
@@ -155,8 +156,8 @@ class Testor(unittest.TestCase):
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
         passwordMgr.add_password(None, self.repoUrl,
-                                 self.config.get('app_repo_username'),
-                                 self.config.get('app_repo_password'))
+                                 self.config['app_repo_username'],
+                                 self.config['app_repo_password'])
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
@@ -164,14 +165,20 @@ class Testor(unittest.TestCase):
         try:
             opener.open(self.repoUrl)
         except RuntimeError:
-            raise Exception('Authentication to appliance repository failed')
+            raise NetworkException('Authentication to appliance repository failed')
 
     def _uploadAndDeleteDummyImage(self):
         dummyFile = '/tmp/stratus-dummy.img'
         self._generateDummyImage(dummyFile)
 
-        uploader = Uploader(None, self.options)
-        uploader.uploadFile(dummyFile, os.path.basename(dummyFile))
+        manifest = ''
+        options = self.options.copy()
+        options['repoUsername'] = self.config['app_repo_username']
+        options['repoPassword'] = self.config['app_repo_password']
+        options['repoAddress'] = self.config['app_repo_url']
+        options['uploadOption'] = ''
+        uploader = Uploader(manifest, options)
+        uploader.uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
         uploader.deleteFile(uploader.uploadedFile[-1])
 
     def _openDevNull(self):
