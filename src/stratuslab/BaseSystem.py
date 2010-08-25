@@ -260,7 +260,8 @@ class BaseSystem(object):
         if type(command) == type(list()):
             command = ' '.join(command)
 
-        return sshCmd(command, self.nodeAddr, self.nodePrivateKey, **kwargs)
+        return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
+                      stdout=self.stdout, stderr=self.stderr, **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
         return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey, **kwargs)
