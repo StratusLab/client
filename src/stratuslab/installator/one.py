@@ -2,7 +2,6 @@ import os
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
-from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import printError

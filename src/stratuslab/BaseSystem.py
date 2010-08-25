@@ -1,13 +1,14 @@
-from stratuslab.Util import execute
 import os
+import os.path
 import shutil
-import subprocess
 from datetime import datetime
 
 from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
+from stratuslab.Util import execute
 from stratuslab.Util import fileAppendContent
+from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
 
 class BaseSystem(object):
@@ -241,7 +242,13 @@ class BaseSystem(object):
     def _createDirs(self, path):
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
-    
+
+    def _copy(self, src, dst):
+        if os.path.isfile(src):
+            return shutil.copytree
+        else:
+            return shutil.copy
+
     # -------------------------------------------
     #     Node related methods
     # -------------------------------------------
@@ -321,7 +328,7 @@ class BaseSystem(object):
         self.filePutContentsCmd = filePutContent
         self.fileAppendContentsCmd = fileAppendContent
         self.chmodCmd = os.chmod
-        self.copyCmd = shutil.copytree
+        self.copyCmd = self._copy
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
