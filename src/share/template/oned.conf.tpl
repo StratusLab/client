@@ -66,6 +66,28 @@ NETWORK_SIZE = %(network_size)s
 MAC_PREFIX   = %(mac_prefix)s
 
 #*******************************************************************************
+# Image Repository Configuration
+#*******************************************************************************
+#  IMAGE_REPOSITORY_PATH: Define the path to the image repository, by default
+#  is set to $ONE_LOCATION/var
+#
+#  DEFAULT_IMAGE_TYPE: This can take values
+#       OS        Image file holding an operating system
+#       CDROM     Image file holding a CDROM
+#       DATABLOCK Image file holding a datablock,
+#                 always created as an empty block
+#  DEFAULT_DEVICE_PREFIX: This can be set to
+#       hd        IDE prefix
+#       sd        SCSI
+#       xvd       XEN Virtual Disk
+#       vd        KVM virtual disk
+#*******************************************************************************
+
+#IMAGE_REPOSITORY_PATH = /srv/cloud/var/images
+DEFAULT_IMAGE_TYPE    = "OS"
+DEFAULT_DEVICE_PREFIX = "hd"
+
+#*******************************************************************************
 # Information Driver Configuration
 #*******************************************************************************
 # You can add more information managers with different configurations but make
@@ -252,15 +274,26 @@ HM_MAD = [
     executable = "one_hm" ]
 
 VM_HOOK = [
-    name      = "keygen",
-    on        = "create",
-    command   = "%(one_home)s/share/hooks/keygen.sh",
-    arguments = "$CONTEXT[STRATUSLAB_SSH_KEY]",
-    remote    = "yes" ]
-
-VM_HOOK = [
     name      = "upload",
     on        = "shutdown",
     command   = "%(one_home)s/share/hooks/upload",
     arguments = "%(vm_dir)s/$VMID/images/disk.0 $NIC[network=\"private\"] $CONTEXT[STRATUSLAB_SSH_KEY] $CONTEXT[STRATUSLAB_CREATE_IMAGE]",
     remote    = "yes" ]
+
+#*******************************************************************************
+# Auth Manager Configuration
+#*******************************************************************************
+# The Driver (AUTHM_MAD) that will be used to authenticate and authorize
+# OpenNebula requests. If not defined OpenNebula will use the built-in auth
+# policies
+#   executable: path of the auth driver executable, can be an
+#               absolute path or relative to $ONE_LOCATION/lib/mads (or
+#               /usr/lib/one/mads/ if OpenNebula was installed in /)
+#
+#   arguments : for the driver executable, can be an absolute path or relative
+#               to $ONE_LOCATION/etc (or /etc/one/ if OpenNebula was installed
+#               in /)
+#-------------------------------------------------------------------------------
+
+#AUTH_MAD = [
+#    executable = "one_auth_mad" ]
