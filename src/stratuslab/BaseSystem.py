@@ -190,8 +190,9 @@ class BaseSystem(object):
     def configureSshServer(self):
         pass
 
-    def configureSshClient(self):
-        pass
+    def configureSshClient(self, sharedDir):
+        self.createDirsCmd(sharedDir)
+        self.setOwnerCmd(sharedDir)
 
     # -------------------------------------------
     #     Hypervisor configuration

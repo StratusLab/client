@@ -210,7 +210,7 @@ class OneInstallator(BaseInstallator):
         if self.shareType == 'nfs':
             self._configureNfsClient()
         elif self.shareType == 'ssh':
-            self.frontend.configureSshClient()
+            self.node.configureSshClient(self.config.get('vm_dir'))
     
     # ---- NFS configuration   
          
