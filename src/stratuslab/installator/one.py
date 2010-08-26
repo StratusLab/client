@@ -158,6 +158,7 @@ class OneInstallator(BaseInstallator):
         self.frontend.setOwnerCmd(hooksDir)
         
         for file in os.listdir(hooksDir):
+            self.frontend.setOwnerCmd('%s/%s' % (hooksDir, file))
             self.frontend.chmodCmd('%s/%s' % (hooksDir, file), 755)
 
     # -------------------------------------------
