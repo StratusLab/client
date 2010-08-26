@@ -91,17 +91,20 @@ class Creator(object):
     def _createImageManifest(self):
         separatorChar = '%'
         imageDefinition = [self.imageName, self.imageVersion, self.username, self.vmManifestPath]
+        scriptPathOnVm = '/tmp/%s' % os.path.basename(self.packageInstallScript)
 
-        scp(self.manifestCreationScript, 'root@%s:' % self.vmAddress, self.sshKey,
-            stderr=self.stderr, stdout=self.stdout)
+        scp(self.manifestCreationScript, 'root@%s:%s' % (self.vmAddress,
+                                                         os.path.basename(scriptPathOnVm)),
+            self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-        ret = sshCmd('bash %s %s %s' % (os.path.basename(self.packageInstallScript),
-                                        separatorChar,
-                                        separatorChar.join(imageDefinition)),
+        ret = sshCmd('bash %s %s %s' % (scriptPathOnVm, separatorChar, separatorChar.join(imageDefinition)),
                      self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
+        sshCmd('rm -rf %s' % scriptPathOnVm, self.vmAddress, self.sshKey,
+               stderr=self.stderr, stdout=self.stdout)
+
         if ret != 0:
-            printError('An error occured while installing packages')
+            printError('An error occured while creating image manifest')
 
     def _installPackages(self):
         if len(self.packages) == 0:

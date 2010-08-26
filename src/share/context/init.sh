@@ -21,3 +21,6 @@ mkdir -p /root/.ssh
 echo "$PUBLIC_KEY" >> /root/.ssh/authorized_keys
 chmod -R 600 /root/.ssh/
 
+if [ -n "$STRATUSLAB_REMOTE_KEY" ]; then
+    echo "$STRATUSLAB_REMOTE_KEY" >> /root/.ssh/authorized_keys
+fi
