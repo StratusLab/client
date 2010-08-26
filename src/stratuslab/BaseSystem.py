@@ -315,7 +315,7 @@ class BaseSystem(object):
         self.setOwnerCmd(filename)
 
     def _remoteChmod(self, path, mode):
-        return self._nodeShell('chmod %s %s' % (mode, path))
+        return self._nodeShell('chmod %o %s' % (mode, path))
         
     # -------------------------------------------
     #     General

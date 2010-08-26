@@ -159,7 +159,7 @@ class OneInstallator(BaseInstallator):
         
         for file in os.listdir(hooksDir):
             self.frontend.setOwnerCmd('%s/%s' % (hooksDir, file))
-            self.frontend.chmodCmd('%s/%s' % (hooksDir, file), 755)
+            self.frontend.chmodCmd('%s/%s' % (hooksDir, file), 0755)
 
     # -------------------------------------------
     #   Front-end file sharing management
