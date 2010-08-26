@@ -59,7 +59,7 @@ class Creator(object):
     def _addCreationContext(self):
         context = [
             'stratuslab_remote_key=%s' % fileGetContent(self.sshKey + '.pub'),
-            'stratuslab_internal_key=/tmp/%s' % randomString(),
+            'stratuslab_internal_key=%s' % randomString(),
             'stratuslab_manifest=%s' % self.vmManifestPath,
             'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
         ]
