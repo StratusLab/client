@@ -24,7 +24,6 @@ class AppRepo(object):
         self.ldapUrl = options.ldapUrl
         self.imageDir = options.imageDir
         self.apacheHome = options.apacheHome
-        self.webRoot = options.webRoot
         self.passwdFile = options.passwdFile
         self.repo_structure = options.repo_structure
         self.repo_filename = options.repo_filename        

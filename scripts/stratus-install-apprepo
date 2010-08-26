@@ -48,8 +48,6 @@ class MainProgram(CommandBase):
                 help='Password to use when connecting to the LDAP server', default=None)
         self.parser.add_option('--apache-home', dest='apacheHome', metavar='PATH',
                 help='Location of Apache configuration', default='/etc/httpd')    
-        self.parser.add_option('--web-root', dest='webRoot', metavar='PATH',
-                help='Root of Apache web server', default='/var/www/html')
         self.parser.add_option('--passwd', dest='passwdFile',
                 help='User password file', metavar='FILE',
                 default=None)            
