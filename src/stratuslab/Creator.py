@@ -88,19 +88,20 @@ class Creator(object):
         if not vmStarted:
             printError('Failed to start VM!')
 
+    # TODO: Create a generic method to run script on the VM
+
     def _createImageManifest(self):
         separatorChar = '%'
         imageDefinition = [self.imageName, self.imageVersion, self.username, self.vmManifestPath]
-        scriptPathOnVm = '/tmp/%s' % os.path.basename(self.packageInstallScript)
+        scriptOnVm = '/tmp/create-manifest.sh'
 
-        scp(self.manifestCreationScript, 'root@%s:%s' % (self.vmAddress,
-                                                         os.path.basename(scriptPathOnVm)),
+        scp(self.manifestCreationScript, 'root@%s:%s' % (self.vmAddress, scriptOnVm),
             self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-        ret = sshCmd('bash %s %s %s' % (scriptPathOnVm, separatorChar, separatorChar.join(imageDefinition)),
+        ret = sshCmd('bash %s %s %s' % (scriptOnVm, separatorChar, separatorChar.join(imageDefinition)),
                      self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-        sshCmd('rm -rf %s' % scriptPathOnVm, self.vmAddress, self.sshKey,
+        sshCmd('rm -rf %s' % scriptOnVm, self.vmAddress, self.sshKey,
                stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
@@ -110,11 +111,16 @@ class Creator(object):
         if len(self.packages) == 0:
             return
 
-        scp(self.packageInstallScript, 'root@%s:' % self.vmAddress, self.sshKey,
-            stderr=self.stderr, stdout=self.stdout)
+        scriptOnVm = '/tmp/install-pkg.sh'
+
+        scp(self.packageInstallScript, 'root@%s:%s' % (self.vmAddress, scriptOnVm),
+            self.sshKey, stderr=self.stderr, stdout=self.stdout)
         
-        ret = sshCmd('bash %s %s' % (os.path.basename(self.packageInstallScript), self.packages),
-                     self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
+        ret = sshCmd('bash %s %s' % (scriptOnVm, self.packages), self.vmAddress,
+                     self.sshKey, stderr=self.stderr, stdout=self.stdout)
+
+        sshCmd('rm -rf %s' % scriptOnVm, self.vmAddress, self.sshKey,
+               stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
             printError('An error occured while installing packages')
@@ -124,12 +130,14 @@ class Creator(object):
             return
 
         for script in self.scripts.split(' '):
-            scp(script, 'root@%s:' % self.vmAddress, self.sshKey, 
-                stderr=self.stderr, stdout=self.stdout)
+            scriptPath = '/tmp/%s' % os.path.basename(script)
+            scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
+                self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-            ret = sshCmd('bash %s' % script, self.vmAddress, self.sshKey,
+            ret = sshCmd('bash %s' % scriptPath, self.vmAddress, self.sshKey,
                          stderr=self.stderr, stdout=self.stdout)
-            sshCmd('rm -fr %s' % script, self.vmAddress, self.sshKey)
+
+            sshCmd('rm -fr %s' % scriptPath, self.vmAddress, self.sshKey)
 
             if ret != 0:
                 printError('An error occured while executing script %s' % script)
