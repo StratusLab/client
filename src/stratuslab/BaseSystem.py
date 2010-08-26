@@ -1,5 +1,4 @@
 import os
-import os.path
 import shutil
 from datetime import datetime
 
@@ -17,7 +16,6 @@ class BaseSystem(object):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
-        self.sshLog = open('/tmp/log-ssh', 'a')
         self.workOnFrontend()
         # TODO: Initialize attributes
         # TODO: Rename private methods to start with _
@@ -25,7 +23,6 @@ class BaseSystem(object):
     def __del__(self):
         self.stderr.close()
         self.stdout.close()
-        self.sshLog.close()
     
     # -------------------------------------------
     #     Packages manager and related
@@ -269,8 +266,6 @@ class BaseSystem(object):
 
         if type(command) == type(list()):
             command = ' '.join(command)
-
-        self.sshLog.write(command + '\n')
 
         return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
                       stdout=stdout, stderr=stderr, **kwargs)

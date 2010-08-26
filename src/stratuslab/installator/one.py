@@ -155,6 +155,10 @@ class OneInstallator(BaseInstallator):
         if os.path.isdir(hooksDir):
             shutil.rmtree(hooksDir)
         self.frontend.copyCmd('%s/share/hooks' % modulePath, hooksDir)
+        self.frontend.setOwnerCmd(hooksDir)
+        
+        for file in os.listdir(hooksDir):
+            self.frontend.chmodCmd('%s/%s' % (hooksDir, file), '0755')
 
     # -------------------------------------------
     #   Front-end file sharing management
