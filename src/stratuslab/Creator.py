@@ -1,4 +1,5 @@
-import os.path
+import base64
+import os
 import pickle
 from datetime import datetime
 
@@ -74,7 +75,7 @@ class Creator(object):
         for elem in uploadInfoElem:
             uploadInfoDict[elem] = getattr(self, elem, '')
 
-        return pickle.dumps(uploadInfoDict)
+        return base64.urlsafe_b64encode(pickle.dumps(uploadInfoDict))
 
     def _startMachine(self):
         try:
