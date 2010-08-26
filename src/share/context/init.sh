@@ -7,14 +7,16 @@ ifconfig eth0 ${IP_PRIVATE}${NETMASK_PRIVATE}
 
 route add -net ${GLOBAL_NETWORK}/${GLOBAL_NETMASK} dev eth0
 
-route add default gw ${DEFAULT_GATEWAY}
+route add default gw ${DEFAULT_GATEWAY} dev eth0
 
 if [ -n "$IP_PUBLIC" ]; then
     ifconfig eth1 ${IP_PUBLIC}${NETMASK_PUBLIC}
+    route add default gw ${DEFAULT_GATEWAY} dev eth1
 fi
 
 if [ -n "$IP_EXTRA" ]; then
     ifconfig eth2 ${IP_EXTRA}${NETMASK_EXTRA}
+    route add default gw ${DEFAULT_GATEWAY} dev eth2
 fi
 
 mkdir -p /root/.ssh
@@ -24,3 +26,7 @@ chmod -R 600 /root/.ssh/
 if [ -n "$STRATUSLAB_REMOTE_KEY" ]; then
     echo "$STRATUSLAB_REMOTE_KEY" >> /root/.ssh/authorized_keys
 fi
+
+# You should change this
+echo "nameserver 194.177.210.10" > /etc/resolv.conf
+echo "nameserver 194.177.210.210" >> /etc/resolv.conf

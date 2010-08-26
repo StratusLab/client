@@ -4,9 +4,9 @@ ARGS="$*"
 [ "x$ARGS" = "x" ] && exit 1 
 
 SEPARATOR="$1"
-IMAGE_TYPE="`echo "$ARGS" | cut -d $SEPARATOR -f2`"
-IMAGE_VERSION="`echo "$ARGS" | cut -d $SEPARATOR -f3`"
-USER="`echo "$ARGS" | cut -d $SEPARATOR -f4`"
+IMAGE_TYPE="`echo "$ARGS" | cut -d $SEPARATOR -f2 | sed 's/^[ \t]*//'`"
+IMAGE_VERSION="`echo "$ARGS" | cut -d $SEPARATOR -f3 | sed 's/^[ \t]*//'`"
+USER="`echo "$ARGS" | cut -d $SEPARATOR -f4 | sed 's/^[ \t]*//'`"
 MANIFEST_LOCATION="`echo "$ARGS" | cut -d $SEPARATOR -f5`"
 CURRENT_TIME=`date --utc --rfc-2822`
 
