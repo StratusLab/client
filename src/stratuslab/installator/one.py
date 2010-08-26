@@ -1,3 +1,4 @@
+import os.path
 import os
 import shutil
 
@@ -33,11 +34,14 @@ class OneInstallator(BaseInstallator):
     def configureCloudAdminNode(self):
         self.configureNodeNetwork()
         self.node.configureCloudAdminSshKeysNode()
+        self._copyCloudHooks(self.node)
+
 
     def configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminEnv(self.config.get('one_port'))
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
+        self._copyCloudHooks(self.frontend)
 
         if self.config.get('vm_dir') != '':
             self.frontend.createDirsCmd(self.config.get('vm_dir'))
@@ -57,7 +61,6 @@ class OneInstallator(BaseInstallator):
         self.frontend.installCloudSystem()
         self._copyContextualizationScript()
         self._createContextConfigurationScript()
-        self._copyCloudHooks()
         
     # -------------------------------------------
     #    Cloud configuration management
@@ -150,16 +153,18 @@ class OneInstallator(BaseInstallator):
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
         self.frontend.setOwnerCmd(scriptPath)
 
-    def _copyCloudHooks(self):
+    def _copyCloudHooks(self, system):
         hooksDir = '%s/share/hooks' % self.config.get('one_home')
         if os.path.isdir(hooksDir):
-            shutil.rmtree(hooksDir)
-        self.frontend.copyCmd('%s/share/hooks' % modulePath, hooksDir)
-        self.frontend.setOwnerCmd(hooksDir)
+            system.removeCmd(hooksDir)
+
+        system.createDirsCmd(os.path.basename(hooksDir))
+        system.copyCmd('%s/share/hooks' % modulePath, hooksDir)
+        system.setOwnerCmd(hooksDir)
         
         for file in os.listdir(hooksDir):
-            self.frontend.setOwnerCmd('%s/%s' % (hooksDir, file))
-            self.frontend.chmodCmd('%s/%s' % (hooksDir, file), 0755)
+            system.setOwnerCmd('%s/%s' % (hooksDir, file))
+            system.chmodCmd('%s/%s' % (hooksDir, file), 0755)
 
     # -------------------------------------------
     #   Front-end file sharing management
