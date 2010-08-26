@@ -66,7 +66,6 @@ class Testor(unittest.TestCase):
         pass
 
     def runTests(self):
-        
         suite = unittest.TestSuite()
         tests = []
         if self.testNames:  

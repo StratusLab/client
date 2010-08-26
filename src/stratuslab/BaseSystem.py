@@ -1,5 +1,4 @@
 import os
-import os.path
 import shutil
 from datetime import datetime
 
@@ -159,7 +158,7 @@ class BaseSystem(object):
         oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
                                        oneKeyPub)
-        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, '0600')
+        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, 0600)
         self._configureCloudAdminSsh()
 
     def configureCloudAdminAccount(self):
@@ -245,9 +244,9 @@ class BaseSystem(object):
 
     def _copy(self, src, dst):
         if os.path.isfile(src):
-            return shutil.copytree
+            shutil.copy(src, dst)
         else:
-            return shutil.copy
+            shutil.copytree(src, dst)
 
     # -------------------------------------------
     #     Node related methods
@@ -257,13 +256,31 @@ class BaseSystem(object):
         pass
     
     def _nodeShell(self, command, **kwargs):
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+
         if type(command) == type(list()):
             command = ' '.join(command)
 
-        return sshCmd(command, self.nodeAddr, self.nodePrivateKey, **kwargs)
+        return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
+                      stdout=stdout, stderr=stderr, **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
-        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey, **kwargs)
+        stdout = kwargs.get('stdout', self.stdout)
+        stderr = kwargs.get('stderr', self.stderr)
+
+        if kwargs.has_key('stdout'):
+            del kwargs['stdout']
+        if kwargs.has_key('stderr'):
+            del kwargs['stderr']
+
+        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey,
+                   stdout=stdout, stderr=stderr, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
@@ -298,7 +315,7 @@ class BaseSystem(object):
         self.setOwnerCmd(filename)
 
     def _remoteChmod(self, path, mode):
-        return self._nodeShell('chmod %s %s' % (mode, path))
+        return self._nodeShell('chmod %o %s' % (mode, path))
         
     # -------------------------------------------
     #     General

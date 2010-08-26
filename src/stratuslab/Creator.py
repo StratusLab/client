@@ -41,7 +41,8 @@ class Creator(object):
         self.manifestCreationScript = '%s/share/creation/create-manifest.sh' % modulePath
 
         self.runner = None
-        self.vmIps = None
+        self.vmIps = {}
+        self.vmIds = []
         self.vmId = None
 
     def __del__(self):
@@ -77,12 +78,15 @@ class Creator(object):
 
     def _startMachine(self):
         try:
-            self.runner.runInstance()
+            self.vmIds = self.runner.runInstance()
+            self.vmIps = self.runner.vmIps
         except Exception, msg:
             printError('An error occured while starting machine: \n\t%s' % msg)
-            
-        if not self.cloud.waitUntilVmRunningOrTimeout(self.runner.vmId, 600):
-            printError('Unable to boot VM')
+
+        self.vmId = self.vmIds[0]
+        vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId)
+        if not vmStarted:
+            printError('Failed to start VM!')
 
     def _createImageManifest(self):
         separatorChar = '%'
@@ -136,7 +140,7 @@ class Creator(object):
         self._startMachine()
 
         printStep('Waiting for network interface to be up')
-        self.vmAddress = self.vmIps(self.vmId).get(self.interface)
+        self.vmAddress = dict(self.vmIps).get(self.interface)
         
         if not waitUntilPingOrTimeout(self.vmAddress, 600):
             self.cloud.vmStop(self.vmId)

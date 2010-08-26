@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
@@ -150,8 +151,15 @@ class OneInstallator(BaseInstallator):
         self.frontend.setOwnerCmd(scriptPath)
 
     def _copyCloudHooks(self):
-        self.frontend.copyCmd('%s/share/hooks' % modulePath,
-                              '%s/share' % self.config.get('one_home'))
+        hooksDir = '%s/share/hooks' % self.config.get('one_home')
+        if os.path.isdir(hooksDir):
+            shutil.rmtree(hooksDir)
+        self.frontend.copyCmd('%s/share/hooks' % modulePath, hooksDir)
+        self.frontend.setOwnerCmd(hooksDir)
+        
+        for file in os.listdir(hooksDir):
+            self.frontend.setOwnerCmd('%s/%s' % (hooksDir, file))
+            self.frontend.chmodCmd('%s/%s' % (hooksDir, file), 0755)
 
     # -------------------------------------------
     #   Front-end file sharing management
