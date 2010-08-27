@@ -8,6 +8,8 @@ share_type = nfs
 ;share_type = ssh
 debug_level = 3
 mac_prefix = 02:00
+stratuslab_location =
+; stratuslab_location = /tmp/stratuslab-remote-install
 
 ;
 ; NFS share

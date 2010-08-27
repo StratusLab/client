@@ -275,8 +275,8 @@ def isValidIpV6(ip):
 def unifyNetsize(netsize):
     classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
 
-    for _, mask in classes.items():
-        if netsize == str(mask):
+    for letter, mask in classes.items():
+        if netsize == letter:
             return mask
         
     return netsize
