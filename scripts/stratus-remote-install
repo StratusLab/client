@@ -117,7 +117,7 @@ class StratusSimpleRun(object):
                 # hack to make a real copy of the var
                 currentCmd = baseConfigCmd[:]
                 currentCmd.append(item.split(':')[0])
-                currentCmd.append((' '.join(item.split(':')[1:])).replace(',',' '))
+                currentCmd.append((' '.join(item.split(':')[1:])).replace('%',' '))
                 self.sshCmd(currentCmd)
         else:
             self.sshCmd(baseConfigCmd)
