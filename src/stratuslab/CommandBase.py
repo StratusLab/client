@@ -14,7 +14,7 @@ class CommandBase(object):
         self.parser = None
         self._setParserAndParse()
         self.checkOptions()
-        self._callAndHandleErrorsForCommands(self, self.doWork.__name__)
+        self._callAndHandleErrors(self, self.doWork.__name__)
 
     def _setParserAndParse(self):
         self.parser = OptionParser()
@@ -24,7 +24,7 @@ class CommandBase(object):
         self.parse()
         self.verboseLevel = self.options.verboseLevel
         
-    def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
+    def _callAndHandleErrors(self, methodName, *args, **kw):
         
         res = 0
         try:
