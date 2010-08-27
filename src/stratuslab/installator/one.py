@@ -1,6 +1,4 @@
-import os.path
 import os
-import shutil
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
@@ -150,6 +148,11 @@ class OneInstallator(BaseInstallator):
         configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
                         'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
                         'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
+
+        if self.config.get('one_public_network_mask'):
+            configScript.append('NETMASK_PUBLIC="%s"' % self.config.get('one_public_network_mask'))
+        if self.config.get('one_private_network_mask'):
+            configScript.append('NETMASK_PRIVATE="%s"' % self.config.get('one_private_network_mask'))
                         
         self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))

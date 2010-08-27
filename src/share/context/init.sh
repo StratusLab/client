@@ -27,6 +27,6 @@ if [ -n "$STRATUSLAB_REMOTE_KEY" ]; then
     echo "$STRATUSLAB_REMOTE_KEY" >> /root/.ssh/authorized_keys
 fi
 
-# You should change this
-echo "nameserver 194.177.210.10" > /etc/resolv.conf
-echo "nameserver 194.177.210.210" >> /etc/resolv.conf
+# OpenDNS server
+echo "nameserver 208.67.222.222" > /etc/resolv.conf
+echo "nameserver 208.67.220.220" >> /etc/resolv.conf
