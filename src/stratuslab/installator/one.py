@@ -157,7 +157,7 @@ class OneInstallator(BaseInstallator):
 
     def _copyCloudHooks(self, system):
         hooksDir = '%s/share/hooks' % self.config.get('one_home')
-        system.createDirsCmd(os.path.basename(hooksDir))
+        system.createDirsCmd(hooksDir)
         system.setOwnerCmd(hooksDir)
         
         for file in os.listdir(hooksDir):
