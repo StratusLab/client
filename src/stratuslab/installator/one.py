@@ -1,5 +1,4 @@
 import os
-import shutil
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
@@ -33,11 +32,14 @@ class OneInstallator(BaseInstallator):
     def configureCloudAdminNode(self):
         self.configureNodeNetwork()
         self.node.configureCloudAdminSshKeysNode()
+        self._copyCloudHooks(self.node)
+
 
     def configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminEnv(self.config.get('one_port'))
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
+        self._copyCloudHooks(self.frontend)
 
         if self.config.get('vm_dir') != '':
             self.frontend.createDirsCmd(self.config.get('vm_dir'))
@@ -57,7 +59,6 @@ class OneInstallator(BaseInstallator):
         self.frontend.installCloudSystem()
         self._copyContextualizationScript()
         self._createContextConfigurationScript()
-        self._copyCloudHooks()
         
     # -------------------------------------------
     #    Cloud configuration management
@@ -137,7 +138,9 @@ class OneInstallator(BaseInstallator):
 
     def _copyContextualizationScript(self):
         self.frontend.createDirsCmd(os.path.dirname(self.config.get('context_script')))
+        self.frontend.setOwnerCmd(os.path.dirname(self.config.get('context_script')))
         self.frontend.copyCmd('%s/share/context/init.sh' % modulePath, self.config.get('context_script'))
+        self.frontend.setOwnerCmd(self.config.get('context_script'))
 
     def _createContextConfigurationScript(self):
         oneHome = self.config.get('one_home')
@@ -145,16 +148,25 @@ class OneInstallator(BaseInstallator):
         configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
                         'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
                         'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
+
+        if self.config.get('one_public_network_mask'):
+            configScript.append('NETMASK_PUBLIC="%s"' % self.config.get('one_public_network_mask'))
+        if self.config.get('one_private_network_mask'):
+            configScript.append('NETMASK_PRIVATE="%s"' % self.config.get('one_private_network_mask'))
                         
         self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
         self.frontend.setOwnerCmd(scriptPath)
 
-    def _copyCloudHooks(self):
+    def _copyCloudHooks(self, system):
         hooksDir = '%s/share/hooks' % self.config.get('one_home')
-        if os.path.isdir(hooksDir):
-            shutil.rmtree(hooksDir)
-        self.frontend.copyCmd('%s/share/hooks' % modulePath, hooksDir)
+        system.createDirsCmd(hooksDir)
+        system.setOwnerCmd(hooksDir)
+        
+        for file in os.listdir(hooksDir):
+            system.copyCmd('%s/share/hooks/%s' % (modulePath, file), hooksDir)
+            system.setOwnerCmd('%s/%s' % (hooksDir, file))
+            system.chmodCmd('%s/%s' % (hooksDir, file), 0755)
 
     # -------------------------------------------
     #   Front-end file sharing management
@@ -205,7 +217,7 @@ class OneInstallator(BaseInstallator):
         if self.shareType == 'nfs':
             self._configureNfsClient()
         elif self.shareType == 'ssh':
-            self.frontend.configureSshClient()
+            self.node.configureSshClient(self.config.get('vm_dir'))
     
     # ---- NFS configuration   
          

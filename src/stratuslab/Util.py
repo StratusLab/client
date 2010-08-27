@@ -178,7 +178,7 @@ def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd.append(src)
     scpCmd.append(dest)
     
-    return execute(*scpCmd, **kwargs)
+    return execute(scpCmd, **kwargs)
 
 def getSystemMethods(system):
     if not os.path.isfile('%s/%s.py' % (systemsDir, system)):

@@ -1,6 +1,5 @@
 import os
 import tarfile
-from time import sleep
 
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import wget

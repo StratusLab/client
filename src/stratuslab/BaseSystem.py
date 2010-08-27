@@ -1,5 +1,4 @@
 import os
-import os.path
 import shutil
 from datetime import datetime
 
@@ -17,7 +16,6 @@ class BaseSystem(object):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
-        self.sshLog = open('/tmp/log-ssh', 'a')
         self.workOnFrontend()
         # TODO: Initialize attributes
         # TODO: Rename private methods to start with _
@@ -25,7 +23,6 @@ class BaseSystem(object):
     def __del__(self):
         self.stderr.close()
         self.stdout.close()
-        self.sshLog.close()
     
     # -------------------------------------------
     #     Packages manager and related
@@ -161,7 +158,7 @@ class BaseSystem(object):
         oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
         self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
                                        oneKeyPub)
-        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, '0600')
+        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, 0600)
         self._configureCloudAdminSsh()
 
     def configureCloudAdminAccount(self):
@@ -193,8 +190,9 @@ class BaseSystem(object):
     def configureSshServer(self):
         pass
 
-    def configureSshClient(self):
-        pass
+    def configureSshClient(self, sharedDir):
+        self.createDirsCmd(sharedDir)
+        self.setOwnerCmd(sharedDir)
 
     # -------------------------------------------
     #     Hypervisor configuration
@@ -251,6 +249,12 @@ class BaseSystem(object):
         else:
             shutil.copytree(src, dst)
 
+    def _remove(self, path):
+        if os.path.isfile(path):
+            os.remove(path)
+        else:
+            shutil.rmtree(path)
+
     # -------------------------------------------
     #     Node related methods
     # -------------------------------------------
@@ -270,8 +274,6 @@ class BaseSystem(object):
         if type(command) == type(list()):
             command = ' '.join(command)
 
-        self.sshLog.write(command + '\n')
-
         return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
                       stdout=stdout, stderr=stderr, **kwargs)
 
@@ -284,8 +286,8 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey,
-                   stdout=stdout, stderr=stderr, **kwargs)
+        return scp(source, 'root@%s:%s' % (self.nodeAddr, dest),
+                   self.nodePrivateKey, stdout=stdout, stderr=stderr, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
@@ -308,6 +310,9 @@ class BaseSystem(object):
     
     def _remoteCopyFile(self, src, dest):
         self._nodeShell(['cp -rf %s %s' % (src, dest)])
+
+    def _remoteRemove(self, path):
+        self._nodeShell(['rm -rf %s' % path])
         
     def _remoteFilePutContents(self, filename, data):
         self._nodeShell('echo \'%s\' > %s' % (data, filename))
@@ -320,7 +325,7 @@ class BaseSystem(object):
         self.setOwnerCmd(filename)
 
     def _remoteChmod(self, path, mode):
-        return self._nodeShell('chmod %s %s' % (mode, path))
+        return self._nodeShell('chmod %o %s' % (mode, path))
         
     # -------------------------------------------
     #     General
@@ -345,23 +350,25 @@ class BaseSystem(object):
         self.appendOrReplaceInFileCmd = appendOrReplaceInFile
         self.setOwnerCmd = self._setCloudAdminOwner
         self.executeCmd = self._execute
-        self.copyCmd = shutil.copy
         self.createDirsCmd = self._createDirs
         self.filePutContentsCmd = filePutContent
         self.fileAppendContentsCmd = fileAppendContent
         self.chmodCmd = os.chmod
         self.copyCmd = self._copy
+        self.duplicateCmd = self._copy
+        self.removeCmd = self._remove
         
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
         self.setOwnerCmd = self._remoteSetCloudAdminOwner
         self.executeCmd = self._nodeShell
-        self.copyCmd = self._remoteCopyFile
+        self.duplicateCmd = self._remoteCopyFile
         self.createDirsCmd = self._remoteCreateDirs
         self.filePutContentsCmd = self._remoteFilePutContents
         self.fileAppendContentsCmd = self._remoteFileAppendContents
         self.chmodCmd = self._remoteChmod
         self.copyCmd = self._nodeCopy
+        self.removeCmd = self._remoteRemove
         
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
         self._generateTempSshConfig(self.tempSshConf)

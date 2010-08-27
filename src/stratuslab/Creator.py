@@ -1,4 +1,5 @@
-import os.path
+import base64
+import os
 import pickle
 from datetime import datetime
 
@@ -41,7 +42,8 @@ class Creator(object):
         self.manifestCreationScript = '%s/share/creation/create-manifest.sh' % modulePath
 
         self.runner = None
-        self.vmIps = None
+        self.vmIps = {}
+        self.vmIds = []
         self.vmId = None
 
     def __del__(self):
@@ -57,7 +59,7 @@ class Creator(object):
     def _addCreationContext(self):
         context = [
             'stratuslab_remote_key=%s' % fileGetContent(self.sshKey + '.pub'),
-            'stratuslab_internal_key=/tmp/%s' % randomString(),
+            'stratuslab_internal_key=%s' % randomString(),
             'stratuslab_manifest=%s' % self.vmManifestPath,
             'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
         ]
@@ -73,41 +75,53 @@ class Creator(object):
         for elem in uploadInfoElem:
             uploadInfoDict[elem] = getattr(self, elem, '')
 
-        return pickle.dumps(uploadInfoDict)
+        return base64.urlsafe_b64encode(pickle.dumps(uploadInfoDict))
 
     def _startMachine(self):
         try:
-            self.runner.runInstance()
+            self.vmIds = self.runner.runInstance()
+            self.vmIps = self.runner.vmIps
         except Exception, msg:
             printError('An error occured while starting machine: \n\t%s' % msg)
-            
-        if not self.cloud.waitUntilVmRunningOrTimeout(self.runner.vmId, 600):
-            printError('Unable to boot VM')
+
+        self.vmId = self.vmIds[0]
+        vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId)
+        if not vmStarted:
+            printError('Failed to start VM!')
+
+    # TODO: Create a generic method to run script on the VM
 
     def _createImageManifest(self):
         separatorChar = '%'
         imageDefinition = [self.imageName, self.imageVersion, self.username, self.vmManifestPath]
+        scriptOnVm = '/tmp/create-manifest.sh'
 
-        scp(self.manifestCreationScript, 'root@%s:' % self.vmAddress, self.sshKey,
-            stderr=self.stderr, stdout=self.stdout)
+        scp(self.manifestCreationScript, 'root@%s:%s' % (self.vmAddress, scriptOnVm),
+            self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-        ret = sshCmd('bash %s %s %s' % (os.path.basename(self.packageInstallScript),
-                                        separatorChar,
-                                        separatorChar.join(imageDefinition)),
+        ret = sshCmd('bash %s %s %s' % (scriptOnVm, separatorChar, separatorChar.join(imageDefinition)),
                      self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
+        sshCmd('rm -rf %s' % scriptOnVm, self.vmAddress, self.sshKey,
+               stderr=self.stderr, stdout=self.stdout)
+
         if ret != 0:
-            printError('An error occured while installing packages')
+            printError('An error occured while creating image manifest')
 
     def _installPackages(self):
         if len(self.packages) == 0:
             return
 
-        scp(self.packageInstallScript, 'root@%s:' % self.vmAddress, self.sshKey,
-            stderr=self.stderr, stdout=self.stdout)
+        scriptOnVm = '/tmp/install-pkg.sh'
+
+        scp(self.packageInstallScript, 'root@%s:%s' % (self.vmAddress, scriptOnVm),
+            self.sshKey, stderr=self.stderr, stdout=self.stdout)
         
-        ret = sshCmd('bash %s %s' % (os.path.basename(self.packageInstallScript), self.packages),
-                     self.vmAddress, self.sshKey, stderr=self.stderr, stdout=self.stdout)
+        ret = sshCmd('bash %s %s' % (scriptOnVm, self.packages), self.vmAddress,
+                     self.sshKey, stderr=self.stderr, stdout=self.stdout)
+
+        sshCmd('rm -rf %s' % scriptOnVm, self.vmAddress, self.sshKey,
+               stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
             printError('An error occured while installing packages')
@@ -117,12 +131,14 @@ class Creator(object):
             return
 
         for script in self.scripts.split(' '):
-            scp(script, 'root@%s:' % self.vmAddress, self.sshKey, 
-                stderr=self.stderr, stdout=self.stdout)
+            scriptPath = '/tmp/%s' % os.path.basename(script)
+            scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
+                self.sshKey, stderr=self.stderr, stdout=self.stdout)
 
-            ret = sshCmd('bash %s' % script, self.vmAddress, self.sshKey,
+            ret = sshCmd('bash %s' % scriptPath, self.vmAddress, self.sshKey,
                          stderr=self.stderr, stdout=self.stdout)
-            sshCmd('rm -fr %s' % script, self.vmAddress, self.sshKey)
+
+            sshCmd('rm -fr %s' % scriptPath, self.vmAddress, self.sshKey)
 
             if ret != 0:
                 printError('An error occured while executing script %s' % script)
@@ -136,7 +152,7 @@ class Creator(object):
         self._startMachine()
 
         printStep('Waiting for network interface to be up')
-        self.vmAddress = self.vmIps(self.vmId).get(self.interface)
+        self.vmAddress = dict(self.vmIps).get(self.interface)
         
         if not waitUntilPingOrTimeout(self.vmAddress, 600):
             self.cloud.vmStop(self.vmId)

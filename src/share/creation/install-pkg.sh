@@ -22,8 +22,11 @@ function get_package_manager() {
 function install_packages() {
     $UPDATE_CMD
     $INSTALL_CMD $PACKAGES
+    EXIT_CODE=$?
 }
 
 # Lauch install
 get_package_manager
 install_packages
+
+exit $EXIT_CODE
