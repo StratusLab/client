@@ -151,9 +151,9 @@ class OneInstallator(BaseInstallator):
                         'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
 
         if self.config.get('one_public_network_mask'):
-            configScript.append('NETMASK_PUBLIC="%s"' % self.config.get('one_public_network_mask'))
+            configScript.append('NETMASK_PUBLIC="/%s"' % self.config.get('one_public_network_mask'))
         if self.config.get('one_private_network_mask'):
-            configScript.append('NETMASK_PRIVATE="%s"' % self.config.get('one_private_network_mask'))
+            configScript.append('NETMASK_PRIVATE="/%s"' % self.config.get('one_private_network_mask'))
                         
         self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
