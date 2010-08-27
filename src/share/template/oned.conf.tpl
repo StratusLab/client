@@ -277,14 +277,14 @@ VM_HOOK = [
     name      = "sshKeygen",
     on        = "create",
     command   = "%(one_home)s/share/hooks/keygen.sh",
-    arguments = "$CONTEXT[STRATUSLAB_INTERNAL_KEY]",
+    arguments = "%(vm_dir)s/$VMID/$CONTEXT[STRATUSLAB_INTERNAL_KEY]",
     remote    = "yes" ]
 
 VM_HOOK = [
     name      = "uploadImage",
-    on        = "shutdown",
+    on        = "done",
     command   = "%(one_home)s/share/hooks/upload-img.py",
-    arguments = "--hook --address $NIC[network=\"private\"] --disk %(vm_dir)s/$VMID/images/disk.0 --ssh-key $CONTEXT[STRATUSLAB_INTERNAL_KEY] --manifest $CONTEXT[STRATUSLAB_MANIFEST] --upload-info $CONTEXT[STRATUSLAB_UPLOAD_INFO]",
+    arguments = "--hook --address $NIC[IP, network=\"private\"] --disk %(vm_dir)s/$VMID/images/disk.0 --ssh-key %(vm_dir)s/$VMID/$CONTEXT[STRATUSLAB_INTERNAL_KEY] --manifest $CONTEXT[STRATUSLAB_MANIFEST] --upload-info $CONTEXT[STRATUSLAB_UPLOAD_INFO]",
     remote    = "yes" ]
 
 #*******************************************************************************

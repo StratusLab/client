@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import base64
 import os
 import os.path
 import pickle
@@ -20,7 +21,7 @@ class UploadImage(object):
 
         self.parseOptions()
         self.checkOptions()
-        self.unpickleUploadInfo()
+        self.decodeUploadInfo()
         self.retrieveManifest()
         self.uploadImage()
 
@@ -52,8 +53,8 @@ class UploadImage(object):
         if not os.path.isfile(self.options.sshKey):
             self.error('SSH key does not exist')
 
-    def unpickleUploadInfo(self):
-        self.uploadInfo = pickle.loads()
+    def decodeUploadInfo(self):
+        self.uploadInfo = pickle.loads(base64.urlsafe_b64decode(self.options.uploadInfoPickled))
 
     def retrieveManifest(self):
         ret = self.scp('root@%s:%s' % (self.options.vmAddress, self.options.manifestPath),
