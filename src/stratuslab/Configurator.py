@@ -21,7 +21,7 @@ class Configurator(object):
 
     def getValue(self, key):
         if not self.userConfig.has_option(defaultConfigSection, key):
-            raise ValueError('Specified key does not exist')
+            raise ValueError('Specified key "%s" does not exist' % key)
 
         return self.userConfig.get(defaultConfigSection, key) 
 
