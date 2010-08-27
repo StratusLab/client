@@ -36,7 +36,8 @@ class OneInstallator(BaseInstallator):
 
 
     def configureCloudAdminFrontend(self):
-        self.frontend.configureCloudAdminEnv(self.config.get('one_port'))
+        self.frontend.configureCloudAdminEnv(self.config.get('one_port'),
+                                             self.config.get('stratuslab_location'))
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
         self._copyCloudHooks(self.frontend)
