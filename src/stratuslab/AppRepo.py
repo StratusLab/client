@@ -1,15 +1,9 @@
 import os
-import shutil
-import subprocess
-from datetime import datetime
 
-from stratuslab.FileAppender import FileAppender
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
-from stratuslab.Util import getSystemMethods
 from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
-from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import execute
 
@@ -29,10 +23,10 @@ class AppRepo(object):
         self.repo_filename = options.repo_filename        
         self.create = options.create
 
-        if not self.ldapCert is None:
-             self.ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.ldapCert
+        if self.ldapCert:
+            self.ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.ldapCert
         else:
-             self.ldapCertString = ''
+            self.ldapCertString = ''
 
     def install(self):
         printAction('Installing image repository')
@@ -56,7 +50,7 @@ class AppRepo(object):
         if (self.create):
             printStep('Creating repository directory structure')
             if not os.path.exists('%s/eu/stratuslab/appliances' % self.imageDir):
-            	os.makedirs('%s/eu/stratuslab/appliances' % self.imageDir)
+                os.makedirs('%s/eu/stratuslab/appliances' % self.imageDir)
                 os.makedirs('%s/eu/stratuslab/appliances/grid' % self.imageDir)
                 os.makedirs('%s/eu/stratuslab/appliances/base' % self.imageDir)
 
@@ -69,4 +63,3 @@ class AppRepo(object):
         repo_config = repo_config % {'repo_structure': self.repo_structure,
                                      'repo_filename': self.repo_filename}
         filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.imageDir, repo_config)
-        
