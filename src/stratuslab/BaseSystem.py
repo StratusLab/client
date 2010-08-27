@@ -286,8 +286,8 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        return scp(source, 'root@%s' % self.nodeAddr, self.nodePrivateKey,
-                   stdout=stdout, stderr=stderr, **kwargs)
+        return scp(source, 'root@%s:%s' % (self.nodeAddr, dest),
+                   self.nodePrivateKey, stdout=stdout, stderr=stderr, **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 

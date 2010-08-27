@@ -140,7 +140,9 @@ class OneInstallator(BaseInstallator):
 
     def _copyContextualizationScript(self):
         self.frontend.createDirsCmd(os.path.dirname(self.config.get('context_script')))
+        self.frontend.setOwnerCmd(os.path.dirname(self.config.get('context_script')))
         self.frontend.copyCmd('%s/share/context/init.sh' % modulePath, self.config.get('context_script'))
+        self.frontend.setOwnerCmd(self.config.get('context_script'))
 
     def _createContextConfigurationScript(self):
         oneHome = self.config.get('one_home')
