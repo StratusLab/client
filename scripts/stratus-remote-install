@@ -1,3 +1,4 @@
+import os.path
 #!/usr/bin/env python
 
 import os
@@ -111,14 +112,14 @@ class StratusSimpleRun(object):
 
     def configureStratuslab(self):
         content = ''
-        if self.options.config:
+        if self.options.config and os.path.isfile(self.options.config):
             content = fileGetContent(self.options.config)
             
         baseConfigCmd = ['python', '%s/scripts/stratus-config'
             % self.options.uploadDir]
 
         if content:
-            for item in self.options.config.split(cliLineSplitChar):
+            for item in content.split(cliLineSplitChar):
                 # hack to make a real copy of the var
                 currentCmd = baseConfigCmd[:]
                 currentCmd.append(item.split(':')[0])
