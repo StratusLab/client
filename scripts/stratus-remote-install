@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from stratuslab.Util import fileGetContent
 import os
 import subprocess
 import sys
@@ -39,7 +40,7 @@ class StratusSimpleRun(object):
                                dest='uploadDir', help='remote source directory',
                                default='/tmp/stratuslab-remote-install')
         self.parser.add_option('-c', '--config', dest='config', 
-                               help='additional config "key:value#key:value"',
+                               help='additional config file with "key:value#key:value" in',
                                default=None)
 
         (self.options, self.args) = self.parser.parse_args()
@@ -109,15 +110,19 @@ class StratusSimpleRun(object):
                  self.options.frontend, self.options.uploadDir))
 
     def configureStratuslab(self):
-        baseConfigCmd = ['python', '%s/scripts/stratus-config' 
-            % self.options.uploadDir]
-        
+        content = ''
         if self.options.config:
+            content = fileGetContent(self.options.config)
+            
+        baseConfigCmd = ['python', '%s/scripts/stratus-config'
+            % self.options.uploadDir]
+
+        if content:
             for item in self.options.config.split(cliLineSplitChar):
                 # hack to make a real copy of the var
                 currentCmd = baseConfigCmd[:]
                 currentCmd.append(item.split(':')[0])
-                currentCmd.append((' '.join(item.split(':')[1:])).replace('%',' '))
+                currentCmd.append((' '.join(item.split(':')[1:])))
                 self.sshCmd(currentCmd)
         else:
             self.sshCmd(baseConfigCmd)
