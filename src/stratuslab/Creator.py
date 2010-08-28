@@ -68,7 +68,7 @@ class Creator(object):
         self.runner.extraContextData = cliLineSplitChar.join(context)
 
     def _buildUploadInfoContext(self):
-        uploadInfoElem = [ 'repoAddress', 'compressFormat', 'forceUplad',
+        uploadInfoElem = [ 'repoAddress', 'compressionFormat', 'forceUpload',
                            'uploadOption', 'repoUsername', 'repoPassword' ]
 
         uploadInfoDict = {}
@@ -172,7 +172,7 @@ class Creator(object):
             self.cloud.vmStop(self.vmId)
         else:
             printStep('Machine ready for your usage')
-            print '\n\tMachine IP: %s' % ', '.join(self.cloud.getVmIp(self.vmId))
+            print '\n\tMachine IP: %s' % ', '.join(dict(self.vmIps).values())
             print '\tRemember to stop the machine when finished',
             
         printAction('Image creation finished')
