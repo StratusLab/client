@@ -6,27 +6,20 @@ from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 from stratuslab.Util import execute
+from stratuslab.Util import assignAttributes
 
 class AppRepo(object):
     
     def __init__(self, options):
-        self.options = options
-        self.ldap = options.ldap
-        self.ldapBind = options.ldapBind
-        self.ldapPasswd = options.ldapPasswd
-        self.ldapCert = options.ldapCert
-        self.ldapUrl = options.ldapUrl
-        self.imageDir = options.imageDir
-        self.apacheHome = options.apacheHome
-        self.passwdFile = options.passwdFile
-        self.repo_structure = options.repo_structure
-        self.repo_filename = options.repo_filename        
-        self.create = options.create
+        assignAttributes(self, options)
 
+    def getLdapCertString(self):
         if self.ldapCert:
-            self.ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.ldapCert
+            ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.ldapCert
         else:
-            self.ldapCertString = ''
+            ldapCertString = ''
+            
+        return ldapCertString
 
     def install(self):
         printAction('Installing image repository')
@@ -34,7 +27,7 @@ class AppRepo(object):
         if (self.ldap):
             httpd_conf = fileGetContent('%s/share/template/webdav-ldap.conf.tpl' % modulePath)
             httpd_conf = httpd_conf % {'imageDir': self.imageDir,
-                                       'ldapSSL': self.ldapCertString,
+                                       'ldapSSL': self.getLdapCertString(),
                                        'ldapURL': self.ldapUrl,
                                        'ldapBind': self.ldapBind,
                                        'ldapPasswd': self.ldapPasswd
@@ -47,7 +40,7 @@ class AppRepo(object):
 
         filePutContent('%s/conf.d/webdav.conf' % self.apacheHome, httpd_conf)
 
-        if (self.create):
+        if self.create:
             printStep('Creating repository directory structure')
             if not os.path.exists('%s/eu/stratuslab/appliances' % self.imageDir):
                 os.makedirs('%s/eu/stratuslab/appliances' % self.imageDir)
