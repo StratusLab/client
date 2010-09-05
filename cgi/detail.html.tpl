@@ -1,13 +1,19 @@
 <html>
 <head>
-    <title>%(headTitle)s</title>
+    <title>StratusLab Monitor</title>
+	<link rel='stylesheet' href='/style.css' type='text/css'>
 </head>
 
 <body>
+	<div id='header'>
+		<img alt='StratusLab' src='http://stratuslab.eu/lib/tpl/mmmanso/images/stratus_lab.png'>
+		<h1>Web Monitor</h1>
+	</div>
     <a href='nodelist.py'>Nodes</a>
     <a href='vmlist.py'>Instances</a>
 
-    <h1>%(title)s</h1>
+    <h2>%(title)s</h2>
 %(list)s
+	<div id='footer'>
 </body>
 <html>

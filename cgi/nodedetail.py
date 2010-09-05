@@ -12,20 +12,20 @@ class NodeDetailGenerator(DetailedGenerator):
     def __init__(self):
         super(NodeDetailGenerator,self).__init__()
         self.title = 'Node detail'
-        self.fieldGroups = {'HOST INFORMATION': {'id': 'Id', 
+        self.fieldGroups = {'Host Information': {'id': 'Id', 
                                                  'name': 'Name', 
                                                  'state': 'State', 
                                                  'im_mad': 'im_mad', 
                                                  'vm_mad': 'vm_mad', 
                                                  'tm_mad': 'tm_mad'},
-                            'HOST SHARES': {'totalmemory': 'Max mem',
+                            'Host Shares': {'totalmemory': 'Max mem',
                                             'usedmemory': 'Used mem (real)', 
                                             'mem_usage': 'Used mem (allocated)', 
                                             'max_cpu': 'Max CPU',
                                             'used_cpu': 'Used CPU (real)', 
                                             'cpu_usage': 'Used CPU (allocated)', 
                                             'running_vms': 'Running VMs'},
-                            'MONITORING INFORMATION': {'arch': 'Arch', 
+                            'Monitoring Information': {'arch': 'Arch', 
                                                        'cpuspeed': 'CPU speed', 
                                                        'freecpu': 'Free CPU', 
                                                        'free_mem': 'Free mem', 

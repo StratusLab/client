@@ -82,7 +82,7 @@ class DetailedGenerator(HtmlGenerator):
     def __init__(self):
         super(DetailedGenerator,self).__init__()
         self.template = open('detail.html.tpl').read()
-        self.fieldTemplate = '            <li>%(key)s: %(value)s</li>\n'
+        self.fieldTemplate = '        <tr>\n          <td>%(key)s</td><td>%(value)s</td>\n        </tr>\n'
         self.fieldGroups = [{None: [{}]}]
 
     def _getId(self):
@@ -96,10 +96,10 @@ class DetailedGenerator(HtmlGenerator):
         content = ''
         info = self._getData()[0]
         for groupName in self.fieldGroups:
-            content += '    <div class="section">%s</div>\n' % groupName
-            content += '    <ul>\n'
+            content += '    <h3>%s</h3>\n' % groupName
+            content += '    <table>\n'
             content += self._generateGroupListContent(groupName, info)
-            content += '    </ul>\n'
+            content += '    </table>\n'
         return content
 
     def _generateGroupListContent(self, groupName, info):
