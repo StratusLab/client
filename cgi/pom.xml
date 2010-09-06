@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>eu.stratuslab.pkgs</groupId>
+	<artifactId>stratuslab.web.monitor</artifactId>
+	<packaging>rpm</packaging>
+	<version>0.1-StratusLab.SNAPSHOT</version>
+	<name>StratusLab Web Monitor</name>
+	<url>http://stratuslab.eu/</url>
+
+	<parent>
+    		<groupId>eu.stratuslab.pkgs</groupId>
+    		<artifactId>stratuslab.parent</artifactId>
+		<version>0.1-StratusLab.SNAPSHOT</version>
+	</parent>
+	
+	<profiles>
+		<profile>
+			<activation>
+				<file>
+					<exists>/bin/rpm</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>rpm-maven-plugin</artifactId>
+					    	<extensions>true</extensions>
+						<executions>
+							<execution>
+								<goals>
+									<goal>rpm</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
+	<build>
+
+		<plugins>
+
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-deploy-plugin</artifactId>
+			  <version>2.5</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<configuration>
+				<release>${RELEASE}</release>
+				<summary>StratusLab Web Monitor</summary>
+				<name>stratuslab.web.monitor</name>
+				<group>System</group>
+				<vendor>StratusLab</vendor>
+				<packager>StratusLab</packager>
+				<copyright>StratusLab Collaboration</copyright>
+				<url>http://stratuslab.eu/</url>
+				<provides/>
+				<requires/>
+				<distribution>StratusLab</distribution>
+				<group>StratusLab</group>
+				<packager>StratusLab</packager>
+			      	<buildarch>noarch</buildarch>
+					<mappings>
+						<mapping>
+							<directory>/usr/lib/stratuslab/cgi</directory>
+							<filemode>755</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>.</location>
+									<includes>
+										<include>*.py</include>
+										<include>*.tpl</include>
+										<include>cgi-conf</include>
+										<include>remove</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/usr/lib/stratuslab/cgi</directory>
+							<filemode>644</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>../src</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+                                                        <directory>/var/www</directory>
+                                                        <filemode>644</filemode>
+                                                        <username>root</username>
+                                                        <groupname>root</groupname>
+                                                        <sources>
+                                                                <source>
+                                                                        <location>.</location>
+									<includes>
+										<include>stratuslab.css</include>
+									</includes>
+                                                                </source>
+                                                        </sources>
+                                                </mapping>
+					</mappings>
+					<postinstallScriptlet>
+						<script>
+import os
+cgiConf = '''ScriptAlias /cgi-bin/ "/usr/lib/stratuslab/cgi/"
+
+&gt;Directory "/usr/lib/stratuslab/cgi"&lt;
+    AllowOverride None
+    Options None
+    Order allow,deny
+    Allow from all
+&gt;/Directory&lt;
+'''
+
+def getApacheConfDir():
+    possibleDirs = ['/etc/httpd/conf.d', '/etc/apache2/conf.d']
+    for d in possibleDirs:
+        if os.path.exists(d):
+            return d
+    return None
+
+confDir = getApacheConfDir()
+if not confDir:
+    print 'Failed to find valid Apache2/Httpd config dir. Is Apache2/Httpd installed?'
+    sys.exirt(-1)
+open(os.path.join(confDir,'stratuslab.conf'),'w').write(cgiConf)
+						</script>
+						<Program>/usr/bin/python</Program>
+					</postinstallScriptlet>
+					<preremoveScriptlet>
+						<script>
+import os
+
+files = ['/etc/httpd/conf.d/stratuslab.conf','/etc/apache2/conf.d/stratuslab.conf','/var/www/stratuslab.css']
+for f in files:
+    try:
+        os.remove(f)
+    except OSError:
+        pass
+						</script>
+						<Program>/usr/bin/python</Program>
+					</preremoveScriptlet>
+				</configuration>
+			</plugin>
+
+      			<plugin>
+        			<groupId>org.codehaus.mojo</groupId>
+        			<artifactId>exec-maven-plugin</artifactId>
+			        <executions>
+          				<execution>
+				            <goals>
+				              	<goal>exec</goal>
+				            </goals>
+			    	      	</execution>
+        			</executions>
+        			<configuration>
+          				<executable>scripts/alien-to-deb</executable>
+        			</configuration>
+      			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
