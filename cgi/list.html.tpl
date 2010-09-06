@@ -5,18 +5,23 @@
 </head>
 
 <body>
-	<div id='header'>
-		<img alt='StratusLab' src='http://stratuslab.eu/lib/tpl/mmmanso/images/stratus_lab.png'>
-		<h1>Web Monitor</h1>
-	</div>
-    <a href='nodelist.py'>Nodes</a>
-    <a href='vmlist.py'>Instances</a>
-
-    <h2>%(title)s</h2>
-    <table>
+    <div class='Page'>
+        <div class='Banner'></div>
+        <div id='header'>
+            <h1>Web Monitor</h1>
+        </div>
+        <a class='wikilink1' href='nodelist.py'>Nodes</a>
+        <a href='vmlist.py'>Instances</a>
+        <h2>%(title)s</h2>
+        <table>
 %(fieldsHeader)s
 %(list)s
-    <table>
-	<div id='footer'>
+        </table>
+        <div class='Footer'>
+StratusLab is co-funded by the European Community's<br/>
+Seventh Framework Programme (Capacities)<br/>
+Grant Agreement INSFO-RI-261552
+        </div>
+    </div>
 </body>
 <html>

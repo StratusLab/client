@@ -39,7 +39,7 @@ div.Content
 
 div.Banner
 {
-  background: url(../images/stratuslab-banner-v1.png);
+  background: url(http://stratuslab.eu/lib/tpl/mmmanso/images/stratuslab-banner-v1.png);
   background-position: 0px 5px;
   /* background-color: #e0ffff; */
   background-repeat: no-repeat;
@@ -70,7 +70,7 @@ div.Footer
   border-top: 1px solid #aaaaaa;
   border-bottom: 1px solid #aaaaaa;
 
-  background: url(../images/stratuslab-footer-v1.png);
+  background: url(http://stratuslab.eu/lib/tpl/mmmanso/images/stratuslab-footer-v1.png);
   background-position: left center;
   background-repeat: no-repeat;
 
@@ -870,35 +870,7 @@ img.img_detail
     border:0;
 }
 
-
-/*
-
-body {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #18397F;
-	font-size: 12px;
-}
-
-h1 {
-	text-align: center;
-}
-
-img {
-	display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#footer {
-	padding-top: 25px;
-	text-align: center;
-}
-
-#footer:after {
-	content: 'StratusLab is co-funded by the European Community\'s Seventh Framework Programme (Capacities) - Grant Agreement INSFO-RI-261552';
-	font-size: 9px;
-	text-align: center;
-}
+/* StratusLab specific */
 
 tr:nth-child(odd) {
 	background-color:#d4d4d4;
@@ -916,25 +888,3 @@ th {
 td {
 	font-size: 12px;
 }
-
-li {
-	list-style: none;
-}
-
-li:nth-child(odd) {
-	background-color:#d4d4d4;
-}
-
-li:nth-child(even) {
-	background-color:#ade0fe;
-}
-
-a {
-	padding-left: 5px;
-	text-decoration: none;
-	font-weight:bold;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #18397F;
-	font-size: 12px;
-}
-*/
