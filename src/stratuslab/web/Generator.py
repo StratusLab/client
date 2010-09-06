@@ -16,7 +16,7 @@ class HtmlGenerator(object):
         self.fieldTemplate = '            <td>%(value)s</td>\n'
         
     def run(self):
-        configFile = './src/conf/stratuslab.cfg'
+        configFile = 'conf/stratuslab.cfg'
         config = Util.parseConfig(configFile)
         options = {'configFile': configFile,
                    'password': 'oneadmin'}
