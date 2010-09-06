@@ -129,6 +129,7 @@ cgiConf = '''ScriptAlias /cgi-bin/ "/usr/lib/stratuslab/cgi/"
     Options None
     Order allow,deny
     Allow from all
+    AddHandler py
 </Directory>
 '''
 
