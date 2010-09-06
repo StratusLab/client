@@ -109,24 +109,27 @@
                                                         <sources>
                                                                 <source>
                                                                         <location>.</location>
-									<includes>
-										<include>stratuslab.css</include>
-									</includes>
+																		<includes>
+																			<include>stratuslab.css</include>
+																		</includes>
                                                                 </source>
                                                         </sources>
                                                 </mapping>
 					</mappings>
 					<postinstallScriptlet>
 						<script>
+<![CDATA[
 import os
+import sys
+import subprocess
 cgiConf = '''ScriptAlias /cgi-bin/ "/usr/lib/stratuslab/cgi/"
 
-&gt;Directory "/usr/lib/stratuslab/cgi"&lt;
+<Directory "/usr/lib/stratuslab/cgi">
     AllowOverride None
     Options None
     Order allow,deny
     Allow from all
-&gt;/Directory&lt;
+</Directory>
 '''
 
 def getApacheConfDir():
@@ -136,19 +139,37 @@ def getApacheConfDir():
             return d
     return None
 
-confDir = getApacheConfDir()
-if not confDir:
-    print 'Failed to find valid Apache2/Httpd config dir. Is Apache2/Httpd installed?'
-    sys.exirt(-1)
-open(os.path.join(confDir,'stratuslab.conf'),'w').write(cgiConf)
-						</script>
+def createConfFile():
+    confDir = getApacheConfDir()
+    if not confDir:
+        print 'Failed to find valid Apache2/Httpd config dir. Is Apache2/Httpd installed?'
+        sys.exit(-1)
+    open(os.path.join(confDir,'stratuslab.conf'),'w').write(cgiConf)
+
+def getServerCommand():
+    commands = ['/etc/init.d/httpd', '/etc/inid.d/apache2']
+    for c in commands:
+        if os.path.exists(c):
+            return c
+    return None
+
+def restartWebServer():
+    cmd = getServerCommand()
+    if not cmd:
+        print 'Failed to find valid Apache2/Httpd init.d command. Is Apache2/Httpd installed?'
+        sys.exit(-1)
+    subprocess.call([cmd, 'restart'])
+
+createConfFile()
+restartWebServer()
+						]]></script>
 						<Program>/usr/bin/python</Program>
 					</postinstallScriptlet>
 					<preremoveScriptlet>
 						<script>
 import os
 
-files = ['/etc/httpd/conf.d/stratuslab.conf','/etc/apache2/conf.d/stratuslab.conf','/var/www/stratuslab.css']
+files = ['/etc/httpd/conf.d/stratuslab.conf','/etc/apache2/conf.d/stratuslab.conf']
 for f in files:
     try:
         os.remove(f)
