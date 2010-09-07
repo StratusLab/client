@@ -19,6 +19,7 @@
 	
 	<profiles>
 		<profile>
+			<id>rpm</id>
 			<activation>
 				<file>
 					<exists>/bin/rpm</exists>
@@ -41,7 +42,32 @@
 				</plugins>
 			</build>
 		</profile>
-
+                <profile>
+                        <id>deb</id>
+                        <activation>
+                                <file>
+                                        <exists>/usr/bin/alien</exists>
+                                </file>
+                        </activation>
+                        <build>
+                                <plugins>
+                                        <plugin>
+                                                <groupId>org.codehaus.mojo</groupId>
+                                                <artifactId>exec-maven-plugin</artifactId>
+						<version>1.1</version>
+                                                <extensions>true</extensions>
+                                                <executions>
+                                                        <execution>
+                                                                <phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+                                                        </execution>
+                                                </executions>
+                                        </plugin>
+                                </plugins>
+                        </build>
+                </profile>
 	</profiles>
 
 	<build>
@@ -60,7 +86,7 @@
 				<configuration>
 				<release>${RELEASE}</release>
 				<summary>StratusLab Web Monitor</summary>
-				<name>stratuslab.web.monitor</name>
+				<name>stratuslab-web-monitor</name>
 				<group>System</group>
 				<vendor>StratusLab</vendor>
 				<packager>StratusLab</packager>
@@ -84,8 +110,6 @@
 									<includes>
 										<include>*.py</include>
 										<include>*.tpl</include>
-										<include>cgi-conf</include>
-										<include>remove</include>
 									</includes>
 								</source>
 							</sources>
@@ -102,7 +126,7 @@
 							</sources>
 						</mapping>
 						<mapping>
-                                                        <directory>/var/www</directory>
+                                                        <directory>/var/www/html</directory>
                                                         <filemode>644</filemode>
                                                         <username>root</username>
                                                         <groupname>root</groupname>
@@ -193,7 +217,13 @@ for f in files:
 			    	      	</execution>
         			</executions>
         			<configuration>
-          				<executable>scripts/alien-to-deb</executable>
+          				<executable>fakeroot</executable>
+				        <arguments>
+				 	      	<argument>alien</argument>
+						<argument>--to-deb</argument>
+						<argument>--scripts</argument>
+						<argument>target/rpm/stratuslab-web-monitor/RPMS/noarch/stratuslab*.rpm</argument>
+			          	</arguments>
         			</configuration>
       			</plugin>
 		</plugins>
