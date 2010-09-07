@@ -11,18 +11,24 @@
         <div id='header'>
             <h1>Web Monitor</h1>
         </div>
-        <a href='nodelist.py'>Nodes</a>
-        <a href='vmlist.py'>Instances</a>
-        %(autoRefreshLink)s
-        <h2>%(title)s</h2>
-        <table>
+        <div id='actions'>
+            <a href='nodelist.py'>Nodes</a>
+            <a href='vmlist.py'>Instances</a>
+        </div>
+        <div id='refresh'>
+            %(autoRefreshLink)s
+        </div>
+        <div class='Main'>  
+            <h2>%(title)s</h2>
+            <table>
 %(fieldsHeader)s
 %(list)s
-        </table>
-        <div class='Footer'>
+            </table>
+            <div class='Footer'>
 StratusLab is co-funded by the European Community's<br/>
 Seventh Framework Programme (Capacities)<br/>
 Grant Agreement INSFO-RI-261552
+            </div>
         </div>
     </div>
 </body>

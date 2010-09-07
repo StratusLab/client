@@ -888,3 +888,18 @@ th {
 td {
 	font-size: 12px;
 }
+
+#actions {
+    display: block;
+    float: left;
+}
+
+#refresh {
+    display: block;
+    float: right;
+}
+
+.Main {
+    clear: both;
+    padding-top: 5;
+}
