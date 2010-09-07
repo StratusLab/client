@@ -14,6 +14,8 @@ class HtmlGenerator(object):
         self.title = ''
         self.fields = []
         self.fieldTemplate = '            <td>%(value)s</td>\n'
+        self.metaRefresh = '<meta http-equiv="refresh" content="%(refreshInSeconds)s">'
+        self.autoRefreshLink = '<a href="%(query)s">%(enableDisable)s auto refresh</a>'
         
     def run(self):
         configFile = 'conf/stratuslab.cfg'
@@ -26,13 +28,41 @@ class HtmlGenerator(object):
         
     def _generate(self):
         templateTokens = {'headTitle': 'StratusLab Monitor',
-                          'title': self.title
-                          }
+                          'title': self.title}
+        templateTokens = self._setRefresh(templateTokens)
         templateTokens['fieldsHeader'] = self._generateHeader()
         templateTokens['list'] = self._generateFieldsContent()
         content = self.template % templateTokens
         return content
         
+    def _setRefresh(self, templateTokens):
+        refresh = self._getRefreshQueryValue()
+        if refresh:
+            templateTokens['meta'] = self.metaRefresh % {'refreshInSeconds': refresh}
+            autoRefreshTokens = {'query': self._getQuery(),
+                                 'enableDisable': 'Disable'}
+        else:
+            templateTokens['meta'] = ''
+            autoRefreshTokens = {'query': self._getQuery(),
+                                 'enableDisable': 'Enable'}
+
+        templateTokens['autoRefreshLink'] = self.autoRefreshLink % autoRefreshTokens
+        return templateTokens
+
+    def _getQuery(self):
+        id = self._getId()
+        mustRefresh = not self._getRefreshQueryValue()
+        if id and mustRefresh:
+            return '?id=%s&refresh=5' % id
+        if id:
+            return '?id=%s' % id
+        if mustRefresh:
+            return '?refresh=5'
+        return '?'
+
+    def _getRefreshQueryValue(self):
+        return self._getQueryValue('refresh')
+
     def _getData(self):
         return []
 
@@ -63,6 +93,15 @@ class HtmlGenerator(object):
         print 'Content-type: text/html\n'
         print content
 
+    def _getId(self):
+        return self._getQueryValue('id')
+
+    def _getQueryValue(self, key):
+        form = cgi.FieldStorage()
+        if key in form:
+            return form[key].value
+        else:
+            return None
 
 class ListGenerator(HtmlGenerator):
 
@@ -86,10 +125,6 @@ class DetailedGenerator(HtmlGenerator):
         self.template = open('detail.html.tpl').read()
         self.fieldTemplate = '        <tr>\n          <td>%(key)s</td><td>%(value)s</td>\n        </tr>\n'
         self.fieldGroups = {}
-
-    def _getId(self):
-        form = cgi.FieldStorage()
-        return form['id'].value
 
     def _generateHeader(self):
         return ''

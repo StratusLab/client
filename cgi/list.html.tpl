@@ -1,7 +1,8 @@
 <html>
 <head>
     <title>StratusLab Monitor</title>
-	<link rel='stylesheet' href='/stratuslab.css' type='text/css'>
+    <link rel='stylesheet' href='/stratuslab.css' type='text/css'>
+    %(meta)s
 </head>
 
 <body>
@@ -10,8 +11,9 @@
         <div id='header'>
             <h1>Web Monitor</h1>
         </div>
-        <a class='wikilink1' href='nodelist.py'>Nodes</a>
+        <a href='nodelist.py'>Nodes</a>
         <a href='vmlist.py'>Instances</a>
+        %(autoRefreshLink)s
         <h2>%(title)s</h2>
         <table>
 %(fieldsHeader)s
