@@ -46,9 +46,11 @@ class HtmlGenerator(object):
     def _generateFieldsContent(self):
         content = ''
         for info in self._getData():
+            content += '        <tr>\n'
             for field in self.fields:
-                content += self._generateSingleFieldContent(self.fields[field], info.attribs[field])
-        return '        <tr>\n' + content + '        </tr>' # + str(self._getData()[0].attribs.keys())
+                content += self._generateSingleFieldContent(self.fields[field], info.attribs.get(field,''))
+            content += '        </tr>\n'
+        return content
             
     def _generateSingleFieldContent(self, key, value, template=None):
         if template:
@@ -83,7 +85,7 @@ class DetailedGenerator(HtmlGenerator):
         super(DetailedGenerator,self).__init__()
         self.template = open('detail.html.tpl').read()
         self.fieldTemplate = '        <tr>\n          <td>%(key)s</td><td>%(value)s</td>\n        </tr>\n'
-        self.fieldGroups = [{None: [{}]}]
+        self.fieldGroups = {}
 
     def _getId(self):
         form = cgi.FieldStorage()
@@ -105,5 +107,5 @@ class DetailedGenerator(HtmlGenerator):
     def _generateGroupListContent(self, groupName, info):
         content = ''
         for fieldKey in self.fieldGroups[groupName]:
-            content += self._generateSingleFieldContent(self.fieldGroups[groupName][fieldKey], info.attribs[fieldKey])
+            content += self._generateSingleFieldContent(self.fieldGroups[groupName][fieldKey], info.attribs.get(fieldKey,''))
         return content
