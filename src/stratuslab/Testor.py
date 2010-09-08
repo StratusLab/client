@@ -213,10 +213,10 @@ class Testor(unittest.TestCase):
         hostname = 'registrar.ip.test'
         id = registrar.register([hostname])
         monitor = Monitor(options, self.config)
-        info = monitor.monitor([id])[0]
+        info = monitor.nodeDetail([id])[0]
         self.assertEqual(hostname, info.name)
         registrar.deregister(hostname)
-        self.assertRaises(Exception, monitor.monitor,[id])
+        self.assertRaises(Exception, monitor.nodeDetail,[id])
 
     def listTests(self):
         print 'Available tests:'
