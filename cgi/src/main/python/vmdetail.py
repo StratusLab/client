@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# ${BUILD_INFO}
+# ${LEGAL}
+
 import cgi, cgitb
 cgitb.enable()
 

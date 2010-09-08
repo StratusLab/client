@@ -1,7 +1,7 @@
 <html>
 <head>
     <title>StratusLab Monitor</title>
-    <link rel='stylesheet' href='/stratuslab.css' type='text/css'>
+    <link rel='stylesheet' href='/css/stratuslab.css' type='text/css'>
     %(meta)s
 </head>
 

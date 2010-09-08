@@ -39,7 +39,7 @@ div.Content
 
 div.Banner
 {
-  background: url(http://stratuslab.eu/lib/tpl/mmmanso/images/stratuslab-banner-v1.png);
+  background: url(images/stratuslab-banner-v1.png);
   background-position: 0px 5px;
   /* background-color: #e0ffff; */
   background-repeat: no-repeat;
@@ -70,7 +70,7 @@ div.Footer
   border-top: 1px solid #aaaaaa;
   border-bottom: 1px solid #aaaaaa;
 
-  background: url(http://stratuslab.eu/lib/tpl/mmmanso/images/stratuslab-footer-v1.png);
+  background: url(images/stratuslab-footer-v1.png);
   background-position: left center;
   background-repeat: no-repeat;
 
