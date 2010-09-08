@@ -145,6 +145,6 @@ class MainProgram(CommandBase):
 
 if __name__ == '__main__':
     try:
-        StratusSimpleRun()
+        MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
