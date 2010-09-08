@@ -20,7 +20,6 @@ class VmListGenerator(ListGenerator):
                        'username': 'User', 
                        'deploy_id': 'Name', 
                        'state': 'Stat', 
-                       'lcm_state': 'Stat2', 
                        'cpu': 'CPU', 
                        'memory': 'Mem', 
                        'hostname': 'Node', 

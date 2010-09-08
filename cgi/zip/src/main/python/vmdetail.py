@@ -19,7 +19,6 @@ class VmDetailGenerator(DetailedGenerator):
         self.fieldGroups = {'Virtual Machine Information': {'id': 'Id',
                                                             'deploy_id': 'Deployment id',
                                                             'state': 'State',
-                                                            'lcm_state': 'State2',
                                                             'stime': 'Start time',
                                                             'etime': 'End time',
                                                             },
