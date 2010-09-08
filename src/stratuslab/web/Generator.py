@@ -2,6 +2,7 @@
 
 import cgi, cgitb
 cgitb.enable()
+import datetime
 
 from stratuslab.Monitor import Monitor
 import stratuslab.Util as Util
@@ -69,24 +70,29 @@ class HtmlGenerator(object):
     def _generateHeader(self):
         fieldTpl = '            <th>%s</th>\n'
         content = ''
-        for field in self.fields:
-            content += fieldTpl % self.fields[field]
+        for _, displayName in self.fields:
+            content += fieldTpl % displayName
         return '        <tr>\n' + content + '        </tr>'
 
     def _generateFieldsContent(self):
         content = ''
         for info in self._getData():
             content += '        <tr>\n'
-            for field in self.fields:
+            for field, displayName in self.fields:
                 value = self._getFieldValue(field, info)
-                content += self._generateSingleFieldContent(self.fields[field], value)
+                content += self._generateSingleFieldContent(displayName, value)
             content += '        </tr>\n'
-        return content
-            
+        return content #+ str(info.attribs)
+
     def _getFieldValue(self, key, info):
         if key == 'state':
             return self._getState(info)
+        if key == 'stime':
+            return self._epochToDate(info.attribs.get(key,0))
         return info.attribs.get(key,'')
+    
+    def _epochToDate(self, epoch):
+        return datetime.datetime.fromtimestamp(float(epoch)).ctime()
     
     def _getState(self, info):
         pass
@@ -133,7 +139,7 @@ class DetailedGenerator(HtmlGenerator):
         super(DetailedGenerator,self).__init__()
         self.template = open('detail.html.tpl').read()
         self.fieldTemplate = '        <tr>\n          <td>%(key)s</td><td>%(value)s</td>\n        </tr>\n'
-        self.fieldGroups = {}
+        self.fieldGroups = []
 
     def _generateHeader(self):
         return ''
@@ -141,16 +147,16 @@ class DetailedGenerator(HtmlGenerator):
     def _generateFieldsContent(self):
         content = ''
         info = self._getData()[0]
-        for groupName in self.fieldGroups:
+        for groupName, group in self.fieldGroups:
             content += '    <h3>%s</h3>\n' % groupName
             content += '    <table>\n'
-            content += self._generateGroupListContent(groupName, info)
+            content += self._generateGroupListContent(groupName, group, info)
             content += '    </table>\n'
-        return content
+        return content #+ str(info.attribs)
 
-    def _generateGroupListContent(self, groupName, info):
+    def _generateGroupListContent(self, groupName, group, info):
         content = ''
-        for field in self.fieldGroups[groupName]:
+        for field, displayName in group:
             value = self._getFieldValue(field, info)
-            content += self._generateSingleFieldContent(self.fieldGroups[groupName][field], value)
+            content += self._generateSingleFieldContent(displayName, value)
         return content

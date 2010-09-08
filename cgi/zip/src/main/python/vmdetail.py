@@ -16,14 +16,13 @@ class VmDetailGenerator(DetailedGenerator):
     def __init__(self):
         super(VmDetailGenerator,self).__init__()
         self.title = 'Instance detail'
-        self.fieldGroups = {'Virtual Machine Information': {'id': 'Id',
-                                                            'deploy_id': 'Deployment id',
-                                                            'state': 'State',
-                                                            'stime': 'Start time',
-                                                            'etime': 'End time',
-                                                            },
-                            'Virtual Machine Monitoring': {},
-                            }
+        self.fieldGroups = [['Virtual Machine Information', [['id', 'Id'],
+                                                             ['deploy_id', 'Deployment id'],
+                                                             ['state', 'State'],
+                                                             ['stime', 'Start time'],
+                                                             ['etime', 'End time']]],
+                            ['Virtual Machine Monitoring', []]
+                           ]
     
     def _getData(self):
         id = self._getId()

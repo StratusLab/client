@@ -16,16 +16,15 @@ class VmListGenerator(ListGenerator):
     def __init__(self):
         super(VmListGenerator,self).__init__()
         self.title = 'List of instances'
-        self.fields = {'id': 'Id', 
-                       'username': 'User', 
-                       'deploy_id': 'Name', 
-                       'state': 'Stat', 
-                       'cpu': 'CPU', 
-                       'memory': 'Mem', 
-                       'hostname': 'Node', 
-                       'ip': 'IP', 
-                       'stime': 'Time'
-                       }
+        self.fields = [['id', 'Id'],
+                       ['username', 'User'],
+                       ['name', 'Name'],
+                       ['state', 'Stat'],
+                       ['cpu', 'CPU'],
+                       ['memory', 'Mem'],
+                       ['hostname', 'Node'],
+                       ['ip', 'IP'],
+                       ['stime', 'Time']]
         self.idTemplate = '            <td><a href="vmdetail.py?id=%(value)s"/>%(value)s</a></td>\n'
     
     def _getData(self):

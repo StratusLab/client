@@ -18,14 +18,15 @@ class NodeListGenerator(ListGenerator):
         self.title = 'List of nodes'
         self.template = open('list.html.tpl').read()
         self.idTemplate = '            <td><a href="nodedetail.py?id=%(value)s"/>%(value)s</a></td>\n'
-        self.fields = {'id':'Id', 
-                       'name': 'IP', 
-                       'totalcpu': 'Total CPU', 
-                       'freecpu': 'Free CPU', 
-                       'totalmemory': 'Total mem', 
-                       'freememory': 'Free mem', 
-                       'state': 'State'}
-    
+        self.fields = [['id','Id'], 
+                       ['name', 'IP'], 
+                       ['max_cpu', 'Total CPU'], 
+                       ['free_cpu', 'Free CPU'], 
+                       ['max_mem', 'Total mem'], 
+                       ['free_mem', 'Free mem'], 
+                       ['running_vms', 'Running VMs'],
+                       ['state', 'State']]
+
     def _getData(self):
         return self.monitor.listNodes()
 
