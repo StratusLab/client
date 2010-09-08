@@ -1,7 +1,7 @@
 <assembly>
   <id>cgi-bundle</id>
   
-  <includeBaseDirectory>true</includeBaseDirectory>
+  <includeBaseDirectory>false</includeBaseDirectory>
   
   <formats>
     <format>zip</format>
@@ -25,9 +25,6 @@
     <fileSet>
       <directory>src/main/css</directory>
       <outputDirectory>css</outputDirectory>
-      <includes>
-	<include>*.tpl</include>
-      </includes>
     </fileSet>
 
     <fileSet>
