@@ -192,6 +192,27 @@ export RPM_BUILD_ROOT=
 	</configuration>
       </plugin>
 
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>exec-maven-plugin</artifactId>
+	<executions>
+	  <execution>
+	    <goals>
+	      <goal>exec</goal>
+	    </goals>
+	  </execution>
+	</executions>
+	<configuration>
+	  <executable>fakeroot</executable>
+	  <arguments>
+	    <argument>alien</argument>
+	    <argument>--to-deb</argument>
+	    <argument>--scripts</argument>
+	    <argument>target/rpm/stratuslab-web-monitor/RPMS/noarch/stratuslab*.rpm</argument>
+	  </arguments>
+	</configuration>
+      </plugin>
+
     </plugins>
 
   </build>
