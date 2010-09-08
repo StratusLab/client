@@ -9,6 +9,7 @@ cgitb.enable()
 from stratuslab.Monitor import Monitor
 import stratuslab.Util as Util
 from stratuslab.web.Generator import ListGenerator
+from stratuslab.cloud.one import OneVmState
 
 class VmListGenerator(ListGenerator):
     
@@ -30,6 +31,12 @@ class VmListGenerator(ListGenerator):
     
     def _getData(self):
         return self.monitor.listVms()
+
+    def _getState(self, info):
+        stateValue = info.attribs.get('state','')
+        lcmStateValue = info.attribs.get('lcm_state','')
+        state = OneVmState(stateValue, lcmStateValue)
+        return str(state)
 
 if __name__ == '__main__':
     VmListGenerator().run()

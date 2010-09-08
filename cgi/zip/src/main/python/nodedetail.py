@@ -9,6 +9,7 @@ cgitb.enable()
 from stratuslab.Monitor import Monitor
 import stratuslab.Util as Util
 from stratuslab.web.Generator import DetailedGenerator
+from stratuslab.cloud.one import OneHostState
 
 class NodeDetailGenerator(DetailedGenerator):
     
@@ -46,6 +47,11 @@ class NodeDetailGenerator(DetailedGenerator):
     def _getData(self):
         id = self._getId()
         return self.monitor.nodeDetail([id])
-    
+
+    def _getState(self, info):
+        stateValue = info.attribs.get('state','')
+        state = OneHostState(stateValue)
+        return str(state)
+
 if __name__ == '__main__':
     NodeDetailGenerator().run()

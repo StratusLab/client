@@ -256,7 +256,7 @@ class OneConnector(object):
 
         return info
 
-class OneState(object):
+class OneVmState(object):
     
     def __init__(self, state, lcmState = None):
         self. state = state
@@ -264,38 +264,39 @@ class OneState(object):
 
         self.invalidState = 'Invalid state'
 
-        self.stateDefinition = {0: 'Init',
-                                1: 'Pending',
-                                2: 'Hold',
-                                3: 'Active',
-                                4: 'Stopped',
-                                5: 'Suspended',
-                                6: 'Done',
-                                7: 'Failed'}
+        self.stateDefinition = {'0': 'Init',
+                                '1': 'Pending',
+                                '2': 'Hold',
+                                '3': 'Active',
+                                '4': 'Stopped',
+                                '5': 'Suspended',
+                                '6': 'Done',
+                                '7': 'Failed'}
         
-        self.lcmStateDefintion = {0: 'LCM_INIT',
-                                  1: 'PROLOG',
-                                  2: 'BOOT',
-                                  3: 'RUNNING',
-                                  4: 'MIGRATE',
-                                  5: 'SAVE_STOP',
-                                  6: 'SAVE_SUSPEND',
-                                  7: 'SAVE_MIGRATE',
-                                  8: 'PROLOG_MIGRATE',
-                                  9: 'PROLOG_RESUME',
-                                  10: 'EPILOG_STOP',
-                                  11: 'EPILOG',
-                                  12: 'SHUTDOWN',
-                                  13: 'CANCEL',
-                                  14: 'FAILURE',
-                                  15: 'DELETE',
-                                  16: 'UNKNOWN'}
+        self.lcmStateDefintion = {'0': 'LCM_INIT',
+                                  '1': 'PROLOG',
+                                  '2': 'BOOT',
+                                  '3': 'RUNNING',
+                                  '4': 'MIGRATE',
+                                  '5': 'SAVE_STOP',
+                                  '6': 'SAVE_SUSPEND',
+                                  '7': 'SAVE_MIGRATE',
+                                  '8': 'PROLOG_MIGRATE',
+                                  '9': 'PROLOG_RESUME',
+                                  '10': 'EPILOG_STOP',
+                                  '11': 'EPILOG',
+                                  '12': 'SHUTDOWN',
+                                  '13': 'CANCEL',
+                                  '14': 'FAILURE',
+                                  '15': 'DELETE',
+                                  '16': 'UNKNOWN'}
 
     def __str__(self):
         if self._useLcmState():
-            return self._lcmStateToString().title()
+            str = self._lcmStateToString()
         else:
-            return self._stateToString().title()
+            str = self._stateToString()
+        return str.title()
     
     def _useLcmState(self):
         stateForLcmStateLookup = 3
@@ -304,9 +305,24 @@ class OneState(object):
     def _stateToString(self):
         if self.state not in self.stateDefinition:
             return self.invalidState
-        return self.stateDefinition[self.state]
+        return self.stateDefinition.get(self.state, self.invalidState)
 
     def _lcmStateToString(self):
         if self.lcmState not in self.lcmStateDefintion:
             return self.invalidState
-        return self.lcmStateDefintion[self.lcmState]
+        return self.lcmStateDefintion.get(self.lcmState, self.invalidState)
+    
+    
+class OneHostState(object):
+    
+    def __init__(self, state):
+        self. state = state
+        self.invalidState = 'Invalid state'
+        self.stateDefinition = {'0': 'INIT',
+                                '1': 'MONITORING',
+                                '2': 'MONITORED',
+                                '3': 'ERROR',
+                                '4': 'DISABLED'}
+
+    def __str__(self):
+        return self.stateDefinition.get(self.state,self.invalidState).title()

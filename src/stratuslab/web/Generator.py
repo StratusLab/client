@@ -78,10 +78,19 @@ class HtmlGenerator(object):
         for info in self._getData():
             content += '        <tr>\n'
             for field in self.fields:
-                content += self._generateSingleFieldContent(self.fields[field], info.attribs.get(field,''))
+                value = self._getFieldValue(field, info)
+                content += self._generateSingleFieldContent(self.fields[field], value)
             content += '        </tr>\n'
         return content
             
+    def _getFieldValue(self, key, info):
+        if key == 'state':
+            return self._getState(info)
+        return info.attribs.get(key,'')
+    
+    def _getState(self, info):
+        pass
+    
     def _generateSingleFieldContent(self, key, value, template=None):
         if template:
             _template = template
@@ -141,6 +150,7 @@ class DetailedGenerator(HtmlGenerator):
 
     def _generateGroupListContent(self, groupName, info):
         content = ''
-        for fieldKey in self.fieldGroups[groupName]:
-            content += self._generateSingleFieldContent(self.fieldGroups[groupName][fieldKey], info.attribs.get(fieldKey,''))
+        for field in self.fieldGroups[groupName]:
+            value = self._getFieldValue(field, info)
+            content += self._generateSingleFieldContent(self.fieldGroups[groupName][field], value)
         return content
