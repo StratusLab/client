@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import cliLineSplitChar
 
-class StratusSimpleRun(object):
+class MainProgram(CommandBase):
     '''A command line to install stratuslab on a remote host'''
 
     def __init__(self):
