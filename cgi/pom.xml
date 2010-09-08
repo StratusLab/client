@@ -11,12 +11,6 @@
   <name>StratusLab Web Monitor</name>
   <url>http://stratuslab.eu/</url>
 
-  <parent>
-    <groupId>eu.stratuslab.pkgs</groupId>
-    <artifactId>stratuslab.parent</artifactId>
-    <version>0.1-StratusLab.SNAPSHOT</version>
-  </parent>
-  
   <profiles>
     <profile>
       <id>rpm</id>
