@@ -3,6 +3,7 @@
 import cgi, cgitb
 cgitb.enable()
 import datetime
+from urllib2 import HTTPError
 
 from stratuslab.Monitor import Monitor
 import stratuslab.Util as Util
@@ -31,8 +32,12 @@ class HtmlGenerator(object):
         templateTokens = {'headTitle': 'StratusLab Monitor',
                           'title': self.title}
         templateTokens = self._setRefresh(templateTokens)
-        templateTokens['fieldsHeader'] = self._generateHeader()
-        templateTokens['list'] = self._generateFieldsContent()
+        try:
+            templateTokens['fieldsHeader'] = self._generateHeader()
+            templateTokens['list'] = self._generateFieldsContent()
+        except Exception, ex:
+            templateTokens['fieldsHeader'] = ''
+            templateTokens['list'] = str(ex)
         content = self.template % templateTokens
         return content
         
@@ -53,19 +58,32 @@ class HtmlGenerator(object):
     def _getQuery(self):
         id = self._getId()
         mustRefresh = not self._getRefreshQueryValue()
-        if id and mustRefresh:
-            return '?id=%s&refresh=5' % id
+        query = '?'
         if id:
-            return '?id=%s' % id
+            query += 'id=%s&' % id
         if mustRefresh:
-            return '?refresh=5'
-        return '?'
+            query += 'refresh=5&'
+        if query[-1] == '&':
+            query = query[:-1]
+        return query
 
     def _getRefreshQueryValue(self):
         return self._getQueryValue('refresh')
 
     def _getData(self):
         return []
+
+    def _getDataRetryAndRaise(self, retryCount=3):
+        try:
+            data = self._getData()
+        except Exception, ex:
+            if retryCount <= 0:
+                raise self._createHttpError('', 500, 'Error getting data' + str(ex))
+            data = self._getDataRetryAndRaise(retryCount-1)
+        return data
+
+    def _createHttpError(self, url, code, msg):
+        return HTTPError(url, code, msg, None, None)
 
     def _generateHeader(self):
         fieldTpl = '            <th>%s</th>\n'
@@ -76,7 +94,8 @@ class HtmlGenerator(object):
 
     def _generateFieldsContent(self):
         content = ''
-        for info in self._getData():
+        infoList = self._getDataRetryAndRaise()
+        for info in infoList:
             content += '        <tr>\n'
             for field, displayName in self.fields:
                 value = self._getFieldValue(field, info)
@@ -146,7 +165,8 @@ class DetailedGenerator(HtmlGenerator):
 
     def _generateFieldsContent(self):
         content = ''
-        info = self._getData()[0]
+        infoList = self._getDataRetryAndRaise()
+        info = infoList[0]
         for groupName, group in self.fieldGroups:
             content += '    <h3>%s</h3>\n' % groupName
             content += '    <table>\n'
