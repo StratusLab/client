@@ -5,11 +5,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.stratuslab.pkgs</groupId>
-	<artifactId>stratuslab</artifactId>
-	<packaging>rpm</packaging>
+	<artifactId>stratuslab.parent</artifactId>
+	<packaging>pom</packaging>
 	<version>0.1-StratusLab.SNAPSHOT</version>
-	<name>StratusLab</name>
+	<name>StratusLab Parent POM</name>
 	<url>http://stratuslab.eu/</url>
+
+	<modules>
+		<module>cgi</module>
+		<module>scripts</module>
+	</modules>
 
 	<distributionManagement>
 		<repository>
@@ -19,33 +24,6 @@
 		</repository>
 	</distributionManagement>
 
-	<profiles>
-		<profile>
-			<activation>
-				<file>
-					<exists>/bin/rpm</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>rpm-maven-plugin</artifactId>
-					    <extensions>true</extensions>
-						<executions>
-							<execution>
-								<goals>
-									<goal>rpm</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-	</profiles>
-
 	<build>
 
 		<plugins>
@@ -54,89 +32,6 @@
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-deploy-plugin</artifactId>
 			  <version>2.5</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>rpm-maven-plugin</artifactId>
-				<configuration>
-				  <release>${RELEASE}</release>
-				  <summary>StratusLab</summary>
-				  <name>stratuslab</name>
-				  <group>System</group>
-				  <vendor>StratusLab</vendor>
-				  <packager>StratusLab</packager>
-				  <copyright>StratusLab Collaboration</copyright>
-				  <url>http://stratuslab.eu/</url>
-				  <provides>
-				  </provides>
-				  <requires>
-				  	<require>one</require>
-				  </requires>
-				  <distribution>StratusLab</distribution>
-				  <group>StratusLab</group>
-				  <packager>StratusLab</packager>
-			      <buildarch>noarch</buildarch>
-					<mappings>
-						<mapping>
-							<directory>/usr/bin</directory>
-							<filemode>755</filemode>
-							<username>root</username>
-							<groupname>root</groupname>
-							<sources>
-								<source>
-									<location>scripts</location>
-									<includes>
-										<include>stratus-*</include>
-									</includes>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/usr/lib/stratuslab</directory>
-							<filemode>644</filemode>
-							<username>root</username>
-							<groupname>root</groupname>
-							<sources>
-								<source>
-									<location>src</location>
-									<excludes>
-										<exclude>stratus-*</exclude>
-									</excludes>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
-							<directory>/usr/lib/stratuslab/scripts</directory>
-							<filemode>755</filemode>
-							<username>root</username>
-							<groupname>root</groupname>
-							<sources>
-								<source>
-									<location>scripts</location>
-								</source>
-							</sources>
-						</mapping>
-					</mappings>
-					<installScriptlet>
-						<script>
-# 
-# This is a nasty hack to turn off the /usr/lib/rpm/brp-python-bytecompile
-# script.  This script tries to precompile the python code, but causes the
-# rpm packaging to fail because the *.pyc and *.pyo files are not listed in
-# the list of files created by maven.
-#
-export RPM_BUILD_ROOT=
-
-</script>
-					</installScriptlet>
-					<preinstallScriptlet>
-						<script>echo "Installing StratusLab v${project.version}"</script>
-					</preinstallScriptlet>
-					<postinstallScriptlet>
-						<script>/usr/lib/stratuslab/scripts/post-install</script>
-					</postinstallScriptlet>
-				</configuration>
 			</plugin>
 
       			<plugin>

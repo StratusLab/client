@@ -11,15 +11,19 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import cliLineSplitChar
+from stratuslab.CommandBase import CommandBase
 
-class StratusSimpleRun(object):
+class MainProgram(CommandBase):
     '''A command line to install stratuslab on a remote host'''
 
     def __init__(self):
         self.rootPath = os.path.abspath('%s/../' %
                                         os.path.abspath(os.path.dirname(__file__)))
+        super(MainProgram, self).__init__()
+
+    def parse(self):
         usage = 'usage: %prog [options]'
-        self.parser = OptionParser(usage=usage)
+        self.parser.usage = usage
 
         self.parser.add_option('-n', '--nodes', dest='nodes',
                                help='node list, separate by space', default='localhost')
@@ -51,33 +55,7 @@ class StratusSimpleRun(object):
         self.options.sshOptions = self.options.sshOptions % (sshSub)
         self.options.scpOptions = self.options.scpOptions % (sshSub)
 
-        self.launchSimpleRun()
-        
-    def execute(self, command, shell=False, exitOnError=True):
-        # TODO: Use functions in Util
-    	process = subprocess.Popen(command, shell=shell)
-        process.wait()
-        if process.returncode != 0 and exitOnError:
-            print 'Command failled: %s' % ' '.join(command)
-            sys.exit(1)
-
-    def sshCmd(self, command, shell=False, exitOnError=True):
-        # TODO: Use functions in Util
-        sshCmd = ['ssh']
-        sshCmd.extend(self.options.sshOptions.split(' '))
-        sshCmd.append(self.options.frontend)
-        sshCmd.extend(command)
-        self.execute(sshCmd, shell, exitOnError)
-
-    def scp(self, src, dest):
-        # TODO: Use functions in Util
-        scpCmd = ['scp']
-        scpCmd.extend(self.options.scpOptions.split(' '))
-        scpCmd.append(src)
-        scpCmd.append('root@%s' % dest)
-        self.execute(scpCmd)
-
-    def launchSimpleRun(self):
+    def doWork(self):
         # TODO: Use standart function to display message
         print 'Multi-install workaround...'
         self.multiInstallWorkaround()
@@ -101,6 +79,22 @@ class StratusSimpleRun(object):
         self.sshCmd(['rm', '-rf', '/srv/cloud/one/.ssh'],
                  exitOnError=False)
 
+    def sshCmd(self, command, shell=False, exitOnError=True):
+        # TODO: Use functions in Util
+        sshCmd = ['ssh']
+        sshCmd.extend(self.options.sshOptions.split(' '))
+        sshCmd.append(self.options.frontend)
+        sshCmd.extend(command)
+        self.execute(sshCmd, shell, exitOnError)
+
+    def execute(self, command, shell=False, exitOnError=True):
+        # TODO: Use functions in Util
+        process = subprocess.Popen(command, shell=shell)
+        process.wait()
+        if process.returncode != 0 and exitOnError:
+            print 'Command failled: %s' % ' '.join(command)
+            sys.exit(1)
+
     def uploadStratuslab(self):
         self.sshCmd(['rm', '-rf', self.options.uploadDir],
                  exitOnError=False)
@@ -109,6 +103,14 @@ class StratusSimpleRun(object):
                  self.options.frontend, self.options.uploadDir))
         self.scp('%s/scripts/' % self.rootPath, '%s:%s' % (
                  self.options.frontend, self.options.uploadDir))
+
+    def scp(self, src, dest):
+        # TODO: Use functions in Util
+        scpCmd = ['scp']
+        scpCmd.extend(self.options.scpOptions.split(' '))
+        scpCmd.append(src)
+        scpCmd.append('root@%s' % dest)
+        self.execute(scpCmd)
 
     def configureStratuslab(self):
         content = ''
@@ -144,6 +146,6 @@ class StratusSimpleRun(object):
 
 if __name__ == '__main__':
     try:
-        StratusSimpleRun()
+        MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'

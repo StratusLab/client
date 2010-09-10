@@ -10,18 +10,21 @@ from stratuslab.Util import runMethodByName
 class CommandBase(object):
     
     def __init__(self):
-        self.defaultDebugLevel = 3
-        self.parser = OptionParser()
-        self.parse()
+        self.verboseLevel = 0
+        self.parser = None
+        self._setParserAndParse()
         self.checkOptions()
-        self._callAndHandleErrorsForCommands(self, self.doWork.__name__)
+        self._callAndHandleErrors(self, self.doWork.__name__)
 
-    def _callAndHandleErrorsForCommands(self, methodName, *args, **kw):
+    def _setParserAndParse(self):
+        self.parser = OptionParser()
+        self.parser.add_option('-v', '--verbose', dest='verboseLevel',
+                help='Verbose level. Add more to get more details.',
+                action='count', default=self.verboseLevel)
+        self.parse()
+        self.verboseLevel = self.options.verboseLevel
         
-        if hasattr(self, 'config'):
-            self.debugLevel = self.config.get('debug_level', self.defaultDebugLevel)
-        else:
-            self.debugLevel = self.defaultDebugLevel
+    def _callAndHandleErrors(self, methodName, *args, **kw):
         
         res = 0
         try:
@@ -38,7 +41,9 @@ class CommandBase(object):
         except SystemExit, ex:
             self.raiseOrDisplayError(ex)
         except socket.error, ex:
-            self.raiseOrDisplayError(ex)
+            self.raiseOrDisplayError('Network error: %s' % ex)
+        except socket.gaierror, ex:
+            self.raiseOrDisplayError('Network error: %s' % ex)
         except Exception, ex:
             self.raiseOrDisplayError(ex)
         return res
@@ -62,8 +67,7 @@ class CommandBase(object):
         return self.parser.error('Wrong number of arguments')
     
     def raiseOrDisplayError(self, errorMsg):
-        if self.debugLevel > 2:
+        if self.verboseLevel > 0:
             raise
         else:
             printError(errorMsg)
-            

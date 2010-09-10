@@ -65,23 +65,30 @@ class UploadImage(object):
 
     def uploadImage(self):
         if os.getenv('STRATUSLAB_LOCATION'):
-            scriptLocation = '%s/scripts'
+            scriptLocation = '%s/scripts' % os.getenv('STRATUSLAB_LOCATION')
         else:
             scriptLocation = '/usr/bin'
 
-        uploadCmd = ['%s/stratus-upload-image' % scriptLocation,
+        uploadCmd = ['python',
+                     '%s/stratus-upload-image' % scriptLocation,
                      '--repository', self.uploadInfo['repoAddress'],
-                     '--curl-option', self.uploadInfo['uploadOption'],
                      '--compress', self.uploadInfo['compressionFormat'],
                      '--repo-username', self.uploadInfo['repoUsername'],
                      '--repo-password', self.uploadInfo['repoPassword'],
-                     '%s.manifest' % self.options.diskPath,
+                     '%s.manifest.xml' % self.options.diskPath,
                     ]
 
+        if self.uploadInfo['uploadOption']:
+            uploadCmd.append('--curl-option %s' % self.uploadInfo['uploadOption'])
         if self.uploadInfo['forceUpload']:
             uploadCmd.append('--force')
 
-    
+        ret = self.execute(uploadCmd)
+
+        if ret != 0:
+            raise Exception('An error occured while uploading image')
+
+
     def sshCmd(self, cmd, timeout=5, **kwargs):
         sshCmd = ['ssh', '-p', '22', '-o', 'ConnectTimeout=%s' % timeout,
                   '-o', 'StrictHostKeyChecking=no', '-i', self.options.sshKey,
@@ -92,7 +99,7 @@ class UploadImage(object):
     def scp(self, src, dest, **kwargs):
         scpCmd = ['scp', '-i', self.options.sshKey, src, dest]
 
-        return self.execute(*scpCmd, **kwargs)
+        return self.execute(scpCmd, **kwargs)
 
     def execute(self, cmd, **kwargs):
         wait = not kwargs.get('noWait', False)

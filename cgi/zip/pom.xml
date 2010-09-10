@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>eu.stratuslab.pkgs</groupId>
+  <artifactId>stratuslab-web-monitor-zip</artifactId>
+  <packaging>pom</packaging>
+  <version>0.1-StratusLab.SNAPSHOT</version>
+  <name>StratusLab Web Monitor (ZIP)</name>
+  <url>http://stratuslab.eu/</url>
+
+  <parent>
+    <groupId>eu.stratuslab.pkgs</groupId>
+    <artifactId>stratuslab-web-monitor</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  
+  <build>
+
+    <plugins>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-deploy-plugin</artifactId>
+	<version>2.5</version>
+      </plugin>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-resources-plugin</artifactId>
+	
+	<configuration>
+	  <encoding>UTF-8</encoding>
+	</configuration>
+	
+	<executions>
+	  <execution>
+	    <id>insert-metadata</id>
+	    <phase>process-sources</phase>
+	    <goals>
+	      <goal>copy-resources</goal>
+	    </goals>
+	    
+	    <configuration>
+	      <delimiters>
+		<delimiter>${*}</delimiter>
+	      </delimiters>
+	      <outputDirectory>${project.build.directory}/python</outputDirectory>
+	      <resources>
+		<resource>
+		  <directory>src/main/python</directory>
+		  <filtering>true</filtering>
+		</resource>
+	      </resources>
+	    </configuration>
+	    
+	  </execution>
+	</executions>
+	
+      </plugin>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-assembly-plugin</artifactId>
+	<configuration>
+	  <descriptors>
+	    <descriptor>src/main/assembly/cgi-bundle.xml</descriptor>
+	  </descriptors>
+	</configuration>
+	
+	<executions>
+	  
+	  <execution>
+	    <id>bundle</id>
+	    <goals>
+	      <goal>single</goal>
+	    </goals>
+	    <phase>package</phase>
+	  </execution>
+	  
+	</executions>
+	
+      </plugin>
+      
+    </plugins>
+
+  </build>
+
+  <properties>
+    <maven.build.timestamp.format>yyyyMMdd.HHmm.ss</maven.build.timestamp.format>
+
+    <BUILD_INFO>
+
+# ${artifactId}, ${project.version}, ${maven.build.timestamp}
+#
+    </BUILD_INFO>
+    <LEGAL>
+
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INSFO-RI-261552."
+#
+# Copyright (c) 2010, SixSq Sarl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+    </LEGAL>
+
+  </properties>
+
+</project>

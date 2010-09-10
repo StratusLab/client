@@ -20,8 +20,8 @@ class MainProgram(CommandBase):
 
     def parse(self):        
         usage = 'usage: %prog [options]'
-        self.parser = OptionParser(usage=usage)
-
+        
+        self.parser.usage = usage        
         self.parser.add_option('-d', '--image-dir', dest='imageDir',
                 help='the directory in which to store the images',
                 metavar='PATH', default='/images')
@@ -56,12 +56,12 @@ class MainProgram(CommandBase):
 
     def checkOptions(self):
         if not os.path.exists(self.options.apacheHome):
-            self.parser.error('Apache home not found')        
+            self.parser.error('Apache home not found: %s' % self.options.apacheHome)
 
-        if self.options.ldap and self.options.ldapPasswd is None:
+        if self.options.ldap and not self.options.ldapPasswd:
             self.parser.error('LDAP authentication selected but no password for server specified')
 
-        if not self.options.ldap and self.options.passwdFile is None:
+        if not self.options.ldap and not self.options.passwdFile:
             self.parser.error('No password file specified')
             
     def doWork(self):

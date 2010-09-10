@@ -36,7 +36,8 @@ class OneInstallator(BaseInstallator):
 
 
     def configureCloudAdminFrontend(self):
-        self.frontend.configureCloudAdminEnv(self.config.get('one_port'))
+        self.frontend.configureCloudAdminEnv(self.config.get('one_port'),
+                                             self.config.get('stratuslab_location'))
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
         self._copyCloudHooks(self.frontend)
@@ -150,9 +151,9 @@ class OneInstallator(BaseInstallator):
                         'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
 
         if self.config.get('one_public_network_mask'):
-            configScript.append('NETMASK_PUBLIC="%s"' % self.config.get('one_public_network_mask'))
+            configScript.append('NETMASK_PUBLIC="/%s"' % self.config.get('one_public_network_mask'))
         if self.config.get('one_private_network_mask'):
-            configScript.append('NETMASK_PRIVATE="%s"' % self.config.get('one_private_network_mask'))
+            configScript.append('NETMASK_PRIVATE="/%s"' % self.config.get('one_private_network_mask'))
                         
         self.frontend.createDirsCmd(os.path.dirname(scriptPath))
         self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
@@ -160,11 +161,12 @@ class OneInstallator(BaseInstallator):
 
     def _copyCloudHooks(self, system):
         hooksDir = '%s/share/hooks' % self.config.get('one_home')
+        hooksInstallDir = '%s/share/hooks' % modulePath
         system.createDirsCmd(hooksDir)
         system.setOwnerCmd(hooksDir)
         
-        for file in os.listdir(hooksDir):
-            system.copyCmd('%s/share/hooks/%s' % (modulePath, file), hooksDir)
+        for file in os.listdir(hooksInstallDir):
+            system.copyCmd('%s/%s' % (hooksInstallDir, file), hooksDir)
             system.setOwnerCmd('%s/%s' % (hooksDir, file))
             system.chmodCmd('%s/%s' % (hooksDir, file), 0755)
 

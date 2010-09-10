@@ -106,7 +106,7 @@ class BaseSystem(object):
     #     ONE admin env config and related
     # -------------------------------------------
 
-    def configureCloudAdminEnv(self, ONeDPort):
+    def configureCloudAdminEnv(self, ONeDPort, stratuslabLocation):
         self.ONeDPort = ONeDPort
 
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
@@ -118,6 +118,11 @@ class BaseSystem(object):
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
                                       'export PATH',
                                       'export PATH=%s/bin:%s' % (self.ONeHome, os.getenv('PATH')))
+
+        if stratuslabLocation:
+            self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
+                                          'export STRATUSLAB_LOCATION',
+                                          'export STRATUSLAB_LOCATION=%s' % stratuslabLocation)
 
         self.filePutContentsCmd('%s/.bash_login' % self.ONeHome,
                                 '[ -f ~/.bashrc ] && source ~/.bashrc')
