@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<recipe>
+    <disk>
+        <size>5000</size>
+        <swap>256</swap>
+    </disk>
+    <os>
+        <name>scientific-linux</name>
+        <version>5.5</version>
+        <arch>x86_64</arch>
+    </os>
+    <image>
+        <type>base</type>
+        <version>1.0</version>
+        <passwd>$1$Q5KdvMP2$ZUie0FvDu.HOYCLE/NpwT.</passwd>
+        <output>/var/stratuslab/images</output>
+        <mount>/mnt/target</mount>
+        <loop>/dev/loop0</loop>
+    </image>
+</recipe>
