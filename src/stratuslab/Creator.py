@@ -59,7 +59,7 @@ class Creator(object):
     def _addCreationContext(self):
         context = [
             'stratuslab_remote_key=%s' % fileGetContent(self.sshKey + '.pub'),
-            'stratuslab_internal_key=%s' % randomString(),
+#            'stratuslab_internal_key=%s' % randomString(),
             'stratuslab_manifest=%s' % self.vmManifestPath,
             'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
         ]
@@ -106,7 +106,7 @@ class Creator(object):
                stderr=self.stderr, stdout=self.stdout)
 
         if ret != 0:
-            printError('An error occured while creating image manifest')
+            printError('An error occurred while creating image manifest')
 
     def _installPackages(self):
         if len(self.packages) == 0:
