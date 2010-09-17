@@ -11,6 +11,7 @@ from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
 from stratuslab.Util import randomString
+import stratuslab.Util as Util
 
 class Runner(object):
 
@@ -116,6 +117,7 @@ class Runner(object):
         self._manageRawData()
         self._manageExtraContext()
         self._manageVnc()
+        self._addRunnerContext()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -205,8 +207,14 @@ class Runner(object):
 
         contextData = ['%s = "%s",' % (key, value) for key, value in extraContext.items()]
 
-        self.extra_context = '\n'.join(contextData)
+        self._appendContextData(contextData)
 
+    def _addRunnerContext(self):
+        self._appendContextData(['stratuslab_internal_key=%s,' % randomString()])
+
+    def _appendContextData(self, context):
+        self.extra_context += '\n'.join(context)
+    
     def _manageVnc(self):
         vncInfo = []
 
@@ -221,13 +229,6 @@ class Runner(object):
 
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
 
-    def _addRunnerContext(self):
-        context = [
-            'stratuslab_internal_key=%s' % randomString()
-        ]
-
-        self.extraContextData.extend(context)
-
     def runInstance(self):
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 
@@ -236,6 +237,8 @@ class Runner(object):
 
         printAction('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
+
+        self.printDetail('with template:\n%s' % vmTpl)
 
         for vmNb in range(self.instanceNumber):
             try:
@@ -249,6 +252,9 @@ class Runner(object):
 
         printAction('Done!')
         return self.vmIds
+    
+    def printDetail(self, msg):
+        return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)        
 
     def waitUntilVmRunningOrTimeout(self, vmId):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, 120)
