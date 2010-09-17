@@ -37,7 +37,7 @@ class Registrar(OneInstallator):
 
     def _getHostnameId(self, hostname):
         monitor = Monitor(self.__dict__, self.config)
-        infoList = monitor.list()
+        infoList = monitor.listNodes()
         info = None
         for i in infoList:
             if i.name == hostname:
