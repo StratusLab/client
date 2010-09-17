@@ -4,6 +4,7 @@ from ConfigParser import SafeConfigParser
 from Util import defaultConfigSection
 from Util import parseConfig
 from Util import validateConfig
+from Util import printError
 
 class Configurator(object):
 
@@ -47,10 +48,15 @@ class Configurator(object):
         print '-' * (columnSize * 3 + 1)
 
         for key in defaultConfig.keys():
+            self._checkKeyPresentInUserConfig(key, userConfig)
             print ' %s|  %s|  %s' % (
                                      key.ljust(columnSize),
                                      userConfig.get(key).ljust(columnSize),
                                      defaultConfig.get(key))
+
+    def _checkKeyPresentInUserConfig(self, key, userConfig):
+        if key not in userConfig:
+            printError('Error: missing mandatory key %s in user configuration file %s' % (key, self.userConfigFile))
 
     def setOption(self, key, value):
         if not self.userConfig.has_option(defaultConfigSection, key):
