@@ -17,6 +17,9 @@ systemsDir = '%s/stratuslab/system' % modulePath
 manifestExt = '.manifest.xml'
 cliLineSplitChar = '#'
 
+NORMAL_VERBOSE_LEVEL = 0
+DETAILED_VERBOSE_LEVEL = 1
+
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
 
@@ -147,15 +150,35 @@ def execute(cmd, **kwargs):
 
     if kwargs.has_key('noWait'):
         del kwargs['noWait']
+        
+    verboseLevel = _extractVerboseLevel(kwargs)
+    verboseThreshold = _extractVerboseThreshold(kwargs)
+    printDetail(' '.join(cmd), verboseLevel, verboseThreshold)
 
     process = subprocess.Popen(cmd, **kwargs)
 
     if wait:
         process.wait()
-        return process.returncode
 
-    return process
+    return process.returncode
 
+def _extractVerboseLevel(kwargs):
+    return _extractAndDeleteKey('verboseLevel', 0, kwargs)
+
+def _extractVerboseThreshold(kwargs):
+    return _extractAndDeleteKey('verboseThreshold', 2, kwargs)
+
+def _extractAndDeleteKey(key, default, dict):
+    value = default
+    if key in dict:
+        value = dict[key]
+        del dict[key]
+    return value
+
+def printDetail(msg,verboseLevel=1,verboseThreshold=1):
+    if verboseLevel >= verboseThreshold:
+        printAndFlush('    %s\n' % msg) 
+    
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout, '-o', 'StrictHostKeyChecking=no']
 
