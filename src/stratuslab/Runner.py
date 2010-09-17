@@ -10,6 +10,7 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
+from stratuslab.Util import randomString
 
 class Runner(object):
 
@@ -219,6 +220,13 @@ class Runner(object):
             vncInfo.append('type = "vnc"')
 
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
+
+    def _addRunnerContext(self):
+        context = [
+            'stratuslab_internal_key=%s' % randomString()
+        ]
+
+        self.extraContextData.extend(context)
 
     def runInstance(self):
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
