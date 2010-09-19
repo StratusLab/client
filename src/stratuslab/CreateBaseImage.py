@@ -1,20 +1,21 @@
 import os
+import sys
 import shutil
 import subprocess
 import glob
 from datetime import datetime
-from subprocess import *
+from subprocess import PIPE
+import fileinput
+import string
+
 
 from stratuslab.FileAppender import FileAppender
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
-from stratuslab.Util import getSystemMethods
 from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import execute
-from stratuslab.Util import appendOrReplaceInFile
 
 class CreateBaseImage(object):
     
@@ -70,12 +71,12 @@ class CreateBaseImage(object):
             else:
                 self.kernelArch = self.arch
         else: 
-           if (self.arch == 'i686'):
-               self.rinseArch = 'i386'
-           elif (self.arch == 'x86_64'):
-               self.rinseArch = 'amd64'
-           else:
-               self.rinseArch = self.arch
+            if (self.arch == 'i686'):
+                self.rinseArch = 'i386'
+            elif (self.arch == 'x86_64'):
+                self.rinseArch = 'amd64'
+            else:
+                self.rinseArch = self.arch
 
         baseName = '%s-%s-%s-%s' % (self.os, self.osVersion, self.arch, self.type)
         fullOutputDir = '%s/%s/%s/%s' % (self.outputDir, self.type.replace('.','/'), baseName, self.imageVersion)
@@ -98,7 +99,7 @@ class CreateBaseImage(object):
          
     def __del__(self):
         if(self.inRoot):
-        	self._chrootExit()
+            self._chrootExit()
         self._cleanup()
         
         if not (self.debug):
@@ -118,31 +119,26 @@ class CreateBaseImage(object):
 
         if (self.swap):
             printStep('Creating %sMB swap space.' % self.swapSize)
-            rootSize = self.imageSize - self.swapSize
-            sfDiskString = ',%d,83,*\n,,82\n' % rootSize
-        else:
-            sfDiskString = ',,83,*\n'
 
-        p = subprocess.Popen(['/sbin/sfdisk','-uM','%s/%s' % (self.outputDir, self.outputFileName)], 
+        subprocess.Popen(['/sbin/sfdisk','-uM','%s/%s' % (self.outputDir, self.outputFileName)], 
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
-        stdout = p.communicate(input='%s' % sfDiskString)[0]
 
         printStep('Creating loop devices and mapper.')
         self._execute(['/sbin/losetup',self.loopDev,'%s/%s' % (self.outputDir, self.outputFileName)])
         self._execute(['/sbin/kpartx','-a',self.loopDev])
 
         printStep('Making filesystem.')
-        path,dev = os.path.split(self.options.loopDev)
+        _,dev = os.path.split(self.options.loopDev)
         self.loopDevMapper = '/dev/mapper/%s' % dev
 
         self._execute(['/sbin/mkfs.ext3','%sp1' % self.loopDevMapper])
         p = subprocess.Popen(['/sbin/blkid','-o','value','%sp1' % self.loopDevMapper], stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate()
+        stdout, _ = p.communicate()
         uuid = stdout.split();
         self.root_uuid = uuid[0]
 
         p = subprocess.Popen(['/sbin/mkswap','%sp2' % self.loopDevMapper], stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate()
+        stdout, _ = p.communicate()
         s_uuid = stdout.split('UUID=');
         self.swap_uuid = s_uuid[1].strip();
 
@@ -338,7 +334,7 @@ class CreateBaseImage(object):
 
         p = subprocess.Popen(['/sbin/grub','--device-map=%s/device.map' % self.outputDir], 
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
-        stdout = p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
+        p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
 
         t_device_map = open('%s/boot/grub/device.map' % self.mountDir, 'w')
         t_device_map.write('(hd0) UUID=%s\n' % self.root_uuid)
@@ -347,7 +343,7 @@ class CreateBaseImage(object):
         kernelVersion = ''
 
         for filename in os.listdir("%s/boot" % self.mountDir):
-             if (filename.startswith("vmlinuz")):
+            if (filename.startswith("vmlinuz")):
                 kernelVersion = filename.split("-", 1)[1]
 
         grub_conf = open('%s/boot/grub/grub.conf' % self.mountDir, 'w')
@@ -383,7 +379,7 @@ class CreateBaseImage(object):
  
         p = subprocess.Popen(['/sbin/grub','--device-map=%s/device.map' % self.outputDir],
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
-        stdout = p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
+        p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
 
         t_device_map = open('%s/boot/grub/device.map' % self.mountDir, 'w')
         t_device_map.write('(hd0) UUID=%s\n' % self.root_uuid)
@@ -427,7 +423,7 @@ class CreateBaseImage(object):
 
         p = subprocess.Popen(['/sbin/grub','--device-map=%s/device.map' % self.outputDir],
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
-        stdout = p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
+        p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
 
         t_device_map = open('%s/boot/grub/device.map' % self.mountDir, 'w')
         t_device_map.write('(hd0) UUID=%s\n' % self.root_uuid)
@@ -532,7 +528,7 @@ class CreateBaseImage(object):
             self._execute(['/bin/umount','%s/dev' % self.mountDir], False, True, False)
         
         if os.path.exists('%s/proc' % self.mountDir):
-	    self._execute(['/bin/umount','%s/proc' % self.mountDir], False, True, False)
+            self._execute(['/bin/umount','%s/proc' % self.mountDir], False, True, False)
 
         if(os.path.ismount(self.mountDir)):
             self._execute(['/bin/umount','%s' % self.mountDir], False, True, False)
@@ -552,20 +548,18 @@ class CreateBaseImage(object):
         self.inRoot = False
 
     def _searchreplace(self, path, search, replace):
-       import fileinput, glob, string, sys, os
-       from os.path import join
-       # replace a string in multiple files
-       #filesearch.py
+        # replace a string in multiple files
+        #filesearch.py
 
-       files = glob.glob(path)
-       if files is not []:
-           for file in files:
-               for line in fileinput.input(file,inplace=1):
-                   lineno = 0
-                   lineno = string.find(line, search)
-                   if lineno >= 0:
-                       line = line.replace(search, replace)
-                   sys.stdout.write(line)
+        files = glob.glob(path)
+        if files is not []:
+            for file in files:
+                for line in fileinput.input(file,inplace=1):
+                    lineno = 0
+                    lineno = string.find(line, search)
+                    if lineno >= 0:
+                        line = line.replace(search, replace)
+                    sys.stdout.write(line)
 
     def _execute(self, command, shell=False, wait=True, exitOnError=True):
         #print command
