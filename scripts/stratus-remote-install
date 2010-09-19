@@ -12,6 +12,11 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.CommandBase import CommandBase
+from stratuslab.Util import execute
+from stratuslab.Util import sshCmd
+from stratuslab.Util import scp
+from stratuslab.Util import printAction
+from stratuslab.Util import printStep
 
 class MainProgram(CommandBase):
     '''A command line to install stratuslab on a remote host'''
@@ -33,11 +38,6 @@ class MainProgram(CommandBase):
                                help='ssh key to connect to the frontend',
                                metavar='KEY_PATH',
                                default=os.path.expandvars("$HOME/.ssh/root_hudson_id_rsa.key"))
-        self.parser.add_option('--ssh-options', dest='sshOptions',
-                               default='-p %(sshPort)s -i %(sshKey)s -l root', metavar='OPTIONS')
-        self.parser.add_option('--scp-options', dest='scpOptions',
-                               default='-P %(sshPort)s -i %(sshKey)s -q -r',
-                               metavar='OPTIONS')
         self.parser.add_option('-f', '--frontend', dest='frontend',
                                help='frontend endpoint', metavar='ENDPOINT',
                                default='localhost')
@@ -48,100 +48,110 @@ class MainProgram(CommandBase):
                                help='additional config file with "key:value#key:value" in',
                                default=None)
 
-        (self.options, self.args) = self.parser.parse_args()
-
-        sshSub = {'sshPort': self.options.sshPort,
-            'sshKey': self.options.sshKey,}
-        self.options.sshOptions = self.options.sshOptions % (sshSub)
-        self.options.scpOptions = self.options.scpOptions % (sshSub)
+        self.options, self.args = self.parser.parse_args()
 
     def doWork(self):
-        # TODO: Use standart function to display message
-        print 'Multi-install workaround...'
+        printAction('Starting StratusLab remote installation')        
+
+        printStep('Multi-install workaround...\n')
         self.multiInstallWorkaround()
-        print 'Upload stratuslab...'
+        
+        printStep('Upload stratuslab...\n')
         self.uploadStratuslab()
-        print 'Configure stratuslab...'
+
+        printStep('Configure stratuslab...\n')
         self.configureStratuslab()
         self.copySshPrivateKey()
-        print 'Install stratuslab frontend...'
+
+        printStep('Install stratuslab frontend...\n')
         self.installStratuslabFrontend()
-        print 'Install stratuslab nodes...'
+
+        printStep('Install stratuslab nodes...\n')
         self.installStratuslabNodes()
 
+        printAction('Installation done')        
+
+
     def multiInstallWorkaround(self):
-        self.sshCmd(['su', '-l', 'oneadmin', '-c', '"one stop"'],
+        self.sshCmd('su -l oneadmin -c "one stop"',
                  exitOnError=False)
-        self.sshCmd(['rm', '-rf', '/srv/cloud/one/lib'],
+        self.sshCmd('rm -rf /srv/cloud/one/lib',
                  exitOnError=False)
-        self.sshCmd(['rm', '-rf', '/srv/cloud/one/var'],
+        self.sshCmd('rm -rf /srv/cloud/one/var',
                  exitOnError=False)
-        self.sshCmd(['rm', '-rf', '/srv/cloud/one/.ssh'],
+        self.sshCmd('rm -rf /srv/cloud/one/.ssh',
                  exitOnError=False)
 
-    def sshCmd(self, command, shell=False, exitOnError=True):
-        # TODO: Use functions in Util
-        sshCmd = ['ssh']
-        sshCmd.extend(self.options.sshOptions.split(' '))
-        sshCmd.append(self.options.frontend)
-        sshCmd.extend(command)
-        self.execute(sshCmd, shell, exitOnError)
+    def sshCmd(self, cmd, exitOnError=True):
+        ret = sshCmd(cmd, 
+                     self.options.frontend, 
+                     self.options.sshKey, 
+                     self.options.sshPort, 
+                     **{'verboseLevel': self.options.verboseLevel})
+        self._handleError(ret, cmd, exitOnError)
 
-    def execute(self, command, shell=False, exitOnError=True):
-        # TODO: Use functions in Util
-        process = subprocess.Popen(command, shell=shell)
-        process.wait()
-        if process.returncode != 0 and exitOnError:
-            print 'Command failled: %s' % ' '.join(command)
-            sys.exit(1)
+    def _handleError(self, ret, cmd, exitOnError=True):
+        if ret != 0 :
+            print 'Command failed: %s' % cmd,
+            if exitOnError:
+                sys.exit(1)
+            else:
+                print " but it's OK"
 
     def uploadStratuslab(self):
-        self.sshCmd(['rm', '-rf', self.options.uploadDir],
+        self.sshCmd('rm -rf ' + self.options.uploadDir,
                  exitOnError=False)
-        self.sshCmd(['mkdir', '-p', self.options.uploadDir])
+        self.sshCmd('mkdir -p ' + self.options.uploadDir)
         self.scp('%s/src/' % self.rootPath, '%s:%s' % (
                  self.options.frontend, self.options.uploadDir))
         self.scp('%s/scripts/' % self.rootPath, '%s:%s' % (
                  self.options.frontend, self.options.uploadDir))
 
     def scp(self, src, dest):
-        # TODO: Use functions in Util
-        scpCmd = ['scp']
-        scpCmd.extend(self.options.scpOptions.split(' '))
-        scpCmd.append(src)
-        scpCmd.append('root@%s' % dest)
-        self.execute(scpCmd)
+        ret = scp(src, 
+                  'root@' + dest, 
+                  self.options.sshKey, 
+                  self.options.sshPort, 
+                  **{'verboseLevel': self.options.verboseLevel})
+        self._handleError(ret, 'Remote copy of %s to %s' % (src, dest))
 
     def configureStratuslab(self):
         content = ''
         if self.options.config and os.path.isfile(self.options.config):
             content = fileGetContent(self.options.config)
             
-        baseConfigCmd = ['python', '%s/scripts/stratus-config'
-            % self.options.uploadDir]
+        baseConfigCmd = 'python %s/scripts/stratus-config' % self.options.uploadDir
+
+        baseConfigCmd = self._addVerboseOption(baseConfigCmd)
 
         if content:
             for item in content.split(cliLineSplitChar):
-                # hack to make a real copy of the var
                 currentCmd = baseConfigCmd[:]
-                currentCmd.append(item.split(':')[0])
-                currentCmd.append('"%s"' %(' '.join(item.split(':')[1:])))
+                currentCmd += ' ' + item.split(':')[0]
+                currentCmd += ' "%s"' %(' '.join(item.split(':')[1:]))
                 self.sshCmd(currentCmd)
         else:
             self.sshCmd(baseConfigCmd)
+
+    def _addVerboseOption(self, cmd):
+        if self.options.verboseLevel > 0:
+            cmd += ' -' + 'v'*self.options.verboseLevel
+        return cmd
 
     def copySshPrivateKey(self):
         self.scp(self.options.sshKey, '%s:.ssh/id_rsa' 
                  % self.options.frontend)
 
     def installStratuslabFrontend(self):
-        self.sshCmd(['python', '%s/scripts/stratus-install'
-                 % self.options.uploadDir])
+        cmd = 'python %s/scripts/stratus-install' % self.options.uploadDir
+        cmd = self._addVerboseOption(cmd)
+        self.sshCmd(cmd)
 
     def installStratuslabNodes(self):
         for node in self.options.nodes.split(' '):
-            self.sshCmd(['python', '%s/scripts/stratus-install'
-                     % self.options.uploadDir, '-n', node])
+            cmd = 'python %s/scripts/stratus-install -n %s' % (self.options.uploadDir, node)
+            cmd = self._addVerboseOption(cmd)
+            self.sshCmd(cmd)
 
 
 if __name__ == '__main__':

@@ -47,10 +47,9 @@ class MainProgram(CommandBase):
 
     def doWork(self):
         config = parseConfig(self.options.configFile)        
-        installFactory = InstallatorFactory()
-        self.installator = installFactory.getInstallator()
+        self.installator = InstallatorFactory().getInstallator()
         self.installator.runInstall(self.options, config)
-
+        
 
 if __name__ == '__main__':
     try:
