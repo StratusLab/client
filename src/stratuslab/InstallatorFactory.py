@@ -2,6 +2,6 @@ from stratuslab.installator import one
 
 class InstallatorFactory(object):
     
-    def getInstallator(self):
-        return one.OneInstallator()
+    def getInstallator(self, **kw):
+        return one.OneInstallator(**kw)
     

@@ -9,6 +9,7 @@ from stratuslab.Util import execute
 from stratuslab.Util import fileAppendContent
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
+import Util
 
 class BaseSystem(object):
     
@@ -17,13 +18,7 @@ class BaseSystem(object):
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
         self.workOnFrontend()
-        # TODO: Initialize attributes
-        # TODO: Rename private methods to start with _
 
-    def __del__(self):
-        self.stderr.close()
-        self.stdout.close()
-    
     # -------------------------------------------
     #     Packages manager and related
     # -------------------------------------------
@@ -234,7 +229,12 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
         
-        return execute(command, stdout=stdout, stderr=stderr, **kwargs)
+        return execute(command, 
+                       stdout=stdout, 
+                       stderr=stderr, 
+                       verboseLevel=self.verboseLevel, 
+                       verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+                       **kwargs)
 
     def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.ONeAdmin, '-c']
@@ -279,8 +279,14 @@ class BaseSystem(object):
         if type(command) == type(list()):
             command = ' '.join(command)
 
-        return sshCmd(command, self.nodeAddr, self.nodePrivateKey,
-                      stdout=stdout, stderr=stderr, **kwargs)
+        return sshCmd(command, 
+                      self.nodeAddr, 
+                      self.nodePrivateKey,
+                      stdout=stdout, 
+                      stderr=stderr,
+                      verboseLevel=self.verboseLevel,
+                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+                      **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
@@ -291,8 +297,14 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        return scp(source, 'root@%s:%s' % (self.nodeAddr, dest),
-                   self.nodePrivateKey, stdout=stdout, stderr=stderr, **kwargs)
+        return scp(source, 
+                   'root@%s:%s' % (self.nodeAddr, dest),
+                   self.nodePrivateKey,
+                   stdout=stdout,
+                   stderr=stderr,
+                   verboseLevel=self.verboseLevel,
+                   verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+                   **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
         self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
@@ -378,6 +390,7 @@ class BaseSystem(object):
         self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
         self._generateTempSshConfig(self.tempSshConf)
         
+    #TODO: not needed anymore?
     def _generateTempSshConfig(self, path):
         if not os.path.isfile(path):
             filePutContent(path, 'Host *\n\tStrictHostKeyChecking no')

@@ -6,15 +6,15 @@ from stratuslab.Util import modulePath
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import printError
 from stratuslab.Util import unifyNetsize
+from stratuslab.Util import assignAttributes
 
 class OneInstallator(BaseInstallator):
     
     def runInstall(self, options, config):
-        self.assignKey(options, config)
+        #TODO: refactor options and config args into __init__
+        assignAttributes(self, options.__dict__)
         self.assignDrivers(options, config)
-        
-        self.onedConfTemplate = options.onedTpl
-        
+        self.onedConfTemplate = options.onedTpl        
         super(OneInstallator, self).runInstall(options, config)
 
     # -------------------------------------------
@@ -117,7 +117,7 @@ class OneInstallator(BaseInstallator):
     def _addPrivateNetworkRoute(self, system):
         routesTmp = '/tmp/stratus-route.tmp'
         routesFd = open(routesTmp, 'wb')
-        routes = system.executeCmd(['route', '-n'], stdout=routesFd)
+        system.executeCmd(['route', '-n'], stdout=routesFd)
         routesFd.close()
 
         routesFd = open(routesTmp, 'rb')

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath

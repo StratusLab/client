@@ -10,8 +10,8 @@ class BaseInstallator(object):
         # Make sure one_%(name)s_* exist in the config 
         self.defaultNetworks = ['private', 'public']
         
-        # Attributes initialization
         self.config = None
+        self.options = {}
         self.nodeAddr = None
         self.shareType = None
         self.frontend = None
@@ -28,9 +28,10 @@ class BaseInstallator(object):
         self.cloud.setCredentials(self.config.get('one_username'),
                                   self.config.get('one_password'))
 
+
         # TODO: Automatically determine system
-        self.frontend = getSystemMethods(self.config.get('frontend_system'))
-        self.node = getSystemMethods(self.config.get('node_system'))
+        self.frontend = getSystemMethods(self.config.get('frontend_system'), options.__dict__)
+        self.node = getSystemMethods(self.config.get('node_system'), options.__dict__)
 
         if self.nodeAddr:
             printAction('Starting node installation')

@@ -7,6 +7,7 @@ import urllib2
 from ConfigParser import SafeConfigParser
 from random import sample
 from string import ascii_lowercase
+from Exceptions import ImportException
 
 
 defaultConfigSection = 'stratuslab'
@@ -17,8 +18,9 @@ systemsDir = '%s/stratuslab/system' % modulePath
 manifestExt = '.manifest.xml'
 cliLineSplitChar = '#'
 
-NORMAL_VERBOSE_LEVEL = 0
-DETAILED_VERBOSE_LEVEL = 1
+QUIET_VERBOSE_LEVEL = 0
+NORMAL_VERBOSE_LEVEL = 1
+DETAILED_VERBOSE_LEVEL = 2
 
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
@@ -128,23 +130,6 @@ def setPythonPath(path):
     if not path in sys.path:
         sys.path.append(path)
 
-def printAndFlush(msg):
-    sys.stdout.flush()
-    print msg,
-    sys.stdout.flush()
-
-def printAction(msg):
-    printAndFlush('\n> %s' % msg)
-    
-def printStep(msg):
-    printAndFlush('\n :: %s' % msg)
-
-def printError(msg, exitCode=1, exit=True):
-    printAndFlush('\n  ** %s' % msg)
-
-    if exit:
-        sys.exit(exitCode)
-
 def execute(cmd, **kwargs):
     wait = not kwargs.get('noWait', False)
 
@@ -153,7 +138,8 @@ def execute(cmd, **kwargs):
         
     verboseLevel = _extractVerboseLevel(kwargs)
     verboseThreshold = _extractVerboseThreshold(kwargs)
-    printDetail(' '.join(cmd), verboseLevel, verboseThreshold)
+    
+    printDetail('Calling: ' + ' '.join(cmd), verboseLevel, verboseThreshold)
 
     process = subprocess.Popen(cmd, **kwargs)
 
@@ -175,9 +161,26 @@ def _extractAndDeleteKey(key, default, dict):
         del dict[key]
     return value
 
+def printAction(msg):
+    printAndFlush('\n> %s' % msg)
+    
+def printStep(msg):
+    printAndFlush('\n :: %s' % msg)
+
+def printError(msg, exitCode=1, exit=True):
+    printAndFlush('\n  ** %s\n' % msg)
+
+    if exit:
+        sys.exit(exitCode)
+
+def printAndFlush(msg):
+    sys.stdout.flush()
+    print msg,
+    sys.stdout.flush()
+
 def printDetail(msg,verboseLevel=1,verboseThreshold=1):
     if verboseLevel >= verboseThreshold:
-        printAndFlush('    %s\n' % msg) 
+        printAndFlush('\n    %s' % msg) 
     
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout, '-o', 'StrictHostKeyChecking=no']
@@ -203,7 +206,8 @@ def scp(src, dest, sshKey=None, port=22, **kwargs):
     
     return execute(scpCmd, **kwargs)
 
-def getSystemMethods(system):
+#TODO: turn into factory class
+def getSystemMethods(system, options = {}):
     if not os.path.isfile('%s/%s.py' % (systemsDir, system)):
         raise ValueError('Specified system %s not available' %
                          system)
@@ -211,14 +215,20 @@ def getSystemMethods(system):
     setPythonPath(systemsDir)
 
     module = importSystem(system)
-    return getattr(module, 'system')
+
+    obj = getattr(module, 'system')
+    assignAttributes(obj, options)
+    
+    return obj
 
 def importSystem(system):
     module = None
     try:
         module = __import__(system)
     except:
-        printError('Error while importing system module')
+        msg = 'Error while importing module %s' % system
+        printError('', exit=False)
+        raise ImportException(msg)
     else:
         return module
 
