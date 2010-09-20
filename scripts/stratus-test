@@ -24,7 +24,6 @@ class MainProgram(CommandBase):
         usage = '''usage: %prog [options] [test] ...\n\n
 where test is a comma separated list of tests, according to the name provided by -l/--list.'''
         
-
         self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile', 
                                help='configuration file', metavar='PATH',
