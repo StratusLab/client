@@ -50,13 +50,11 @@ vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
 vm_dir = /instances
-;vm_dir =
 context_script = %(one_home)s/share/scripts/init.sh
 
 ;
 ; Systems
 ;
-;; TODO: Leave blank for auto conf
 frontend_ip = 127.0.0.1
 frontend_system = ubuntu
 node_system = centos
@@ -76,6 +74,36 @@ node_bridge_name = br0
 app_repo_username = foo
 app_repo_password = bar
 app_repo_url = https://appliances.stratuslab.eu/images
+
+; Directory in which to store the images
+app_repo_image_dir = /images
+
+; Structure of the repository
+app_repo_structure = #type_#/#os#-#osversion#-#arch#-#type#/#version#
+
+; Repository image filename structure
+app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img.#compression#')
+
+; URL of the LDAP server to use for authentication
+app_repo_ldap_url = ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid'
+
+; Enable LDAP authentication
+app_repo_use_ldap = True
+
+; Certificate to use for authenticating the LDAP server
+app_repo_ldap_cert = 
+
+; LDAP Bind DN
+app_repo_ldap_bind = cn=repo,ou=daemons,o=stratuslab
+
+; Password to use when connecting to the LDAP server
+app_repo_ldap_passwd = 
+
+; Location of Apache configuration
+app_repo_apache_home = /etc/httpd
+
+; User password file
+app_repo_passwd =
 
 ;
 ; Available ONE networks

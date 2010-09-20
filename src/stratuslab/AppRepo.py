@@ -3,56 +3,107 @@ import os
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
-from stratuslab.Util import printAction
+from stratuslab.Util import printDetail
 from stratuslab.Util import printStep
 from stratuslab.Util import execute
-from stratuslab.Util import assignAttributes
+from stratuslab.Exceptions import ConfigurationException
+import Util
+import stratuslab.system.SystemFactory as SystemFactory
 
 class AppRepo(object):
+    '''Perform local installation of an Appliance Repository'''
     
-    def __init__(self, options):
-        assignAttributes(self, options)
+    def __init__(self, configHolder):
+        configHolder.assign(self)
+        self._verify()
 
-    def getLdapCertString(self):
-        if self.ldapCert:
+    def _verify(self):
+        if self.appRepoUseLdap and not self.appRepoLdapPasswd:
+            raise ConfigurationException('LDAP authentication selected but no password for server specified')
+
+        if not self.appRepoUseLdap and not self.appRepoPasswdFile:
+            raise ConfigurationException('No password file specified')
+
+    def run(self):
+        installAndSetup = not (self.onlySetup or self.onlyInstall)
+        install = self.onlyInstall or installAndSetup
+        if install:
+            self._install()
+        setup = self.onlySetup or installAndSetup
+        if setup:
+            self._setup()
+    
+    def _install(self):
+        self._installWebServer()
+        self._installImageRepo()
+
+    def _installWebServer(self):
+        printStep('Installing web server (apache2 / httpd)')
+        system = SystemFactory.getInstance(self.frontendSystem)
+        system.installPackages([system.packages['apache2'].packageName])
+        if not os.path.exists(self.appRepoApacheHome):
+            raise ConfigurationException('Apache home not found: %s' % self.appRepoApacheHome)
+
+    def _installImageRepo(self):
+        pass
+    
+    def _setupImageRepo(self):
+        printStep('Setting-up image repository')
+        self._setupWebDav()
+        self._createRepoStructure()
+        self._createRepoConfig()
+        
+    def _setupWebDav(self):
+        self.printDetail('Creating webdav configuration')        
+        if (self.appRepoUseLdap):
+            httpdConf = fileGetContent('%s/share/template/webdav-ldap.conf.tpl' % modulePath)
+            httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
+                                     'ldapSSL': self._getLdapCertString(),
+                                     'ldapURL': self.appRepoLdapUrl,
+                                     'ldapBind': self.appRepoLdapBind,
+                                     'ldapPasswd': self.appRepoLdapPasswd}
+        else:
+            httpdConf = fileGetContent('%s/share/template/webdav.conf.tpl' % modulePath)
+            httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
+                                     'passwd': self.appRepoPasswdFile}	   
+
+        filePutContent('%s/conf.d/webdav.conf' % self.appRepoApacheHome, httpdConf)
+
+    def _createRepoStructure(self):
+        printDetail('Creating repository directory structure')
+        if not os.path.exists('%s/eu/stratuslab/appliances' % self.appRepoImageDir):
+            os.makedirs('%s/eu/stratuslab/appliances' % self.appRepoImageDir)
+            os.makedirs('%s/eu/stratuslab/appliances/grid' % self.appRepoImageDir)
+            os.makedirs('%s/eu/stratuslab/appliances/base' % self.appRepoImageDir)
+
+        if not os.path.exists('%s/.stratuslab' % self.appRepoImageDir):
+            os.makedirs('%s/.stratuslab' % self.appRepoImageDir)
+        self._execute(['chown', '-R', 'apache.apache', '%s/eu' % self.appRepoImageDir])
+
+    def _createRepoConfig(self):
+        printDetail('Creating repository configuration file')
+#        repoConfig = fileGetContent('%s/share/template/stratuslab.repo.cfg.tpl' % modulePath)
+#        repoConfig = repoConfig % {'repo_structure': self.repoStructure,
+#                                     'repo_filename': self.repoFilename}
+#        filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.appRepoImageDir, repoConfig)
+
+    def _getLdapCertString(self):
+        if self.appRepoLdapCert:
             ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.ldapCert
         else:
             ldapCertString = ''
             
         return ldapCertString
 
-    def install(self):
-        printAction('Installing image repository')
-        printStep('Creating webdav configuration')        
-        if (self.ldap):
-            httpd_conf = fileGetContent('%s/share/template/webdav-ldap.conf.tpl' % modulePath)
-            httpd_conf = httpd_conf % {'imageDir': self.imageDir,
-                                       'ldapSSL': self.getLdapCertString(),
-                                       'ldapURL': self.ldapUrl,
-                                       'ldapBind': self.ldapBind,
-                                       'ldapPasswd': self.ldapPasswd
-                                        }
-        else:
-            httpd_conf = fileGetContent('%s/share/template/webdav.conf.tpl' % modulePath)
-            httpd_conf = httpd_conf % {'imageDir': self.imageDir,
-                                       'passwd': self.passwdFile
-                                      }	   
+    def _execute(self, cmd):
+        return execute(cmd, verboseLevel=self.verboseLevel)
+    
+    def _setup(self):
+        self._setupWebServer()
+        self._setupImageRepo()
 
-        filePutContent('%s/conf.d/webdav.conf' % self.apacheHome, httpd_conf)
+    def _setupWebServer(self):
+        pass
 
-        if self.create:
-            printStep('Creating repository directory structure')
-            if not os.path.exists('%s/eu/stratuslab/appliances' % self.imageDir):
-                os.makedirs('%s/eu/stratuslab/appliances' % self.imageDir)
-                os.makedirs('%s/eu/stratuslab/appliances/grid' % self.imageDir)
-                os.makedirs('%s/eu/stratuslab/appliances/base' % self.imageDir)
-
-            if not os.path.exists('%s/.stratuslab' % self.imageDir):
-                os.makedirs('%s/.stratuslab' % self.imageDir)
-            execute('chown','-R','apache.apache', '%s/eu' % self.imageDir)            
-
-        printStep('Creating repository configuration file')
-        repo_config = fileGetContent('%s/share/template/stratuslab.repo.cfg.tpl' % modulePath)
-        repo_config = repo_config % {'repo_structure': self.repo_structure,
-                                     'repo_filename': self.repo_filename}
-        filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.imageDir, repo_config)
+    def printDetail(self, msg, verboseThreshold=Util.NORMAL_VERBOSE_LEVEL):
+        printDetail(msg, self.verboseLevel, verboseThreshold)

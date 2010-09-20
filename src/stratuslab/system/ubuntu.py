@@ -1,6 +1,7 @@
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
+from stratuslab.system.PackageInfo import PackageInfo
 
 class Ubuntu(BaseSystem):
 
@@ -24,6 +25,9 @@ class Ubuntu(BaseSystem):
             'nfs': ['nfs-common'],
             'ssh': [],
         }
+        
+        self.packages = {'apache2': PackageInfo('apache2','/etc/apache2')}
+
         super(Ubuntu, self).__init__()
 
     # -------------------------------------------

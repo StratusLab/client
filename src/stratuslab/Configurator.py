@@ -74,3 +74,24 @@ class Configurator(object):
         if os.path.isfile(self.userConfigFile):
             os.remove(self.userConfigFile)
 
+    @staticmethod
+    def assignConfigAttributes(instance, config):
+        for key, value in config.items():
+            setattr(instance, Configurator._camelCase(key), value)
+        return instance
+
+    @staticmethod
+    def formatConfigKeys(config):
+        dict = {}
+        for k, v in config.items():
+            dict[Configurator._camelCase(k)] = v
+        return dict
+    
+    @staticmethod
+    def _camelCase(key):
+        formattedKey = ''.join([part.title() for part in key.split('_')])
+        if len(formattedKey) > 0:
+            formattedKey = formattedKey[0].lower() + formattedKey[1:]
+        return formattedKey
+        
+        

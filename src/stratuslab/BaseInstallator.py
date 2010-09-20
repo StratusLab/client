@@ -2,6 +2,8 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import getSystemMethods
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
+from stratuslab.AppRepo import AppRepo
+from stratuslab.ConfigHolder import ConfigHolder
 
 class BaseInstallator(object):
     
@@ -18,6 +20,7 @@ class BaseInstallator(object):
         self.node = None
 
     def runInstall(self, options, config):
+        self.options = options
         self.config = config
         self.nodeAddr = options.nodeAddr
         self.shareType = self.config.get('share_type')
@@ -34,10 +37,13 @@ class BaseInstallator(object):
         self.node = getSystemMethods(self.config.get('node_system'), options.__dict__)
 
         if self.nodeAddr:
-            printAction('Starting node installation')
+            printAction('Node(s) installation')
             self.runInstallNodes()
+        elif self.appRepoAddr:
+            printAction('Appliance Repository installation')
+            self.runInstallAppRepo()
         else:
-            printAction('Starting frontend installation')
+            printAction('Frontend installation')
             self.runInstallFrontend()
             
         printAction('Installation completed')
@@ -68,6 +74,11 @@ class BaseInstallator(object):
         
         if self.config.get('hypervisor') == 'xen':
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
+
+    def runInstallAppRepo(self):
+        configHolder = ConfigHolder(self.options, self.config)
+        appRepo = AppRepo(configHolder)
+        appRepo.run()
 
     def runInstallFrontend(self):
         printStep('Configuring file sharing')

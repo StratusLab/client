@@ -5,7 +5,7 @@ from datetime import datetime
 from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
-from stratuslab.Util import execute
+from stratuslab.Util import execute, printDetail
 from stratuslab.Util import fileAppendContent
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
@@ -24,6 +24,9 @@ class BaseSystem(object):
     # -------------------------------------------
     
     def updatePackageManager(self):
+        pass
+
+    def installWebServer(self):
         pass
 
     def installPackages(self, packages):
@@ -62,9 +65,10 @@ class BaseSystem(object):
     def _applyPatchs(self):
         patchDir = os.path.abspath('%s/../../share/patch' % os.path.abspath(__file__))
         
-        for patch in [os.path.abspath('%s/%s' % (patchDir, f)) 
-            for f in os.listdir(patchDir)]:
+        for patch in \
+            [os.path.abspath('%s/%s' % (patchDir, f)) for f in os.listdir(patchDir)]:
             patchFile = open(patch, 'rb')
+            printDetail('Applying patch %s' % patch, self.verboseLevel)
             self.executeCmd(['patch', '-p1'], stdin=patchFile)
             patchFile.close()
 

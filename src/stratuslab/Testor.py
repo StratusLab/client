@@ -10,6 +10,7 @@ from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import NetworkException
+from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
@@ -48,7 +49,7 @@ class Testor(unittest.TestCase):
         elif configKey in self.config:
             self._setOption(optionKey,self.config[configKey])
         else:
-            raise Exception('Missing configuration for config key %s or env var %s' % (configKey, envKey))
+            raise ConfigurationException('Missing configuration for config key %s or env var %s' % (configKey, envKey))
 
     def _setOption(self, key, value):
         self.options[key] = value
@@ -59,7 +60,7 @@ class Testor(unittest.TestCase):
         elif Util.configFrontEndIp in self.config:
             os.environ[Util.envEndpoint] = 'http://%s:2633/RPC2' % self.config[Util.configFrontEndIp]
         else:
-            raise Exception('Missing environment variable %s or configuration parameter %s' % (Util.envEndpoint, Util.configFrontEndIp))
+            raise ConfigurationException('Missing environment variable %s or configuration parameter %s' % (Util.envEndpoint, Util.configFrontEndIp))
 
     def dummy(self):
         pass

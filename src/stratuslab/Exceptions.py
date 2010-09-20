@@ -7,5 +7,8 @@ class NetworkException(Exception):
 class ImportException(Exception):
     pass
 
+class ConfigurationException(Exception):
+    pass
+
 
     

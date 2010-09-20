@@ -3,6 +3,7 @@ import tarfile
 
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import wget
+from stratuslab.system.PackageInfo import PackageInfo
 
 class CentOS(BaseSystem):
 
@@ -39,6 +40,8 @@ class CentOS(BaseSystem):
             'nfs': [],
             'ssh': [],
         }
+        
+        self.packages = {'apache2': PackageInfo('httpd','/etc/httpd')}
         
         super(CentOS, self).__init__()
 

@@ -28,9 +28,18 @@ class MainProgram(CommandBase):
         self.parser.add_option('-n', '--node', dest='nodeAddr', 
                                help='IP address or hostname of the node to configure',
                                default=None, metavar='ADDRESS')
+        self.parser.add_option('--apprepo', dest='appRepoAddr', 
+                               help='IP address or hostname of the appliance repository to configure',
+                               default=None, metavar='ADDRESS')
         self.parser.add_option('-k', '--private-key', dest='privateKey', 
                                help='private key for ssh node connection', metavar='FILENAME',
                                default=None)
+        self.parser.add_option('--install', dest='onlyInstall',
+                               help='Only install packages, don\'t perform setup', 
+                               action='store_true', default=None)
+        self.parser.add_option('--setup', dest='onlySetup',
+                               help='Only setup system, don\'t install packages', 
+                               action='store_true', default=None)
         
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 
@@ -44,6 +53,10 @@ class MainProgram(CommandBase):
                                help='transfert driver', metavar='VM_NAME', default=None)
         
         self.options, _ = self.parser.parse_args()
+
+    def checkOptions(self):
+        if self.options.onlyInstall and self.options.onlySetup:
+            self.parser.error('--install and --setup are mutually exclusive.')
 
     def doWork(self):
         config = parseConfig(self.options.configFile)        
