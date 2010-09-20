@@ -31,7 +31,6 @@ class Testor(unittest.TestCase):
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
-        self.options = {}
         
         self._fillOptions()
 
@@ -103,6 +102,7 @@ class Testor(unittest.TestCase):
         options['username'] = self.config['one_username']
         options['password'] = self.config['one_password']
         options['userKey'] = self.sshKeyPub
+        options['verboseLevel'] = Testor.options['verboseLevel']
         
         image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.gz'
         image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
