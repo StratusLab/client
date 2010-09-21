@@ -3,18 +3,17 @@ import os
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
-from stratuslab.Util import printDetail
-from stratuslab.Util import printStep
 from stratuslab.Util import execute
 from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Configurable import Configurable
 import Util
 import stratuslab.system.SystemFactory as SystemFactory
 
-class AppRepo(object):
+class AppRepo(Configurable):
     '''Perform local installation of an Appliance Repository'''
     
     def __init__(self, configHolder):
-        configHolder.assign(self)
+        super(AppRepo, self).__init__(configHolder)
         self._verify()
 
     def _verify(self):
@@ -38,7 +37,7 @@ class AppRepo(object):
         self._installImageRepo()
 
     def _installWebServer(self):
-        printStep('Installing web server (apache2 / httpd)')
+        self.printStep('Installing web server (apache2 / httpd)')
         system = SystemFactory.getInstance(self.frontendSystem)
         system.installPackages([system.packages['apache2'].packageName])
         if not os.path.exists(self.appRepoApacheHome):
@@ -48,7 +47,7 @@ class AppRepo(object):
         pass
     
     def _setupImageRepo(self):
-        printStep('Setting-up image repository')
+        self.printStep('Setting-up image repository')
         self._setupWebDav()
         self._createRepoStructure()
         self._createRepoConfig()
@@ -70,7 +69,7 @@ class AppRepo(object):
         filePutContent('%s/conf.d/webdav.conf' % self.appRepoApacheHome, httpdConf)
 
     def _createRepoStructure(self):
-        printDetail('Creating repository directory structure')
+        self.printDetail('Creating repository directory structure')
         if not os.path.exists('%s/eu/stratuslab/appliances' % self.appRepoImageDir):
             os.makedirs('%s/eu/stratuslab/appliances' % self.appRepoImageDir)
             os.makedirs('%s/eu/stratuslab/appliances/grid' % self.appRepoImageDir)
@@ -81,7 +80,7 @@ class AppRepo(object):
         self._execute(['chown', '-R', 'apache.apache', '%s/eu' % self.appRepoImageDir])
 
     def _createRepoConfig(self):
-        printDetail('Creating repository configuration file')
+        self.printDetail('Creating repository configuration file')
 #        repoConfig = fileGetContent('%s/share/template/stratuslab.repo.cfg.tpl' % modulePath)
 #        repoConfig = repoConfig % {'repo_structure': self.repoStructure,
 #                                     'repo_filename': self.repoFilename}
@@ -104,6 +103,3 @@ class AppRepo(object):
 
     def _setupWebServer(self):
         pass
-
-    def printDetail(self, msg, verboseThreshold=Util.NORMAL_VERBOSE_LEVEL):
-        printDetail(msg, self.verboseLevel, verboseThreshold)
