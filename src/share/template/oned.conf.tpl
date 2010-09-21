@@ -1,5 +1,5 @@
 #*******************************************************************************
-#             OpenNebula Configuration file (Stratuslab version)
+#                       OpenNebula Configuration file
 #*******************************************************************************
 
 #*******************************************************************************
@@ -37,7 +37,8 @@ VM_DIR=%(vm_dir)s
 
 PORT=%(one_port)s
 
-# TODO: Add value in config
+SCRIPTS_REMOTE_DIR=/tmp/one
+
 DB = [ backend = "sqlite" ]
 
 # Sample configuration for MySQL
@@ -96,7 +97,7 @@ DEFAULT_DEVICE_PREFIX = "hd"
 #   name      : name for this information manager
 #
 #   executable: path of the information driver executable, can be an
-#               absolsute path or relative to $ONE_LOCATION/lib/mads (or
+#               absolute path or relative to $ONE_LOCATION/lib/mads (or
 #               /usr/lib/one/mads/ if OpenNebula was installed in /)
 #
 #   arguments : for the driver executable, usually a probe configuration file,
@@ -104,32 +105,37 @@ DEFAULT_DEVICE_PREFIX = "hd"
 #               /etc/one/ if OpenNebula was installed in /)
 #*******************************************************************************
 
-
 #-------------------------------------------------------------------------------
-#  XEN Information Driver Manager sample configuration
-#-------------------------------------------------------------------------------
-IM_MAD = [
-    name       = "im_xen",
-    executable = "one_im_ssh",
-    arguments  = "im_xen/im_xen.conf" ]
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
-#  KVM Information Driver Manager sample configuration
+#  KVM Information Driver Manager Configuration
 #-------------------------------------------------------------------------------
 IM_MAD = [
       name       = "im_kvm",
       executable = "one_im_ssh",
-      arguments  = "im_kvm/im_kvm.conf" ]
+      arguments  = "kvm" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-#  EC2 Information Driver Manager sample configuration
+#  XEN Information Driver Manager Configuration
+#-------------------------------------------------------------------------------
+IM_MAD = [
+    name       = "im_xen",
+    executable = "one_im_ssh",
+    arguments  = "xen" ]
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#  EC2 Information Driver Manager Configuration
 #-------------------------------------------------------------------------------
 #IM_MAD = [
 #      name       = "im_ec2",
 #      executable = "one_im_ec2",
 #      arguments  = "im_ec2/im_ec2.conf" ]
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#  Dummy Information Driver Manager Configuration
+#-------------------------------------------------------------------------------
+#IM_MAD = [ name="im_dummy", executable="one_im_dummy"]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -154,27 +160,29 @@ IM_MAD = [
 #*******************************************************************************
 
 #-------------------------------------------------------------------------------
-#  XEN Virtualization Driver Manager sample configuration
-#-------------------------------------------------------------------------------
-VM_MAD = [
-    name       = "vmm_xen",
-    executable = "one_vmm_xen",
-    default    = "vmm_xen/vmm_xen.conf",
-    type       = "xen" ]
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
-#  KVM Virtualization Driver Manager sample configuration
+#  KVM Virtualization Driver Manager Configuration
 #-------------------------------------------------------------------------------
 VM_MAD = [
     name       = "vmm_kvm",
-    executable = "one_vmm_kvm",
-    default    = "vmm_kvm/vmm_kvm.conf",
+    executable = "one_vmm_sh",
+    arguments  = "kvm",
+    default    = "vmm_sh/vmm_sh_kvm.conf",
     type       = "kvm" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-#  EC2 Virtualization Driver Manager sample configuration
+#  XEN Virtualization Driver Manager Configuration
+#-------------------------------------------------------------------------------
+VM_MAD = [
+    name       = "vmm_xen",
+    executable = "one_vmm_sh",
+    arguments  = "xen",
+    default    = "vmm_sh/vmm_sh_xen.conf",
+    type       = "xen" ]
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#  EC2 Virtualization Driver Manager Configuration
 #    arguments: default values for the EC2 driver, can be an absolute path or
 #               relative to $ONE_LOCATION/etc (or /etc/one/ if OpenNebula was
 #               installed in /).
@@ -184,6 +192,12 @@ VM_MAD = [
 #    executable = "one_vmm_ec2",
 #    arguments  = "vmm_ec2/vmm_ec2.conf",
 #    type       = "xml" ]
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#  Dummy Virtualization Driver Configuration
+#-------------------------------------------------------------------------------
+#VM_MAD = [ name="vmm_dummy", executable="one_vmm_dummy", type="xml" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -199,20 +213,11 @@ VM_MAD = [
 #
 #   arguments : for the driver executable, usually a commands configuration file
 #               , can be an absolute path or relative to $ONE_LOCATION/etc (or
-#               /etc/one/ if OpenNebula was insta%(hypervisor)slled in /)
+#               /etc/one/ if OpenNebula was installed in /)
 #*******************************************************************************
 
 #-------------------------------------------------------------------------------
-# SSH Transfer Manager Driver sample configuration
-#-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_ssh",
-    executable = "one_tm",
-    arguments  = "tm_ssh/tm_ssh.conf" ]
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
-# NFS Transfer Manager Driver sample configuration
+# NFS Transfer Manager Driver Configuration
 #-------------------------------------------------------------------------------
 TM_MAD = [
     name       = "tm_nfs",
@@ -221,21 +226,30 @@ TM_MAD = [
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# Dummy Transfer Manager Driver sample configuration
+# SSH Transfer Manager Driver Configuration
 #-------------------------------------------------------------------------------
 TM_MAD = [
-    name       = "tm_dummy",
+    name       = "tm_ssh",
     executable = "one_tm",
-    arguments  = "tm_dummy/tm_dummy.conf" ]
+    arguments  = "tm_ssh/tm_ssh.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# LVM Transfer Manager Driver sample configuration
+# Dummy Transfer Manager Driver Configuration
 #-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_lvm",
-    executable = "one_tm",
-    arguments  = "tm_lvm/tm_lvm.conf" ]
+#TM_MAD = [
+#    name       = "tm_dummy",
+#    executable = "one_tm",
+#    arguments  = "tm_dummy/tm_dummy.conf" ]
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# LVM Transfer Manager Driver Configuration
+#-------------------------------------------------------------------------------
+#TM_MAD = [
+#    name       = "tm_lvm",
+#    executable = "one_tm",
+#    arguments  = "tm_lvm/tm_lvm.conf" ]
 #-------------------------------------------------------------------------------
 
 #*******************************************************************************
@@ -258,7 +272,9 @@ TM_MAD = [
 #               - SHUTDOWN, after the VM is shutdown
 #               - STOP, after the VM is stopped (including VM image transfers)
 #               - DONE, after the VM is deleted or shutdown
-#   command   : use absolute path here
+#   command   : path can be absolute or relative to $ONE_LOCATION/share/hooks
+#               case of self-contained installation or relative to
+#               /usr/share/one/hooks in case of system-wide installation
 #   arguments : for the hook. You can access to VM template variables with $
 #               - $ATTR, the value of an attribute e.g. $NAME or $VMID
 #               - $ATTR[VAR], the value of a vector e.g. $NIC[MAC]
@@ -273,6 +289,17 @@ TM_MAD = [
 HM_MAD = [
     executable = "one_hm" ]
 
+#-------------------------------- Image Hook -----------------------------------
+# This hook is used to handle image saving and overwriting when virtual machines
+# reach the DONE state after being shutdown.
+
+VM_HOOK = [
+    name      = "image",
+    on        = "DONE",
+    command   = "image.rb",
+    arguments = "$VMID" ]
+
+#--------------------------------- StratusLab ----------------------------------
 VM_HOOK = [
     name      = "sshKeygen",
     on        = "create",
@@ -280,12 +307,43 @@ VM_HOOK = [
     arguments = "%(vm_dir)s/$VMID/$CONTEXT[STRATUSLAB_INTERNAL_KEY]",
     remote    = "yes" ]
 
+#VM_HOOK = [
+#    name      = "retrieveManifest",
+#    on        = "running",
+#    command   = "%(one_home)s/share/hooks/retreive-manifest.py",
+#    arguments = "--out $CONTEXT[STRATUSLAB_MANIFEST] --address $NIC[IP, network=\"private\"] --ssh-key %(vm_dir)s/$VMID/$CONTEXT[STRATUSLAB_INTERNAL_KEY] --manifest $CONTEXT[STRATUSLAB_MANIFEST]",
+#    remote    = "yes" ]
+
 VM_HOOK = [
     name      = "uploadImage",
     on        = "done",
     command   = "%(one_home)s/share/hooks/upload-img.py",
     arguments = "--hook --address $NIC[IP, network=\"private\"] --disk %(vm_dir)s/$VMID/images/disk.0 --ssh-key %(vm_dir)s/$VMID/$CONTEXT[STRATUSLAB_INTERNAL_KEY] --manifest $CONTEXT[STRATUSLAB_MANIFEST] --upload-info $CONTEXT[STRATUSLAB_UPLOAD_INFO]",
     remote    = "yes" ]
+
+#-------------------------------------------------------------------------------
+
+#-------------------------------- Hook Examples --------------------------------
+#VM_HOOK = [
+#    name      = "dhcp",
+#    on        = "create",
+#    command   = "/bin/echo",
+#    arguments = "$NAME > /tmp/test.$VMID" ]
+#-------------------------------------------------------------------------------
+#VM_HOOK = [
+#    name      = "ebtables",
+#    on        = "running",
+#    command   = "/usr/local/one/bin/set_net",
+#    arguments = '$NIC[MAC, Network = "Private"]',
+#    remote    = "yes" ]
+#-------------------------------------------------------------------------------
+#VM_HOOK = [
+#    name      = "mail",
+#    on        = "running",
+#    command   = "/usr/local/one/bin/send_mail",
+#    arguments = "$VMID $NAME",
+#    remote    = "no" ]
+#------------------------------------------------------------------------------
 
 #*******************************************************************************
 # Auth Manager Configuration
@@ -304,3 +362,4 @@ VM_HOOK = [
 
 #AUTH_MAD = [
 #    executable = "one_auth_mad" ]
+
