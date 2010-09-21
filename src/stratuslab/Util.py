@@ -162,8 +162,9 @@ def _extractAndDeleteKey(key, default, dict):
     return value
 
 def printAction(msg):
-    printAndFlush('\n.:: %s ::.\n' % msg)
-    printAndFlush(' :::%s:::\n' % (':' *len(msg)))
+    printAndFlush('  ..%s..\n' % ('.' *len(msg)))
+    printAndFlush('.:: %s ::.\n' % msg)
+    printAndFlush(' ::.%s.::\n' % ('.' *len(msg)))
     
 def printStep(msg):
     printAndFlush('\n :: %s' % msg)
