@@ -390,12 +390,3 @@ class BaseSystem(object):
         self.chmodCmd = self._remoteChmod
         self.copyCmd = self._nodeCopy
         self.removeCmd = self._remoteRemove
-        
-        self.tempSshConf = '/tmp/stratus-ssh.tmp.cfg'
-        self._generateTempSshConfig(self.tempSshConf)
-        
-    #TODO: not needed anymore?
-    def _generateTempSshConfig(self, path):
-        if not os.path.isfile(path):
-            filePutContent(path, 'Host *\n\tStrictHostKeyChecking no')
-        

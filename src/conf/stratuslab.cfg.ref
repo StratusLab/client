@@ -1,124 +1,116 @@
-[stratuslab]
-;
-; General
-;
+##############################################################################
+#                                                                            #
+#                  StratusLab Configuration Reference                        #
+#                  ----------------------------------                        #
+#                                                                            #
+#                                                                            #
+# Note: parameters have to have a unique name, across the                    #
+#       sections, as sections are only provided to provide                   #
+#       structure and documentation.                                         #
+#                                                                            #
+##############################################################################
+
+[general]
 hypervisor = kvm
-;hypervisor = xen
+#hypervisor = xen
 share_type = nfs
-;share_type = ssh
+#share_type = ssh
 debug_level = 3
 mac_prefix = 02:00
 stratuslab_location =
-; stratuslab_location = /tmp/stratuslab-remote-install
+# stratuslab_location = /tmp/stratuslab-remote-install
 
-;
-; NFS share
-;
-;; TODO: Leave blank to auto conf (user own risk)
+[nfs]
+## TODO: Leave blank to auto conf (user own risk)
 existing_nfs =
-;existing_nfs = hudson.stratuslab.eu:/srv/cloud
+#existing_nfs = hudson.stratuslab.eu:/srv/cloud
 network_addr = 127.0.0.0
 network_mask = 24
 
-;
-; OpenNebula build
-;
+[one-build]
+# TODO: remove since using package
 one_git_repo = git://opennebula.org/one.git
 one_branch = one-2.0
-;one_branch = one-1.4
+#one_branch = one-1.4
 one_build_dir = /tmp/one
 one_clone_name = two
 
-;
-; Cloud admin user
-;
-;; TODO: Be less specific in key value
+[one-user]
+## TODO: Be less specific in key value
 one_group = cloud
 one_gid = 10001
 one_uid = 10001
 one_username = oneadmin
 one_password = oneadmin
-one_home = /srv/cloud/one
 
-;
-; OpenNebula specific
-;
-;; TODO: Add prefix to key value
+[one-advanced]
+one_home = /srv/cloud/one
 network_size = 254
 host_monitoring_interval = 60
 vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
 vm_dir = /instances
-context_script = %(one_home)s/share/scripts/init.sh
+context_script = /share/scripts/init.sh
 
-;
-; Systems
-;
+[one-network]
+# Public network configuration
+one_public_network = 192.168.1.0
+one_public_network_size = C
+one_public_network_addr =
+one_public_network_mask =
+#one_public_network_addr = 192.168.1.1 192.168.1.2 192.168.1.3
+
+# Private network configuration
+one_private_network = 172.16.0.0
+one_private_network_size = 65536
+one_private_network_addr =
+one_private_network_mask =
+#one_private_network_mask = 16
+
+[one-deployment]
 frontend_ip = 127.0.0.1
 frontend_system = ubuntu
 node_system = centos
 default_gateway = 3.13.3.7
 
-;
-; Node network
-;
 node_private_key = /root/.ssh/id_rsa
 node_ssh_port = 22
 node_network_interface = eth0
 node_bridge_name = br0
 
-;
-; Default appliances repository
-;
+[app-repo]
+# Appliance Repository
 app_repo_username = foo
 app_repo_password = bar
 app_repo_url = https://appliances.stratuslab.eu/images
 
-; Directory in which to store the images
+# Directory in which to store the images
 app_repo_image_dir = /images
 
-; Structure of the repository
+# Structure of the repository
 app_repo_structure = #type_#/#os#-#osversion#-#arch#-#type#/#version#
 
-; Repository image filename structure
+# Repository image filename structure
 app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img.#compression#')
 
-; URL of the LDAP server to use for authentication
+# URL of the LDAP server to use for authentication
 app_repo_ldap_url = ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid'
 
-; Enable LDAP authentication
+# Enable LDAP authentication
 app_repo_use_ldap = True
 
-; Certificate to use for authenticating the LDAP server
+# Certificate to use for authenticating the LDAP server
 app_repo_ldap_cert = 
 
-; LDAP Bind DN
+# LDAP Bind DN
 app_repo_ldap_bind = cn=repo,ou=daemons,o=stratuslab
 
-; Password to use when connecting to the LDAP server
+# Password to use when connecting to the LDAP server
 app_repo_ldap_passwd = 
 
-; Location of Apache configuration
+# Location of Apache configuration
 app_repo_apache_home = /etc/httpd
 
-; User password file
+# User password file
 app_repo_passwd =
-
-;
-; Available ONE networks
-;
-
-; Public network configuration
-one_public_network = 192.168.1.0
-one_public_network_size = C
-one_public_network_addr =
-one_public_network_mask =
-;one_public_network_addr = 192.168.1.1 192.168.1.2 192.168.1.3
-
-; Private network configuration
-one_private_network = 172.16.0.0
-one_private_network_size = 65536
-one_private_network_addr =
-one_private_network_mask =
-;one_private_network_mask = 16
