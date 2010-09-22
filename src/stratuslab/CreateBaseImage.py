@@ -112,32 +112,37 @@ class CreateBaseImage(object):
         if not os.path.exists(self.outputDir):
             os.makedirs(self.outputDir)
 
-        self._execute(['/bin/dd','if=/dev/zero','of=%s/%s' % (self.outputDir, self.outputFileName)
+        self._execute(['dd','if=/dev/zero','of=%s/%s' % (self.outputDir, self.outputFileName)
                      ,'bs=1M','count=1','seek=%d' % self.imageSize])
 
         printStep('Creating partitions.')
 
         if (self.swap):
             printStep('Creating %sMB swap space.' % self.swapSize)
+            rootSize = self.imageSize - self.swapSize
+            sfDiskString = ',%d,83,*\n,,82\n' % rootSize
+        else:
+            sfDiskString = ',,83,*\n'
 
-        subprocess.Popen(['/sbin/sfdisk','-uM','%s/%s' % (self.outputDir, self.outputFileName)], 
+        p = subprocess.Popen(['sfdisk','-uM','%s/%s' % (self.outputDir, self.outputFileName)],
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
+        stdout = p.communicate(input='%s' % sfDiskString)[0]
 
         printStep('Creating loop devices and mapper.')
-        self._execute(['/sbin/losetup',self.loopDev,'%s/%s' % (self.outputDir, self.outputFileName)])
-        self._execute(['/sbin/kpartx','-a',self.loopDev])
+        self._execute(['losetup',self.loopDev,'%s/%s' % (self.outputDir, self.outputFileName)])
+        self._execute(['kpartx','-a',self.loopDev])
 
         printStep('Making filesystem.')
         _,dev = os.path.split(self.options.loopDev)
         self.loopDevMapper = '/dev/mapper/%s' % dev
 
-        self._execute(['/sbin/mkfs.ext3','%sp1' % self.loopDevMapper])
-        p = subprocess.Popen(['/sbin/blkid','-o','value','%sp1' % self.loopDevMapper], stdout=PIPE, stderr=PIPE)
+        self._execute(['mkfs.ext3','%sp1' % self.loopDevMapper])
+        p = subprocess.Popen(['blkid','-o','value','%sp1' % self.loopDevMapper], stdout=PIPE, stderr=PIPE)
         stdout, _ = p.communicate()
         uuid = stdout.split();
         self.root_uuid = uuid[0]
 
-        p = subprocess.Popen(['/sbin/mkswap','%sp2' % self.loopDevMapper], stdout=PIPE, stderr=PIPE)
+        p = subprocess.Popen(['mkswap','%sp2' % self.loopDevMapper], stdout=PIPE, stderr=PIPE)
         stdout, _ = p.communicate()
         s_uuid = stdout.split('UUID=');
         self.swap_uuid = s_uuid[1].strip();
@@ -147,7 +152,7 @@ class CreateBaseImage(object):
         if not os.path.exists(self.mountDir):
             os.makedirs(self.mountDir)
 
-        self._execute(['/bin/mount',self.loopDevMapper + "p1",self.mountDir])
+        self._execute(['mount',self.loopDevMapper + "p1",self.mountDir])
 
         if (self.debian):
             self._installOSDebian()
@@ -167,19 +172,19 @@ class CreateBaseImage(object):
         #setup access
         if not self.rootPasswd is None:
             printStep('Setting root password.')
-            self._execute(['/usr/sbin/usermod','-p','%s' % self.rootPasswd,'root'])
+            self._execute(['usermod','-p','%s' % self.rootPasswd,'root'])
 
         if not self.publicKey is None:
             printStep('Installing SSH key.')
             if not os.path.exists('/root/.ssh'):
                 os.makedirs('/root/.ssh')
             filePutContent('/root/.ssh/authorized_keys', self.publicKeyContent)
-            self._execute(['/bin/chmod','-R','600','/root/.ssh/'])
+            self._execute(['chmod','-R','600','/root/.ssh/'])
 
         self._chrootExit()
 
     def _installOSRedhat(self):
-        self._execute(['/usr/sbin/rinse','--arch=%s' % self.rinseArch,'--distribution','%s-%s' % (self.os, self.osVersion),
+        self._execute(['rinse','--arch=%s' % self.rinseArch,'--distribution','%s-%s' % (self.os, self.osVersion),
                            '--directory',self.mountDir,'--post-install','/bin/true'])
  
         #fix yum
@@ -196,16 +201,16 @@ class CreateBaseImage(object):
             shutil.move(srcfile, destfile)
 
         printStep('Installing extra packages.')
-        self._execute(['/bin/mount','-o','bind','/proc','%s/proc' % self.mountDir])
+        self._execute(['mount','-o','bind','/proc','%s/proc' % self.mountDir])
         shutil.copy('/etc/resolv.conf','%s/etc/resolv.conf' % self.mountDir)
 
         self._chroot()
-        self._execute(['/usr/bin/yum','install','-y','yum'])
-        self._execute(['/usr/bin/yum','install','-y','vim-enhanced','less','bzip2'
+        self._execute(['yum','install','-y','yum'])
+        self._execute(['yum','install','-y','vim-enhanced','less','bzip2'
                                                    ,'openssh-server','rsync'
                                                    ,'gnupg', 'perl','man'])
-        self._execute(['/usr/bin/yum','install','-y','kernel'])
-        self._execute(['/usr/bin/yum','install','-y','grub'])
+        self._execute(['yum','install','-y','kernel'])
+        self._execute(['yum','install','-y','grub'])
 
         for file in glob.glob('/usr/share/grub/%s-redhat/*' % self.arch):
             shutil.copy(file, '/boot/grub')
@@ -228,7 +233,7 @@ class CreateBaseImage(object):
             os.remove(r)
 
     def _installOSDebian(self):
-        self._execute(['/usr/sbin/debootstrap', '--arch=%s' % self.arch, self.osVersion, self.mountDir, self.mirror])
+        self._execute(['debootstrap', '--arch=%s' % self.arch, self.osVersion, self.mountDir, self.mirror])
         
         printStep('Installing extra packages.')
         self._chroot()
@@ -266,7 +271,7 @@ class CreateBaseImage(object):
         hostname.close()
 
     def _installOSUbuntu(self):
-        self._execute(['/usr/sbin/debootstrap', '--arch=%s' % self.arch, self.osVersion, self.mountDir, self.mirror])
+        self._execute(['debootstrap', '--arch=%s' % self.arch, self.osVersion, self.mountDir, self.mirror])
 
         printStep('Installing extra packages.')
         self._chroot()
@@ -319,7 +324,7 @@ class CreateBaseImage(object):
 
     def _installGrubRedhat(self):
         printAction('Installing Grub (RedHat).')
-        self._execute(['/bin/mount','-o','bind','/dev','%s/dev' % self.mountDir])
+        self._execute(['mount','-o','bind','/dev','%s/dev' % self.mountDir])
 
         device_map = open('%s/device.map' % self.outputDir, 'w')
         device_map.write('(hd0) %s/%s\n' % (self.outputDir, self.outputFileName))
@@ -329,10 +334,10 @@ class CreateBaseImage(object):
         t_device_map.write('(hd0) %s\n(hd0,0) %sp1\n' % (self.loopDev,self.loopDevMapper))
         t_device_map.close()
 
-        self._execute(['/sbin/grub-install','--root-directory=%s' % self.mountDir,self.loopDev],
+        self._execute(['grub-install','--root-directory=%s' % self.mountDir,self.loopDev],
                      False,True,False)
 
-        p = subprocess.Popen(['/sbin/grub','--device-map=%s/device.map' % self.outputDir], 
+        p = subprocess.Popen(['grub','--device-map=%s/device.map' % self.outputDir], 
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
         p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
 
@@ -360,7 +365,7 @@ class CreateBaseImage(object):
         fstab.close()
 
         self._chroot()
-        self._execute(['/sbin/mkinitrd','-f','/boot/initrd-%s.img' % kernelVersion, kernelVersion],False,True,False)
+        self._execute(['mkinitrd','-f','/boot/initrd-%s.img' % kernelVersion, kernelVersion],False,True,False)
         self._chrootExit()
 
         #remove created file
@@ -368,16 +373,16 @@ class CreateBaseImage(object):
 
     def _installGrubDebian(self):
         printAction('Installing Grub (Debian).')
-        self._execute(['/bin/mount','-o','bind','/dev','%s/dev' % self.mountDir])
+        self._execute(['mount','-o','bind','/dev','%s/dev' % self.mountDir])
 
         device_map = open('%s/device.map' % self.outputDir, 'w')
         device_map.write('(hd0) %s/%s\n' % (self.outputDir, self.outputFileName))
         device_map.close()
        
-        self._execute(['/sbin/grub-install','--root-directory=%s' % self.mountDir,self.loopDev],
+        self._execute(['grub-install','--root-directory=%s' % self.mountDir,self.loopDev],
                      False,True,False)
  
-        p = subprocess.Popen(['/sbin/grub','--device-map=%s/device.map' % self.outputDir],
+        p = subprocess.Popen(['grub','--device-map=%s/device.map' % self.outputDir],
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
         p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
 
@@ -411,17 +416,17 @@ class CreateBaseImage(object):
   
     def _installGrubUbuntu(self):
         printAction('Installing Grub (Ubuntu).')
-        self._execute(['/bin/mount','-o','bind','/dev','%s/dev' % self.mountDir])
-        self._execute(['/bin/mount','-o','bind','/dev/pts','%s/dev/pts' % self.mountDir])
+        self._execute(['mount','-o','bind','/dev','%s/dev' % self.mountDir])
+        self._execute(['mount','-o','bind','/dev/pts','%s/dev/pts' % self.mountDir])
 
         device_map = open('%s/device.map' % self.outputDir, 'w')
         device_map.write('(hd0) %s/%s\n' % (self.outputDir, self.outputFileName))
         device_map.close()
 
-        self._execute(['/sbin/grub-install','--root-directory=%s' % self.mountDir,self.loopDev],
+        self._execute(['grub-install','--root-directory=%s' % self.mountDir,self.loopDev],
                      False,True,False)
 
-        p = subprocess.Popen(['/sbin/grub','--device-map=%s/device.map' % self.outputDir],
+        p = subprocess.Popen(['grub','--device-map=%s/device.map' % self.outputDir],
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
         p.communicate(input='root (hd0,0)\nsetup (hd0)\nquit\n')[0]
 
@@ -454,7 +459,7 @@ class CreateBaseImage(object):
 
         #remove created file
         os.remove(os.path.join(self.outputDir, 'device.map'))
-        self._execute(['/bin/umount','%s/dev/pts' % self.mountDir], False, True, False)
+        self._execute(['umount','%s/dev/pts' % self.mountDir], False, True, False)
 
     def _installContext(self):
         printAction('Installing contextualisation.')
@@ -474,9 +479,6 @@ class CreateBaseImage(object):
     def _installGrid(self):
         if (self.type == 'base.quattor'):
             self._installQuattor()
-        
-        if (self.type == 'grid.wn'):
-            self._installGridNode('glite-WN')
  
     def _installQuattor(self):
         printAction('Installing Quattor client.')
@@ -489,26 +491,13 @@ class CreateBaseImage(object):
         self._searchreplace('%s/etc/yum.repos.d/dag.repo' % self.mountDir, 'enabled=0', 'enabled=1')
 
         self._chroot()
-        self._execute(['/usr/bin/yum','install','-y','perl-Crypt-SSLeay','perl-XML-Parser'
+        self._execute(['yum','install','-y','perl-Crypt-SSLeay','perl-XML-Parser'
                        ,'perl-IO-String','perl-Proc-ProcessTable','perl-DBI','perl-libwww-perl'])
         self._execute(['bash','/tmp/quattor-client-install.sh'])
         self._execute(['/usr/sbin/ccm-initialise'])
         self._chrootExit()        
 
         os.remove(os.path.join(self.mountDir, 'tmp/quattor-client-install.sh'))
-
-    def _installGridNode(self, nodeType):
-        printAction('Installing %s node.' % nodeType)
-
-        self._execute(['curl','http://grid-deployment.web.cern.ch/grid-deployment/glite/repos/3.2/%s.repo' % nodeType,
-                      '-o','%s/etc/yum.repos.d/%s.repo' % (self.mountDir, nodeType)])
-        #fix yum
-        self._searchreplace('%s/etc/yum.repos.d/dag.repo' % self.mountDir, 'enabled=0', 'enabled=1')
-
-        self._chroot()
-        self._execute(['/usr/bin/yum','install','-y','gcc'])
-        self._execute(['/usr/bin/yum','groupinstall','-y',nodeType])
-        self._chrootExit()
 
     def _createManifest(self):
         printAction('Creating manifest file.')
@@ -525,17 +514,17 @@ class CreateBaseImage(object):
 
     def _cleanup(self):
         if os.path.exists('%s/dev' % self.mountDir):
-            self._execute(['/bin/umount','%s/dev' % self.mountDir], False, True, False)
+            self._execute(['umount','%s/dev' % self.mountDir], False, True, False)
         
         if os.path.exists('%s/proc' % self.mountDir):
-            self._execute(['/bin/umount','%s/proc' % self.mountDir], False, True, False)
+            self._execute(['umount','%s/proc' % self.mountDir], False, True, False)
 
         if(os.path.ismount(self.mountDir)):
-            self._execute(['/bin/umount','%s' % self.mountDir], False, True, False)
+            self._execute(['umount','%s' % self.mountDir], False, True, False)
         
         if os.path.exists(self.loopDev):
-            self._execute(['/sbin/kpartx','-d',self.loopDev], False, True, False)
-            self._execute(['/sbin/losetup','-d',self.loopDev], False, True, False)
+            self._execute(['kpartx','-d',self.loopDev], False, True, False)
+            self._execute(['losetup','-d',self.loopDev], False, True, False)
 
     def _chroot(self):
         os.chroot(self.mountDir)

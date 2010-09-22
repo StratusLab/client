@@ -10,7 +10,6 @@
         <arch>x86_64</arch>
     </os>
     <image>
-        <type>base</type>
         <version>1.0</version>
         <passwd>$1$Q5KdvMP2$ZUie0FvDu.HOYCLE/NpwT.</passwd>
         <output>/var/stratuslab/images</output>

@@ -13,18 +13,17 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.CreateBaseImage import CreateBaseImage
 from stratuslab.Util import parseConfig
 
-class CreateBase(CommandBase):
+class MainProgram(CommandBase):
     '''A command line to automatically create a base VM image'''
     
     def __init__(self):
-        self.args = None
-        self.recipe = None
-        
-        super(CreateBase, self).__init__()
+        #self.args = None
+        #self.recipe = None 
+        super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = 'usage: %prog [options] recipe'
-        self.parser = OptionParser(usage=usage)
+        usage = '%prog [options] recipe'
+        self.parser.usage = usage
         
         self.parser.add_option('--debug', dest='debug',
                           help='output log messages to console', 
@@ -65,12 +64,6 @@ class CreateBase(CommandBase):
             self.parser.error('Sorry the latest Ubuntu release supported is Jaunty (9.04).')
         if self.options.type == 'base.quattor' and not self.options.os == 'scientific-linux':
             self.parser.error('Sorry Quattor installs only supported on Scientific Linux')
-        if self.options.type.startswith('grid.') and (not self.options.os == 'scientific-linux'):
-            self.parser.error('Sorry grid node installs only supported on Scientific Linux')
-        if self.options.type.startswith('grid.') and (not self.options.arch == 'x86_64'):        
-            self.parser.error('Sorry grid node installs only supported on Scientific Linux x86_64') 
-        if self.options.type.startswith('grid.') and (self.options.debian or self.options.ubuntu):
-            self.parser.error('Sorry grid node installs only supported on Scientific Linux')
 
     def _parseRecipe(self):
         xmldoc = minidom.parse(self.recipe)
@@ -152,7 +145,7 @@ class CreateBase(CommandBase):
         
 if __name__ == '__main__':
     try:
-        CreateBase()
+        MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
         
