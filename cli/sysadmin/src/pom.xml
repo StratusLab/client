@@ -1,0 +1,115 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>eu.stratuslab.pkgs</groupId>
+	<artifactId>stratuslab-cli-sysadmin-zip</artifactId>
+	<name>StratusLab Command-Line Interface (CLI) for System Administrators (ZIP)</name>
+	<packaging>pom</packaging>
+	<url>http://stratuslab.eu</url>
+
+	<parent>
+		<groupId>eu.stratuslab.pkgs</groupId>
+		<artifactId>stratuslab-cli-sysadmin</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<build>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>insert-metadata</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+
+						<configuration>
+							<delimiters>
+								<delimiter>${*}</delimiter>
+							</delimiters>
+							<outputDirectory>${project.build.directory}/scripts</outputDirectory>
+							<resources>
+								<resource>
+									<directory>main/python</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+
+					</execution>
+				</executions>
+
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>main/assembly/bundle.xml</descriptor>
+					</descriptors>
+				</configuration>
+
+				<executions>
+
+					<execution>
+						<id>cli-user-bundle</id>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+
+				</executions>
+
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>unpack-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>eu.stratuslab.pkgs</groupId>
+									<artifactId>stratuslab-core-zip</artifactId>
+									<version>1.0-SNAPSHOT</version>
+									<classifier>core-bundle</classifier>
+									<type>zip</type>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+</project>

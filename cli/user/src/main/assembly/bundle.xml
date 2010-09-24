@@ -1,0 +1,32 @@
+<assembly>
+	<id>cli-user-bundle</id>
+
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<formats>
+		<format>zip</format>
+	</formats>
+
+	<fileSets>
+
+		<fileSet>
+			<directory>${project.build.directory}/scripts/</directory>
+			<outputDirectory>scripts</outputDirectory>
+			<includes>
+				<include>stratus-*</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/python/</directory>
+			<outputDirectory>python</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/share/</directory>
+			<outputDirectory>share</outputDirectory>
+		</fileSet>
+
+	</fileSets>
+
+</assembly>
