@@ -4,21 +4,20 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.stratuslab.pkgs</groupId>
-	<artifactId>stratuslab-web-monitor</artifactId>
-	<name>StratusLab Web Monitor</name>
+	<artifactId>stratuslab-cli-sysadmin</artifactId>
+	<name>StratusLab Command-Line Interface (CLI) for System Administrators parent POM</name>
 	<packaging>pom</packaging>
 	<url>http://stratuslab.eu</url>
 
 	<parent>
 		<groupId>eu.stratuslab.pkgs</groupId>
-		<artifactId>stratuslab-parent</artifactId>
+		<artifactId>stratuslab-cli</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
 	<modules>
 		<module>src</module>
 		<module>rpm</module>
-		<module>deb</module>
 	</modules>
 
 </project>

@@ -7,6 +7,10 @@ from stratuslab.Util import printError
 class Configurable(object):
     def __init__(self, configHolder):
         configHolder.assign(self)
+        self.verify()
+
+    def verify(self):
+        pass
 
     def printAction(self, msg):
         printAction(msg)

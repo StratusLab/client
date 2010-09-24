@@ -28,11 +28,6 @@ envEndpoint = 'STRATUSLAB_ENDPOINT'
 # Configuration parameter names
 configFrontEndIp = 'frontend_ip'
 
-
-def validateConfig(config):
-    if not config.has_section(defaultConfigSection):
-        raise ValueError('Invalid configuration')
-
 def parseConfig(configFile):
     if not os.path.isfile(configFile):
         raise ValueError('Configuration file %s does not exists' %

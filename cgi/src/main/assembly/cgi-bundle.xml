@@ -1,0 +1,47 @@
+<assembly>
+	<id>cgi-bundle</id>
+
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<formats>
+		<format>zip</format>
+	</formats>
+
+	<fileSets>
+
+		<fileSet>
+			<directory>${project.build.directory}/python</directory>
+			<outputDirectory>cgi-bin</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>main/html</directory>
+			<outputDirectory>cgi-bin</outputDirectory>
+			<includes>
+				<include>*.tpl</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
+			<directory>main/css</directory>
+			<outputDirectory>css</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/conf</directory>
+			<outputDirectory>cgi-bin/conf</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/python</directory>
+			<outputDirectory>cgi-bin</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/share</directory>
+			<outputDirectory>cgi-bin/share</outputDirectory>
+		</fileSet>
+
+	</fileSets>
+
+</assembly>

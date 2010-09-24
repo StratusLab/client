@@ -24,7 +24,8 @@ class HtmlGenerator(object):
         config = Util.parseConfig(configFile)
         options = {'configFile': configFile,
                    'password': 'oneadmin'}
-        self.monitor = Monitor(options, config)
+        configHolder = ConfigHolder(self.options, self.config)
+        self.monitor = Monitor(configHolder)
         content = self._generate()
         self._serialize(content)
         

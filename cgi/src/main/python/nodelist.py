@@ -3,7 +3,8 @@
 # ${BUILD_INFO}
 # ${LEGAL}
 
-import cgi, cgitb
+import cgi
+import cgitb
 cgitb.enable()
 
 from stratuslab.Monitor import Monitor

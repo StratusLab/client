@@ -14,9 +14,8 @@ class AppRepo(Configurable):
     
     def __init__(self, configHolder):
         super(AppRepo, self).__init__(configHolder)
-        self._verify()
 
-    def _verify(self):
+    def verify(self):
         if self.appRepoUseLdap and not self.appRepoLdapPasswd:
             raise ConfigurationException('LDAP authentication selected but no password for server specified')
 
