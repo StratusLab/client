@@ -14,7 +14,8 @@ defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
 shareDir = '/var/share/stratuslab/'
-defaultConfigFile = '/etc/stratuslab/stratuslab.cfg'
+etcDir = '/etc/stratuslab/'
+defaultConfigFile = etcDir + 'stratuslab.cfg'
 manifestExt = '.manifest.xml'
 cliLineSplitChar = '#'
 
