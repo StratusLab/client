@@ -19,7 +19,7 @@ class Runnable(CommandBase):
     def parse(self):
         options = Runner.defaultRunOptions()
 
-        self.parser.usage = '''usage: %prog [options] image'''
+        self.parser.usage = '''%prog [options] image'''
 
         self.parser.add_option('-k', '--key', dest='userKey',
                 help='SSH key to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',

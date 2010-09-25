@@ -19,7 +19,7 @@ class CommandBase(object):
     def _setParserAndParse(self):
         self.parser = OptionParser()
         self.parser.add_option('-v', '--verbose', dest='verboseLevel',
-                help='Verbose level. Add more to get more details.',
+                help='verbose level. Add more to get more details.',
                 action='count', default=self.verboseLevel)
         self.parse()
         self.verboseLevel = self.options.verboseLevel

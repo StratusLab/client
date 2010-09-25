@@ -16,11 +16,11 @@ class MainProgram(Runnable):
         options = Runner.defaultRunOptions()
         
         self.parser.add_option('-n', '--number', dest='instanceNumber',
-                help='number of machine to start', metavar='INT',
+                help='number of machines to start (default 1)', metavar='INT',
                 default=options['instanceNumber'], type='int')
 
         self.parser.add_option('--save', dest='saveDisk', action='store_true',
-                help='save image after shutting down the VM',
+                help='save image after VM shutdown',
                 default=False)
 
         super(MainProgram, self).parse()
