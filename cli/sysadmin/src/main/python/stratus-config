@@ -5,9 +5,9 @@ import sys
 from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
-sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.Util import modulePath
+import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Configurator import Configurator
 from stratuslab.ConfigHolder import ConfigHolder
@@ -25,7 +25,7 @@ If the [value] is not provided, the command returns the current value of the key
 
         self.parser.add_option('-c', '--config', dest='configFile',
                                help='Default configuration file', metavar='FILE',
-                               default='%s/conf/stratuslab.cfg' % modulePath)
+                               default=Util.defaultConfigFile)
         self.parser.add_option('-k', '--keys', dest='showDefaultKeys',
                                help='Display keys and default value', action='store_true',
                                default=False)

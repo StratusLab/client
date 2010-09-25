@@ -2,11 +2,11 @@ import os
 
 from stratuslab.BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
-from stratuslab.Util import modulePath
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import printError
 from stratuslab.Util import unifyNetsize
 from stratuslab.Util import assignAttributes
+import stratuslab.Util as Util
 
 class OneInstallator(BaseInstallator):
     
@@ -96,7 +96,7 @@ class OneInstallator(BaseInstallator):
         self._addPrivateNetworkRoute(self.frontend)
         
     def _buildFixedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent('%s/share/vnet/fixed.net' % modulePath)
+        vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
         leases = ['LEASES = [ IP="%s"]' % i for i in self.config.get('one_%s_network_addr' % networkName).split(' ')]
         
@@ -106,7 +106,7 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
     
     def _buildRangedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent('%s/share/vnet/ranged.net' % modulePath)
+        vnetTpl = fileGetContent(Util.shareDir + 'vnet/ranged.net')
         vnetTpl = vnetTpl % ({'network_name': networkName,
                              'bridge': self.config.get('node_bridge_name'),
                              'network_size': self.config.get('one_%s_network_size' % networkName),
@@ -139,7 +139,7 @@ class OneInstallator(BaseInstallator):
     def _copyContextualizationScript(self):
         self.frontend.createDirsCmd(os.path.dirname(self.config.get('context_script')))
         self.frontend.setOwnerCmd(os.path.dirname(self.config.get('context_script')))
-        self.frontend.copyCmd('%s/share/context/init.sh' % modulePath, self.config.get('context_script'))
+        self.frontend.copyCmd(os.path.join(Util.shareDir, 'context/init.sh'), self.config.get('context_script'))
         self.frontend.setOwnerCmd(self.config.get('context_script'))
 
     def _createContextConfigurationScript(self):
@@ -160,7 +160,7 @@ class OneInstallator(BaseInstallator):
 
     def _copyCloudHooks(self, system):
         hooksDir = '%s/share/hooks' % self.config.get('one_home')
-        hooksInstallDir = '%s/share/hooks' % modulePath
+        hooksInstallDir = os.path.join(Util.shareDir + 'hooks')
         system.createDirsCmd(hooksDir)
         system.setOwnerCmd(hooksDir)
         

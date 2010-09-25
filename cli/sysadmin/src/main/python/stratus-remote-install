@@ -7,7 +7,6 @@ import sys
 from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
-sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import cliLineSplitChar

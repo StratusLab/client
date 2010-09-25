@@ -5,7 +5,6 @@ import sys
 from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
-sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
@@ -27,7 +26,7 @@ class MainProgram(CommandBase):
         self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile', 
                                help='configuration file', metavar='FILE',
-                               default='%s/conf/stratuslab.cfg' % modulePath)
+                               default=Util.defaultConfigFile)
         
         self.parser.add_option('-r', '--remove', dest='deRegister', 
                                help='de-register node', action='store_true',

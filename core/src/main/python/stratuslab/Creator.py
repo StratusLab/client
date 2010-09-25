@@ -9,7 +9,6 @@ from stratuslab.Util import assignAttributes
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import generateSshKeyPair
-from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
@@ -17,7 +16,9 @@ from stratuslab.Util import randomString
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
 from stratuslab.Util import waitUntilPingOrTimeout
+import stratuslab.Util as Util
 
+ 
 class Creator(object):
     def __init__(self, image, options):
         self.image = image
@@ -38,8 +39,8 @@ class Creator(object):
         generateSshKeyPair(self.sshKey)
 
         self.vmManifestPath = '/tmp/disk.0.manifest.xml' # Location of the manifest on the VM
-        self.packageInstallScript = '%s/share/creation/install-pkg.sh' % modulePath
-        self.manifestCreationScript = '%s/share/creation/create-manifest.sh' % modulePath
+        self.packageInstallScript = Util.shareDir + 'creation/install-pkg.sh'
+        self.manifestCreationScript = Util.shareDir + 'creation/create-manifest.sh'
 
         self.runner = None
         self.vmIps = {}

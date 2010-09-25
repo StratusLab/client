@@ -4,17 +4,17 @@ import subprocess
 import sys
 import time
 import urllib2
-from ConfigParser import SafeConfigParser
 from random import sample
 from string import ascii_lowercase
 from Exceptions import ImportException
 
 
-defaultConfigSection = 'stratuslab'
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
+shareDir = '/var/share/stratuslab/'
+defaultConfigFile = '/etc/stratuslab/stratuslab.cfg'
 manifestExt = '.manifest.xml'
 cliLineSplitChar = '#'
 
@@ -27,15 +27,6 @@ envEndpoint = 'STRATUSLAB_ENDPOINT'
 
 # Configuration parameter names
 configFrontEndIp = 'frontend_ip'
-
-def parseConfig(configFile):
-    if not os.path.isfile(configFile):
-        raise ValueError('Configuration file %s does not exists' %
-                         configFile)
-
-    config = SafeConfigParser()
-    config.read(configFile)
-    return dict(config.items(defaultConfigSection))
 
 def wget(url, savePath):
     fd = urllib2.urlopen(url)

@@ -1,7 +1,7 @@
 from stratuslab.BaseSystem import BaseSystem
 from stratuslab.Util import fileGetContent
-from stratuslab.Util import modulePath
 from stratuslab.system.PackageInfo import PackageInfo
+import stratuslab.Util as Util
 
 class Ubuntu(BaseSystem):
 
@@ -68,7 +68,7 @@ class Ubuntu(BaseSystem):
             self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
         
         self.fileAppendContentsCmd('/etc/network/interfaces',
-                fileGetContent('%s/share/template/debian.br.tpl' % modulePath) % ({'bridge': bridge, 'iface': networkInterface}))
+                fileGetContent(Util.shareDir + 'template/debian.br.tpl') % ({'bridge': bridge, 'iface': networkInterface}))
 
         self.executeCmd(['/etc/init.d/networking restart'])
 

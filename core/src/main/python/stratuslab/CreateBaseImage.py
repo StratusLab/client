@@ -16,6 +16,7 @@ from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
+import stratuslab.Util as Util
 
 class CreateBaseImage(object):
     
@@ -126,7 +127,7 @@ class CreateBaseImage(object):
 
         p = subprocess.Popen(['sfdisk','-uM','%s/%s' % (self.outputDir, self.outputFileName)],
                               stdout=PIPE, stdin=PIPE, stderr=self.stderr)
-        stdout = p.communicate(input='%s' % sfDiskString)[0]
+        p.communicate(input='%s' % sfDiskString)[0]
 
         printStep('Creating loop devices and mapper.')
         self._execute(['losetup',self.loopDev,'%s/%s' % (self.outputDir, self.outputFileName)])
@@ -483,7 +484,7 @@ class CreateBaseImage(object):
     def _installQuattor(self):
         printAction('Installing Quattor client.')
 
-        installScript = fileGetContent('%s/share/creation/quattor-client-install.sh' % modulePath)
+        installScript = fileGetContent(Util.shareDir + 'creation/quattor-client-install.sh')
         filePutContent('%s/tmp/quattor-client-install.sh' % self.mountDir, installScript)
         filePutContent('%s/etc/ccm.conf' % self.mountDir, "profile\t\t %s\n" % self.qtrProfile)        
 
@@ -501,7 +502,7 @@ class CreateBaseImage(object):
 
     def _createManifest(self):
         printAction('Creating manifest file.')
-        manifest = fileGetContent('%s/share/template/manifest.xml.tpl' % modulePath)
+        manifest = fileGetContent(Util.shareDir + 'template/manifest.xml.tpl')
         manifest = manifest % {'created': self.createTime,
                                'type': self.type,
                                'version': self.imageVersion,

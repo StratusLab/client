@@ -4,6 +4,7 @@ from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 from stratuslab.Util import modulePath
 from stratuslab.Util import execute
+import stratuslab.Util as Util
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Configurable import Configurable
 import stratuslab.system.SystemFactory as SystemFactory
@@ -53,14 +54,14 @@ class AppRepo(Configurable):
     def _setupWebDav(self):
         self.printDetail('Creating webdav configuration')        
         if (self.appRepoUseLdap):
-            httpdConf = fileGetContent('%s/share/template/webdav-ldap.conf.tpl' % modulePath)
+            httpdConf = fileGetContent(Util.shareDir + 'template/webdav-ldap.conf.tpl')
             httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
                                      'ldapSSL': self._getLdapCertString(),
                                      'ldapURL': self.appRepoLdapUrl,
                                      'ldapBind': self.appRepoLdapBind,
                                      'ldapPasswd': self.appRepoLdapPasswd}
         else:
-            httpdConf = fileGetContent('%s/share/template/webdav.conf.tpl' % modulePath)
+            httpdConf = fileGetContent(Util.shareDir + 'template/webdav.conf.tpl')
             httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
                                      'passwd': self.appRepoPasswdFile}	   
 
@@ -79,10 +80,10 @@ class AppRepo(Configurable):
 
     def _createRepoConfig(self):
         self.printDetail('Creating repository configuration file')
-#        repoConfig = fileGetContent('%s/share/template/stratuslab.repo.cfg.tpl' % modulePath)
-#        repoConfig = repoConfig % {'repo_structure': self.repoStructure,
-#                                     'repo_filename': self.repoFilename}
-#        filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.appRepoImageDir, repoConfig)
+        repoConfig = fileGetContent(Util.shareDir + 'template/stratuslab.repo.cfg.tpl')
+        repoConfig = repoConfig % {'repo_structure': self.repoStructure,
+                                     'repo_filename': self.repoFilename}
+        filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.appRepoImageDir, repoConfig)
 
     def _getLdapCertString(self):
         if self.appRepoLdapCert:
