@@ -5,8 +5,8 @@ import sys
 from optparse import OptionParser
 from xml.dom import minidom, Node
 
-sys.path.append('/usr/lib/stratuslab')
-sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
+sys.path.append('/var/lib/stratuslab/python')
+sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
