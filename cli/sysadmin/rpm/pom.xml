@@ -95,10 +95,6 @@
 					<copyright>Apache 2.0</copyright>
 					<url>http://stratuslab.eu/</url>
 
-					<requires>
-						<require>httpd</require>
-					</requires>
-
 					<distribution>StratusLab</distribution>
 					<group>StratusLab</group>
 					<packager>StratusLab</packager>
