@@ -10,6 +10,7 @@ from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
 from stratuslab.Configurable import Configurable
+import stratuslab.Util as Util
 
 class MainProgram(CommandBase):
     '''A command-line program to install StratusLab.'''
@@ -43,7 +44,7 @@ class MainProgram(CommandBase):
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 
                                help='ONe daemon template', metavar='TEMPLATE',
-                               default='%s/share/template/oned.conf.tpl' % modulePath)
+                               default=Util.shareDir + 'template/oned.conf.tpl')
         self.parser.add_option('--im', dest='infoDriver', 
                                help='information driver', metavar='IM_NAME', default=None)
         self.parser.add_option('--vmm', dest='virtDriver',

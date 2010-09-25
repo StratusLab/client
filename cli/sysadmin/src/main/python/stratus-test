@@ -11,6 +11,7 @@ import stratuslab
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
 from stratuslab.Configurable import Configurable
+import stratuslab.Util as Util
 
 class MainProgram(CommandBase):
     '''A command-line program to test StratusLab.'''
@@ -26,7 +27,7 @@ where test is a comma separated list of tests, according to the name provided by
         self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile', 
                                help='configuration file', metavar='PATH',
-                               default='%s/conf/stratuslab.cfg' % modulePath)
+                               default=Util.defaultConfigFile)
         
         self.parser.add_option('-l', '--list', dest='listTests', 
                                help='list available tests', action='store_true',
