@@ -28,12 +28,12 @@ class Runner(object):
         # Set ip != 0 to force assignation
         # networkType are public, private and extra (can be other but not used in init.sh)
         self.defaultVmNic = { 'public': {
-                                'name': 'public',
-                                'ip': 0 },
+                                         'name': 'public',
+                                         'ip': 0 },
                               'private': {
-                                'name': 'private',
-                                'ip': 0 },
-                            }
+                                          'name': 'private',
+                                          'ip': 0 },
+                             }
         self.nicOrder = ['private', 'public', 'extra']
 
         # VM template parameters initialization
@@ -67,10 +67,7 @@ class Runner(object):
 
     @staticmethod
     def getVmTemplatesParameters(instance=None):
-        if instance and hasattr(instance, 'vmTemplatePath'):
-            vmTemplate = instance.vmTemplatePath
-        else:
-            vmTemplate = Runner.defaultRunOptions().get('vmTemplatePath')
+        vmTemplate = Runner.getTemplatePath(instance)
 
         fd = open(vmTemplate, 'rb')
         template = fd.read()
@@ -78,6 +75,17 @@ class Runner(object):
 
         return [Runner._extractTokenName(token) for token in Runner._findTokensInTemplate(template)]
 
+    @staticmethod
+    def getTemplatePath(instance=None):
+        vmTemplate = ''
+        if instance and hasattr(instance, 'vmTemplatePath'):
+            vmTemplate = instance.vmTemplatePath
+        if not os.path.exists(vmTemplate):
+            vmTemplate = '/var/share/stratuslab/vm/schema.one'
+        if not os.path.exists(vmTemplate):
+            vmTemplate = '%s/../../../share/vm/schema.one' % modulePath
+        return vmTemplate
+    
     @staticmethod
     def _findTokensInTemplate(template):
         return re.findall('%\(\w+\)s', template)
@@ -88,14 +96,13 @@ class Runner(object):
 
     @staticmethod        
     def defaultRunOptions():
-        options = {'configFile': '%s/conf/stratuslab.cfg' % modulePath,
-                   'userKey': os.getenv('STRATUSLAB_KEY', ''),
+        options = {'userKey': os.getenv('STRATUSLAB_KEY', ''),
                    'username': os.getenv('STRATUSLAB_USERNAME', ''),
                    'password': os.getenv('STRATUSLAB_PASSWORD', ''),
                    'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
                    'instanceNumber': 1,
                    'instanceType': 'm1.small',
-                   'vmTemplatePath': '%s/share/vm/schema.one' % modulePath,
+                   'vmTemplatePath': Runner.getTemplatePath(),
                    'extraNic': '',
                    'rawData': '',
                    'vmKernel': '',
@@ -177,7 +184,8 @@ class Runner(object):
                 self.rawData = dataFile.read()
                 dataFile.close()
             self.rawData = re.escape(self.rawData)
-            self.raw_data = 'RAW = [ type="%s", data="%s" ]' % (self.config.get('hypervisor'),
+            hypervisor = 'kvm'
+            self.raw_data = 'RAW = [ type="%s", data="%s" ]' % (hypervisor,
                                                                 self.rawData)
 
     def _manageExtraContext(self):

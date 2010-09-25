@@ -10,8 +10,8 @@ sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(_
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
-from stratuslab.Util import parseConfig
 from stratuslab.Registrar import Registrar
+from stratuslab.Configurable import Configurable
 
 
 class MainProgram(CommandBase):
@@ -64,7 +64,7 @@ class MainProgram(CommandBase):
             raise self.usageExitTooFewArguments()
 
     def doWork(self):
-        config = parseConfig(self.options.configFile)
+        config = Configurable.configFileToDict(self.options.configFile)        
         registrar = Registrar(self.options.__dict__, config)
         registrar.register(self.nodes)
         

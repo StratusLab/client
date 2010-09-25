@@ -8,7 +8,6 @@ import cgitb
 cgitb.enable()
 
 from stratuslab.Monitor import Monitor
-import stratuslab.Util as Util
 from stratuslab.web.Generator import ListGenerator
 from stratuslab.cloud.one import OneHostState
 

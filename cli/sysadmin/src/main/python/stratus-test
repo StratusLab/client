@@ -3,15 +3,13 @@
 import os
 import sys
 from optparse import OptionParser
-#from optparse import OptionGroup
 
 sys.path.append('/usr/lib/stratuslab')
-sys.path.append(os.path.abspath('%s/../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 import stratuslab
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
-from stratuslab.Util import parseConfig
+from stratuslab.Configurable import Configurable
 
 class MainProgram(CommandBase):
     '''A command-line program to test StratusLab.'''
@@ -36,7 +34,7 @@ where test is a comma separated list of tests, according to the name provided by
         self.options, self.tests = self.parser.parse_args()
 
     def doWork(self):
-        config = parseConfig(self.options.configFile)
+        config = Configurable.configFileToDict(self.options.configFile)        
         Testor.config = config
         Testor.options = self.options.__dict__
         Testor.testNames = self.tests

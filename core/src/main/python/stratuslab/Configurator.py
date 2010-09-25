@@ -1,7 +1,6 @@
 import os
 import shutil
 from Configurable import Configurable
-from ConfigParser import SafeConfigParser
 from Exceptions import ConfigurationException
 
 class Configurator(Configurable):
@@ -36,23 +35,15 @@ class Configurator(Configurable):
 
     def _load(self):
         self.printDetail('Loading configuration file %s' % self.baseConfigFile)
-        self.baseConfig = self._parseConfig(self.baseConfigFile)
+        self.baseConfig = Configurable.parseConfig(self.baseConfigFile)
         self._createConfigIfRequired()        
         self.printDetail('Loading configuration file %s' % self.configFile)
-        self.config = self._parseConfig(self.configFile)
+        self.config = Configurable.parseConfig(self.configFile)
 
     def _createConfigIfRequired(self):
         if not os.path.isfile(self.configFile):
             self.printDetail('Creating user configuration file %s' % self.configFile)
             shutil.copy(self.baseConfigFile, self.configFile)
-
-    def _parseConfig(self, configFile):
-        if not os.path.isfile(configFile):
-            msg = 'Configuration file %s does not exist' % configFile
-            raise ConfigurationException(msg)
-        config = SafeConfigParser()
-        config.read([configFile, os.path.expanduser('~/.stratuslab/stratuslav.cfg')])
-        return config
 
     def getValue(self, key):
         section, _ = self._findSectionAndValue(key, self.config)
@@ -60,7 +51,7 @@ class Configurator(Configurable):
 
     def displayDefaultKeys(self):
         columnSize = 25
-        defaultConfig = self._convertToSectionDict(self._parseConfig(self.baseConfigFile))
+        defaultConfig = Configurable.convertToSectionDict(Configurable.parseConfig(self.baseConfigFile))
 
         width = columnSize * 3 + 1
         line = '-' * width
@@ -99,15 +90,6 @@ class Configurator(Configurable):
             for k,v in config.items(section):
                 dict[k] = v
         return dict
-
-    def _convertToSectionDict(self, config):
-        dicts = {}
-        for section in config.sections():
-            dict = {}
-            for k,v in config.items(section):
-                dict[k] = v
-            dicts[section] = dict
-        return dicts
 
     def setOption(self, key, value):
         section, _ = self._findSectionAndValue(key, self.config)

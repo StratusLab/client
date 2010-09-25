@@ -5,6 +5,8 @@ from stratuslab.installator.one import OneInstallator
 from stratuslab.Util import assignAttributes
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.CloudInfo import CloudInfo
+from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Configurable import Configurable
 
 try:
     from lxml import etree
@@ -27,13 +29,11 @@ except ImportError:
                 except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
-class Monitor(OneInstallator):
+class Monitor(Configurable):
+    
+    def __init__(self, configHolder):
+        super(Monitor, self).__init__(configHolder)
 
-    def __init__(self, options, config):
-        self.config = config
-        self.deRegister = False
-        assignAttributes(self, options)
-        
         self._setCloud()        
 
         self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
@@ -50,11 +50,9 @@ class Monitor(OneInstallator):
         if endpointEnv in os.environ:
             self.cloud.setEndpoint(os.environ[endpointEnv])
         else:
-            self.cloud.setFrontend(self.config.get('frontend_ip'),
-                                   self.config.get('one_port'))
+            self.cloud.setFrontend(self.frontendIp, self.onePort)
 
-        self.cloud.setCredentials(self.config.get('one_username'),
-                                  self.config.get('one_password'))
+        self.cloud.setCredentials(self.oneUsername, self.onePassword)
 
     def nodeDetail(self, nodeIds):
         infoList = []

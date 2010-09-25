@@ -34,8 +34,7 @@ def parseConfig(configFile):
                          configFile)
 
     config = SafeConfigParser()
-    config.read(configFile)    
-    validateConfig(config)
+    config.read(configFile)
     return dict(config.items(defaultConfigSection))
 
 def wget(url, savePath):

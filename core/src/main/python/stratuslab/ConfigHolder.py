@@ -9,4 +9,4 @@ class ConfigHolder(object):
 
     def assign(self, obj):
         Util.assignAttributes(obj, Configurator.formatConfigKeys(self.config))
-        Util.assignAttributes(obj, self.options.__dict__)
+        Util.assignAttributes(obj, self.options)
