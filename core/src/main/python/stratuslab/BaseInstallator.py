@@ -99,8 +99,8 @@ class BaseInstallator(object):
         printStep('Starting cloud')
         self.startCloudSystem()
         
-        printStep('Adding default networks')
-        self.addDefaultNetworks()
+#        printStep('Adding default networks')
+#        self.addDefaultNetworks()
 
     def propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)
