@@ -5,10 +5,10 @@ from datetime import datetime
 from Util import appendOrReplaceInFile
 from Util import fileGetContent
 from Util import filePutContent
-from stratuslab.Util import execute, printDetail
-from stratuslab.Util import fileAppendContent
-from stratuslab.Util import scp
-from stratuslab.Util import sshCmd
+from Util import execute, printDetail
+from Util import fileAppendContent
+from Util import scp
+from Util import sshCmd
 import Util
 
 class BaseSystem(object):
@@ -63,7 +63,7 @@ class BaseSystem(object):
         self.executeCmd(['scons', '-j2'])
         
     def _applyPatchs(self):
-        patchDir = os.path.abspath(Util.shareDir + 'patch' % os.path.abspath(__file__))
+        patchDir = os.path.abspath(Util.shareDir + 'patch')
         
         for patch in \
             [os.path.abspath('%s/%s' % (patchDir, f)) for f in os.listdir(patchDir)]:
