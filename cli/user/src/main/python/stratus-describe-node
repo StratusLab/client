@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.pa
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
-from stratuslab.Util import parseConfig
 from stratuslab.Monitor import Monitor
 
 

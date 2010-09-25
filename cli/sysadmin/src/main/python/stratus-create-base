@@ -10,7 +10,6 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.CreateBaseImage import CreateBaseImage
-from stratuslab.Util import parseConfig
 
 class MainProgram(CommandBase):
     '''A command line to automatically create a base VM image'''

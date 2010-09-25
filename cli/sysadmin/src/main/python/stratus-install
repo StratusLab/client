@@ -9,7 +9,6 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
-from stratuslab.Util import parseConfig
 from stratuslab.Configurable import Configurable
 
 class MainProgram(CommandBase):
