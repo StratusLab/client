@@ -22,10 +22,8 @@ class HtmlGenerator(object):
         
     def run(self):
         configFile = 'conf/stratuslab.cfg'
-        config = Configurable.configFileToDict(self.options.configFile)
-        options = {'configFile': configFile,
-                   'password': 'oneadmin'}
-        configHolder = ConfigHolder(options, config)
+        config = Configurable.configFileToDict(configFile)
+        configHolder = ConfigHolder(config=config)
         self.monitor = Monitor(configHolder)
         content = self._generate()
         self._serialize(content)
