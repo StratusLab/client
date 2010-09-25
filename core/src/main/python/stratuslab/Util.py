@@ -148,7 +148,7 @@ def _extractAndDeleteKey(key, default, dict):
     return value
 
 def printAction(msg):
-    printAndFlush(' :::%s:::\n' % ('.' *len(msg)))
+    printAndFlush('\n :::%s:::\n' % ('.' *len(msg)))
     printAndFlush(' :: %s ::\n' % msg)
     printAndFlush(' :::%s:::\n' % ('.' *len(msg)))
     
