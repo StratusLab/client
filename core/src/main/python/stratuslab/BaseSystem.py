@@ -63,7 +63,7 @@ class BaseSystem(object):
         self.executeCmd(['scons', '-j2'])
         
     def _applyPatchs(self):
-        patchDir = os.path.abspath('%s/../../share/patch' % os.path.abspath(__file__))
+        patchDir = os.path.abspath(Util.shareDir + 'patch' % os.path.abspath(__file__))
         
         for patch in \
             [os.path.abspath('%s/%s' % (patchDir, f)) for f in os.listdir(patchDir)]:
