@@ -6,7 +6,6 @@ from stratuslab.Util import modulePath
 from stratuslab.Util import execute
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Configurable import Configurable
-import Util
 import stratuslab.system.SystemFactory as SystemFactory
 
 class AppRepo(Configurable):
