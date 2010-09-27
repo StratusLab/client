@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.stratuslab.pkgs</groupId>
-	<artifactId>stratuslab-web-monitor-deb</artifactId>
+	<artifactId>stratuslab-cli-sysadmin-deb</artifactId>
+	<name>StratusLab Command-Line Interface (CLI) for System Administrators (DEB)</name>
 	<packaging>pom</packaging>
-	<name>StratusLab Web Monitor (DEB)</name>
 	<url>http://stratuslab.eu/</url>
 
 	<parent>
 		<groupId>eu.stratuslab.pkgs</groupId>
-		<artifactId>stratuslab-web-monitor</artifactId>
+		<artifactId>stratuslab-cli</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
@@ -44,9 +44,9 @@
 									<artifactItems>
 										<artifactItem>
 											<groupId>eu.stratuslab.pkgs</groupId>
-											<artifactId>stratuslab-web-monitor-zip</artifactId>
+											<artifactId>stratuslab-cli-sysadmin-zip</artifactId>
 											<version>1.0-SNAPSHOT</version>
-											<classifier>cgi-bundle</classifier>
+											<classifier>cli-sysadmin-bundle</classifier>
 											<type>zip</type>
 										</artifactItem>
 									</artifactItems>
@@ -72,33 +72,6 @@
 			</build>
 		</profile>
 
-		<profile>
-			<id>deb</id>
-			<activation>
-				<file>
-					<exists>/usr/bin/alien</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.1</version>
-						<extensions>true</extensions>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
 	</profiles>
 
 	<build>
@@ -116,15 +89,11 @@
 				<artifactId>rpm-maven-plugin</artifactId>
 				<configuration>
 					<release>${RELEASE}</release>
-					<summary>StratusLab Web Monitor</summary>
-					<name>stratuslab-web-monitor</name>
+					<summary>${name}</summary>
+					<name>stratuslab-cli-sysadmin</name>
 					<vendor>SixSq Sarl</vendor>
 					<copyright>Apache 2.0</copyright>
 					<url>http://stratuslab.eu/</url>
-
-					<requires>
-						<require>httpd</require>
-					</requires>
 
 					<distribution>StratusLab</distribution>
 					<group>StratusLab</group>
@@ -134,14 +103,29 @@
 
 					<mappings>
 						<mapping>
-							<directory>/usr/lib/cgi-bin</directory>
+							<directory>/usr/bin/</directory>
 							<directoryIncluded>false</directoryIncluded>
 							<filemode>755</filemode>
 							<username>root</username>
 							<groupname>root</groupname>
 							<sources>
 								<source>
-									<location>${project.build.directory}/zip-sources/cgi-bin</location>
+									<location>${project.build.directory}/zip-sources/scripts</location>
+									<includes>
+										<include>stratus-*</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/var/lib/stratuslab/python/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>755</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>${project.build.directory}/zip-sources/python</location>
 									<includes>
 										<include>**/*.py</include>
 									</includes>
@@ -149,29 +133,24 @@
 							</sources>
 						</mapping>
 						<mapping>
-							<directory>/usr/lib/cgi-bin</directory>
+							<directory>/var/share/stratuslab/</directory>
 							<directoryIncluded>false</directoryIncluded>
-							<filemode>644</filemode>
 							<username>root</username>
 							<groupname>root</groupname>
 							<sources>
 								<source>
-									<location>${project.build.directory}/zip-sources/cgi-bin</location>
-									<excludes>
-										<exclude>**/*.py</exclude>
-									</excludes>
+									<location>${project.build.directory}/zip-sources/share</location>
 								</source>
 							</sources>
 						</mapping>
 						<mapping>
-							<directory>/var/www/css</directory>
+							<directory>/etc/stratuslab/</directory>
 							<directoryIncluded>false</directoryIncluded>
-							<filemode>644</filemode>
 							<username>root</username>
 							<groupname>root</groupname>
 							<sources>
 								<source>
-									<location>${project.build.directory}/zip-sources/css</location>
+									<location>${project.build.directory}/zip-sources/conf</location>
 								</source>
 							</sources>
 						</mapping>
@@ -207,7 +186,7 @@ export RPM_BUILD_ROOT=
 						<argument>alien</argument>
 						<argument>--to-deb</argument>
 						<argument>--scripts</argument>
-						<argument>target/rpm/stratuslab-web-monitor/RPMS/noarch/stratuslab*.rpm</argument>
+						<argument>target/rpm/stratuslab-cli-sysadmin/RPMS/noarch/stratuslab*.rpm</argument>
 					</arguments>
 				</configuration>
 			</plugin>
@@ -225,8 +204,8 @@ export RPM_BUILD_ROOT=
 					</filesets>
 				</configuration>
 			</plugin>
-  
-  		</plugins>
+
+		</plugins>
 
 	</build>
 
