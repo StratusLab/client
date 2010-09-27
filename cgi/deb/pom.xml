@@ -134,7 +134,7 @@
 
 					<mappings>
 						<mapping>
-							<directory>/var/www/cgi-bin</directory>
+							<directory>/usr/lib/cgi-bin</directory>
 							<directoryIncluded>false</directoryIncluded>
 							<filemode>755</filemode>
 							<username>root</username>
@@ -149,7 +149,7 @@
 							</sources>
 						</mapping>
 						<mapping>
-							<directory>/var/www/cgi-bin</directory>
+							<directory>/usr/lib/cgi-bin</directory>
 							<directoryIncluded>false</directoryIncluded>
 							<filemode>644</filemode>
 							<username>root</username>
@@ -164,7 +164,7 @@
 							</sources>
 						</mapping>
 						<mapping>
-							<directory>/var/www/html/css</directory>
+							<directory>/var/www/css</directory>
 							<directoryIncluded>false</directoryIncluded>
 							<filemode>644</filemode>
 							<username>root</username>
