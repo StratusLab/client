@@ -1,0 +1,213 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>eu.stratuslab.pkgs</groupId>
+	<artifactId>stratuslab-cli-user-deb</artifactId>
+	<name>StratusLab Command-Line Interface (CLI) for Users (DEB)</name>
+	<packaging>pom</packaging>
+	<url>http://stratuslab.eu/</url>
+
+	<parent>
+		<groupId>eu.stratuslab.pkgs</groupId>
+		<artifactId>stratuslab-cli</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<profiles>
+		<profile>
+			<id>rpm</id>
+			<activation>
+				<file>
+					<exists>/bin/rpm</exists>
+				</file>
+			</activation>
+			<build>
+
+				<plugins>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+
+						<executions>
+							<execution>
+								<id>unpack-sources</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
+									<artifactItems>
+										<artifactItem>
+											<groupId>eu.stratuslab.pkgs</groupId>
+											<artifactId>stratuslab-cli-user-zip</artifactId>
+											<version>1.0-SNAPSHOT</version>
+											<classifier>cli-user-bundle</classifier>
+											<type>zip</type>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+
+					</plugin>
+
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>rpm-maven-plugin</artifactId>
+						<extensions>true</extensions>
+						<executions>
+							<execution>
+								<goals>
+									<goal>rpm</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
+	<build>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.5</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<configuration>
+					<release>${RELEASE}</release>
+					<summary>${name}</summary>
+					<name>stratuslab-cli-user</name>
+					<vendor>SixSq Sarl</vendor>
+					<copyright>Apache 2.0</copyright>
+					<url>http://stratuslab.eu/</url>
+
+					<distribution>StratusLab</distribution>
+					<group>StratusLab</group>
+					<packager>StratusLab</packager>
+
+					<buildarch>noarch</buildarch>
+
+					<mappings>
+						<mapping>
+							<directory>/usr/bin/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>755</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>${project.build.directory}/zip-sources/scripts</location>
+									<includes>
+										<include>stratus-*</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/var/lib/stratuslab/python/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>755</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>${project.build.directory}/zip-sources/python</location>
+									<includes>
+										<include>**/*.py</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/var/share/stratuslab/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>${project.build.directory}/zip-sources/share</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/etc/stratuslab/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>${project.build.directory}/zip-sources/conf</location>
+								</source>
+							</sources>
+						</mapping>
+					</mappings>
+					<installScriptlet>
+						<script>
+#
+# This is a nasty hack to turn off the /usr/lib/rpm/brp-python-bytecompile
+# script. This script tries to precompile the python code, but causes the
+# rpm packaging to fail because the *.pyc and *.pyo files are not listed in
+# the list of files created by maven.
+#
+
+export RPM_BUILD_ROOT=
+					    </script>
+					</installScriptlet>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>fakeroot</executable>
+					<arguments>
+						<argument>alien</argument>
+						<argument>--to-deb</argument>
+						<argument>--scripts</argument>
+						<argument>--keep-version</argument>
+						<argument>target/rpm/stratuslab-cli-user/RPMS/noarch/stratuslab*.rpm</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>.</directory>
+							<includes>
+								<include>**/*.deb</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+</project>
