@@ -212,7 +212,21 @@ export RPM_BUILD_ROOT=
 				</configuration>
 			</plugin>
 
-		</plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>.</directory>
+							<includes>
+								<include>**/*.deb</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+  
+  		</plugins>
 
 	</build>
 
