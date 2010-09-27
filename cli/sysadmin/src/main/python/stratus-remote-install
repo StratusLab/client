@@ -56,17 +56,17 @@ class MainProgram(CommandBase):
         printStep('Multi-install workaround...\n')
         self.multiInstallWorkaround()
         
-        printStep('Upload stratuslab...\n')
-        self.uploadStratuslab()
+        printStep('Install StratusLab sysadmin tools...\n')
+        self.installStratuslabSysAdminTools()
 
-        printStep('Configure stratuslab...\n')
+        printStep('Configure StratusLab...\n')
         self.configureStratuslab()
         self.copySshPrivateKey()
 
-        printStep('Install stratuslab frontend...\n')
+        printStep('Install StratusLab frontend...\n')
         self.installStratuslabFrontend()
 
-        printStep('Install stratuslab nodes...\n')
+        printStep('Install StratusLab nodes...\n')
         self.installStratuslabNodes()
 
         printAction('Installation done')        
@@ -98,14 +98,25 @@ class MainProgram(CommandBase):
             else:
                 print " but it's OK"
 
-    def uploadStratuslab(self):
-        self.sshCmd('rm -rf ' + self.options.uploadDir,
-                 exitOnError=False)
-        self.sshCmd('mkdir -p ' + self.options.uploadDir)
-        self.scp('%s/src/' % self.rootPath, '%s:%s' % (
-                 self.options.frontend, self.options.uploadDir))
-        self.scp('%s/scripts/' % self.rootPath, '%s:%s' % (
-                 self.options.frontend, self.options.uploadDir))
+    def installStratuslabSysAdminTools(self):
+        yumConfFileName = '/tmp/yum-repo.conf'
+        file = open(yumConfFileName,'w')
+        file.write(self._getStratusLabYumRepoConf())
+        file.close()
+        self.scp(yumConfFileName, '%s:/etc/yum.repos.d/stratuslab.repo' % self.options.frontend)
+        # TODO: make this system dependent (i.e. apt-get for Ubuntu) 
+        self.sshCmd('yum install stratuslab-cli-sysadmin --nogpgcheck -y')
+
+    def _getStratusLabYumRepoConf(self):
+        return '''
+[StratusLab-Snapshots]
+name=StratusLab-Snapshots
+baseurl=http://yum.stratuslab.eu/snapshots/sl5
+
+[StratusLab-Releases]
+name=StratusLab-Releases
+baseurl=http://yum.stratuslab.eu/releases/sl5
+'''
 
     def scp(self, src, dest):
         ret = scp(src, 
