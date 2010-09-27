@@ -186,6 +186,7 @@ export RPM_BUILD_ROOT=
 						<argument>alien</argument>
 						<argument>--to-deb</argument>
 						<argument>--scripts</argument>
+						<argument>--keep-version</argument>
 						<argument>target/rpm/stratuslab-cli-sysadmin/RPMS/noarch/stratuslab*.rpm</argument>
 					</arguments>
 				</configuration>
