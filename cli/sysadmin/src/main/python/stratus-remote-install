@@ -131,7 +131,7 @@ baseurl=http://yum.stratuslab.eu/releases/sl5
         if self.options.config and os.path.isfile(self.options.config):
             content = fileGetContent(self.options.config)
             
-        baseConfigCmd = 'python %s/scripts/stratus-config' % self.options.uploadDir
+        baseConfigCmd = 'stratus-config'
 
         baseConfigCmd = self._addVerboseOption(baseConfigCmd)
 
@@ -154,13 +154,13 @@ baseurl=http://yum.stratuslab.eu/releases/sl5
                  % self.options.frontend)
 
     def installStratuslabFrontend(self):
-        cmd = 'python %s/scripts/stratus-install' % self.options.uploadDir
+        cmd = 'stratus-install'
         cmd = self._addVerboseOption(cmd)
         self.sshCmd(cmd)
 
     def installStratuslabNodes(self):
         for node in self.options.nodes.split(' '):
-            cmd = 'python %s/scripts/stratus-install -n %s' % (self.options.uploadDir, node)
+            cmd = 'stratus-install -n %s' % node
             cmd = self._addVerboseOption(cmd)
             self.sshCmd(cmd)
 
