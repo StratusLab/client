@@ -72,32 +72,6 @@
 			</build>
 		</profile>
 
-		<profile>
-			<id>deb</id>
-			<activation>
-				<file>
-					<exists>/usr/bin/alien</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<extensions>true</extensions>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
 	</profiles>
 
 	<build>
@@ -206,7 +180,7 @@ export RPM_BUILD_ROOT=
 						<argument>--to-deb</argument>
 						<argument>--scripts</argument>
 						<argument>--keep-version</argument>
-						<argument>target/rpm/stratuslab-web-monitor/RPMS/noarch/stratuslab*.rpm</argument>
+						<argument>target/rpm/stratuslab-cli-user/RPMS/noarch/stratuslab*.rpm</argument>
 					</arguments>
 				</configuration>
 			</plugin>
