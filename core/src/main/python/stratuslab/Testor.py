@@ -11,6 +11,8 @@ from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import NetworkException
 from stratuslab.Exceptions import ConfigurationException
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Configurable import Configurable
 from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
@@ -213,7 +215,8 @@ class Testor(unittest.TestCase):
         registrar = Registrar(options, self.config)
         hostname = 'registrar.ip.test'
         id = registrar.register([hostname])
-        monitor = Monitor(options, self.config)
+        configHolder = ConfigHolder(options, self.config)
+        monitor = Monitor(configHolder)
         info = monitor.nodeDetail([id])[0]
         self.assertEqual(hostname, info.name)
         registrar.deregister(hostname)
