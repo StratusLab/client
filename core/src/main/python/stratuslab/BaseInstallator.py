@@ -76,7 +76,7 @@ class BaseInstallator(object):
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
 
     def runInstallAppRepo(self):
-        configHolder = ConfigHolder(self.options, self.config)
+        configHolder = ConfigHolder(self.options.__dict__, self.config)
         appRepo = AppRepo(configHolder)
         appRepo.run()
 
