@@ -92,7 +92,7 @@ app_repo_image_dir = /images
 app_repo_structure = #type_#/#os#-#osversion#-#arch#-#type#/#version#
 
 # Repository image filename structure
-app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img.#compression#')
+app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img.#compression#
 
 # URL of the LDAP server to use for authentication
 app_repo_ldap_url = ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid'

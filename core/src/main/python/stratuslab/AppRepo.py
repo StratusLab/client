@@ -50,7 +50,8 @@ class AppRepo(Configurable):
         self._setupWebDav()
         self._createRepoStructure()
         self._createRepoConfig()
-        
+        self._restartWebServer()
+ 
     def _setupWebDav(self):
         self.printDetail('Creating webdav configuration')        
         if (self.appRepoUseLdap):
@@ -81,17 +82,23 @@ class AppRepo(Configurable):
     def _createRepoConfig(self):
         self.printDetail('Creating repository configuration file')
         repoConfig = fileGetContent(Util.shareDir + 'template/stratuslab.repo.cfg.tpl')
-        repoConfig = repoConfig % {'repo_structure': self.repoStructure,
-                                     'repo_filename': self.repoFilename}
+        repoConfig = repoConfig % {'repo_structure': self.appRepoStructure,
+                                     'repo_filename': self.appRepoFilename}
         filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.appRepoImageDir, repoConfig)
 
     def _getLdapCertString(self):
         if self.appRepoLdapCert:
-            ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.ldapCert
+            ldapCertString = 'LDAPVerifyServerCert on\nLDAPTrustedGlobalCert CA_BASE64 %s\nLDAPTrustedMode SSL\n' % self.appRepoLdapCert
         else:
             ldapCertString = ''
             
         return ldapCertString
+
+    def _restartWebServer(self):
+        self.printDetail('Restarting web server (apache2 / httpd)\n')
+        system = SystemFactory.getInstance(self.frontendSystem)
+        self._execute(['/etc/init.d/%s' % system.packages['apache2'].packageName, 'stop'])
+        self._execute(['/etc/init.d/%s' % system.packages['apache2'].packageName, 'start'])
 
     def _execute(self, cmd):
         return execute(cmd, verboseLevel=self.verboseLevel)
