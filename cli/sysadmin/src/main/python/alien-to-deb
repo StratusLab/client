@@ -1,3 +1,6 @@
 #!/bin/bash
-echo "Calling alien to convert RPM into DEB"
-fakeroot alien --to-deb --scripts target/rpm/stratuslab/RPMS/noarch/stratuslab-*.rpm 
+echo "Calling alien to convert RPM into DEB, while keeping dependencies on ONE"
+fakeroot alien --generate --to-deb --scripts target/rpm/stratuslab/RPMS/noarch/stratuslab-*.rpm 
+echo "TODO: append dependencies in the control file"
+#cd ...
+#dpkg-buildpackage 
