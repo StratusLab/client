@@ -175,7 +175,7 @@ export RPM_BUILD_ROOT=
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<phase>install</phase>
+						<phase>package</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -183,12 +183,10 @@ export RPM_BUILD_ROOT=
 				</executions>
 				<configuration>
 					<executable>/bin/bash</executable>
-					<arguments>
-                        <arguments>
-                                <argument>-c</argument>
-                                <argument>fakeroot alien --to-deb --scripts --keep-version ${project.build.directory}/rpm/stratuslab-cli-sysadmin/RPMS/noarch/stratuslab-*.rpm</argument>
-                        </arguments>
-					</arguments>
+                    <arguments>
+                    	<argument>-c</argument>
+                        <argument>fakeroot alien --to-deb --scripts --keep-version ${project.build.directory}/rpm/stratuslab-cli-sysadmin/RPMS/noarch/stratuslab-*.rpm</argument>
+                    </arguments>
 				</configuration>
 			</plugin>
 
