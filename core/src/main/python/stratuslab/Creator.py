@@ -20,11 +20,12 @@ import stratuslab.Util as Util
 
  
 class Creator(object):
-    def __init__(self, image, options):
+    def __init__(self, image, configHolder):
         self.image = image
+        self.configHolder = configHolder
         self.options = Runner.defaultRunOptions()
-        self.options.update(options)
-        assignAttributes(self, self.options)
+        self.options.update(configHolder.options)
+        configHolder.assign(self)
 
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
@@ -54,7 +55,7 @@ class Creator(object):
     def _buildRunner(self):
         self.options['saveDisk'] = True
 
-        self.runner = Runner(self.image, self.options)
+        self.runner = Runner(self.image, self.configHolder)
         self._addCreationContext()
         
     def _addCreationContext(self):

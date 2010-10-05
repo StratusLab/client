@@ -5,12 +5,12 @@ import sys
 from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
-sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
 from stratuslab.Monitor import Monitor
+from stratuslab.ConfigHolder import ConfigHolder
 
 
 class MainProgram(CommandBase):
@@ -25,23 +25,33 @@ class MainProgram(CommandBase):
 Without the parameter [vm-id] the command lists the available vms'''
 
         self.parser.usage=usage
-        self.parser.add_option('-c', '--config', dest='configFile', 
-                               help='configuration file', metavar='FILE',
-                               default='%s/conf/stratuslab.cfg' % modulePath)
         
-        self.parser.add_option('-p', '--password', dest='password', 
-                               help='Cloud administrator password',
-                               default='')
+        self.parser.add_option('-u', '--username', dest='oneUsername',
+                help='cloud username. Default STRATUSLAB_USERNAME',
+                default=os.getenv('STRATUSLAB_USERNAME', ''))
+
+        self.parser.add_option('-p', '--password', dest='onePassword',
+                help='cloud password. Default STRATUSLAB_PASSWORD',
+                default=os.getenv('STRATUSLAB_PASSWORD', ''))
+
+        self.parser.add_option('--endpoint', dest='endpoint',
+                help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
+                default=os.getenv('STRATUSLAB_ENDPOINT', ''))
 
         self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
-        if not self.options.password:
-            self.parser.error('Missing --password')
+        if not self.options.oneUsername:
+            self.parser.error('Missing -u/--username')
+        if not self.options.onePassword:
+            self.parser.error('Missing -p/--password')
+        if not self.options.endpoint:
+            self.parser.error('Missing --endpoint')
+
 
     def doWork(self):
-        config = parseConfig(self.options.configFile)
-        monitor = Monitor(self.options.__dict__, config)
+        configHolder = ConfigHolder(self.options.__dict__)
+        monitor = Monitor(configHolder)
         if self.vmIds:
             list = monitor.vmDetail(self.vmIds)
             monitor.printVmDetails(list)

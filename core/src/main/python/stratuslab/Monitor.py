@@ -49,8 +49,10 @@ class Monitor(Configurable):
 
         if endpointEnv in os.environ:
             self.cloud.setEndpoint(os.environ[endpointEnv])
+        elif 'frontendIp' in self.__dict__ and 'onePort' in self.__dict__:
+            self.cloud.setEndpointFromParts(self.frontendIp, self.onePort)
         else:
-            self.cloud.setFrontend(self.frontendIp, self.onePort)
+            self.cloud.setEndpoint(self.endpoint)
 
         self.cloud.setCredentials(self.oneUsername, self.onePassword)
 

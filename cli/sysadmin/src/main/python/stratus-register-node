@@ -7,10 +7,11 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
+import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBase
 from stratuslab.InstallatorFactory import InstallatorFactory
 from stratuslab.Registrar import Registrar
-from stratuslab.Configurable import Configurable
+from stratuslab.ConfigHolder import ConfigHolder
 
 
 class MainProgram(CommandBase):
@@ -63,8 +64,9 @@ class MainProgram(CommandBase):
             raise self.usageExitTooFewArguments()
 
     def doWork(self):
-        config = Configurable.configFileToDict(self.options.configFile)        
-        registrar = Registrar(self.options.__dict__, config)
+        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        configHolder = ConfigHolder(self.options.__dict__, config)
+        registrar = Registrar(configHolder)
         registrar.register(self.nodes)
         
 if __name__ == '__main__':

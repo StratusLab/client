@@ -2,7 +2,6 @@ import os
 import re
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.Util import assignAttributes
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
@@ -15,8 +14,8 @@ import stratuslab.Util as Util
 
 class Runner(object):
 
-    def __init__(self, image, options):
-        assignAttributes(self, options)
+    def __init__(self, image, configHolder):
+        configHolder.assign(self)
 
         self.cloud = CloudConnectorFactory.getCloud()
         self.cloud.setEndpoint(self.endpoint)
@@ -50,7 +49,6 @@ class Runner(object):
         self.graphics = ''
         self.public_key = fileGetContent(self.userKey)
         self.vmIps = None
-        self.save_disk = self.saveDisk and 'yes' or 'no'
         self.vmIds = []
 
     @staticmethod
@@ -113,6 +111,14 @@ class Runner(object):
                    'vncPort': None,
                    'vncListen': '',
                    'saveDisk': 'no' }
+        return options
+
+    @staticmethod
+    def defaultQueryOptions():
+        options = {'userKey': os.getenv('STRATUSLAB_KEY', ''),
+                   'username': os.getenv('STRATUSLAB_USERNAME', ''),
+                   'password': os.getenv('STRATUSLAB_PASSWORD', ''),
+                   'endpoint': os.getenv('STRATUSLAB_ENDPOINT', '')}
         return options
 
     def _buildVmTemplate(self, template):

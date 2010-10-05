@@ -1,22 +1,21 @@
 from stratuslab.installator.one import OneInstallator
-from stratuslab.Util import assignAttributes
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Monitor import Monitor
 from stratuslab.Exceptions import InputException
 
 class Registrar(OneInstallator):
 
-    def __init__(self, options, config):
-        self.config = config
+    def __init__(self, configHolder):
+        self.config = configHolder.config
         self.deRegister = False
-        assignAttributes(self, options)
+        configHolder.assign(self)
         
         self.cloud = CloudConnectorFactory.getCloud()
-        self.cloud.setFrontend(self.config.get('frontend_ip'),
-                               self.config.get('one_port'))        
+        self.cloud.setEndpointFromParts(self.frontendIp,
+                                        self.onePort)        
         self.cloud.setCredentials('oneadmin', self.password)
 
-        self.assignDrivers(self, config)
+        self._assignDrivers()
 
     def register(self, hostnames):
         
@@ -51,5 +50,5 @@ class Registrar(OneInstallator):
     def _register(self, hostname):
         
         self.nodeAddr = hostname
-        return self.addCloudNode()
+        return self._addCloudNode()
         

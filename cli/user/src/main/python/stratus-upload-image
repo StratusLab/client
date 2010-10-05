@@ -4,7 +4,6 @@ import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
-sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.UploadParser import buildUploadParser
 from stratuslab.UploadParser import checkUploadOptions

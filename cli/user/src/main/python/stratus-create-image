@@ -4,13 +4,14 @@ import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
-sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.path.dirname(__file__))))
 
 from stratuslab.UploadParser import buildUploadParser
 from stratuslab.UploadParser import checkUploadOptions
 from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
+from stratuslab.ConfigHolder import ConfigHolder
+
 
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
@@ -62,8 +63,9 @@ class MainProgram(Runnable):
         if self.options.interface not in self.availableInterface():
             self.parser.error('Wrong network interface. Available: %s' % ', '.join(self.availableInterface()))
 
-    def doWork(self):        
-        self.creator = Creator(self.image, self.options.__dict__)
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        self.creator = Creator(self.image, configHolder)
         self.creator.create()
         
 
