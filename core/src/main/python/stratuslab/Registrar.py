@@ -6,6 +6,7 @@ from stratuslab.Exceptions import InputException
 class Registrar(OneInstallator):
 
     def __init__(self, configHolder):
+        self.configHolder = configHolder
         self.config = configHolder.config
         self.deRegister = False
         configHolder.assign(self)
@@ -35,7 +36,7 @@ class Registrar(OneInstallator):
         self.removeCloudNode(id)
 
     def _getHostnameId(self, hostname):
-        monitor = Monitor(self.__dict__, self.config)
+        monitor = Monitor(self.configHolder)
         infoList = monitor.listNodes()
         info = None
         for i in infoList:
