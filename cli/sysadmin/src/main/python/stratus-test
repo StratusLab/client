@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath('%s/../../../../../src/' % os.path.abspath(os.pa
 import stratuslab
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
-from stratuslab.Configurable import Configurable
+from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util
 
 class MainProgram(CommandBase):
@@ -36,7 +36,7 @@ where test is a comma separated list of tests, according to the name provided by
         self.options, self.tests = self.parser.parse_args()
 
     def doWork(self):
-        config = Configurable.configFileToDict(self.options.configFile)        
+        config = ConfigHolder.configFileToDict(self.options.configFile)        
         Testor.config = config
         Testor.options = self.options.__dict__
         Testor.testNames = self.tests

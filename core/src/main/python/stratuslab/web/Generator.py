@@ -6,7 +6,6 @@ import datetime
 from urllib2 import HTTPError
 
 from stratuslab.Monitor import Monitor
-from stratuslab.Configurable import Configurable
 from stratuslab.ConfigHolder import ConfigHolder
 
 class HtmlGenerator(object):
@@ -22,7 +21,7 @@ class HtmlGenerator(object):
         
     def run(self):
         configFile = 'conf/stratuslab.cfg'
-        config = Configurable.configFileToDict(configFile)
+        config = ConfigHolder.configFileToDict(configFile)
         configHolder = ConfigHolder(config=config)
         self.monitor = Monitor(configHolder)
         content = self._generate()

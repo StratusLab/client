@@ -1,7 +1,7 @@
 import os
 import tarfile
 
-from stratuslab.BaseSystem import BaseSystem
+from BaseSystem import BaseSystem
 from stratuslab.Util import wget
 from stratuslab.system.PackageInfo import PackageInfo
 
@@ -142,7 +142,7 @@ class CentOS(BaseSystem):
     def _configureKvm(self):
         super(CentOS, self)._configureKvm()
         self.executeCmd(['/etc/init.d/libvirtd start'])
-        self.executeCmd(['usermod', '-G', 'kvm', '-a', self.ONeAdmin])
+        self.executeCmd(['usermod', '-G', 'kvm', '-a', self.oneUsername])
         self.executeCmd(['chown', 'root:kvm', 
                         '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])

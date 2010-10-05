@@ -1,16 +1,17 @@
 import os
 import stratuslab.Util as Util
 
+def getSystem(system, configHolder):
+    moduleDir = os.path.dirname(__file__)
 
-def getInstance(system, options = {}):
-    if not os.path.isfile('%s/%s.py' % (Util.systemsDir, system)):
-        raise ValueError('Specified system %s not available' % system)
+    if not os.path.isfile('%s/%s.py' % (moduleDir, system)):
+        raise ValueError('Failed to find system module %s' % system)
 
-    Util.setPythonPath(Util.systemsDir)
+    Util.setPythonPath(moduleDir)
 
     module = Util.importSystem(system)
 
     obj = getattr(module, 'system')
-    Util.assignAttributes(obj, options)
+    configHolder.assign(obj)
     
     return obj

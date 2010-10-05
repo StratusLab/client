@@ -2,14 +2,15 @@ import os
 import shutil
 from datetime import datetime
 
-from Util import appendOrReplaceInFile
-from Util import fileGetContent
-from Util import filePutContent
-from Util import execute, printDetail
-from Util import fileAppendContent
-from Util import scp
-from Util import sshCmd
-import Util
+from stratuslab.Util import appendOrReplaceInFile
+from stratuslab.Util import fileGetContent
+from stratuslab.Util import filePutContent
+from stratuslab.Util import execute
+from stratuslab.Util import fileAppendContent
+from stratuslab.Util import scp
+from stratuslab.Util import sshCmd
+import stratuslab.Util as Util
+from stratuslab.Util import printDetail
 
 class BaseSystem(object):
     
@@ -58,9 +59,9 @@ class BaseSystem(object):
         self._execute(['git', 'clone', repoUrl, cloneName, '-b', branch])
         os.chdir(cloneName)
 
-    def buildCloudSystem(self):
-        self._applyPatchs()
-        self.executeCmd(['scons', '-j2'])
+#    def buildCloudSystem(self):
+#        self._applyPatchs()
+#        self.executeCmd(['scons', '-j2'])
         
     def _applyPatchs(self):
         patchDir = os.path.abspath(Util.shareDir + 'patch')
@@ -72,9 +73,9 @@ class BaseSystem(object):
             self.executeCmd(['patch', '-p1'], stdin=patchFile)
             patchFile.close()
 
-    def installCloudSystem(self):
-        self._execute(['bash', 'install.sh', '-d', self.ONeHome, '-u',
-                      self.ONeAdmin, '-g', self.ONeAdminGroup])
+#    def installCloudSystem(self):
+#        self._execute(['bash', 'install.sh', '-d', self.oneHome, '-u',
+#                      self.oneUsername, '-g', self.oneGroup])
 
     def startCloudSystem(self):
         self._cloudAdminExecute(['one start'])
@@ -84,22 +85,22 @@ class BaseSystem(object):
     # -------------------------------------------
 
     def createCloudGroup(self, groupname, gid):
-        self.ONeAdminGroup = groupname
-        self.ONeAdminGID = gid
+        self.oneGroup = groupname
+        self.oneGid = gid
 
-        self.executeCmd(['groupadd', '-g', self.ONeAdminGID, 
-                        self.ONeAdminGroup])
+        self.executeCmd(['groupadd', '-g', self.oneGid, 
+                        self.oneGroup])
 
     def createCloudAdmin(self, username, uid, homeDir, password):
-        self.ONeAdmin = username
-        self.ONeHome = homeDir
-        self.ONeAdminUID = uid
-        self.ONeAdminPassword = password
+        self.oneUsername = username
+        self.oneHome = homeDir
+        self.oneUid = uid
+        self.onePassword = password
 
-        self.createDirsCmd(os.path.dirname(self.ONeHome))
-        self.executeCmd(['useradd', '-d', self.ONeHome, '-g', 
-                        self.ONeAdminGroup, '-u', self.ONeAdminUID, self.ONeAdmin,
-                        '-s', '/bin/bash', '-p', self.ONeAdminPassword, '--create-home'])
+        self.createDirsCmd(os.path.dirname(self.oneHome))
+        self.executeCmd(['useradd', '-d', self.oneHome, '-g', 
+                        self.oneGroup, '-u', self.oneUid, self.oneUsername,
+                        '-s', '/bin/bash', '-p', self.onePassword, '--create-home'])
 
     # -------------------------------------------
     #     ONE admin env config and related
@@ -108,70 +109,81 @@ class BaseSystem(object):
     def configureCloudAdminEnv(self, ONeDPort, stratuslabLocation):
         self.ONeDPort = ONeDPort
 
-        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
+        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome,
                                       'export ONE_LOCATION',
-                                      'export ONE_LOCATION=%s' % self.ONeHome)
-        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome, 
+                                      'export ONE_LOCATION=%s' % self.oneHome)
+        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome, 
                                       'export ONE_XMLRPC',
                                       'export ONE_XMLRPC=http://localhost:%s/RPC2' % self.ONeDPort)
-        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
+        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome,
                                       'export PATH',
-                                      'export PATH=%s/bin:%s' % (self.ONeHome, os.getenv('PATH')))
+                                      'export PATH=%s/bin:%s' % (self.oneHome, os.getenv('PATH')))
 
         if stratuslabLocation:
-            self.appendOrReplaceInFileCmd('%s/.bashrc' % self.ONeHome,
+            self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome,
                                           'export STRATUSLAB_LOCATION',
                                           'export STRATUSLAB_LOCATION=%s' % stratuslabLocation)
 
-        self.filePutContentsCmd('%s/.bash_login' % self.ONeHome,
+        self.filePutContentsCmd('%s/.bash_login' % self.oneHome,
                                 '[ -f ~/.bashrc ] && source ~/.bashrc')
-        self.setOwnerCmd('%s/.bash_login' % self.ONeHome)
+        self.setOwnerCmd('%s/.bash_login' % self.oneHome)
 
         # Hack to always load .bashrc
         self.executeCmd(['sed -i \'s/\[ -z \\\"\$PS1\\\" \\] \\&\\& ' 
-                        'return/#&/\' %s/.bashrc' % self.ONeHome], shell=True)
+                        'return/#&/\' %s/.bashrc' % self.oneHome], shell=True)
 
-    def _configureCloudAdminSsh(self):
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
-                                      'Host', 'Host *')
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.ONeHome, 
-                                      '\tStrictHost', '\tStrictHostKeyChecking no')
+    def configureCloudAdminSshKeys(self):  
+        oneHome = self._getOneHome()
+        keyFileName = '%s/.ssh/id_rsa' % oneHome
 
-    def configureCloudAdminSshKeys(self):
-        keyName = '%s/.ssh/id_rsa' % self.ONeHome
-        
-        self.createDirsCmd(os.path.dirname(keyName))
-        self.setOwnerCmd(os.path.dirname(keyName))
-        self.executeCmd(['ssh-keygen -f %s -N "" -q' % keyName],
+        if os.path.exists(keyFileName):
+            printDetail('Key file %s already exists, skipping this step' % keyFileName)
+            return
+
+        self.createDirsCmd(os.path.dirname(keyFileName))
+        self.setOwnerCmd(os.path.dirname(keyFileName))
+        self.executeCmd(['ssh-keygen -f %s -N "" -q' % keyFileName],
                         shell=True)
-        self.setOwnerCmd(keyName)
-        self.setOwnerCmd('%s.pub' % keyName)
+        self.setOwnerCmd(keyFileName)
+        self.setOwnerCmd('%s.pub' % keyFileName)
 
-        self.copyCmd('%s.pub' % keyName, 
-                     '%s/.ssh/authorized_keys' % self.ONeHome)
-        self.setOwnerCmd('%s/.ssh/authorized_keys' % self.ONeHome)
+        self.copyCmd('%s.pub' % keyFileName, 
+                     '%s/.ssh/authorized_keys' % oneHome)
+        self.setOwnerCmd('%s/.ssh/authorized_keys' % oneHome)
         self._configureCloudAdminSsh()
 
     def configureCloudAdminSshKeysNode(self):
-        self.createDirsCmd('%s/.ssh/' % self.ONeHome)
-        self.setOwnerCmd('%s/.ssh/' % self.ONeHome)
+        self.createDirsCmd('%s/.ssh/' % self.oneHome)
+        self.setOwnerCmd('%s/.ssh/' % self.oneHome)
         
-        oneKey = fileGetContent('%s/.ssh/id_rsa' % self.ONeHome)
-        self._filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.ONeHome, oneKey)
+        oneKey = fileGetContent('%s/.ssh/id_rsa' % self.oneHome)
+        self._filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.oneHome, oneKey)
         
-        oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.ONeHome)
-        self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.ONeHome,
+        oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.oneHome)
+        self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.oneHome,
                                        oneKeyPub)
-        self.chmodCmd('%s/.ssh/id_rsa' % self.ONeHome, 0600)
+        self.chmodCmd('%s/.ssh/id_rsa' % self.oneHome, 0600)
         self._configureCloudAdminSsh()
 
-    def configureCloudAdminAccount(self):
-        self.createDirsCmd('%s/.one' % self.ONeHome)
-        self.setOwnerCmd('%s/.one' % self.ONeHome)
+    def _configureCloudAdminSsh(self):
+        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome, 
+                                      'Host', 'Host *')
+        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome, 
+                                      '\tStrictHost', '\tStrictHostKeyChecking no')
 
-        self.appendOrReplaceInFileCmd('%s/.one/one_auth' % self.ONeHome, 
-                                      self.ONeAdmin, '%s:%s' % (self.ONeAdmin, self.ONeAdminPassword))
-        self.setOwnerCmd('%s/.one/one_auth' % self.ONeHome)
+    def configureCloudAdminAccount(self):
+        oneHome = self._getOneHome()
+
+        oneAuthFile = '%s/.one/one_auth' % oneHome
+        self.appendOrReplaceInFileCmd(oneAuthFile, 
+                                      self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
+        self.setOwnerCmd(oneAuthFile)
+
+    def _getOneHome(self):
+        oneHome = self.oneHome
+        if not self.oneHome:
+            oneHome = os.path.expanduser('~' + self.oneUsername)
+        return oneHome
 
     # -------------------------------------------
     #     File sharing configuration
@@ -213,10 +225,10 @@ class BaseSystem(object):
         self.executeCmd(['modprobe', 'kvm_amd'])
 
     def _configureXen(self):
-        self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
-                                      '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm *' % self.ONeAdmin)
-        self.appendOrReplaceInFileCmd('/etc/sudoers', self.ONeAdmin,
-                                      '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xentop *' % self.ONeAdmin)
+        self.appendOrReplaceInFileCmd('/etc/sudoers', self.oneUsername,
+                                      '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm *' % self.oneUsername)
+        self.appendOrReplaceInFileCmd('/etc/sudoers', self.oneUsername,
+                                      '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xentop *' % self.oneUsername)
         self.executeCmd(['sed -i -E \'s/Defaults[[:space:]]+requiretty/#&/\''
                         ' /etc/sudoers'])
 
@@ -241,12 +253,12 @@ class BaseSystem(object):
                        **kwargs)
 
     def _cloudAdminExecute(self, command, **kwargs):
-        su = ['su', '-l', self.ONeAdmin, '-c']
+        su = ['su', '-l', self.oneUsername, '-c']
         su.extend(command)
         return self._execute(su, **kwargs)
     
     def _setCloudAdminOwner(self, path):
-        os.chown(path, int(self.ONeAdminUID), int(self.ONeAdminGID)) 
+        os.chown(path, int(self.oneUid), int(self.oneGid)) 
         
     def _createDirs(self, path):
         if not os.path.isdir(path) and not os.path.isfile(path):
@@ -311,8 +323,8 @@ class BaseSystem(object):
                    **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
-        self._nodeShell(['chown %s:%s %s' % (self.ONeAdminUID, 
-                        self.ONeAdminGID, path)])
+        self._nodeShell(['chown %s:%s %s' % (self.oneUid, 
+                        self.oneGid, path)])
             
     def _remoteCreateDirs(self, path):
         self._nodeShell('mkdir -p %s' % path)
@@ -365,7 +377,7 @@ class BaseSystem(object):
         self.hypervisor = hypervisor
 
     def setCloudAdminName(self, username):
-        self.ONeAdmin = username
+        self.oneUsername = username
 
     def workOnFrontend(self):
         self.appendOrReplaceInFileCmd = appendOrReplaceInFile

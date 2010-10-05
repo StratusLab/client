@@ -2,7 +2,6 @@ import os
 
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
-from stratuslab.Util import modulePath
 from stratuslab.Util import execute
 import stratuslab.Util as Util
 from stratuslab.Exceptions import ConfigurationException
@@ -37,7 +36,7 @@ class AppRepo(Configurable):
 
     def _installWebServer(self):
         self.printStep('Installing web server (apache2 / httpd)')
-        system = SystemFactory.getInstance(self.frontendSystem)
+        system = SystemFactory.getSystem(self.frontendSystem)
         system.installPackages([system.packages['apache2'].packageName])
         if not os.path.exists(self.appRepoApacheHome):
             raise ConfigurationException('Apache home not found: %s' % self.appRepoApacheHome)
@@ -96,7 +95,7 @@ class AppRepo(Configurable):
 
     def _restartWebServer(self):
         self.printDetail('Restarting web server (apache2 / httpd)\n')
-        system = SystemFactory.getInstance(self.frontendSystem)
+        system = SystemFactory.getSystem(self.frontendSystem)
         self._execute(['/etc/init.d/%s' % system.packages['apache2'].packageName, 'stop'])
         self._execute(['/etc/init.d/%s' % system.packages['apache2'].packageName, 'start'])
 

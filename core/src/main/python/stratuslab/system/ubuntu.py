@@ -1,4 +1,4 @@
-from stratuslab.BaseSystem import BaseSystem
+from BaseSystem import BaseSystem
 from stratuslab.Util import fileGetContent
 from stratuslab.system.PackageInfo import PackageInfo
 import stratuslab.Util as Util
@@ -57,7 +57,7 @@ class Ubuntu(BaseSystem):
     def _configureKvm(self):
         super(Ubuntu, self)._configureKvm()
         self.executeCmd(['/etc/init.d/libvirt-bin start'])
-        self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.ONeAdmin])
+        self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.oneUsername])
         
     # -------------------------------------------
     #     Network configuration and related

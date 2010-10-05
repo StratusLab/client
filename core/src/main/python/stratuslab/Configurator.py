@@ -5,26 +5,6 @@ from Exceptions import ConfigurationException
 
 class Configurator(Configurable):
 
-    @staticmethod
-    def assignConfigAttributes(instance, config):
-        for key, value in config.items():
-            setattr(instance, Configurator._camelCase(key), value)
-        return instance
- 
-    @staticmethod
-    def formatConfigKeys(config):
-        dict = {}
-        for k, v in config.items():
-            dict[Configurator._camelCase(k)] = v
-        return dict
-
-    @staticmethod
-    def _camelCase(key):
-        formattedKey = ''.join([part.title() for part in key.split('_')])
-        if len(formattedKey) > 0:
-            formattedKey = formattedKey[0].lower() + formattedKey[1:]
-        return formattedKey
-
     def __init__(self, configHolder):
         super(Configurator, self).__init__(configHolder)
         
@@ -35,10 +15,10 @@ class Configurator(Configurable):
 
     def _load(self):
         self.printDetail('Loading configuration file %s' % self.baseConfigFile)
-        self.baseConfig = Configurable.parseConfig(self.baseConfigFile)
+        self.baseConfig = self.parseConfig(self.baseConfigFile)
         self._createConfigIfRequired()        
         self.printDetail('Loading configuration file %s' % self.configFile)
-        self.config = Configurable.parseConfig(self.configFile)
+        self.config = self.parseConfig(self.configFile)
 
     def _createConfigIfRequired(self):
         if not os.path.isfile(self.configFile):
@@ -51,7 +31,7 @@ class Configurator(Configurable):
 
     def displayDefaultKeys(self):
         columnSize = 25
-        defaultConfig = Configurable.convertToSectionDict(Configurable.parseConfig(self.baseConfigFile))
+        defaultConfig = self.convertToSectionDict(self.parseConfig(self.baseConfigFile))
 
         width = columnSize * 3 + 1
         line = '-' * width

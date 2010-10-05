@@ -6,11 +6,10 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
-from stratuslab.InstallatorFactory import InstallatorFactory
-from stratuslab.Configurable import Configurable
+import stratuslab.installator.InstallatorFactory as InstallatorFactory
 import stratuslab.Util as Util
+from stratuslab.ConfigHolder import ConfigHolder
 
 class MainProgram(CommandBase):
     '''A command-line program to install StratusLab.'''
@@ -59,9 +58,11 @@ class MainProgram(CommandBase):
             self.parser.error('--install and --setup are mutually exclusive.')
 
     def doWork(self):
-        config = Configurable.configFileToDict(self.options.configFile)        
-        self.installator = InstallatorFactory().getInstallator()
-        self.installator.runInstall(self.options, config)
+        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        configHolder = ConfigHolder(self.options.__dict__, config)
+
+        self.installator = InstallatorFactory.getInstallator()
+        self.installator.runInstall(configHolder)
         
 
 if __name__ == '__main__':

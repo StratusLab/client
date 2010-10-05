@@ -15,7 +15,6 @@ from stratuslab.Util import sshCmd
 from stratuslab.Util import scp
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
-from stratuslab.Configurable import Configurable
 
 class MainProgram(CommandBase):
     '''A command line to install stratuslab on a remote host'''

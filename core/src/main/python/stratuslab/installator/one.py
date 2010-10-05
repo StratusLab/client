@@ -1,93 +1,25 @@
 import os
 
-from stratuslab.BaseInstallator import BaseInstallator
+from BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import networkSizeToNetmask
-from stratuslab.Util import printError
 from stratuslab.Util import unifyNetsize
-from stratuslab.Util import assignAttributes
 import stratuslab.Util as Util
 
 class OneInstallator(BaseInstallator):
     
-    def runInstall(self, options, config):
-        #TODO: refactor options and config args into __init__
-        assignAttributes(self, options.__dict__)
-        self.assignDrivers(options, config)
-        self.onedConfTemplate = options.onedTpl        
-        super(OneInstallator, self).runInstall(options, config)
+    def __init__(self):
+        super(OneInstallator, self).__init__()
+        self.cloudConfDir = '/etc/one/'
+        self.cloudConfFile = self.cloudConfDir + 'oned.conf'
 
-    # -------------------------------------------
-    #    Cloud admin management
-    # -------------------------------------------
-    
-    def createCloudAdmin(self, system):
-        system.createCloudGroup(self.config.get('one_group'),
-                                self.config.get('one_gid'))
-        system.createCloudAdmin(self.config.get('one_username'),
-                                self.config.get('one_uid'),
-                                self.config.get('one_home'),
-                                self.config.get('one_password'))
-
-    def configureCloudAdminNode(self):
-        self.configureNodeNetwork()
-        self.node.configureCloudAdminSshKeysNode()
-        self._copyCloudHooks(self.node)
-
-    def configureCloudAdminFrontend(self):
-        self.frontend.configureCloudAdminEnv(self.config.get('one_port'),
-                                             self.config.get('stratuslab_location'))
-        self.frontend.configureCloudAdminAccount()
-        self.frontend.configureCloudAdminSshKeys()
-        self._copyCloudHooks(self.frontend)
-
-        if self.config.get('vm_dir') != '':
-            self.frontend.createDirsCmd(self.config.get('vm_dir'))
-            self.frontend.setOwnerCmd(self.config.get('vm_dir'))
-        
-    # -------------------------------------------
-    #    Cloud installation management
-    # -------------------------------------------
-
-    def installCloudSystem(self):
-        self.frontend.installFrontendDependencies()
-        self.frontend.cloneGitRepository(self.config.get('one_build_dir'),
-                                         self.config.get('one_git_repo'),
-                                         self.config.get('one_clone_name'),
-                                         self.config.get('one_branch'))
-        self.frontend.buildCloudSystem()
-        self.frontend.installCloudSystem()
-        self._copyContextualizationScript()
-        self._createContextConfigurationScript()
-        
-    # -------------------------------------------
-    #    Cloud configuration management
-    # -------------------------------------------
-
-    def configureCloudSystem(self):
-        if not os.path.isfile(self.onedConfTemplate):
-            printError('ONe daemon configuration template '
-                       '%s does not exists' % self.onedConfTemplate)
-
-        conf = self.config.copy()
-        if conf.get('vm_dir') == '':
-            conf['vm_dir'] = '%s/var' % conf.get('one_home')
-
-        self.frontend.filePutContentsCmd('%s/etc/oned.conf' % self.config.get('one_home'),
-                                         fileGetContent(self.onedConfTemplate) % conf)
-
-    def configureNodeNetwork(self):
-        self._addPrivateNetworkRoute(self.node)
-        self.node.configureNetwork(self.config.get('node_network_interface'),
-                                   self.config.get('node_bridge_name'))
-
-    def addCloudNode(self):
+    def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
         
-    def removeCloudNode(self, id):
+    def _removeCloudNode(self, id):
         self.cloud.hostRemove(id)
         
-    def addDefaultNetworks(self):
+    def _addDefaultNetworks(self):
         for vnet in self.defaultNetworks:
             if self.config.get('one_%s_network_addr' % vnet, '') == '':
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
@@ -137,10 +69,10 @@ class OneInstallator(BaseInstallator):
                 'dev', 'eth0'])
 
     def _copyContextualizationScript(self):
-        self.frontend.createDirsCmd(os.path.dirname(self.config.get('context_script')))
-        self.frontend.setOwnerCmd(os.path.dirname(self.config.get('context_script')))
-        self.frontend.copyCmd(os.path.join(Util.shareDir, 'context/init.sh'), self.config.get('context_script'))
-        self.frontend.setOwnerCmd(self.config.get('context_script'))
+        self.frontend.createDirsCmd(os.path.dirname(self.contextScript))
+        self.frontend.setOwnerCmd(os.path.dirname(self.contextScript))
+        self.frontend.copyCmd(os.path.join(Util.shareDir, 'context/init.sh'), self.contextScript)
+        self.frontend.setOwnerCmd(self.contextScript)
 
     def _createContextConfigurationScript(self):
         oneHome = self.config.get('one_home')
@@ -173,7 +105,7 @@ class OneInstallator(BaseInstallator):
     #   Front-end file sharing management
     # -------------------------------------------
     
-    def setupFileSharingServer(self):
+    def _setupFileSharingServer(self):
         self.frontend.installPackages(self.frontend.fileSharingFrontendDeps.get(self.shareType, []))
         self._configureFileSharingServer()
 
@@ -210,7 +142,7 @@ class OneInstallator(BaseInstallator):
     #    Node file sharing management
     # -------------------------------------------
 
-    def setupFileSharingClient(self):
+    def _setupFileSharingClient(self):
         self.node.installNodePackages(self.node.fileSharingNodeDeps.get(self.shareType, []))
         self._configureFileSharingClient()
 

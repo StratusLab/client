@@ -44,7 +44,7 @@ one_username = oneadmin
 one_password = oneadmin
 
 [one-advanced]
-one_home = /srv/cloud/one
+one_home = 
 network_size = 254
 host_monitoring_interval = 60
 vm_polling_interval = 60

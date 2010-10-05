@@ -156,10 +156,13 @@ def printStep(msg):
     printAndFlush('\n :: %s' % msg)
 
 def printError(msg, exitCode=1, exit=True):
-    printAndFlush('\n  ** %s\n' % msg)
+    printAndFlush('\n  [ERROR] %s\n' % msg)
 
     if exit:
         sys.exit(exitCode)
+
+def printWarning(msg):
+    printAndFlush('\n  [WARNING] %s\n' % msg)
 
 def printAndFlush(msg):
     sys.stdout.flush()
@@ -193,21 +196,6 @@ def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd.append(dest)
     
     return execute(scpCmd, **kwargs)
-
-#TODO: turn into factory class
-def getSystemMethods(system, options = {}):
-    if not os.path.isfile('%s/%s.py' % (systemsDir, system)):
-        raise ValueError('Specified system %s not available' %
-                         system)
-
-    setPythonPath(systemsDir)
-
-    module = importSystem(system)
-
-    obj = getattr(module, 'system')
-    assignAttributes(obj, options)
-    
-    return obj
 
 def importSystem(system):
     module = None

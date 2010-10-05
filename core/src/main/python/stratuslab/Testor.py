@@ -12,7 +12,6 @@ from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import NetworkException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Configurable import Configurable
 from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
