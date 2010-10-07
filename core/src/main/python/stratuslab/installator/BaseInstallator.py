@@ -124,6 +124,9 @@ class BaseInstallator(object):
         
         printStep('Starting cloud')
         self._startCloudSystem()
+
+        printStep('Adding default ONE vnet')
+        self._addDefaultNetworks()
         
     def _setFrontend(self):
         if not self.frontendIp or self.frontendIp == '127.0.0.1':
@@ -189,9 +192,6 @@ class BaseInstallator(object):
         self.frontend.filePutContentsCmd(self.cloudConfFile,
                                          fileGetContent(self.onedTpl) % conf)
 
-        self._addDefaultNetworks()
-        
-    
     def _addDefaultNetworks(self):
         pass
 
