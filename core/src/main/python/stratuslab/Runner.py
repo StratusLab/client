@@ -49,6 +49,7 @@ class Runner(object):
         self.graphics = ''
         self.public_key = fileGetContent(self.userKey)
         self.vmIps = None
+        self.save_disk = (self.saveDisk and 'yes') or 'no'
         self.vmIds = []
 
     @staticmethod
