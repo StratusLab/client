@@ -177,7 +177,6 @@ class BaseSystem(object):
         oneAuthFile = '%s/.one/one_auth' % oneHome
         self.appendOrReplaceInFileCmd(oneAuthFile, 
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
-        self.setOwnerCmd(oneAuthFile)
 
     def _getOneHome(self):
         oneHome = self.oneHome

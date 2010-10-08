@@ -21,12 +21,37 @@ class OneInstallator(BaseInstallator):
         
     def _addDefaultNetworks(self):
         for vnet in self.defaultNetworks:
-            if self.config.get('one_%s_network_addr' % vnet, '') == '':
+            if self._isIpMacNetwork(vnet):
+                self.cloud.networkCreate(self._buildFixedMacIpNetworkTemplate(vnet))
+            elif self._isRangedNetwork(vnet):
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
             else:
                 self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
         self._addPrivateNetworkRoute(self.frontend)
+
+    def _isIpMacNetwork(self, vnet):
+        addrDefined = self.config.get('one_%s_network_addr' % vnet, '') != ''
+        macDefined = self.config.get('one_%s_network_mac' % vnet, '') != ''
+        return addrDefined and macDefined
+
+    def _isRangedNetwork(self, vnet):
+        addrDefined = self.config.get('one_%s_network_addr' % vnet, '') != ''
+        return addrDefined
+
+    def _buildFixedMacIpNetworkTemplate(self, networkName):
+        vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
+        ips = self.config.get('one_%s_network_addr' % networkName).split(' ')
+        macs = self.config.get('one_%s_network_mac' % networkName).split(' ')
+        ipMac = zip(ips, macs)
+        
+        leases = ['LEASES = [ IP=%s, MAC=%s]' % (ip, mac) for ip, mac in ipMac]
+        
+        vnetTpl = vnetTpl % ({'network_name': networkName,
+                             'bridge': self.config.get('node_bridge_name'),
+                             'leases': '\n'.join(leases)})
+        return vnetTpl
+    
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
