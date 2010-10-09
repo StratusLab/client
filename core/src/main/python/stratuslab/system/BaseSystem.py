@@ -20,6 +20,9 @@ class BaseSystem(object):
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
         self.workOnFrontend()
 
+    def init(self):
+        self._setOneHome()
+
     # -------------------------------------------
     #     Packages manager and related
     # -------------------------------------------
@@ -91,11 +94,7 @@ class BaseSystem(object):
         self.executeCmd(['groupadd', '-g', self.oneGid, 
                         self.oneGroup])
 
-    def createCloudAdmin(self, username, uid, homeDir, password):
-        self.oneUsername = username
-        self.oneHome = homeDir
-        self.oneUid = uid
-        self.onePassword = password
+    def createCloudAdmin(self):
 
         self.createDirsCmd(os.path.dirname(self.oneHome))
         self.executeCmd(['useradd', '-d', self.oneHome, '-g', 
@@ -133,8 +132,7 @@ class BaseSystem(object):
                         'return/#&/\' %s/.bashrc' % self.oneHome], shell=True)
 
     def configureCloudAdminSshKeys(self):  
-        oneHome = self._getOneHome()
-        keyFileName = '%s/.ssh/id_rsa' % oneHome
+        keyFileName = '%s/.ssh/id_rsa' % self.oneHome
 
         if os.path.exists(keyFileName):
             printDetail('Key file %s already exists, skipping this step' % keyFileName)
@@ -148,8 +146,8 @@ class BaseSystem(object):
         self.setOwnerCmd('%s.pub' % keyFileName)
 
         self.copyCmd('%s.pub' % keyFileName, 
-                     '%s/.ssh/authorized_keys' % oneHome)
-        self.setOwnerCmd('%s/.ssh/authorized_keys' % oneHome)
+                     '%s/.ssh/authorized_keys' % self.oneHome)
+        self.setOwnerCmd('%s/.ssh/authorized_keys' % self.oneHome)
         self._configureCloudAdminSsh()
 
     def configureCloudAdminSshKeysNode(self):
@@ -172,17 +170,13 @@ class BaseSystem(object):
                                       '\tStrictHost', '\tStrictHostKeyChecking no')
 
     def configureCloudAdminAccount(self):
-        oneHome = self._getOneHome()
-
-        oneAuthFile = '%s/.one/one_auth' % oneHome
+        oneAuthFile = '%s/.one/one_auth' % self.oneHome
         self.appendOrReplaceInFileCmd(oneAuthFile, 
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
 
-    def _getOneHome(self):
-        oneHome = self.oneHome
+    def _setOneHome(self):
         if not self.oneHome:
-            oneHome = os.path.expanduser('~' + self.oneUsername)
-        return oneHome
+            self.oneHome = os.path.expanduser('~' + self.oneUsername)
 
     # -------------------------------------------
     #     File sharing configuration

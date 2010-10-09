@@ -13,5 +13,6 @@ def getSystem(system, configHolder):
 
     obj = getattr(module, 'system')
     configHolder.assign(obj)
+    obj.init()
     
     return obj

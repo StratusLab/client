@@ -147,10 +147,7 @@ class BaseInstallator(object):
     def _createCloudAdmin(self, system):
         system.createCloudGroup(self.oneGroup,
                                 self.oneGid)
-        system.createCloudAdmin(self.oneUsername,
-                                self.oneUid,
-                                self.oneHome,
-                                self.onePassword)
+        system.createCloudAdmin()
 
     def _installCloudSystem(self):
         pass
