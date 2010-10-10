@@ -4,6 +4,7 @@ import tarfile
 from BaseSystem import BaseSystem
 from stratuslab.Util import wget
 from stratuslab.system.PackageInfo import PackageInfo
+from stratuslab.Util import sleep
 
 class CentOS(BaseSystem):
 
@@ -142,6 +143,8 @@ class CentOS(BaseSystem):
     def _configureKvm(self):
         super(CentOS, self)._configureKvm()
         self.executeCmd(['/etc/init.d/libvirtd start'])
+        # Sleep to give a chance to libvirt to create the libvirt-sock
+        sleep(5)
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.oneUsername])
         self.executeCmd(['chown', 'root:kvm', 
                         '/var/run/libvirt/libvirt-sock'])
