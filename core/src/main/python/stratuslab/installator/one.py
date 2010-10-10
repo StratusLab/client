@@ -99,24 +99,8 @@ class OneInstallator(BaseInstallator):
         self.frontend.copyCmd(os.path.join(Util.shareDir, 'context/init.sh'), self.contextScript)
         self.frontend.setOwnerCmd(self.contextScript)
 
-    def _createContextConfigurationScript(self):
-        oneHome = self.config.get('one_home')
-        scriptPath = '%s/share/scripts/configuration.sh' % oneHome
-        configScript = ['DEFAULT_GATEWAY="%s"' % self.config.get('default_gateway'),
-                        'GLOBAL_NETWORK="%s"' % self.config.get('network_addr'),
-                        'GLOBAL_NETMASK="%s"' % self.config.get('network_mask')]
-
-        if self.config.get('one_public_network_mask'):
-            configScript.append('NETMASK_PUBLIC="/%s"' % self.config.get('one_public_network_mask'))
-        if self.config.get('one_private_network_mask'):
-            configScript.append('NETMASK_PRIVATE="/%s"' % self.config.get('one_private_network_mask'))
-                        
-        self.frontend.createDirsCmd(os.path.dirname(scriptPath))
-        self.frontend.filePutContentsCmd(scriptPath, '\n'.join(configScript))
-        self.frontend.setOwnerCmd(scriptPath)
-
     def _copyCloudHooks(self, system):
-        hooksDir = '%s/share/hooks' % self.config.get('one_home')
+        hooksDir = '%s/share/hooks' % self.config.get('one_share')
         hooksInstallDir = os.path.join(Util.shareDir + 'hooks')
         system.createDirsCmd(hooksDir)
         system.setOwnerCmd(hooksDir)

@@ -26,9 +26,6 @@ DETAILED_VERBOSE_LEVEL = 2
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
 
-# Configuration parameter names
-configFrontEndIp = 'frontend_ip'
-
 def wget(url, savePath):
     fd = urllib2.urlopen(url)
     filePutContent(savePath, fd.read())

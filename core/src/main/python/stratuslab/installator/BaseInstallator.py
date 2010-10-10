@@ -176,16 +176,12 @@ class BaseInstallator(object):
         
     def _configureCloudSystem(self):
         self._copyContextualizationScript()
-        self._createContextConfigurationScript()
 
         if not os.path.isfile(self.onedTpl):
             printError('ONe daemon configuration template '
                        '%s does not exists' % self.onedTpl)
 
         conf = self.config.copy()
-        if conf.get('vm_dir') == '':
-            conf['vm_dir'] = '/instances'
-
         self.frontend.filePutContentsCmd(self.cloudConfFile,
                                          fileGetContent(self.onedTpl) % conf)
 

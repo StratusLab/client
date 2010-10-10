@@ -21,8 +21,7 @@ import Util
 
 class Testor(unittest.TestCase):
     
-    config = {}
-    options = {}
+    configHolder = None
     testNames = []
     
     def __init__(self, methodName='dummy'):
@@ -34,34 +33,30 @@ class Testor(unittest.TestCase):
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
         
-        self._fillOptions()
+        Testor.configHolder.assign(self)
+        self._setEnvVars()
 
-    def _fillOptions(self):
-        self._fillSingleOptionParameter('repoUsername', 'app_repo_username', 'STRATUSLAB_REPO_USERNAME')
-        self._fillSingleOptionParameter('repoPassword', 'app_repo_password', 'STRATUSLAB_REPO_PASSWORD')
-        self._fillSingleOptionParameter('repoAddress', 'app_repo_url', 'STRATUSLAB_REPO_ADDRESS')
-        self._fillSingleOptionParameter('username', 'one_username', 'STRATUSLAB_USERNAME')
-        self._fillSingleOptionParameter('password', 'one_password', 'STRATUSLAB_PASSWORD')
+    def _setEnvVars(self):
+        self._setSingleEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
+        self._setSingleEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
+        self._setSingleEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
+        self._setSingleEnvVar('username', 'STRATUSLAB_USERNAME')
+        self._setSingleEnvVar('password', 'STRATUSLAB_PASSWORD')
         self._fillEndpointOption()
         
-    def _fillSingleOptionParameter(self, optionKey, configKey, envKey):
-        if envKey in os.environ:
-            self._setOption(optionKey,os.environ[envKey])
-        elif configKey in self.config:
-            self._setOption(optionKey,self.config[configKey])
-        else:
-            raise ConfigurationException('Missing configuration for config key %s or env var %s' % (configKey, envKey))
+    def _setSingleEnvVar(self, field, env):
+        if env in os.environ:
+            setattr(self, field, os.environ[env])
 
     def _setOption(self, key, value):
-        self.options[key] = value
+        Testor.configHolder.options[key] = value
 
     def _fillEndpointOption(self):
         if Util.envEndpoint in os.environ:
-            pass
-        elif Util.configFrontEndIp in self.config:
-            os.environ[Util.envEndpoint] = 'http://%s:2633/RPC2' % self.config[Util.configFrontEndIp]
-        else:
-            raise ConfigurationException('Missing environment variable %s or configuration parameter %s' % (Util.envEndpoint, Util.configFrontEndIp))
+            return
+        if not self.frontendIp:
+            raise ConfigurationException('Missing environment variable %s or configuration parameter frontend_ip' % Util.envEndpoint)
+        os.environ[Util.envEndpoint] = 'http://%s:2633/RPC2' % self.frontendIp
 
     def dummy(self):
         pass
@@ -101,16 +96,15 @@ class Testor(unittest.TestCase):
         generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
-        options['username'] = self.config['one_username']
-        options['password'] = self.config['one_password']
+        options['username'] = self.oneUsername
+        options['password'] = self.onePassword
         options['userKey'] = self.sshKeyPub
-        options['verboseLevel'] = Testor.options['verboseLevel']
-        
-        image = 'appliances.stratuslab.org/images/base/ubuntu-10.04-i686-base/1.0/ubuntu-10.04-i686-base-1.0.img.gz'
-        image = 'https://%(app_repo_username)s:%(app_repo_password)s@' + image
-        image = image % self.config
+        options['verboseLevel'] = self.verboseLevel
 
-        runner = Runner(image, options)
+        configHolder = ConfigHolder(options)
+        image = 'https://appliances.stratuslab.org/images/base/ttylinux-9.4-i486-base/1.0/ttylinux-9.4-i486-base-1.0.img'
+
+        runner = Runner(image, configHolder)
         self.vmIds = runner.runInstance()        
         self.vmIps = runner.vmIps
         
@@ -169,15 +163,16 @@ class Testor(unittest.TestCase):
         
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, self.options['repoAddress'],
-                                 self.options['repoUsername'],
-                                 self.options['repoUsername'])
+        passwordMgr.add_password(None,
+                                 self.appRepoUrl,
+                                 self.appRepoUsername,
+                                 self.appRepoPassword)
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
 
         try:
-            opener.open(self.options['repoAddress'])
+            opener.open(self.appRepoUrl)
         except RuntimeError:
             raise NetworkException('Authentication to appliance repository failed')
 
@@ -186,10 +181,10 @@ class Testor(unittest.TestCase):
         self._generateDummyImage(dummyFile)
 
         manifest = ''
-        options = self.options.copy()
-        options['repoUsername'] = self.config['app_repo_username']
-        options['repoPassword'] = self.config['app_repo_password']
-        options['repoAddress'] = self.config['app_repo_url']
+        options = self.configHolder.options.copy()
+        options['repoUsername'] = self.appRepoUsername
+        options['repoPassword'] = self.appRepoPassword
+        options['repoAddress'] = self.appRepoUrl
         options['uploadOption'] = ''
         uploader = Uploader(manifest, options)
         uploader.uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
@@ -206,15 +201,14 @@ class Testor(unittest.TestCase):
 
     def registrarTest(self):
         '''Register a new node with ONE server, check that it is properly registered and remove it'''
-        options = self.options.copy()
-        options['infoDriver'] = 'kvm'
-        options['virtDriver'] = 'kvm'
-        options['transfertDriver'] = 'nfs'
-        options['password'] = self.config['one_password']
-        registrar = Registrar(options, self.config)
+        configHolder = self.configHolder.copy()
+        configHolder.options['infoDriver'] = 'kvm'
+        configHolder.options['virtDriver'] = 'kvm'
+        configHolder.options['transfertDriver'] = 'nfs'
+        configHolder.options['password'] = self.onePassword
+        registrar = Registrar(configHolder)
         hostname = 'registrar.ip.test'
         id = registrar.register([hostname])
-        configHolder = ConfigHolder(options, self.config)
         monitor = Monitor(configHolder)
         info = monitor.nodeDetail([id])[0]
         self.assertEqual(hostname, info.name)

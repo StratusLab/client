@@ -45,6 +45,7 @@ one_password = oneadmin
 
 [one-advanced]
 one_home = 
+one_share = /usr/share/one
 network_size = 254
 host_monitoring_interval = 60
 vm_polling_interval = 60
@@ -72,7 +73,7 @@ one_public_network_mask =
 # Private network configuration
 one_private_network = 172.16.0.0
 one_private_network_size = 65536
-one_private_network_addr =
+one_private_network_addr = 172.16.0.1
 one_private_network_mac =
 one_private_network_mask =
 #one_private_network_mask = 16

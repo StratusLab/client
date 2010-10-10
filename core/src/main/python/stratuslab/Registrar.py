@@ -33,7 +33,7 @@ class Registrar(OneInstallator):
             id = int(hostname)
         except:
             id = self._getHostnameId(hostname)
-        self.removeCloudNode(id)
+        self._removeCloudNode(id)
 
     def _getHostnameId(self, hostname):
         monitor = Monitor(self.configHolder)

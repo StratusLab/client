@@ -59,4 +59,6 @@ class ConfigHolder(object):
             formattedKey = formattedKey[0].lower() + formattedKey[1:]
         return formattedKey
 
-
+    def copy(self):
+        copy = ConfigHolder(self.options.copy(), self.config.copy())
+        return copy
