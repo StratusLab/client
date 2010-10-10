@@ -123,7 +123,7 @@
 						</mapping>
 						<mapping>
 							<directory>/var/lib/stratuslab/python/</directory>
-							<directoryIncluded>false</directoryIncluded>
+							<directoryIncluded>true</directoryIncluded>
 							<filemode>755</filemode>
 							<username>root</username>
 							<groupname>root</groupname>
@@ -138,7 +138,7 @@
 						</mapping>
 						<mapping>
 							<directory>/var/share/stratuslab/</directory>
-							<directoryIncluded>false</directoryIncluded>
+							<directoryIncluded>true</directoryIncluded>
 							<username>root</username>
 							<groupname>root</groupname>
 							<sources>
