@@ -105,12 +105,15 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
             sys.stdout.flush()
             sys.stdout.write('.')
         hostUp = ping(host, stdout=stdout, stderr=stderr)
-        time.sleep(1)
+        sleep(1)
         
         if time.time() - start > timeout:
             return False
         
     return hostUp
+
+def sleep(seconds):
+    time.sleep(seconds)
 
 def setPythonPath(path):
     if not path in sys.path:
