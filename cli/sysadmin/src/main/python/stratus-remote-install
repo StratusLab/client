@@ -43,7 +43,7 @@ class MainProgram(CommandBase):
                                dest='uploadDir', help='remote source directory',
                                default='/tmp/stratuslab-remote-install')
         self.parser.add_option('-c', '--config', dest='config', 
-                               help='additional config file with "key:value#key:value" in',
+                               help='additional config file with "key::value#key::value" in',
                                default=None)
 
         self.options, self.args = self.parser.parse_args()
@@ -71,33 +71,34 @@ class MainProgram(CommandBase):
 
 
     def multiInstallWorkaround(self):
-        self.sshCmd('su -l oneadmin -c "one stop"',
-                 exitOnError=False)
-        self.sshCmd("kill -9 $(ps aux | grep oneadmin | grep -v grep | awk '{print $2}')",
-                 exitOnError=False)
-        self.sshCmd('yum remove one -y',
-                 exitOnError=False)
-        self.sshCmd('userdel -r oneadmin',
-                 exitOnError=False)
-        self.sshCmd('rm -rf /home/oneadmin',
-                 exitOnError=False)
-        self.sshCmd('groupdel cloud',
-                 exitOnError=False)
-        self.sshCmd('rm -rf /var/lib/one',
-                 exitOnError=False)
-        self.sshCmd('rm -rf /usr/lib/one',
-                 exitOnError=False)
-        self.sshCmd('rm -rf /instances',
-                 exitOnError=False)
-        self.sshCmd('rm -rf /var/lib/stratuslab',
-                 exitOnError=False)
-        self.sshCmd('rm -rf /var/log/stratuslab',
-                 exitOnError=False)
+        self.sshCmd('su -l oneadmin -c "one stop"')
+        self.sshCmd("kill -9 $(ps aux | grep oneadmin | grep -v grep | awk '{print $2}')")
+        self.sshCmd('yum remove one -y')
+        self.sshCmd('userdel -r oneadmin')
+        self.sshCmd('rm -rf /home/oneadmin')
+        self.sshCmd('groupdel cloud')
+        self.sshCmd('rm -rf /var/lib/one')
+        self.sshCmd('rm -rf /usr/lib/one')
+        self.sshCmd('rm -rf /instances')
+        self.sshCmd('rm -rf /var/lib/stratuslab')
+        self.sshCmd('rm -rf /var/log/stratuslab')
+        self._resetNodes()
 
+    def _resetNodes(self):
+        for node in self.options.nodes.split(' '):
+            self.sshCmd('umount /instances', node)
+            self.sshCmd('for i in $(virsh list | awk "NR > 2 { print $1 }"); do virsh destroy $i; done', node)
+            self.sshCmd('kill -9 $(ps aux | grep oneadmin | grep -v grep | awk "{print $2}")', node)
+            self.sshCmd('userdel oneadmin', node)
+            self.sshCmd('groupdel cloud', node)
+            self.sshCmd('umount /instances', node)
+            self.sshCmd('rm -rf /instances /tmp/one* /tmp/stratus*', node)
 
-    def sshCmd(self, cmd, exitOnError=True):
+    def sshCmd(self, cmd, endpoint=None, exitOnError=False):
+        if not endpoint:
+            endpoint = self.options.frontend
         ret = sshCmd(cmd, 
-                     self.options.frontend, 
+                     endpoint, 
                      self.options.sshKey, 
                      self.options.sshPort, 
                      **{'verboseLevel': self.options.verboseLevel})
