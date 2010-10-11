@@ -131,10 +131,9 @@ class Testor(unittest.TestCase):
             printError('Failed executing method %s %s times, giving-up' % (method, numberOfRepetition), exit=False)
             raise
         
-        
     def _ping(self):
 
-        for networkName, ip in self.vmIps[1:]:
+        for networkName, ip in self.vmIps[:1]:
             print 'Pinging %s at ip %s' % (networkName, ip)
             res = ping(ip)
             if not res:
@@ -144,7 +143,7 @@ class Testor(unittest.TestCase):
 
         loginCommand = 'ls /tmp'
 
-        for networkName, ip in self.vmIps[1:]:
+        for networkName, ip in self.vmIps[:1]:
             print 'SSHing into machine via address %s at ip %s' % (networkName, ip)
             res = sshCmd(loginCommand, ip, self.sshKey)
             if res:
