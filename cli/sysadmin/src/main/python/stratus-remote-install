@@ -151,8 +151,8 @@ baseurl=http://yum.stratuslab.eu/releases/sl5
         if content:
             for item in content.split(cliLineSplitChar):
                 currentCmd = baseConfigCmd[:]
-                currentCmd += ' ' + item.split(':')[0]
-                currentCmd += ' "%s"' %(' '.join(item.split(':')[1:]))
+                currentCmd += ' ' + item.split('::')[0]
+                currentCmd += ' "%s"' %(' '.join(item.split('::')[1:]))
                 self.sshCmd(currentCmd)
         else:
             self.sshCmd(baseConfigCmd)
