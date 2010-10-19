@@ -52,7 +52,6 @@ vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
 vm_dir = /instances
-context_script = /share/scripts/init.sh
 
 [one-network]
 # Public network configuration
