@@ -60,11 +60,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<descriptors>
-						<descriptor>main/assembly/bundle.xml</descriptor>
-					</descriptors>
-				</configuration>
 
 				<executions>
 
@@ -74,6 +69,24 @@
 							<goal>single</goal>
 						</goals>
 						<phase>package</phase>
+						<configuration>
+						  <descriptors>
+						    <descriptor>main/assembly/bundle.xml</descriptor>
+						  </descriptors>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>cli-user-distribution</id>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+						  <descriptors>
+						    <descriptor>main/assembly/distribution.xml</descriptor>
+						  </descriptors>
+						</configuration>
 					</execution>
 
 				</executions>

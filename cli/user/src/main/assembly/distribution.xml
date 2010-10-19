@@ -1,0 +1,38 @@
+<assembly>
+	<id>cli-user-distribution</id>
+
+	<includeBaseDirectory>true</includeBaseDirectory>
+
+	<formats>
+		<format>tar.gz</format>
+	</formats>
+
+	<fileSets>
+
+		<fileSet>
+			<directory>${project.build.directory}/scripts</directory>
+			<outputDirectory>bin</outputDirectory>
+			<fileMode>0755</fileMode>
+			<directoryMode>0755</directoryMode>
+			<includes>
+				<include>stratus-*</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/python</directory>
+			<outputDirectory>lib/stratuslab/python</outputDirectory>
+			<fileMode>0644</fileMode>
+			<directoryMode>0755</directoryMode>
+		</fileSet>
+
+		<fileSet>
+			<directory>${project.build.directory}/zip-sources/share</directory>
+			<outputDirectory>share</outputDirectory>
+			<fileMode>0644</fileMode>
+			<directoryMode>0755</directoryMode>
+		</fileSet>
+
+	</fileSets>
+
+</assembly>
