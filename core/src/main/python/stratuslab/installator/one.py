@@ -12,6 +12,7 @@ class OneInstallator(BaseInstallator):
         super(OneInstallator, self).__init__()
         self.cloudConfDir = '/etc/one/'
         self.cloudConfFile = self.cloudConfDir + 'oned.conf'
+        self.contextScript = '/usr/bin/onecontext'
 
     def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
