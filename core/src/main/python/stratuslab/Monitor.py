@@ -39,7 +39,7 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
         self.hostInfoListAttributes = (('id',4), ('name',16))
         
-        self.vmInfoDetailAttributes = (('id',4), ('name',16), ('state',4))
+        self.vmInfoDetailAttributes = (('id',4), ('state',8), ('cpu', 8), ('memory', 8), ('ip', 16))
         self.vmInfoListAttributes = (('id',4), ('name',16))
         
     def _setCloud(self):
