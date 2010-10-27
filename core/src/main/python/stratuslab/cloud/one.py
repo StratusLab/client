@@ -94,7 +94,7 @@ class OneConnector(object):
         return self.vmAction(vmId, 'shutdown')
         
     def vmKill(self, vmId):
-        return self.vmAction(vmId, 'delete')
+        return self.vmAction(vmId, 'finalize')
         
     def listVms(self):
         ret, info = self._rpc.one.vmpool.info(self._sessionString, 0)
