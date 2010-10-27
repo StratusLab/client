@@ -82,6 +82,9 @@ class Monitor(Configurable):
         info.populate(vm)
         return info
 
+    def vmKill(self, id):
+        return self.cloud.vmKill(int(id))
+
     def _printList(self, infoList):
         for info in infoList:
             self._printInfo(info, self.hostInfoListAttributes)
