@@ -31,24 +31,40 @@ except ImportError:
 class OneConnector(object):
     
     def __init__(self):
-        # TODO: Verify status with ONE's guys
-        self.status = {'prolog': 1,
-            'boot':  2,
-            'running': 3,
-            'migrate': 4,
-            'save_stop': 5,
-            'save_suspend': 6,
-            'save_migrate': 7,
-            'prolog_migrate': 8,
-            'prolog_resume': 9,
-            'epilog_stop': 10,
-            'epilog': 11,
-            'shutdown': 12,
-            'cancel': 13,
-            'failure': 14,
-            'delete': 15,
-            'unknown': 16}
-        
+
+        self.statusLabel = ['init',
+                            'pending',
+                            'hold',
+                            'active',
+                            'stopped',
+                            'suspended',
+                            'done',
+                            'failed']
+        self.status = {};
+        for i in range(len(self.statusLabel)):
+            self.status[self.statusLabel[i]] = i
+
+        self.lcmStatusLabel = ['lcm_init',
+                               'prolog',
+                               'boot',
+                               'running',
+                               'migrate',
+                               'save_stop',
+                               'save_suspend',
+                               'save_migrate',
+                               'prolog_migrate',
+                               'prolog_resume',
+                               'epilog_stop',
+                               'epilog',
+                               'shutdown',
+                               'cancel',
+                               'failure',
+                               'delete',
+                               'unknown']
+        self.lcmStatus = {};
+        for i in range(len(self.lcmStatusLabel)):
+            self.lcmStatus[self.lcmStatusLabel[i]] = i
+
         self._sessionString = None
         self._rpc = None
     
@@ -88,7 +104,7 @@ class OneConnector(object):
         return res
         
     def vmStop(self, vmId):
-        if self.getVmState(vmId) != self.status.get('running'):
+        if self.getVmLcmStateLabel(vmId) != 'running' :
             return False
         
         return self.vmAction(vmId, 'shutdown')
@@ -96,26 +112,60 @@ class OneConnector(object):
     def vmKill(self, vmId):
         return self.vmAction(vmId, 'finalize')
         
+    def addStateLabels(self, xml):
+        stateElement = xml.find('STATE')
+        state = int(stateElement.text)
+        labelElement = etree.Element('STATE_LABEL')
+        labelElement.text = self.statusLabel[state]
+        xml.append(labelElement);
+        
+        stateElement = xml.find('LCM_STATE')
+        state = int(stateElement.text)
+        labelElement = etree.Element('LCM_STATE_LABEL')
+        labelElement.text = self.lcmStatusLabel[state]
+        xml.append(labelElement)
+        
     def listVms(self):
         ret, info = self._rpc.one.vmpool.info(self._sessionString, 0)
         
         if not ret:
             raise Exception(info)
-        
-        return info
+
+        vmlist = etree.fromstring(info)
+        for xml in vmlist.findall('VM'):
+            self.addStateLabels(xml)
+
+        return etree.tostring(vmlist)
         
     def getVmInfo(self, vmId):
         ret, info = self._rpc.one.vm.info(self._sessionString, vmId)
         
         if not ret:
             raise Exception(info)
-        
-        return info
-        
+
+        xml = etree.fromstring(info)
+
+        self.addStateLabels(xml)
+
+        return etree.tostring(xml)
+
     def getVmState(self, vmId):
         xml = etree.fromstring(self.getVmInfo(vmId))
         status = xml.find('STATE')
         return int(status.text)
+    
+    def getVmStateLabel(self, vmId):
+        status = getVmState(self, vmId)
+        return self.statusLabel[status]
+    
+    def getVmLcmState(self, vmId):
+        xml = etree.fromstring(self.getVmInfo(vmId))
+        status = xml.find('LCM_STATE')
+        return int(status.text)
+    
+    def getVmLcmStateLabel(self, vmId):
+        status = getVmLcmState(self, vmId)
+        return self.lcmStatusLabel[status]
     
     def getVmIp(self, vmId):
         xml = etree.fromstring(self.getVmInfo(vmId))
@@ -136,7 +186,7 @@ class OneConnector(object):
         vmRunning = False
         initPhase = 15
         while not vmRunning:
-            vmBooting = self.getVmState(vmId) < self.status.get('running')
+            vmBooting = self.getVmLcmState(vmId) < self.lcmStatus.get('running')
             if not vmBooting:
                 initPhase -= 1
             vmRunning = initPhase == 0 and not vmBooting
@@ -148,7 +198,7 @@ class OneConnector(object):
             if time.time() - start > timeout:
                 return False
 
-        return self.getVmState(vmId) == self.status.get('running')
+        return self.getVmLcmState(vmId) == self.lcmStatus.get('running')
     
     # -------------------------------------------
     #    Virtual network management

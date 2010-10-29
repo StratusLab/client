@@ -34,13 +34,13 @@ class Monitor(Configurable):
     def __init__(self, configHolder):
         super(Monitor, self).__init__(configHolder)
 
-        self._setCloud()        
+        self._setCloud()
 
         self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
         self.hostInfoListAttributes = (('id',4), ('name',16))
         
-        self.vmInfoDetailAttributes = (('id',4), ('state',8), ('cpu', 8), ('memory', 8), ('ip', 16))
-        self.vmInfoListAttributes = (('id',4), ('name',16))
+        self.vmInfoDetailAttributes = (('id',4), ('state_label', 16), ('lcm_state_label', 16), ('cpu', 8), ('memory', 8), ('ip_public', 16))
+        self.vmInfoListAttributes = (('id',4), ('state_label', 16), ('lcm_state_label', 16), ('cpu', 8), ('memory', 8), ('ip_public', 16))
         
     def _setCloud(self):
         self.cloud = CloudConnectorFactory.getCloud()
@@ -118,7 +118,7 @@ class Monitor(Configurable):
     def printVmList(self, list):
         self._printInfoHeader(self.vmInfoListAttributes)
         for item in list:
-            self._printInfo(item, self.vmInfoDetailAttributes)
+            self._printInfo(item, self.vmInfoListAttributes)
 
     def printVmDetails(self, list):
         self._printInfoHeader(self.vmInfoDetailAttributes)
