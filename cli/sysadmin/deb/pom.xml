@@ -114,6 +114,9 @@
 									<includes>
 										<include>stratus-*</include>
 									</includes>
+									<excludes>
+										<exclude>stratus-register-node</exclude>
+									</excludes>
 								</source>
 							</sources>
 						</mapping>
