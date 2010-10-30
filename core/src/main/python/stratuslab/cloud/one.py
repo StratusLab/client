@@ -131,7 +131,7 @@ class OneConnector(object):
     def vmKill(self, vmId):
         return self.vmAction(vmId, 'finalize')
         
-    def addStateLabels(self, xml):
+    def _addStateLabels(self, xml):
         stateElement = xml.find('STATE')
         state = int(stateElement.text)
         labelElement = etree.Element('STATE_LABEL')
@@ -152,7 +152,7 @@ class OneConnector(object):
 
         vmlist = etree.fromstring(info)
         for xml in vmlist.findall('VM'):
-            self.addStateLabels(xml)
+            self._addStateLabels(xml)
 
         return etree.tostring(vmlist)
         
@@ -164,7 +164,7 @@ class OneConnector(object):
 
         xml = etree.fromstring(info)
 
-        self.addStateLabels(xml)
+        self._addStateLabels(xml)
 
         return etree.tostring(xml)
 
@@ -174,7 +174,7 @@ class OneConnector(object):
         return int(status.text)
     
     def getVmStateLabel(self, vmId):
-        status = self.getVmState(self, vmId)
+        status = self.getVmState(vmId)
         return self.statusLabel[status]
     
     def getVmLcmState(self, vmId):
@@ -183,7 +183,7 @@ class OneConnector(object):
         return int(status.text)
     
     def getVmLcmStateLabel(self, vmId):
-        status = self.getVmLcmState(self, vmId)
+        status = self.getVmLcmState(vmId)
         return self.lcmStatusLabel[status]
     
     def getVmIp(self, vmId):
