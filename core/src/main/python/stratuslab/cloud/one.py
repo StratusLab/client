@@ -174,7 +174,7 @@ class OneConnector(object):
         return int(status.text)
     
     def getVmStateLabel(self, vmId):
-        status = getVmState(self, vmId)
+        status = self.getVmState(self, vmId)
         return self.statusLabel[status]
     
     def getVmLcmState(self, vmId):
@@ -183,7 +183,7 @@ class OneConnector(object):
         return int(status.text)
     
     def getVmLcmStateLabel(self, vmId):
-        status = getVmLcmState(self, vmId)
+        status = self.getVmLcmState(self, vmId)
         return self.lcmStatusLabel[status]
     
     def getVmIp(self, vmId):
