@@ -31,7 +31,6 @@ class OneInstallator(BaseInstallator):
         super(OneInstallator, self).__init__()
         self.cloudConfDir = '/etc/one/'
         self.cloudConfFile = self.cloudConfDir + 'oned.conf'
-        self.contextScript = '/usr/bin/onecontext'
 
     def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
@@ -112,12 +111,6 @@ class OneInstallator(BaseInstallator):
                 '%s/%s' % (self.config.get('one_private_network'),
                 networkSizeToNetmask(unifyNetsize(self.config.get('one_private_network_size')))),
                 'dev', 'eth0'])
-
-    def _copyContextualizationScript(self):
-        self.frontend.createDirsCmd(os.path.dirname(self.contextScript))
-        self.frontend.setOwnerCmd(os.path.dirname(self.contextScript))
-        self.frontend.copyCmd(os.path.join(Util.shareDir, 'context/init.sh'), self.contextScript)
-        self.frontend.setOwnerCmd(self.contextScript)
 
     def _copyCloudHooks(self, system):
         hooksDir = '%s/share/hooks' % self.config.get('one_share')

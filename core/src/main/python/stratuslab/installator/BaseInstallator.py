@@ -194,8 +194,6 @@ class BaseInstallator(object):
             self.frontend.setOwnerCmd(self.vmDir)
         
     def _configureCloudSystem(self):
-        self._copyContextualizationScript()
-
         if not os.path.isfile(self.onedTpl):
             printError('ONe daemon configuration template '
                        '%s does not exists' % self.onedTpl)
