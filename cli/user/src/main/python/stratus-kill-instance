@@ -27,7 +27,7 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
-from stratuslab.Monitor import Monitor
+from stratuslab.Runner import Runner
 from stratuslab.ConfigHolder import ConfigHolder
 
 
@@ -39,15 +39,15 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] [vm-id]'''
+        usage = '''usage: %prog [options] vm-id ...'''
 
         self.parser.usage=usage
         
-        self.parser.add_option('-u', '--username', dest='oneUsername',
+        self.parser.add_option('-u', '--username', dest='username',
                 help='cloud username. Default STRATUSLAB_USERNAME',
                 default=os.getenv('STRATUSLAB_USERNAME', ''))
 
-        self.parser.add_option('-p', '--password', dest='onePassword',
+        self.parser.add_option('-p', '--password', dest='password',
                 help='cloud password. Default STRATUSLAB_PASSWORD',
                 default=os.getenv('STRATUSLAB_PASSWORD', ''))
 
@@ -58,9 +58,9 @@ class MainProgram(CommandBase):
         self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
-        if not self.options.oneUsername:
+        if not self.options.username:
             self.parser.error('Missing -u/--username')
-        if not self.options.onePassword:
+        if not self.options.password:
             self.parser.error('Missing -p/--password')
         if not self.options.endpoint:
             self.parser.error('Missing --endpoint')
@@ -70,9 +70,9 @@ class MainProgram(CommandBase):
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        monitor = Monitor(configHolder)
-        monitor.vmKill(self.vmIds[0])
-            
+        runner = Runner(None, configHolder)
+        runner.killInstances(self.vmIds)
+
 if __name__ == '__main__':
     try:
         MainProgram()

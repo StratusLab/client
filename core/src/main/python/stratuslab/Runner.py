@@ -53,12 +53,15 @@ class Runner(object):
                                           'ip': 0 },
                              }
         self.nicOrder = ['private', 'public', 'extra']
+        self.vm_image = image
 
+        self._initAttributes()
+
+    def _initAttributes(self):
         # VM template parameters initialization
         self.vm_cpu = 0
         self.vm_ram = 0
         self.vm_swap = 0
-        self.vm_image = image
         self.vm_nic = ''
         self.os_options = ''
         self.raw_data = ''
@@ -66,10 +69,19 @@ class Runner(object):
         self.nic_netmask = ''
         self.extra_context = ''
         self.graphics = ''
-        self.public_key = fileGetContent(self.userKey)
         self.vmIps = None
-        self.save_disk = (self.saveDisk and 'yes') or 'no'
         self.vmIds = []
+
+        self._setUserKeyIfDefined()
+        self._setSaveDisk()
+    
+    def _setUserKeyIfDefined(self):
+        if getattr(self, 'userKey', None):
+            self.public_key = fileGetContent(self.userKey)
+
+    def _setSaveDisk(self):
+        saveDisk = getattr(self, 'saveDisk', False)
+        self.save_disk = (saveDisk and 'yes') or 'no'
 
     @staticmethod
     def getInstanceType():
@@ -150,7 +162,6 @@ class Runner(object):
         self._manageRawData()
         self._manageExtraContext()
         self._manageVnc()
-        self._addRunnerContext()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -243,9 +254,6 @@ class Runner(object):
 
         self._appendContextData(contextData)
 
-    def _addRunnerContext(self):
-        self._appendContextData(['stratuslab_internal_key=%s,' % randomString()])
-
     def _appendContextData(self, context):
         self.extra_context += '\n'.join(context)
     
@@ -286,6 +294,10 @@ class Runner(object):
 
         printAction('Done!')
         return self.vmIds
+    
+    def killInstances(self, ids):
+        for id in ids:
+            self.cloud.vmKill(int(id))
     
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)        

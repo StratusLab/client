@@ -20,11 +20,8 @@
 import sys
 import os
 
-from stratuslab.installator.one import OneInstallator
-from stratuslab.Util import assignAttributes
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.CloudInfo import CloudInfo
-from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Configurable import Configurable
 
 try:
@@ -58,8 +55,11 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
         self.hostInfoListAttributes = (('id',4), ('name',16))
         
-        self.vmInfoDetailAttributes = (('id',4), ('state_label', 16), ('lcm_state_label', 16), ('cpu', 8), ('memory', 8), ('ip_public', 16))
-        self.vmInfoListAttributes = (('id',4), ('state_label', 16), ('lcm_state_label', 16), ('cpu', 8), ('memory', 8), ('ip_public', 16))
+        self.vmInfoDetailAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip_public', 16))
+        self.vmInfoListAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip_public', 16))
+        
+        self.labelDecorator = {'state_summary': 'state',
+                               'ip_public': 'public ip'}
         
     def _setCloud(self):
         self.cloud = CloudConnectorFactory.getCloud()
@@ -100,9 +100,6 @@ class Monitor(Configurable):
         info = CloudInfo()
         info.populate(vm)
         return info
-
-    def vmKill(self, id):
-        return self.cloud.vmKill(int(id))
 
     def _printList(self, infoList):
         for info in infoList:
@@ -146,10 +143,14 @@ class Monitor(Configurable):
 
     def _printInfoHeader(self, headerAttributes):
         for attrib in headerAttributes:
-            sys.stdout.write(attrib[0].ljust(int(attrib[1])))
+            label = self._decorateLabel(attrib[0])
+            sys.stdout.write(label.ljust(int(attrib[1])))
         sys.stdout.write('\n')
+        
+    def _decorateLabel(self, label):
+        return self.labelDecorator.get(label,label)
     
     def _printInfo(self, info, headerAttributes):
         for attrib in headerAttributes:
-            sys.stdout.write(info.__getattribute__(attrib[0]).ljust(int(attrib[1])))
+            sys.stdout.write(getattr(info, attrib[0]).ljust(int(attrib[1])))
         sys.stdout.write('\n')

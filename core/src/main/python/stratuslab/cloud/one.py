@@ -46,43 +46,9 @@ except ImportError:
                 except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
-# TODO: Create a CloudConnector base class
 class OneConnector(object):
     
     def __init__(self):
-
-        self.statusLabel = ['init',
-                            'pending',
-                            'hold',
-                            'active',
-                            'stopped',
-                            'suspended',
-                            'done',
-                            'failed']
-        self.status = {};
-        for i in range(len(self.statusLabel)):
-            self.status[self.statusLabel[i]] = i
-
-        self.lcmStatusLabel = ['lcm_init',
-                               'prolog',
-                               'boot',
-                               'running',
-                               'migrate',
-                               'save_stop',
-                               'save_suspend',
-                               'save_migrate',
-                               'prolog_migrate',
-                               'prolog_resume',
-                               'epilog_stop',
-                               'epilog',
-                               'shutdown',
-                               'cancel',
-                               'failure',
-                               'delete',
-                               'unknown']
-        self.lcmStatus = {};
-        for i in range(len(self.lcmStatusLabel)):
-            self.lcmStatus[self.lcmStatusLabel[i]] = i
 
         self._sessionString = None
         self._rpc = None
@@ -113,15 +79,6 @@ class OneConnector(object):
 
         return vmId
     
-    def vmAction(self, vmId, action):
-        res = self._rpc.one.vm.action(self._sessionString, action, vmId)
-        
-        # TODO: Fill ONE bug report
-        if not res[0]:
-            raise Exception(res[1])
-        
-        return res
-        
     def vmStop(self, vmId):
         if self.getVmLcmStateLabel(vmId) != 'running' :
             return False
@@ -131,18 +88,14 @@ class OneConnector(object):
     def vmKill(self, vmId):
         return self.vmAction(vmId, 'finalize')
         
-    def _addStateLabels(self, xml):
-        stateElement = xml.find('STATE')
-        state = int(stateElement.text)
-        labelElement = etree.Element('STATE_LABEL')
-        labelElement.text = self.statusLabel[state]
-        xml.append(labelElement);
+    def vmAction(self, vmId, action):
+        res = self._rpc.one.vm.action(self._sessionString, action, vmId)
         
-        stateElement = xml.find('LCM_STATE')
-        state = int(stateElement.text)
-        labelElement = etree.Element('LCM_STATE_LABEL')
-        labelElement.text = self.lcmStatusLabel[state]
-        xml.append(labelElement)
+        # TODO: Fill ONE bug report
+        if not res[0]:
+            raise Exception(res[1])
+        
+        return res
         
     def listVms(self):
         ret, info = self._rpc.one.vmpool.info(self._sessionString, 0)
@@ -152,7 +105,7 @@ class OneConnector(object):
 
         vmlist = etree.fromstring(info)
         for xml in vmlist.findall('VM'):
-            self._addStateLabels(xml)
+            self._addStateSummary(xml)
 
         return etree.tostring(vmlist)
         
@@ -164,27 +117,49 @@ class OneConnector(object):
 
         xml = etree.fromstring(info)
 
-        self._addStateLabels(xml)
+        self._addStateSummary(xml)
 
         return etree.tostring(xml)
 
-    def getVmState(self, vmId):
-        xml = etree.fromstring(self.getVmInfo(vmId))
-        status = xml.find('STATE')
-        return int(status.text)
-    
+    def _addStateSummary(self, xml):
+        stateElement = self._getStateElement(xml) 
+        state = int(stateElement.text)
+
+        stateElement = self._getLcmStateElement(xml) 
+        lcmState = int(stateElement.text)
+
+        vmState = OneVmState(state, lcmState)
+
+        labelElement = etree.Element('STATE_SUMMARY')
+        labelElement.text = str(vmState)
+        xml.append(labelElement);
+                
     def getVmStateLabel(self, vmId):
         status = self.getVmState(vmId)
         return self.statusLabel[status]
     
-    def getVmLcmState(self, vmId):
-        xml = etree.fromstring(self.getVmInfo(vmId))
-        status = xml.find('LCM_STATE')
+    def getVmState(self, vmId):
+        xml = self._getVmStateAsXml(vmId)
+        status = self._getStateElement(xml) 
         return int(status.text)
     
     def getVmLcmStateLabel(self, vmId):
         status = self.getVmLcmState(vmId)
         return self.lcmStatusLabel[status]
+    
+    def getVmLcmState(self, vmId):
+        xml = self._getVmStateAsXml(vmId)
+        status = self._getLcmStateElement(xml) 
+        return int(status.text)
+    
+    def _getVmStateAsXml(self, vmId):
+        return etree.fromstring(self.getVmInfo(vmId))
+    
+    def _getStateElement(self, xml):
+        return xml.find('STATE')
+    
+    def _getLcmStateElement(self, xml):
+        return xml.find('LCM_STATE')
     
     def getVmIp(self, vmId):
         xml = etree.fromstring(self.getVmInfo(vmId))
@@ -331,37 +306,43 @@ class OneConnector(object):
 class OneVmState(object):
     
     def __init__(self, state, lcmState = None):
-        self. state = state
-        self.lcmState = lcmState
+        self. state = int(state)
+
+        self.lcmState = None
+        self._setLcmState(lcmState)
 
         self.invalidState = 'Invalid state'
 
-        self.stateDefinition = {'0': 'Init',
-                                '1': 'Pending',
-                                '2': 'Hold',
-                                '3': 'Active',
-                                '4': 'Stopped',
-                                '5': 'Suspended',
-                                '6': 'Done',
-                                '7': 'Failed'}
+        self.stateDefinition = ['init',
+                                'pending',
+                                'hold',
+                                'active',
+                                'stopped',
+                                'suspended',
+                                'done',
+                                'failed']
         
-        self.lcmStateDefintion = {'0': 'LCM_INIT',
-                                  '1': 'PROLOG',
-                                  '2': 'BOOT',
-                                  '3': 'RUNNING',
-                                  '4': 'MIGRATE',
-                                  '5': 'SAVE_STOP',
-                                  '6': 'SAVE_SUSPEND',
-                                  '7': 'SAVE_MIGRATE',
-                                  '8': 'PROLOG_MIGRATE',
-                                  '9': 'PROLOG_RESUME',
-                                  '10': 'EPILOG_STOP',
-                                  '11': 'EPILOG',
-                                  '12': 'SHUTDOWN',
-                                  '13': 'CANCEL',
-                                  '14': 'FAILURE',
-                                  '15': 'DELETE',
-                                  '16': 'UNKNOWN'}
+        self.lcmStateDefintion = ['lcm_init',
+                                  'prolog',
+                                  'boot',
+                                  'running',
+                                  'migrate',
+                                  'save_stop',
+                                  'save_suspend',
+                                  'save_migrate',
+                                  'prolog_migrate',
+                                  'prolog_resume',
+                                  'epilog_stop',
+                                  'epilog',
+                                  'shutdown',
+                                  'cancel',
+                                  'failure',
+                                  'delete',
+                                  'unknown']
+
+    def _setLcmState(self, lcm):
+        if lcm:
+            self.lcmState = int(lcm)
 
     def __str__(self):
         if self._useLcmState():
@@ -372,17 +353,17 @@ class OneVmState(object):
     
     def _useLcmState(self):
         stateForLcmStateLookup = 3
-        return str(self.state) == str(stateForLcmStateLookup)
+        return self.state == stateForLcmStateLookup
     
     def _stateToString(self):
-        if self.state not in self.stateDefinition:
+        if (self.state < 0) and (self.state >= len(self.stateDefinition)):
             return self.invalidState
-        return self.stateDefinition.get(self.state, self.invalidState)
+        return self.stateDefinition[self.state]
 
     def _lcmStateToString(self):
-        if self.lcmState not in self.lcmStateDefintion:
+        if (self.lcmState < 0) and (self.lcmState >= len(self.lcmStateDefintion)):
             return self.invalidState
-        return self.lcmStateDefintion.get(self.lcmState, self.invalidState)
+        return self.lcmStateDefintion[self.lcmState]
     
     
 class OneHostState(object):
