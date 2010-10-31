@@ -28,7 +28,6 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
-from stratuslab.Util import randomString
 import stratuslab.Util as Util
 
 class Runner(object):
@@ -305,7 +304,3 @@ class Runner(object):
     def waitUntilVmRunningOrTimeout(self, vmId):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, 120)
         return vmStarted
-
-    def stopInstance(self, vmId):
-        vmStopped = self.cloud.vmStop(vmId)
-        return vmStopped
