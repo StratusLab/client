@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010, SixSq Sarl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.UploadParser import buildUploadParser
+from stratuslab.UploadParser import checkUploadOptions
+from stratuslab.Uploader import Uploader
+from stratuslab.Creator import Creator
+from stratuslab.Runnable import Runnable
+from stratuslab.ConfigHolder import ConfigHolder
+
+
+class MainProgram(Runnable):
+    '''A command-line program to create StratusLab image.'''
+
+    def parse(self):        
+        self.parser.add_option('-s', '--scripts', dest='scripts',
+                help='scripts to execute on the VM (separate by space)',
+                default='', metavar='FILE')
+        self.parser.add_option('-N', '--image-name', dest='imageName', metavar='NAME',
+                help='image name (e.g. base, grid.se, grid.wn, ...)', default='base')
+        self.parser.add_option('-a', '--packages', dest='packages',
+                help='packages to install on the machine (name separate by space)',
+                default='', metavar='NAME')
+        self.parser.add_option('-H', '--no-shutdown', dest='shutdownVm',
+                help='leave the VM running. A public IP will be assigned.',
+                default=True, action='store_false')
+        self.parser.add_option('-V', '--img-version', dest='imageVersion',
+                help='revision number of the image', metavar='VERSION',
+                default="1.0")
+        self.parser.add_option('--ip', dest='interface',
+                help='interface to use to connect to the machine. By default the public one.',
+                default="public")
+        self.parser.add_option('--list-interface', dest='listInterface',
+                help='list available machine interface',
+                default=False, action='store_true')
+        buildUploadParser(self.parser)
+        super(MainProgram, self).parse()
+
+        self.options, self.args = self.parser.parse_args()
+
+    def availableInterface(self):
+        return ['public', 'private', 'extra']
+
+    def listInterface(self):
+        print 'Available network interface: %s' % ', '.join(self.availableInterface())
+        print ('\nNote that the extra interface refere to the network specified '
+              'with the --nic option')
+        sys.exit(0)
+
+    def checkOptions(self):
+        if self.options.listCompressionFormat:
+            Uploader.availableCompressionFormat(True)
+        if self.options.listInterface:
+            self.listInterface()
+
+        super(MainProgram, self).checkOptions()
+        checkUploadOptions(self.options, self.parser)
+
+        if self.options.interface not in self.availableInterface():
+            self.parser.error('Wrong network interface. Available: %s' % ', '.join(self.availableInterface()))
+
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        self.creator = Creator(self.image, configHolder)
+        self.creator.create()
+        
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
