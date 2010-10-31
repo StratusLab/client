@@ -29,5 +29,8 @@ class ImportException(Exception):
 class ConfigurationException(Exception):
     pass
 
+class OneException(Exception):
+    pass
+
 
     
