@@ -65,7 +65,7 @@ where test is a comma separated list of tests, according to the name provided by
             self._runTests(testor)
 
     def _listTests(self, testor):
-        testor.listTests()
+        testor.listAvalableTests()
 
     def _runTests(self, testor):
         wasSuccessful = testor.runTests()

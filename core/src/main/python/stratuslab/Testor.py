@@ -121,7 +121,7 @@ class Testor(unittest.TestCase):
         options['verboseLevel'] = self.verboseLevel
 
         configHolder = ConfigHolder(options)
-        image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.4-i486-base/1.0/ttylinux-9.4-i486-base-1.0.img.gz'
+        image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.5-i486-base/1.0/ttylinux-9.5-i486-base-1.0.img.gz'
 
         runner = Runner(image, configHolder)
         self.vmIds = runner.runInstance()        
@@ -169,10 +169,7 @@ class Testor(unittest.TestCase):
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
         
     def _stopVm(self, runner):
-        for id in self.vmIds:
-            vmStopped = runner.stopInstance(id)        
-            if not vmStopped:
-                printError('Failing to stop VM')
+        runner.killInstances(self.vmIds)
 
     def applianceRepositoryTest(self):
         '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
@@ -233,7 +230,7 @@ class Testor(unittest.TestCase):
         registrar.deregister(hostname)
         self.assertRaises(Exception, monitor.nodeDetail,[id])
 
-    def listTests(self):
+    def listAvalableTests(self):
         print 'Available tests:'
         for testName, testDoc in self._extractTestDescriptions():
             print '    - %s: %s' % (testName, testDoc)
