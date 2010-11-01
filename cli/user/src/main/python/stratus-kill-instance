@@ -55,6 +55,10 @@ class MainProgram(CommandBase):
                 help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
                 default=os.getenv('STRATUSLAB_ENDPOINT', ''))
 
+        self.parser.add_option('-i', '--input', dest='inVmIdsFile',
+                help='file containing line separated vm-ids',
+                default=None)
+
         self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
@@ -64,8 +68,8 @@ class MainProgram(CommandBase):
             self.parser.error('Missing -p/--password')
         if not self.options.endpoint:
             self.parser.error('Missing --endpoint')
-        if not self.vmIds:
-            self.parser.error('Missing vm-id')
+        if not self.vmIds and not self.options.inVmIdsFile:
+            self.parser.error('Missing vm-id or input file (-i/--input)')
 
 
     def doWork(self):

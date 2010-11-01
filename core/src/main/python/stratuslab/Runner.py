@@ -291,12 +291,31 @@ class Runner(object):
             vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
             printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, '\n'.join(vmIpsPretty)))
 
+        self._saveVmIds()
+
         printAction('Done!')
         return self.vmIds
     
+    def _saveVmIds(self):
+        if self.outVmIdsFile:
+            open(self.outVmIdsFile,'w').write('\n'.join(map(str,self.vmIds)))
+     
+    def _loadVmIdsFromFile(self):
+        vmIds = []
+
+        if self.inVmIdsFile:
+            vmIds = open(self.inVmIdsFile).read().split('\n')
+
+        return vmIds
+     
     def killInstances(self, ids):
-        for id in ids:
+        _ids = ids
+        if self.inVmIdsFile:
+            _ids = self._loadVmIdsFromFile()
+        for id in _ids:
             self.cloud.vmKill(int(id))
+        plural = (len(_ids) > 1 and 's') or ''
+        self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(_ids)))
     
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)        

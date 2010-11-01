@@ -42,6 +42,10 @@ class MainProgram(Runnable):
                 help='save image after VM shutdown',
                 default=False)
 
+        self.parser.add_option('-o', '--output', dest='outVmIdsFile',
+                help='save vm-id to a file',
+                default=None)
+
         super(MainProgram, self).parse()
 
     def doWork(self):
