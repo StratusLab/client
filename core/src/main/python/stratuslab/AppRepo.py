@@ -32,12 +32,13 @@ class AppRepo(Configurable):
     
     def __init__(self, configHolder):
         super(AppRepo, self).__init__(configHolder)
+        self.configHolder = configHolder
 
     def verify(self):
         if self.appRepoUseLdap and not self.appRepoLdapPasswd:
             raise ConfigurationException('LDAP authentication selected but no password for server specified')
 
-        if not self.appRepoUseLdap and not self.appRepoPasswdFile:
+        if not self.appRepoUseLdap and not self.appRepoHttpdPasswdFile:
             raise ConfigurationException('No password file specified')
 
     def run(self):
@@ -55,7 +56,7 @@ class AppRepo(Configurable):
 
     def _installWebServer(self):
         self.printStep('Installing web server (apache2 / httpd)')
-        system = SystemFactory.getSystem(self.frontendSystem)
+        system = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
         system.installPackages([system.packages['apache2'].packageName])
         if not os.path.exists(self.appRepoApacheHome):
             raise ConfigurationException('Apache home not found: %s' % self.appRepoApacheHome)
@@ -82,7 +83,7 @@ class AppRepo(Configurable):
         else:
             httpdConf = fileGetContent(Util.shareDir + 'template/webdav.conf.tpl')
             httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
-                                     'passwd': self.appRepoPasswdFile}	   
+                                     'passwd': self.appRepoHttpdPasswdFile}	   
 
         filePutContent('%s/conf.d/webdav.conf' % self.appRepoApacheHome, httpdConf)
 
