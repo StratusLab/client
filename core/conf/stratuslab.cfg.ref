@@ -90,8 +90,6 @@ node_bridge_name = br0
 
 [app-repo]
 # Appliance Repository
-app_repo_username = foo
-app_repo_password = bar
 app_repo_url = https://appliances.stratuslab.eu/images
 
 # Directory in which to store the images
@@ -121,5 +119,5 @@ app_repo_ldap_passwd =
 # Location of Apache configuration
 app_repo_apache_home = /etc/httpd
 
-# User password file
-app_repo_passwd =
+# HTTPD user password file (required if not using LDAP)
+app_repo_httpd_passwd_file =
