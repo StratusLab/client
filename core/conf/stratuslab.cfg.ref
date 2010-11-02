@@ -4,9 +4,9 @@
 #                  ----------------------------------                        #
 #                                                                            #
 #                                                                            #
-# Note: parameters have to have a unique name, across the                    #
-#       sections, as sections are only provided to provide                   #
-#       structure and documentation.                                         #
+#     Note: parameters have to have a unique name, across the                #
+#           sections, as sections are only there to provide                  #
+#           structure and documentation.                                     #
 #                                                                            #
 ##############################################################################
 
