@@ -309,7 +309,7 @@ class Runner(object):
         for id in _ids:
             self.cloud.vmKill(int(id))
         plural = (len(_ids) > 1 and 's') or ''
-        self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(_ids)))
+        self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
     
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)        
