@@ -102,7 +102,7 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
-	    <require>one</require>
+	    <require>one-2.0-StratusLab</require>
 	  </requires>
 
 	  <mappings>
