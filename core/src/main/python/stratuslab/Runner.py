@@ -142,6 +142,7 @@ class Runner(object):
                    'vncPort': None,
                    'vncListen': '',
                    'saveDisk': 'no',
+                   'inVmIdsFile': None,
                    'outVmIdsFile': None }
         return options
 
