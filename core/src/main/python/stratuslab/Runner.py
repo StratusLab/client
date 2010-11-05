@@ -141,15 +141,8 @@ class Runner(object):
                    'extraContextData': '',
                    'vncPort': None,
                    'vncListen': '',
-                   'saveDisk': 'no' }
-        return options
-
-    @staticmethod
-    def defaultQueryOptions():
-        options = {'userKey': os.getenv('STRATUSLAB_KEY', ''),
-                   'username': os.getenv('STRATUSLAB_USERNAME', ''),
-                   'password': os.getenv('STRATUSLAB_PASSWORD', ''),
-                   'endpoint': os.getenv('STRATUSLAB_ENDPOINT', '')}
+                   'saveDisk': 'no',
+                   'outVmIdsFile': None }
         return options
 
     def _buildVmTemplate(self, template):
