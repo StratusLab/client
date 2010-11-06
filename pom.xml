@@ -42,6 +42,15 @@
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
+	  <artifactId>maven-compiler-plugin</artifactId>
+	  <version>2.3.2</version>
+	  <configuration>
+	    <target>1.5</target>
+	    <source>1.5</source>
+	  </configuration>
+	</plugin>
+	<plugin>
+	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-clean-plugin</artifactId>
 	  <version>2.4.1</version>
 	</plugin>
