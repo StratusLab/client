@@ -133,6 +133,12 @@ class OneConnector(object):
         self._raiseIfError(isSuccess, info)
         return info
 
+    def getVmInfo(self, vmId):
+        info = self._vmInfo(vmId)
+        xml = etree.fromstring(info)
+        self._addStateSummary(xml)
+        return etree.tostring(xml)
+
     def _getOneVmStateFromXml(self, xml):
         stateElement = self._getStateElement(xml) 
         state = int(stateElement.text)
