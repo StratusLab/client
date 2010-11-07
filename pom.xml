@@ -17,6 +17,11 @@
     <module>cli</module>
   </modules>
 
+  <scm>
+    <connection>scm:git:ssh://apache@code.stratuslab.eu/ext/git/stratuslab-integration.git</connection>
+    <developerConnection>scm:git:ssh://apache@code.stratuslab.eu/ext/git/stratuslab-integration.git</developerConnection>
+  </scm>
+
   <distributionManagement>
     <repository>
       <id>stratuslab.releases</id>
@@ -39,6 +44,11 @@
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-assembly-plugin</artifactId>
 	  <version>2.2</version>
+	</plugin>
+	<plugin>
+	  <groupId>org.apache.maven.plugins</groupId>
+	  <artifactId>maven-release-plugin</artifactId>
+	  <version>2.1</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
