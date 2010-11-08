@@ -110,7 +110,7 @@ class OneConnector(object):
         for xml in vmlist.findall('VM'):
             self._addStateSummary(xml)
 
-        return etree.tostring(vmlist)
+        return etree.tostring(vmlist) 
         
     def _getVmInfoAsXml(self, vmId):
         info = self._vmInfo(vmId)
