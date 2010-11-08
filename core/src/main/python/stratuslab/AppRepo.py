@@ -115,7 +115,7 @@ class AppRepo(Configurable):
 
     def _restartWebServer(self):
         self.printDetail('Restarting web server (apache2 / httpd)\n')
-        system = SystemFactory.getSystem(self.frontendSystem)
+        system = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
         self._execute(['/etc/init.d/%s' % system.packages['apache2'].packageName, 'stop'])
         self._execute(['/etc/init.d/%s' % system.packages['apache2'].packageName, 'start'])
 

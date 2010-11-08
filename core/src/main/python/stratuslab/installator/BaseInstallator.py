@@ -47,6 +47,7 @@ class BaseInstallator(object):
         self.cloud = None
 
     def runInstall(self, configHolder):
+        # TODO: fix the logs for apprepo installs
         self.configHolder = configHolder
         configHolder.assign(self)
 
@@ -61,6 +62,8 @@ class BaseInstallator(object):
         elif self.appRepoAddr:
             printAction('Appliance Repository installation')
             self._runInstallAppRepo()
+            printStep('Installation completed')
+            return
         else:
             printAction('Frontend installation')
             self._runInstallFrontend()
