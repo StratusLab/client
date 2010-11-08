@@ -44,7 +44,7 @@
 		    <artifactItem>
 		      <groupId>eu.stratuslab.pkgs</groupId>
 		      <artifactId>stratuslab-cli-user-zip</artifactId>
-		      <version>1.0-SNAPSHOT</version>
+		      <version>1.1-SNAPSHOT</version>
 		      <classifier>cli-user-bundle</classifier>
 		      <type>zip</type>
 		    </artifactItem>
