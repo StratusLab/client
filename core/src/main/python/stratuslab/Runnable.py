@@ -118,7 +118,7 @@ class Runnable(CommandBase):
         if self.options.instanceType not in Runner.getInstanceType().keys():
             self.parser.error('Specified instance type not available')
         if (self.options.addressing not in ('', 'private')) and not validateIp(self.options.addressing):
-            self.parser.error('Invalide addressing')
+            self.parser.error('Invalid addressing')
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
         if self.options.vncListen and not validateIp(self.options.vncListen):
