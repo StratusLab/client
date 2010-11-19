@@ -27,6 +27,7 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Runner import Runner
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Util import printAction
 
 
 class MainProgram(Runnable):
@@ -60,7 +61,9 @@ class MainProgram(Runnable):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(self.image, configHolder)
+        printAction('Starting machines')
         runner.runInstance()
+        printStep('Done!')
 
 if __name__ == '__main__':
     try:

@@ -81,3 +81,6 @@ class ConfigHolder(object):
     def copy(self):
         copy = ConfigHolder(self.options.copy(), self.config.copy())
         return copy
+    
+    def set(self, key, value):
+        self.options[key] = value

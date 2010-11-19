@@ -24,8 +24,6 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.UploadParser import buildUploadParser
-from stratuslab.UploadParser import checkUploadOptions
 from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
@@ -35,52 +33,47 @@ from stratuslab.ConfigHolder import ConfigHolder
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
 
-    def parse(self):        
+    def parse(self):
+        
+        self.parser.usage = '''%prog [options] base-image'''
+
         self.parser.add_option('-s', '--scripts', dest='scripts',
-                help='scripts to execute on the VM (separate by space)',
+                help='scripts to execute on the VM (comma separated)',
                 default='', metavar='FILE')
-        self.parser.add_option('-N', '--image-name', dest='imageName', metavar='NAME',
-                help='image name (e.g. base, grid.se, grid.wn, ...)', default='base')
+
         self.parser.add_option('-a', '--packages', dest='packages',
                 help='packages to install on the machine (name separate by space)',
-                default='', metavar='NAME')
-        self.parser.add_option('-H', '--no-shutdown', dest='shutdownVm',
+                default='', metavar='PACKAGE')
+
+        self.parser.add_option('--no-shutdown', dest='shutdownVm',
                 help='leave the VM running. A public IP will be assigned.',
                 default=True, action='store_false')
-        self.parser.add_option('-V', '--img-version', dest='imageVersion',
-                help='revision number of the image', metavar='VERSION',
-                default="1.0")
-        self.parser.add_option('--ip', dest='interface',
-                help='interface to use to connect to the machine. By default the public one.',
-                default="public")
-        self.parser.add_option('--list-interface', dest='listInterface',
-                help='list available machine interface',
-                default=False, action='store_true')
-        buildUploadParser(self.parser)
+        
+        self.parser.add_option('-r', '--repository', dest='repoAddress',
+                help='appliance repository address. Default STRATUSLAB_REPO',
+                default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
+    
+        self.parser.add_option('-U', '--repo-username', dest='repoUsername',
+                help='repository username. Default STRATUSLAB_REPO_USERNAME',
+                default=os.getenv('STRATUSLAB_REPO_USERNAME'))
+
+        self.parser.add_option('-P', '--repo-password', dest='repoPassword',
+                help='repository password. Default STRATUSLAB_REPO_PASSWORD',
+                default=os.getenv('STRATUSLAB_REPO_PASSWORD'))
+
         super(MainProgram, self).parse()
 
-        self.options, self.args = self.parser.parse_args()
-
-    def availableInterface(self):
-        return ['public', 'private', 'extra']
-
-    def listInterface(self):
-        print 'Available network interface: %s' % ', '.join(self.availableInterface())
-        print ('\nNote that the extra interface refere to the network specified '
-              'with the --nic option')
-        sys.exit(0)
 
     def checkOptions(self):
-        if self.options.listCompressionFormat:
-            Uploader.availableCompressionFormat(True)
-        if self.options.listInterface:
-            self.listInterface()
 
         super(MainProgram, self).checkOptions()
-        checkUploadOptions(self.options, self.parser)
 
-        if self.options.interface not in self.availableInterface():
-            self.parser.error('Wrong network interface. Available: %s' % ', '.join(self.availableInterface()))
+        if not self.options.repoAddress:
+            self.parser.error('Missing repository address')
+        if not self.options.repoUsername:
+            self.parser.error('Missing repository username')
+        if not self.options.repoPassword:
+            self.parser.error('Missing repository password')
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)

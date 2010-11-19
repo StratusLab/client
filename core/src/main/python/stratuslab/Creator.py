@@ -55,38 +55,51 @@ class Creator(object):
 
         self.cloud.setCredentials(self.username, self.password)
 
-        self.sshKey = '/tmp/%s' % randomString()
-        generateSshKeyPair(self.sshKey)
-
-        self.vmManifestPath = '/tmp/disk.0.manifest.xml' # Location of the manifest on the VM
-        self.packageInstallScript = Util.shareDir + 'creation/install-pkg.sh'
-        self.manifestCreationScript = Util.shareDir + 'creation/create-manifest.sh'
-
         self.runner = None
-        self.vmIps = {}
-        self.vmIds = []
-        self.vmId = None
+#        self.vmIps = {}
+#        self.vmIds = []
+#        self.vmId = None
 
-    def __del__(self):
-        self.stderr.close()
-        self.stdout.close()
+    def create(self):
+        printAction('Starting image creation')
+        
+        printStep('Creating machine template')
+        self._buildRunner()
+
+        printStep('Starting base image')
+        self._startMachine()
+
+        self.vmAddress = self._getPublicAddress()
+        
+        if not waitUntilPingOrTimeout(self.vmAddress, 600):
+            self.cloud.vmStop(self.vmId)
+            printError('Unable to ping VM')
+
+        printStep('Creating image manifest')
+        self._createImageManifest()
+
+        printStep('Installing user packages')
+        self._installPackages()
+
+        printStep('Executing user scripts')
+        self._executeScripts()
+
+        if self.shutdownVm:
+            printStep('Shutting down machine')
+            self.cloud.vmStop(self.vmId)
+        else:
+            printStep('Machine ready for your usage')
+            print '\n\tMachine IP: %s' % ', '.join(dict(self.vmIps).values())
+            print '\tRemember to stop the machine when finished',
+            
+        printAction('Image creation finished')
+        print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
+                                                                        self.stderr.name)
 
     def _buildRunner(self):
-        self.options['saveDisk'] = True
-
+        self.configHolder.set('extraDiskSize', 8*1024)
         self.runner = Runner(self.image, self.configHolder)
-        self._addCreationContext()
         
-    def _addCreationContext(self):
-        context = [
-            'stratuslab_remote_key=%s' % fileGetContent(self.sshKey + '.pub'),
-            'stratuslab_manifest=%s' % self.vmManifestPath,
-            'stratuslab_upload_info=%s' %  self._buildUploadInfoContext()
-        ]
-
-        context.extend(self.runner.extraContextData.split(cliLineSplitChar))
-        self.runner.extraContextData = cliLineSplitChar.join(context)
-
     def _buildUploadInfoContext(self):
         uploadInfoElem = [ 'repoAddress', 'compressionFormat', 'forceUpload',
                            'uploadOption', 'repoUsername', 'repoPassword' ]
@@ -102,18 +115,25 @@ class Creator(object):
             self.vmIds = self.runner.runInstance()
             self.vmIps = self.runner.vmIps
         except Exception, msg:
-            printError('An error occured while starting machine: \n\t%s' % msg)
+            printError('An error occurred while starting machine: \n\t%s' % msg)
 
         self.vmId = self.vmIds[0]
+        printStep('Waiting for machine to boot')
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId)
         if not vmStarted:
             printError('Failed to start VM!')
 
     # TODO: Create a generic method to run script on the VM
 
+    def _getPublicAddress(self):
+        return dict(self.vmIps)['public']
+
+    def _retrieveManifest(self):
+        pass
+
     def _createImageManifest(self):
         separatorChar = '%'
-        imageDefinition = [self.imageName, self.imageVersion, self.username, self.vmManifestPath]
+        imageDefinition = [self.image, self.imageVersion, self.username, self.vmManifestPath]
         scriptOnVm = '/tmp/create-manifest.sh'
 
         scp(self.manifestCreationScript, 'root@%s:%s' % (self.vmAddress, scriptOnVm),
@@ -163,38 +183,3 @@ class Creator(object):
             if ret != 0:
                 printError('An error occured while executing script %s' % script)
 
-    def create(self):
-        printAction('Starting image creation')
-        
-        printStep('Creating machine template')
-        self._buildRunner()
-
-        self._startMachine()
-
-        printStep('Waiting for network interface to be up')
-        self.vmAddress = dict(self.vmIps).get(self.interface)
-        
-        if not waitUntilPingOrTimeout(self.vmAddress, 600):
-            self.cloud.vmStop(self.vmId)
-            printError('Unable to ping VM')
-
-        printStep('Creating image manifest')
-        self._createImageManifest()
-
-        printStep('Installing user packages')
-        self._installPackages()
-
-        printStep('Executing user scripts')
-        self._executeScripts()
-
-        if self.shutdownVm:
-            printStep('Shutting down machine')
-            self.cloud.vmStop(self.vmId)
-        else:
-            printStep('Machine ready for your usage')
-            print '\n\tMachine IP: %s' % ', '.join(dict(self.vmIps).values())
-            print '\tRemember to stop the machine when finished',
-            
-        printAction('Image creation finished')
-        print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
-                                                                        self.stderr.name)

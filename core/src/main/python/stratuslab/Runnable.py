@@ -24,6 +24,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.Runner import Runner
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import validateIp
+import Util
 
 class Runnable(CommandBase):
     '''Base class for command which need to start a machine.'''
@@ -36,16 +37,16 @@ class Runnable(CommandBase):
         super(Runnable, self).__init__()
 
     def parse(self):
-        options = Runner.defaultRunOptions()
+        defaultOptions = Runner.defaultRunOptions()
 
-        self.parser.usage = '''%prog [options] image'''
+        self.parser.usage = '''%prog [defaultOptions] image'''
 
         self.parser.add_option('-k', '--key', dest='userKey',
                 help='SSH key to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',
-                default=options['userKey'])
+                default=defaultOptions['userKey'])
         self.parser.add_option('-t', '--type', dest='instanceType',
                 help='instance type to start', metavar='TYPE',
-                default=options['instanceType'])
+                default=defaultOptions['instanceType'])
 
         self.parser.add_option('-l', '--list-type', dest='listType',
                 help='list available instance type',
@@ -53,61 +54,68 @@ class Runnable(CommandBase):
 
         self.parser.add_option('--context-file', dest='extraContextFile', metavar='FILE',
                 help='extra context file with one key=value per line',
-                default=options['extraContextFile'])
+                default=defaultOptions['extraContextFile'])
         self.parser.add_option('--context', dest='extraContextData', metavar='CONTEXT',
                 help='extra context string (separate by %s)' % cliLineSplitChar,
-                default=options['extraContextData'])
+                default=defaultOptions['extraContextData'])
 
         self.parser.add_option('-u', '--username', dest='username',
                 help='cloud username. Default STRATUSLAB_USERNAME',
-                default=options['username'])
+                default=defaultOptions['username'])
         self.parser.add_option('-p', '--password', dest='password',
                 help='cloud password. Default STRATUSLAB_PASSWORD',
-                default=options['password'])
+                default=defaultOptions['password'])
 
         self.parser.add_option('--endpoint', dest='endpoint',
                 help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
-                default=options['endpoint'])
+                default=defaultOptions['endpoint'])
 
         self.parser.add_option('--vnc-port', dest='vncPort', metavar='PORT', type='int',
                 help='VNC port number. Note for KVM it\'s the real one , not the '
                      'VNC port. So for VNC port 0 you should specify 5900, for '
                      'port 1 is 5901 and so on. ',
-                default=options['vncPort'])
+                default=defaultOptions['vncPort'])
         self.parser.add_option('--vnc-listen', dest='vncListen', metavar='ADDRESS',
                 help='IP to listen on',
-                default=options['vncListen'])
+                default=defaultOptions['vncListen'])
 
         self.parser.add_option('-A', '--addressing', dest='addressing',
                 help='specifies the addressing type to use for the instances (private or requested IP)',
-                default=options['addressing'])
+                default=defaultOptions['addressing'])
         self.parser.add_option('--nic', dest='extraNic', metavar='NAME',
                 help='additional network interface',
-                default=options['extraNic'])
+                default=defaultOptions['extraNic'])
 
         self.parser.add_option('--raw', dest='rawData', metavar='DATA',
                 help='hypervisor raw data',
-                default=options['rawData'])
+                default=defaultOptions['rawData'])
         self.parser.add_option('--ramdisk', dest='vmRamdisk', metavar='PATH',
                 help='machine ramdisk',
-                default=options['vmRamdisk'])
+                default=defaultOptions['vmRamdisk'])
         self.parser.add_option('--kernel', dest='vmKernel', metavar='PATH',
                 help='machine kernel',
-                default=options['vmKernel'])
+                default=defaultOptions['vmKernel'])
 
         self.parser.add_option( '--template', dest='vmTemplatePath', metavar='FILE',
                 help='machine template. Available substitution variables: %s' % (
                 ', '.join(Runner.getVmTemplatesParameters())),
-                default=options['vmTemplatePath'])
+                default=defaultOptions['vmTemplatePath'])
 
-        self.options, self.args = self.parser.parse_args()
+        options, self.args = self.parser.parse_args()
+        self._assignOptions(defaultOptions, options)
+
+
+    def _assignOptions(self, defaultOptions, options):
+        obj = lambda: None
+        Util.assignAttributes(obj, defaultOptions)
+        Util.assignAttributes(obj, options.__dict__)
+        self.options = obj
 
     def checkOptions(self):
         if self.options.listType:
             self.displayInstanceType()
 
-        if len(self.args) != 1:
-            self.parser.error('Please specify the machine image to start')
+        self._checkArgs()
 
         self.image = self.args[0]
 
@@ -131,6 +139,10 @@ class Runnable(CommandBase):
             self.parser.error('Unspecified cloud endpoint')
         if not self.options.endpoint.startswith('http'):
             self.parser.error('Cloud endpoint must be an URL (begin with "http")')
+
+    def _checkArgs(self):
+        if len(self.args) != 1:
+            self.parser.error('Please specify the machine image to start')
 
     def displayInstanceType(self):
         types = Runner.getInstanceType()

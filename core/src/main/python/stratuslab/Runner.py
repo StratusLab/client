@@ -285,7 +285,7 @@ class Runner(object):
         plurial = { True: 'machines',
                     False: 'machine' }
 
-        printAction('Starting %s %s' % (self.instanceNumber,
+        printStep('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
         self.printDetail('with template:\n%s' % vmTpl)
@@ -302,7 +302,6 @@ class Runner(object):
 
         self._saveVmIds()
 
-        printAction('Done!')
         return self.vmIds
     
     def _saveVmIds(self):

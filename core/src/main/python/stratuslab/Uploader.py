@@ -133,8 +133,6 @@ class Uploader(object):
         deleteCmd = self.curlCmd + [ '-X', 'DELETE', url]
         execute(deleteCmd, stdout = devNull, stderr = devNull)
         devNull.close()
-        
-    
 
     def _getDirectoriesOfUrl(self, url):
         urlDirs = '/'.join(url.split('//')[1:])
