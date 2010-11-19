@@ -12,7 +12,7 @@
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
     <artifactId>stratuslab-cli</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
 
   <profiles>
@@ -75,9 +75,9 @@
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.pkgs</groupId>
-      <artifactId>stratuslab-cli-user-zip</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <classifier>cli-user-bundle</classifier>
+      <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
+      <version>1.2-SNAPSHOT</version>
+      <classifier>cli-sysadmin-bundle</classifier>
       <type>zip</type>
       <scope>compile</scope>
     </dependency>
