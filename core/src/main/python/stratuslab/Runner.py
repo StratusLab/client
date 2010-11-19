@@ -32,6 +32,14 @@ import stratuslab.Util as Util
 
 class Runner(object):
 
+    EXTRA_DISK = '''DISK=[
+  FORMAT=ext3,
+  READONLY=no,
+  SAVE=no,
+  SIZE=%(extraDiskSize)s,
+  TARGET=hdd,
+  TYPE=fs ]'''
+
     def __init__(self, image, configHolder):
         configHolder.assign(self)
 
@@ -73,6 +81,7 @@ class Runner(object):
 
         self._setUserKeyIfDefined()
         self._setSaveDisk()
+        self._setExtraDiskOptional()
     
     def _setUserKeyIfDefined(self):
         if getattr(self, 'userKey', None):
@@ -81,6 +90,12 @@ class Runner(object):
     def _setSaveDisk(self):
         saveDisk = getattr(self, 'saveDisk', False)
         self.save_disk = (saveDisk and 'yes') or 'no'
+
+    def _setExtraDiskOptional(self):
+        try:
+            self.extra_disk = (self.extraDiskSize and Runner.EXTRA_DISK % self.__dict__) or ''
+        except AttributeError:
+            pass
 
     @staticmethod
     def getInstanceType():

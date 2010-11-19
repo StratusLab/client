@@ -28,6 +28,7 @@ from stratuslab.Runner import Runner
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 
+
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
 
@@ -46,8 +47,16 @@ class MainProgram(Runnable):
                 help='save vm-id to a file',
                 default=None)
 
+        self.parser.add_option('--extra-disk', dest='extraDiskSize',
+                help='extra data disk size in GB', metavar='INT',
+                action='callback', callback=self.diskSizeOptionCallback,
+                default=0, type='int')
+
         super(MainProgram, self).parse()
 
+    def diskSizeOptionCallback(self, option, opt_str, value, parser):
+        setattr(parser.values, option.dest, 1024*value)
+    
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(self.image, configHolder)

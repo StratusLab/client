@@ -19,6 +19,8 @@ target   = "hdb",
 readonly = "no"
 ]
 
+%(extra_disk)s
+
 %(vm_nic)s
 %(graphics)s
 %(raw_data)s
