@@ -37,7 +37,7 @@ VM_DIR=%(vm_dir)s
 
 PORT=%(one_port)s
 
-SCRIPTS_REMOTE_DIR=/one/tmp
+SCRIPTS_REMOTE_DIR=/var/tmp/one
 
 DB = [ backend = "sqlite" ]
 
