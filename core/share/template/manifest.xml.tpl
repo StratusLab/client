@@ -6,4 +6,6 @@
     <user>%(user)s</user>
     <os>%(os)s</os>
     <osversion>%(osversion)s</osversion>
+    <compression>%(compression)s</compression>
+    <comment>%(comment)s</comment>
 </manifest>

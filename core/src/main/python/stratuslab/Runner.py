@@ -24,11 +24,11 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
-from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import validateIp
 import stratuslab.Util as Util
+from stratuslab.Authn import AuthnFactory
 
 class Runner(object):
 
@@ -43,11 +43,10 @@ class Runner(object):
     def __init__(self, image, configHolder):
         configHolder.assign(self)
 
-        self.cloud = CloudConnectorFactory.getCloud()
+        credentials = AuthnFactory.getCredentials(self)
+        self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpoint(self.endpoint)
         
-        self.cloud.setCredentials(self.username, self.password)
-
         # NIC which are set by default
         # networkType: { 'name': 'MyNetworkNameInOne', 'ip': 'ForcedIp' }, ...
         # Set ip != 0 to force assignation
@@ -140,26 +139,23 @@ class Runner(object):
 
     @staticmethod        
     def defaultRunOptions():
-        options = {'userKey': os.getenv('STRATUSLAB_KEY', ''),
-                   'username': os.getenv('STRATUSLAB_USERNAME', ''),
-                   'password': os.getenv('STRATUSLAB_PASSWORD', ''),
-                   'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
-                   'instanceNumber': 1,
-                   'instanceType': 'm1.small',
-                   'vmTemplatePath': Runner.getTemplatePath(),
-                   'extraNic': '',
-                   'rawData': '',
-                   'vmKernel': '',
-                   'vmRamdisk': '',
-                   'addressing': '',
-                   'extraContextFile': '',
-                   'extraContextData': '',
-                   'vncPort': None,
-                   'vncListen': '',
-                   'saveDisk': 'no',
-                   'inVmIdsFile': None,
-                   'outVmIdsFile': None }
-        return options
+        return {'userKey': os.getenv('STRATUSLAB_KEY', ''),
+                'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
+                'instanceNumber': 1,
+                'instanceType': 'm1.small',
+                'vmTemplatePath': Runner.getTemplatePath(),
+                'extraNic': '',
+                'rawData': '',
+                'vmKernel': '',
+                'vmRamdisk': '',
+                'addressing': '',
+                'extraContextFile': '',
+                'extraContextData': '',
+                'vncPort': None,
+                'vncListen': '',
+                'saveDisk': 'no',
+                'inVmIdsFile': None,
+                'outVmIdsFile': None }
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)
@@ -331,3 +327,6 @@ class Runner(object):
     def waitUntilVmRunningOrTimeout(self, vmId):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, 120)
         return vmStarted
+
+    def checkImageUrl(self):
+        pass

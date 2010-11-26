@@ -32,6 +32,13 @@ class ConfigHolder(object):
         return dict
         
     @staticmethod
+    def configToDict(config):
+        config = SafeConfigParser()
+        config.readfp(config)
+        dict = ConfigHolder._convertToDict(config)
+        return dict
+        
+    @staticmethod
     def convertToSectionDict(config):
         dicts = {}
         for section in config.sections():

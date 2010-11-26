@@ -28,6 +28,7 @@ from stratuslab.Runner import Runner
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
+from stratuslab.Util import printStep
 
 
 class MainProgram(Runnable):

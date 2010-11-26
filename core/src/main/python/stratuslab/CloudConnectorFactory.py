@@ -23,10 +23,10 @@ from stratuslab.cloud import qemu
 class CloudConnectorFactory:
 
     @staticmethod
-    def getCloud(type='one'):
+    def getCloud(credentials, type='one'):
         if type == 'one':
-            return one.OneConnector()
+            return one.OneConnector(credentials)
         elif type == 'qemu':
-            return qemu.QEmuConnector()
+            return qemu.QEmuConnector(credentials)
         else:
             raise NotImplementedError('Cloud type not implemented yet.')

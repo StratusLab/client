@@ -18,13 +18,12 @@
 # limitations under the License.
 #
 import os
-
+from stratuslab.Configurable import Configurable
+from stratuslab.Exceptions import ConfigurationException
+import stratuslab.Util as Util
+from stratuslab.Util import execute
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
-from stratuslab.Util import execute
-import stratuslab.Util as Util
-from stratuslab.Exceptions import ConfigurationException
-from stratuslab.Configurable import Configurable
 import stratuslab.system.SystemFactory as SystemFactory
 
 class AppRepo(Configurable):
@@ -128,3 +127,5 @@ class AppRepo(Configurable):
 
     def _setupWebServer(self):
         pass
+
+

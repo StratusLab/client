@@ -17,7 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest
+
+import os
 
 try:
     from lxml import etree
@@ -40,39 +41,33 @@ except ImportError:
                 except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
-from stratuslab.CloudInfo import CloudInfo
+import Util
 
-class VmInfoTest(unittest.TestCase):
-
-
-    def setUp(self):
-        pass
-
-
-    def tearDown(self):
-        pass
-
-
-    def testPopulate(self):
-        xml = '''
-<root>
-    <level1>
-        <id1>ID1</id1>
-        <level2>
-            <level3>
-                <id3>ID3</id3>
-            </level3>
-        </level2>
-    </level1>
-</root>
-'''
-        root = etree.fromstring(xml)
-
-        info = CloudInfo()
-        info.populate(root)
+class ManifestInfo(object):
+    
+    def __init__(self, ):
+        self.created = None
+        self.type = None
+        self.version = None
+        self.os = None
+        self.arch = None
+        self.user = None
+        self.os = None
+        self.osversion = None
+        self.comment = None   
+        self.template = os.path.join(Util.getShareDir(),'template/manifest.xml.tpl')
+    
+    def parseManifest(self, manifest):
+        xml = etree.fromstring(manifest)
+        self.os = xml.find('os').text
+        self.osversion = xml.find('osversion').text
+        self.arch = xml.find('arch').text
+        self.type = xml.find('type').text
+        self.version = xml.find('version').text
+        self.compression = xml.find('compression').text
+        self.user = xml.find('user').text
+        self.created = xml.find('created').text
         
-        self.assertEqual('ID1',info.id1)
-        self.assertEqual('ID3',info.id3)
-
-if __name__ == "__main__":
-    unittest.main()
+    def tostring(self):
+        template = open(self.template).read()
+        return template % self.__dict__

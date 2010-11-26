@@ -29,9 +29,10 @@ from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Runner import Runner
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.AuthnCommand import AuthnCommand
 
 
-class MainProgram(CommandBase):
+class MainProgram(AuthnCommand):
     '''A command-line program to kill a virtual machine.'''
 
     def __init__(self):
@@ -43,14 +44,6 @@ class MainProgram(CommandBase):
 
         self.parser.usage=usage
         
-        self.parser.add_option('-u', '--username', dest='username',
-                help='cloud username. Default STRATUSLAB_USERNAME',
-                default=os.getenv('STRATUSLAB_USERNAME', ''))
-
-        self.parser.add_option('-p', '--password', dest='password',
-                help='cloud password. Default STRATUSLAB_PASSWORD',
-                default=os.getenv('STRATUSLAB_PASSWORD', ''))
-
         self.parser.add_option('--endpoint', dest='endpoint',
                 help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
                 default=os.getenv('STRATUSLAB_ENDPOINT', ''))
@@ -58,6 +51,8 @@ class MainProgram(CommandBase):
         self.parser.add_option('-i', '--input', dest='inVmIdsFile',
                 help='file containing line separated vm-ids',
                 default=None)
+
+        super(MainProgram, self).parse()
 
         self.options, self.vmIds = self.parser.parse_args()
 

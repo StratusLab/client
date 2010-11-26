@@ -26,12 +26,12 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
-from stratuslab.CommandBase import CommandBase
+from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.Monitor import Monitor
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class MainProgram(CommandBase):
+class MainProgram(AuthnCommand):
     '''A command-line program to monitor the state of virtual machines.'''
 
     def __init__(self):
@@ -44,27 +44,19 @@ Without the parameter [vm-id] the command lists the available vms'''
 
         self.parser.usage=usage
         
-        self.parser.add_option('-u', '--username', dest='oneUsername',
-                help='cloud username. Default STRATUSLAB_USERNAME',
-                default=os.getenv('STRATUSLAB_USERNAME', ''))
-
-        self.parser.add_option('-p', '--password', dest='onePassword',
-                help='cloud password. Default STRATUSLAB_PASSWORD',
-                default=os.getenv('STRATUSLAB_PASSWORD', ''))
-
         self.parser.add_option('--endpoint', dest='endpoint',
                 help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
-                default=os.getenv('STRATUSLAB_ENDPOINT', ''))
+                default=os.getenv('STRATUSLAB_ENDPOINT', ''), metavar='URL')
+
+        super(MainProgram, self).parse()
 
         self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
-        if not self.options.oneUsername:
-            self.parser.error('Missing -u/--username')
-        if not self.options.onePassword:
-            self.parser.error('Missing -p/--password')
-        if not self.options.endpoint:
-            self.parser.error('Missing --endpoint')
+        usernamePasswordCredentials = self.options.username and self.options.password
+        pemCredentials = self.options.pemCert and self.options.pemKey
+        if not (usernamePasswordCredentials or pemCredentials):
+            self.parser.error('Missing credentials. Please provide either --username/--password or --pem-cert/--pem-key')
 
 
     def doWork(self):

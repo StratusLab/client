@@ -32,5 +32,11 @@ class ConfigurationException(Exception):
 class OneException(Exception):
     pass
 
+class ValidationException(Exception):
+    pass
+
+class ExecutionException(Exception):
+    pass
+
 
     

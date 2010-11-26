@@ -20,19 +20,20 @@
 import os
 import sys
 
-from stratuslab.CommandBase import CommandBase
 from stratuslab.Runner import Runner
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import validateIp
 import Util
+from AuthnCommand import AuthnCommand
 
-class Runnable(CommandBase):
+class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
 
     def __init__(self):
         self.options = None
         self.args = None
         self.image = None
+        self.checkCredentials = True
 
         super(Runnable, self).__init__()
 
@@ -58,13 +59,6 @@ class Runnable(CommandBase):
         self.parser.add_option('--context', dest='extraContextData', metavar='CONTEXT',
                 help='extra context string (separate by %s)' % cliLineSplitChar,
                 default=defaultOptions['extraContextData'])
-
-        self.parser.add_option('-u', '--username', dest='username',
-                help='cloud username. Default STRATUSLAB_USERNAME',
-                default=defaultOptions['username'])
-        self.parser.add_option('-p', '--password', dest='password',
-                help='cloud password. Default STRATUSLAB_PASSWORD',
-                default=defaultOptions['password'])
 
         self.parser.add_option('--endpoint', dest='endpoint',
                 help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
@@ -101,6 +95,8 @@ class Runnable(CommandBase):
                 ', '.join(Runner.getVmTemplatesParameters())),
                 default=defaultOptions['vmTemplatePath'])
 
+        super(Runnable, self).parse()
+
         options, self.args = self.parser.parse_args()
         self._assignOptions(defaultOptions, options)
 
@@ -111,6 +107,7 @@ class Runnable(CommandBase):
         Util.assignAttributes(obj, options.__dict__)
         self.options = obj
 
+
     def checkOptions(self):
         if self.options.listType:
             self.displayInstanceType()
@@ -119,10 +116,8 @@ class Runnable(CommandBase):
 
         self.image = self.args[0]
 
-        if not self.options.userKey:
-            self.parser.error('Unspecified user private key. See --key option.')
-        if not os.path.isfile(self.options.userKey):
-            self.parser.error('Key `%s` does not exist' % self.options.userKey)
+        self._checkPrivateKey()
+
         if self.options.instanceType not in Runner.getInstanceType().keys():
             self.parser.error('Specified instance type not available')
         if (self.options.addressing not in ('', 'private')) and not validateIp(self.options.addressing):
@@ -131,11 +126,6 @@ class Runnable(CommandBase):
             self.parser.error('Extra context file does not exist')
         if self.options.vncListen and not validateIp(self.options.vncListen):
             self.parser.error('VNC listen IP is not valid')
-        if not self.options.username:
-            self.parser.error('Unspecified cloud username')
-        if not self.options.password:
-            self.parser.error('Unspecified cloud password')
-        if not self.options.endpoint:
             self.parser.error('Unspecified cloud endpoint')
         if not self.options.endpoint.startswith('http'):
             self.parser.error('Cloud endpoint must be an URL (begin with "http")')
@@ -143,6 +133,13 @@ class Runnable(CommandBase):
     def _checkArgs(self):
         if len(self.args) != 1:
             self.parser.error('Please specify the machine image to start')
+
+    def _checkPrivateKey(self):
+        if self.checkCredentials:
+            if not self.options.userKey:
+                self.parser.error('Unspecified user private key. See --key option.')
+            if not os.path.isfile(self.options.userKey):
+                self.parser.error('Key `%s` does not exist' % self.options.userKey)
 
     def displayInstanceType(self):
         types = Runner.getInstanceType()

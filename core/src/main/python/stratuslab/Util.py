@@ -35,7 +35,7 @@ systemsDir = '%s/stratuslab/system' % modulePath
 shareDir = '/var/share/stratuslab/'
 etcDir = '/etc/stratuslab/'
 defaultConfigFile = etcDir + 'stratuslab.cfg'
-manifestExt = '.manifest.xml'
+manifestExt = '.xml'
 cliLineSplitChar = '#'
 
 QUIET_VERBOSE_LEVEL = 0
@@ -45,10 +45,26 @@ DETAILED_VERBOSE_LEVEL = 2
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
 
+def getShareDir():
+    if os.path.exists(shareDir):
+        return shareDir
+    else:
+        return os.path.join(os.path.dirname(__file__),'../../../../share')
+
 def wget(url, savePath):
-    fd = urllib2.urlopen(url)
+    fd = _wget(url)
     filePutContent(savePath, fd.read())
     fd.close()
+    
+def wstring(url):
+    fd = _wget(url)
+    return fd.read()
+    
+def wread(url):
+    return _wget(url)
+
+def _wget(url):
+    return urllib2.urlopen(url)
     
 def ping(host, timeout=5, number=1, ** kwargs):
     '''Ping <host> and return True if successful'''
@@ -335,3 +351,12 @@ def generateSshKeyPair(keyFilename):
         pass
     sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
     execute(sshCmd, shell=True)
+
+def pingFile(url, mediaType='text/xml'):
+    try:
+        fd = urllib2.urlopen(url)
+    except urllib2.HTTPError:
+        return False
+    if fd.info().type == mediaType:
+        return True
+    return False

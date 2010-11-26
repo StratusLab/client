@@ -28,6 +28,7 @@ from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
+import stratuslab.Util as Util
 
 
 class MainProgram(Runnable):
@@ -37,13 +38,49 @@ class MainProgram(Runnable):
         
         self.parser.usage = '''%prog [options] base-image'''
 
+        self.parser.add_option('--show-name', dest='showImageName',
+                help='show the name the new image will take',
+                default=False, action='store_true')
+
+        self.parser.add_option('-n', '--name', dest='newInstalledSoftwareName',
+                help='name of the new image',
+                default='', metavar='FILE')
+
+        self.parser.add_option('--name-version', dest='newInstalledSoftwareVersion',
+                help='version of installed software',
+                default='', metavar='VERSION')
+
+        self.parser.add_option('--image-group', dest='newImageGroupName',
+                help='group for the new image (this corresponds to the base image folder - e.g. base, grid)',
+                default='', metavar='NAME')
+
+        self.parser.add_option('--image-version', dest='newImageGroupVersion',
+                help='version for the new image',
+                default='', metavar='VERSION')
+
+        self.parser.add_option('--author', dest='author',
+                help='Author of the new image',
+                default='', metavar='NAME')
+
         self.parser.add_option('-s', '--scripts', dest='scripts',
                 help='scripts to execute on the VM (comma separated)',
                 default='', metavar='FILE')
 
         self.parser.add_option('-a', '--packages', dest='packages',
-                help='packages to install on the machine (name separate by space)',
+                help='packages to install on the machine (comma separated list)',
                 default='', metavar='PACKAGE')
+
+        self.parser.add_option('--installer', dest='installer',
+                help='package installer (default yum)',
+                default='yum', metavar='INSTALLER')
+
+        self.parser.add_option('--exclude', dest='excludeFromBundle',
+                help='exclude file/dir from bundle (comma separated list). Note: /tmp and /mnt are automatically excluded',
+                default='', metavar='FILE')
+
+        self.parser.add_option('--comment', dest='comment',
+                help='Comment to append to the manifest file',
+                default='', metavar='TEXT')
 
         self.parser.add_option('--no-shutdown', dest='shutdownVm',
                 help='leave the VM running. A public IP will be assigned.',
@@ -61,23 +98,56 @@ class MainProgram(Runnable):
                 help='repository password. Default STRATUSLAB_REPO_PASSWORD',
                 default=os.getenv('STRATUSLAB_REPO_PASSWORD'))
 
+        self.parser.add_option('--no-upload', dest='upload',
+                help='do not upload the new image to an appliances repository. \
+                Requires --no-shutdown (otherwise it makes little sense ;-)',
+                default=True, action='store_true')
+
+        self.parser.add_option('--root-url', dest='rootUrl',
+                help='Url of the root of the applicance repository. By default the root is computed from the default'\
+                ' repository structure and the base image',
+                default='')
+
         super(MainProgram, self).parse()
 
 
     def checkOptions(self):
 
+        if self.options.showImageName:
+            self.checkCredentials = False
+
         super(MainProgram, self).checkOptions()
 
-        if not self.options.repoAddress:
+        if self.options.showImageName:
+            return
+
+        if not self.options.upload and not self.options.shutdownVm:
+            self.parser.error('If you specify --no-upload you also need to specify --no-shutdown, otherwise\
+            you\'ll never be able to retrieve the new image')
+
+        if not self.options.comment:
+            self.parser.error('Please provide a comment describing the new image')
+
+        if not self.options.author:
+            self.parser.error('Please provide an author for the new image')
+
+        if not self.options.repoAddress and not self.options.noUpload:
             self.parser.error('Missing repository address')
-        if not self.options.repoUsername:
+        if not self.options.repoUsername and not self.options.noUpload:
             self.parser.error('Missing repository username')
-        if not self.options.repoPassword:
+        if not self.options.repoPassword and not self.options.noUpload:
             self.parser.error('Missing repository password')
 
     def doWork(self):
+        
         configHolder = ConfigHolder(self.options.__dict__)
         self.creator = Creator(self.image, configHolder)
+        
+        if self.options.showImageName:
+            Util.printAction('Simulating new image name')
+            Util.printStep(self.creator.showName())
+            return
+        
         self.creator.create()
         
 

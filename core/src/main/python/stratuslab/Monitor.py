@@ -23,6 +23,7 @@ import os
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.CloudInfo import CloudInfo
 from stratuslab.Configurable import Configurable
+from stratuslab.Authn import AuthnFactory
 
 try:
     from lxml import etree
@@ -62,7 +63,8 @@ class Monitor(Configurable):
                                'ip_public': 'public ip'}
         
     def _setCloud(self):
-        self.cloud = CloudConnectorFactory.getCloud()
+        credentials = AuthnFactory.getCredentials(self)
+        self.cloud = CloudConnectorFactory.getCloud(credentials)
 
         endpointEnv = 'STRATUSLAB_ENDPOINT'
 
@@ -72,8 +74,6 @@ class Monitor(Configurable):
             self.cloud.setEndpointFromParts(self.frontendIp, self.onePort)
         else:
             self.cloud.setEndpoint(self.endpoint)
-
-        self.cloud.setCredentials(self.oneUsername, self.onePassword)
 
     def nodeDetail(self, nodeIds):
         infoList = []

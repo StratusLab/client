@@ -23,6 +23,7 @@ import urllib2
 from ConfigParser import RawConfigParser
 
 from stratuslab.Exceptions import NetworkException
+from stratuslab.Exceptions import InputException
 
 from stratuslab.Util import assignAttributes
 from stratuslab.Util import defaultRepoConfigPath
@@ -33,7 +34,6 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import wget
-from stratuslab.Exceptions import InputException
 
 try:
     from lxml import etree
@@ -219,7 +219,7 @@ class Uploader(object):
 
         compressedFilename = '%s.%s' % (file, format)
         if os.path.isfile(compressedFilename):
-            printError('Compressed file %s already exists' % compressedFilename)
+            printError('Compressed file %s already exists, skipping' % compressedFilename, exit=False)
 
         devNull = self._openDevNull()
         execute([compressionCmd, file], stderr=devNull, stdout=devNull)

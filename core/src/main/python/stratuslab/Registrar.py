@@ -21,6 +21,7 @@ from stratuslab.installator.one import OneInstallator
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Monitor import Monitor
 from stratuslab.Exceptions import InputException
+from stratuslab.Authn import AuthnFactory
 
 class Registrar(OneInstallator):
 
@@ -29,11 +30,12 @@ class Registrar(OneInstallator):
         self.config = configHolder.config
         self.deRegister = False
         configHolder.assign(self)
+        self.username = 'oneadmin'
         
-        self.cloud = CloudConnectorFactory.getCloud()
+        credentials = AuthnFactory.getCredentials(self)
+        self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpointFromParts(self.frontendIp,
                                         self.onePort)        
-        self.cloud.setCredentials('oneadmin', self.password)
 
         self._assignDrivers()
 

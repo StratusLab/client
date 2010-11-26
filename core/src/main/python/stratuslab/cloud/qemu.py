@@ -24,7 +24,7 @@ from random import randint
 from stratuslab.Util import execute
 from stratuslab.Util import sshCmd
 
-
+# NOT USED ANYMORE!!
 class QEmuConnector(object):
     '''Connector to run a machine in QEmu'''
     

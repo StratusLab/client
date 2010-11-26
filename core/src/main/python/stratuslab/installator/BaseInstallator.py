@@ -27,6 +27,7 @@ from stratuslab.Util import printWarning
 from stratuslab.AppRepo import AppRepo
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printError
+from stratuslab.Authn import AuthnFactory
 
 
 class BaseInstallator(object):
@@ -111,11 +112,11 @@ class BaseInstallator(object):
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
 
     def _setCloud(self):
-        self.cloud = CloudConnectorFactory.getCloud()
+        credentials = AuthnFactory.getCredentials(self)
+        self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.configHolder.assign(self.cloud)
         
         self.cloud.setEndpointFromParts(self.frontendIp, self.onePort)
-        self.cloud.setCredentials(self.oneUsername, self.onePassword)
 
     def _propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)

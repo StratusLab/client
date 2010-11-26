@@ -19,7 +19,6 @@
 #
 import sys
 import time
-import xmlrpclib
 
 from stratuslab.Util import networkSizeToNetmask
 from stratuslab.Util import shaHexDigest
@@ -49,10 +48,11 @@ except ImportError:
 
 class OneConnector(object):
     
-    def __init__(self):
+    def __init__(self, credentials):
 
         self._sessionString = None
         self._rpc = None
+        self._credentials = credentials
     
     def setEndpointFromParts(self, server, port):
         self.server = 'http://%s:%s/RPC2' % (server, port)
@@ -62,11 +62,9 @@ class OneConnector(object):
         self.server = address
         self._createRpcConnection()
 
-    def _createRpcConnection(self):
-        self._rpc = xmlrpclib.ServerProxy(self.server)
-
-    def setCredentials(self, username, password):
-        self._sessionString = '%s:%s' % (username, shaHexDigest(password))
+    def _createRpcConnection(self):        
+        self._rpc = self._credentials.createRpcConnection()
+        self._sessionString = self._credentials.createSessionString()
 
     def vmStart(self, vmTpl):
         isSuccess, detail = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
