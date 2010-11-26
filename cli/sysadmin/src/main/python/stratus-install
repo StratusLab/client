@@ -29,9 +29,8 @@ from stratuslab.CommandBase import CommandBase
 import stratuslab.installator.InstallatorFactory as InstallatorFactory
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import AuthnCommand
 
-class MainProgram(AuthnCommand):
+class MainProgram(CommandBase):
     '''A command-line program to install StratusLab.'''
 
     def __init__(self):
@@ -59,8 +58,6 @@ class MainProgram(AuthnCommand):
         self.parser.add_option('--setup', dest='onlySetup',
                                help='Only setup system, don\'t install packages', 
                                action='store_true', default=None)
-        
-        super(MainProgram, self).parse()
         
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 

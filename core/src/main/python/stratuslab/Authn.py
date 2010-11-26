@@ -26,15 +26,21 @@ class AuthnFactory(object):
     
     @staticmethod
     def getCredentials(runnable):
-        usernamePasswordCredentials = runnable.username and runnable.password
-        pemCredentials = runnable.pemCert and runnable.pemKey
+        try:
+            usernamePasswordCredentials = runnable.username and runnable.password
+        except AttributeError:
+            usernamePasswordCredentials = False
+        try:
+            pemCredentials = runnable.pemCert and runnable.pemKey
+        except AttributeError:
+            pemCredentials = False
         
         if pemCredentials:
             return CertificateCredentialsConnector(runnable)
         if usernamePasswordCredentials:
             return UsernamePasswordCredentialsConnector(runnable)
         
-        raise ValueError('Unknown Credentials for runnable')
+        raise ValueError('Missing credentials')
 
 class CredentialsConnector(object):
 
@@ -45,14 +51,14 @@ class UsernamePasswordCredentialsConnector(CredentialsConnector):
     
     def __init__(self, runnable):
         super(UsernamePasswordCredentialsConnector, self).__init__(runnable)
-        self.certFile = None
-        self.keyFile = None
+        self.username = runnable.username
+        self.password = runnable.password
     
     def createRpcConnection(self):
         return xmlrpclib.ServerProxy(self.runnable.cloud.server)
 
     def createSessionString(self):
-        return '%s:%s' % (self.runnable.username, Util.shaHexDigest(self.runnable.password))
+        return '%s:%s' % (self.username, Util.shaHexDigest(self.password))
 
 
 class CertificateCredentialsConnector(CredentialsConnector):
@@ -72,9 +78,11 @@ class CertificateCredentialsConnector(CredentialsConnector):
 
     def __init__(self, runnable):
         super(CertificateCredentialsConnector, self).__init__(runnable)
+        self.pemCert = runnable.pemCert
+        self.pemKey = runnable.pemKey
     
     def createRpcConnection(self):
-        transport = CertificateCredentialsConnector.SafeTransportWithCert(self.runnable.pemCert, self.runnable.pemKey)
+        transport = CertificateCredentialsConnector.SafeTransportWithCert(self.pemCert, self.pemKey)
         return xmlrpclib.ServerProxy(self.runnable.cloud.server, transport=transport)
     
     def createSessionString(self):

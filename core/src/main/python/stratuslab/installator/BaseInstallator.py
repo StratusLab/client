@@ -112,6 +112,8 @@ class BaseInstallator(object):
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
 
     def _setCloud(self):
+        self.username = self.oneUsername
+        self.password = self.onePassword
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.configHolder.assign(self.cloud)
