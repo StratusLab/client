@@ -58,7 +58,7 @@ class Runner(object):
                                           'name': 'private',
                                           'ip': 0 },
                              }
-        self.nicOrder = ['private', 'public', 'extra']
+        self.nicOrder = ['public', 'private', 'extra']
         self.vm_image = image
 
         self._initAttributes()
