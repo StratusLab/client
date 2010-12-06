@@ -68,6 +68,7 @@ class CertificateCredentialsConnector(CredentialsConnector):
         def __init__(self, cert, key):
             self.__cert_file = cert
             self.__key_file  = key
+            xmlrpclib.SafeTransport.__init__(self)
 
         def make_connection(self, host):
             host_with_cert = (host, {
