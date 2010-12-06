@@ -1,3 +1,5 @@
+package eu.stratuslab.metadata;
+
 import java.util.*;
 import javax.xml.crypto.*;
 import javax.xml.crypto.dsig.*;
@@ -133,14 +135,20 @@ public static void main(String[] args) throws Exception {
         signature.sign(dsc);
 
         // output the resulting document
-        OutputStream os;
-        
-        os = new FileOutputStream(args[1]);
-        
+        OutputStream os = null;
 
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer trans = tf.newTransformer();
-        trans.transform(new DOMSource(doc), new StreamResult(os));
+	try {
+	    os = new FileOutputStream(args[1]);
+        
+	    TransformerFactory tf = TransformerFactory.newInstance();
+	    Transformer trans = tf.newTransformer();
+	    trans.transform(new DOMSource(doc), new StreamResult(os));
+	} finally {
+	    if (os!=null) {
+		os.close();
+	    }
+	}
+
     }
 
 
