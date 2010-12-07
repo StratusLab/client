@@ -57,14 +57,9 @@ class MainProgram(AuthnCommand):
         self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
-        if not self.options.username:
-            self.parser.error('Missing -u/--username')
-        if not self.options.password:
-            self.parser.error('Missing -p/--password')
-        if not self.options.endpoint:
-            self.parser.error('Missing --endpoint')
         if not self.vmIds and not self.options.inVmIdsFile:
             self.parser.error('Missing vm-id or input file (-i/--input)')
+        super(MainProgram, self).checkOptions()
 
 
     def doWork(self):

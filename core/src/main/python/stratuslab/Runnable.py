@@ -118,8 +118,8 @@ class Runnable(AuthnCommand):
         if self.options.vncListen and not validateIp(self.options.vncListen):
             self.parser.error('VNC listen IP is not valid')
             self.parser.error('Unspecified cloud endpoint')
-        if not self.options.endpoint.startswith('http'):
-            self.parser.error('Cloud endpoint must be an URL (begin with "http")')
+
+        super(Runnable, self).checkOptions()
 
     def _checkArgs(self):
         if len(self.args) != 1:

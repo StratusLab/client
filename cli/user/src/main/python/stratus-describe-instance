@@ -52,12 +52,6 @@ Without the parameter [vm-id] the command lists the available vms'''
 
         self.options, self.vmIds = self.parser.parse_args()
 
-    def checkOptions(self):
-        usernamePasswordCredentials = self.options.username and self.options.password
-        pemCredentials = self.options.pemCert and self.options.pemKey
-        if not (usernamePasswordCredentials or pemCredentials):
-            self.parser.error('Missing credentials. Please provide either --username/--password or --pem-cert/--pem-key')
-
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)

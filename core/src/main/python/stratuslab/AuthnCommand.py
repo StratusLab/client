@@ -49,5 +49,8 @@ class AuthnCommand(CommandBase):
 
 
     def checkOptions(self):
-        pass
+        usernamePasswordCredentials = self.options.username and self.options.password
+        pemCredentials = self.options.pemCert and self.options.pemKey
+        if not (usernamePasswordCredentials or pemCredentials):
+            self.parser.error('Missing credentials. Please provide either --username/--password or --pem-cert/--pem-key')
 
