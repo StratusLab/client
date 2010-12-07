@@ -184,16 +184,11 @@ class BaseInstallator(object):
         pass
     
     def _configureCloudAdminNode(self):
-#        self.configureNodeNetwork()
         self.node.configureCloudAdminSshKeysNode()
-        self._copyCloudHooks(self.node)
 
     def _configureCloudAdminFrontend(self):
-#        self.frontend.configureCloudAdminEnv(self.config.get('one_port'),
-#                                             self.config.get('stratuslab_location'))
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
-        self._copyCloudHooks(self.frontend)
 
         if self.vmDir != '':
             self.frontend.createDirsCmd(self.vmDir)
