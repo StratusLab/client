@@ -38,22 +38,8 @@ class OneInstallator(BaseInstallator):
         
     def _addDefaultNetworks(self):
         for vnet in self.defaultNetworks:
-            self.cloud.networkCreate(self._buildFixedMacIpNetworkTemplate(vnet))
+            self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
 
-    def _buildFixedMacIpNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
-        
-        ips = self.config.get('one_%s_network_addr' % networkName).split(' ')
-        macs = self.config.get('one_%s_network_mac' % networkName).split(' ')
-        ipMac = zip(ips, macs)
-        
-        leases = ['LEASES = [ IP=%s, MAC=%s]' % (ip, mac) for ip, mac in ipMac]
-        
-        vnetTpl = vnetTpl % ({'network_name': networkName,
-                             'bridge': self.config.get('node_bridge_name'),
-                             'leases': '\n'.join(leases)})
-        return vnetTpl
-    
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
@@ -64,14 +50,6 @@ class OneInstallator(BaseInstallator):
                              'leases': '\n'.join(leases)})
         return vnetTpl
     
-    def _buildRangedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent(Util.shareDir + 'vnet/ranged.net')
-        vnetTpl = vnetTpl % ({'network_name': networkName,
-                             'bridge': self.config.get('node_bridge_name'),
-                             'network_size': self.config.get('one_%s_network_size' % networkName),
-                             'network_addr': self.config.get('one_%s_network' % networkName)})
-        return vnetTpl
-
     # -------------------------------------------
     #   Front-end file sharing management
     # -------------------------------------------
