@@ -73,13 +73,6 @@ class Runnable(AuthnCommand):
                 help='IP to listen on',
                 default=defaultOptions['vncListen'])
 
-        self.parser.add_option('-A', '--addressing', dest='addressing',
-                help='specifies the addressing type to use for the instances (private or requested IP)',
-                default=defaultOptions['addressing'])
-        self.parser.add_option('--nic', dest='extraNic', metavar='NAME',
-                help='additional network interface',
-                default=defaultOptions['extraNic'])
-
         self.parser.add_option('--raw', dest='rawData', metavar='DATA',
                 help='hypervisor raw data',
                 default=defaultOptions['rawData'])
@@ -120,8 +113,6 @@ class Runnable(AuthnCommand):
 
         if self.options.instanceType not in Runner.getInstanceType().keys():
             self.parser.error('Specified instance type not available')
-        if (self.options.addressing not in ('', 'private')) and not validateIp(self.options.addressing):
-            self.parser.error('Invalid addressing')
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
         if self.options.vncListen and not validateIp(self.options.vncListen):

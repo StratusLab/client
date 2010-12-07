@@ -41,12 +41,19 @@ class MainProgram(Runnable):
                 help='number of machines to start (default 1)', metavar='INT',
                 default=options['instanceNumber'], type='int')
 
+        self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
+                help='By default, virtual machines are assigned a public IP address. ' \
+                'With this option, a private address is provided, which means that it ' \
+                'not be reachable from the outside, but will be reachable from other ' \
+                'instances in the same data-center.',
+                default=False)
+
         self.parser.add_option('--save', dest='saveDisk', action='store_true',
                 help='save image after VM shutdown',
                 default=False)
 
         self.parser.add_option('-o', '--output', dest='outVmIdsFile',
-                help='save vm-id to a file',
+                help='save vm-id to a file', metavar='FILE',
                 default=None)
 
         self.parser.add_option('--extra-disk', dest='extraDiskSize',

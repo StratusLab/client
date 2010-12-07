@@ -281,5 +281,5 @@ class Creator(object):
         return ret
         
     def _upload(self):
-        name = self._constructImageName()
+        self._constructImageName()
         pass

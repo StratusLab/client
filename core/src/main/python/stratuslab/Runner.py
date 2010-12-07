@@ -26,7 +26,6 @@ from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
-from stratuslab.Util import validateIp
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 
@@ -47,18 +46,6 @@ class Runner(object):
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpoint(self.endpoint)
         
-        # NIC which are set by default
-        # networkType: { 'name': 'MyNetworkNameInOne', 'ip': 'ForcedIp' }, ...
-        # Set ip != 0 to force assignation
-        # networkType are public, private and extra (can be other but not used in init.sh)
-        self.defaultVmNic = { 'public': {
-                                         'name': 'public',
-                                         'ip': 0 },
-                              'private': {
-                                          'name': 'private',
-                                          'ip': 0 },
-                             }
-        self.nicOrder = ['public', 'private', 'extra']
         self.vm_image = image
 
         self._initAttributes()
@@ -71,11 +58,8 @@ class Runner(object):
         self.vm_nic = ''
         self.os_options = ''
         self.raw_data = ''
-        self.nic_ip = ''
-        self.nic_netmask = ''
         self.extra_context = ''
         self.graphics = ''
-        self.vmIps = None
         self.vmIds = []
 
         self._setUserKeyIfDefined()
@@ -144,11 +128,10 @@ class Runner(object):
                 'instanceNumber': 1,
                 'instanceType': 'm1.small',
                 'vmTemplatePath': Runner.getTemplatePath(),
-                'extraNic': '',
                 'rawData': '',
                 'vmKernel': '',
                 'vmRamdisk': '',
-                'addressing': '',
+                'isPrivateIp': False,
                 'extraContextFile': '',
                 'extraContextData': '',
                 'vncPort': None,
@@ -162,7 +145,7 @@ class Runner(object):
         self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
 
         self._manageOsOptions()
-        self._manageNic()
+        self._manageNetwork()
         self._manageRawData()
         self._manageExtraContext()
         self._manageVnc()
@@ -190,33 +173,9 @@ class Runner(object):
 
         self.os_options = 'OS = [ %s ]' % self.os_options
 
-    def _manageNic(self):
-        if validateIp(self.addressing):
-            self.defaultVmNic['public']['ip'] = self.addressing
-
-        if self.addressing == 'private':
-            del self.defaultVmNic['public']
-
-        if self.extraNic:
-            if self.extraNic not in self.cloud.getNetworkPoolNames():
-                printError('Network %s does not exist' % self.extraNic)
-
-            extraNic = {'name': self.extraNic, 'ip': 0 }
-            self.defaultVmNic['extra'] = extraNic
-
-        for nicName in self.nicOrder:
-            if nicName not in self.defaultVmNic:
-                return
-            nicInfo = self.defaultVmNic.get(nicName)
-            nicIp = (nicInfo['ip'] != 0) and (', ip = "%s"' % nicInfo['ip']) or ''
-            vnetId = self.cloud.networkNameToId(nicInfo['name'])
-            
-            self.vm_nic += ('NIC = [ network = "%s"%s ]\n' % (nicInfo['name'], nicIp))
-            self.nic_ip += ('\nip_%s = "$NIC[IP, NETWORK=\\"%s\\"]",' % (nicName, nicInfo['name']))
-
-            netmask = self.cloud.getNetworkNetmask(vnetId)
-            if netmask:
-                self.nic_netmask += ('\nnetmask_%s = "/%s",' % (nicName, netmask))
+    def _manageNetwork(self):
+        networkName = (self.isPrivateIp and 'private') or ('public')
+        self.vm_nic = ('NIC = [ network = "%s" ]\n' % networkName)
 
     def _manageRawData(self):
         if self.rawData:
@@ -292,9 +251,9 @@ class Runner(object):
             except Exception, e:
                 printError(e)
             self.vmIds.append(vmId)
-            self.vmIps = self.cloud.getVmIp(vmId).items()
-            vmIpsPretty = ['\t%s IP: %s' % (name, ip) for name, ip in self.vmIps]
-            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, '\n'.join(vmIpsPretty)))
+            networkName, ip = self.cloud.getVmIp(vmId)
+            vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
 
         self._saveVmIds()
 

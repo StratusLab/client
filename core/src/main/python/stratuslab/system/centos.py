@@ -170,15 +170,4 @@ class CentOS(BaseSystem):
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
         
-    # -------------------------------------------
-    #     Network configuration and related
-    # -------------------------------------------
-        
-    def configureNetwork(self, networkInterface, bridge):
-        self.filePutContentsCmd('/etc/sysconfig/network-scripts/ifcfg-%s' % networkInterface,
-                'DEVICE=%s\nTYPE=Ethernet\nBRIDGE=%s\n' % (networkInterface, bridge))
-        self.filePutContentsCmd('/etc/sysconfig/network-scripts/ifcfg-%s' % bridge,
-                'DEVICE=%s\nBOOTPROTO=dhcp\nONBOOT=yes\nTYPE=Bridge' % bridge)
-        self.executeCmd(['/etc/init.d/network restart'])
-
 system = CentOS()

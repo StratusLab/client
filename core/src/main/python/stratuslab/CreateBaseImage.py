@@ -31,7 +31,6 @@ import string
 from stratuslab.FileAppender import FileAppender
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
-from stratuslab.Util import modulePath
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep

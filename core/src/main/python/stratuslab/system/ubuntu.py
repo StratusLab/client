@@ -18,9 +18,7 @@
 # limitations under the License.
 #
 from BaseSystem import BaseSystem
-from stratuslab.Util import fileGetContent
 from stratuslab.system.PackageInfo import PackageInfo
-import stratuslab.Util as Util
 
 class Ubuntu(BaseSystem):
 
@@ -78,18 +76,5 @@ class Ubuntu(BaseSystem):
         self.executeCmd(['/etc/init.d/libvirt-bin start'])
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.oneUsername])
         
-    # -------------------------------------------
-    #     Network configuration and related
-    # -------------------------------------------
-        
-    def configureNetwork(self, networkInterface, bridge):
-        for iface in (networkInterface, bridge):
-            self.executeCmd(['sed -i \'s/.*%s.*/#&/\' /etc/network/interfaces' % iface])
-        
-        self.fileAppendContentsCmd('/etc/network/interfaces',
-                fileGetContent(Util.shareDir + 'template/debian.br.tpl') % ({'bridge': bridge, 'iface': networkInterface}))
-
-        self.executeCmd(['/etc/init.d/networking restart'])
-
 system = Ubuntu()
 

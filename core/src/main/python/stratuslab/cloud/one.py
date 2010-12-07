@@ -20,9 +20,6 @@
 import sys
 import time
 
-from stratuslab.Util import networkSizeToNetmask
-from stratuslab.Util import shaHexDigest
-from stratuslab.Util import unifyNetsize
 from stratuslab.Exceptions import OneException
 
 try:
@@ -164,11 +161,11 @@ class OneConnector(object):
     def getVmIp(self, vmId):
         xml = self._getVmInfoAsXml(vmId)
         
-        vmAddress = {}
-        for nic in xml.findall('TEMPLATE/NIC'):
-            vmAddress[nic.find('NETWORK').text] = nic.find('IP').text
+        nic = xml.find('TEMPLATE/NIC')
+        networkName = nic.find('NETWORK').text
+        ip = nic.find('IP').text
         
-        return vmAddress
+        return networkName, ip
 
     def getVmSshPort(self, *args, **kwargs):
         return 22
@@ -216,12 +213,6 @@ class OneConnector(object):
         
         return info
         
-    def getNetworkPoolNames(self):
-        xml = etree.fromstring(self.getNetworkPoolInfo())
-        vnets = xml.findall('VNET/NAME')
-        
-        return [i.text for i in vnets]
-        
     def getNetworkInfo(self, vnetId):
         ret, info = self._rpc.one.vn.info(self._sessionString, vnetId)
         
@@ -230,45 +221,6 @@ class OneConnector(object):
 
         return info
 
-    def networkNameToId(self, vnetName):
-        xml = etree.fromstring(self.getNetworkPoolInfo())
-        names = xml.findall('VNET/NAME')
-        ids = xml.findall('VNET/ID')
-        vnets = zip(names, ids)
-
-        for name, id in vnets:
-            if name.text == vnetName:
-                return int(id.text)
-
-    def getNetworkAddress(self, vnetId):
-        xml = etree.fromstring(self.getNetworkInfo(vnetId))
-
-        addresses = []
-        try:
-            addresses = xml.find('TEMPLATE/NETWORK_ADDRESS').text
-        except:
-            pass
-
-        return addresses
-
-    def getNetworkNetmask(self, vnetId):
-        xml = etree.fromstring(self.getNetworkInfo(vnetId))
-
-        netmask = ''
-        
-        try:
-            addr = xml.find('TEMPLATE/NETWORK_SIZE').text
-            netmask = networkSizeToNetmask(unifyNetsize(addr))
-        except:
-            pass
-
-        return netmask
-
-    def addPublicInterface(self, vmTpl):
-        # We assume the is a public network
-        vmTpl += '\nNIC = [ NETWORK = "public" ]\n'
-        return vmTpl
-        
     # -------------------------------------------
     #    Host management
     # -------------------------------------------

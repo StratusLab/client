@@ -26,8 +26,6 @@ readonly = "no"
 %(raw_data)s
 
 CONTEXT = [
-%(nic_ip)s
-%(nic_netmask)s
 public_key = "%(public_key)s",
 %(extra_context)s
 target = "hdc"

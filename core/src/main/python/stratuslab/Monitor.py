@@ -56,11 +56,10 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
         self.hostInfoListAttributes = (('id',4), ('name',16))
         
-        self.vmInfoDetailAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip_public', 16))
-        self.vmInfoListAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip_public', 16))
+        self.vmInfoDetailAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
+        self.vmInfoListAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
         
-        self.labelDecorator = {'state_summary': 'state',
-                               'ip_public': 'public ip'}
+        self.labelDecorator = {'state_summary': 'state'}
         
     def _setCloud(self):
         credentials = AuthnFactory.getCredentials(self)

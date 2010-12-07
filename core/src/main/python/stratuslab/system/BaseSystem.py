@@ -292,9 +292,6 @@ class BaseSystem(object):
     #     Node related methods
     # -------------------------------------------
     
-    def configureNetwork(self, networkInterface, bridge):
-        pass
-    
     def _nodeShell(self, command, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
