@@ -1,0 +1,214 @@
+%%
+%% An example for producing a StratusLab deliverable, milestone, or report.
+%% 
+
+\documentclass{../stylesheet/stratuslab}
+
+%%
+%% Define metadata for the document
+%%
+
+% Provide fixed date and year for final version.  Use the date format below.
+\date{\dmyformat\today}
+%\date{31 January 2010}
+\newcommand{\copyrightyear}{\yearonly\today}
+%\newcommand{\copyrightyear}{2010}
+
+% Define document type: "Deliverable", "Milestone", or "Report"
+\doctype{Report}
+
+% Define the document ID.  Ex. "D3.2" for second deliverable of WP3.
+\docid{D0.0}
+
+% Define the document version.  Ex. "1.2".
+\docversion{1.2}
+
+% Define the title.  Capitalize each non-trivial word.
+\title{StratusLab Report}
+
+% Define the abstract.  It should be a good summary of the reports material and conclusions.
+\abstract{%
+This document defines StratusLab Core Metadata and how to sign and validate it using Java XML Digital Signature API
+}
+
+\begin{document}
+
+\maketitle
+
+% CONTRIBUTORS LIST
+% \contributor{Last Name, First name}{Organization}{contributed to ... (use references, i.e., \ref{}
+
+\begin{contributors}
+  \contributor{Mohammed AIRAJ}{CNRS-LAL}{All}
+\end{contributors}
+
+%
+% REVISION HISTORY
+%
+\begin{history}
+  \historyitem{0.1}{13 May 2010}{Initial version for comment.}
+\end{history}
+
+%
+% FRONT MATTER (remove lists of figures/tables if there are none)
+%
+\tableofcontents
+\listoftables
+
+\chapter{Introduction}
+\label{sec:Introduction}
+
+First part of this document defines StratusLab Core Metadata (SCM). Elements of SCM were then mapped to Dublin Core Metadata (DCM) elements, and used with RDF/XML. \\
+Second part show how to sign and validate SCM files using Java XML Digital Signature, with both grid certificates and RSA/DSA key pair.   
+
+\section{StratusLab Core Metadata}
+\label{sec:DocumentMetadata}
+\begin{table}
+\caption{StratusLab Core Metadata}
+\label{tab:DocumentMetadata}
+\begin{center}
+\begin{tabular}{l>{\raggedright}p{0.65\linewidth}}
+\hline
+\textbf{Metadata} &  \textbf{Comment} \T\B\tabularnewline
+\hline
+\T cretaed & image time creation, should respect this format : yyyy-mm-dd  hour:min:sec \tnl
+
+type & image type, could be base or grid \tnl
+
+version & image version  \tnl
+
+arch &  Image Operating System Architecture\tnl
+
+user & User who create this images \tnl
+os  & Operating Sytem \tnl
+osversion & Operating System version\tnl
+compression & image compression format\tnl
+filename & name given to the image \tnl
+cheksum &  md5 and sha1 cheksum of the image\tnl
+comments & comments on how to deploy the image \tnl
+
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\newpage 
+
+\begin{table}
+\caption{Dublin Core Metadata,\\ source : http://dublincore.org/documents/dces/}
+\label{tab:DocumentMetadata}
+\begin{center}
+\begin{tabular}{l>{\raggedright}p{0.65\linewidth}}
+\hline
+\textbf{Metadata} &  \textbf{Comment} \T\B\tabularnewline
+\hline
+\T contributor & An entity responsible for making contributions to the resource. \tnl
+
+coverage & The spatial or temporal topic of the resource, the spatial applicability of the resource, or the jurisdiction under which the resource is relevant. \tnl
+
+creator & An entity primarily responsible for making the resource. \tnl
+
+date &  A point or period of time associated with an event in the lifecycle of the resource.\tnl
+
+description & An account of the resource. \tnl
+format  & The file format, physical medium, or dimensions of the resource.\tnl
+identifier & An unambiguous reference to the resource within a given context.\tnl
+langage & A language of the resource.\tnl
+publisher & An entity responsible for making the resource available. \tnl
+relation &  A related resource.\tnl
+rights & Information about rights held in and over the resource. \tnl
+ source &  A related resource from which the described resource is derived. \tnl
+subject  &  The topic of the resource.\tnl
+Title   &  A name given to the resource.\tnl
+ Type   &  The nature or genre of the resource.\tnl
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\newpage
+
+
+\begin{table}
+\caption{Mapping StratusLab Core Metadata to Dublin Core Metadata}
+\label{tab:DocumentMetadata}
+\begin{center}
+\begin{tabular}{l>{\raggedright}p{0.65\linewidth}}
+\hline
+\textbf{StratusLab Core Metadata} &  \textbf{Dublin Core Metadata} \T\B\tabularnewline
+\hline
+\T cretaed & date \tnl
+
+type & type \tnl
+
+version & -  \tnl
+
+arch &  -\tnl
+
+user & creator \tnl
+os  & description\tnl
+osversion & -\tnl
+compression & format\tnl
+filename & title \tnl
+cheksum &  could be used with identifier\tnl
+comments & description \tnl
+
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+os could be mapped to  DC description element, and defined with  arch, version, format and title in one one element. Operating system for example. 
+
+\newpage
+
+{\bf Example :} 
+\begin{verbatim}
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:dcterms="http://purl.org/dc/terms/">
+
+ <rdf:Description rdf:about="http://appliances.stratuslab.org/images">
+  <dcterms:subject rdf:resource="http://appliances.stratuslab.org/images/base/centos-5.5-i386-base/1.0"/>
+  <dc:title>centos base image</dc:title>
+  <dc:type>base</dc:type>
+  <dc:date>2010-07-31</dc:date>
+  <dc:creator>Charles Loomis</dc:creator>
+  <dc:publisher/contributor>StratusLab</dc:publisher>
+  <OperatingSystem>
+     <Info>Specifies the operating system</Info>
+     <Arch>i386</Arch>
+     <dc:description>CentOS</dc:description>
+     <dc:version>5.5</dc:vesrion>
+     <dc:format>gz</dc:format>
+     <dc:title>centos-5.5-i386-base-1.0.img.gz</dc:title>
+  </OperatingSystem>
+  <dc:identifier type="md5">e3a7d06ad2a79b2f57d9550e7436bfa4</dc:identifier>
+  <dc:identifier type="SHA1">7ac5b9ac1456b89201ef2adda376e181ece060df</dc:identifier>
+  <dc:description>
+   Uses standard StratusLab contextualization.
+   Image only has 'root' account configured.
+   Only logins via ssh keys are allowed.
+  </dc:description>
+ </rdf:Description>
+</rdf:RDF>
+\end{verbatim}
+
+\section{Signing and Validating StratusLab Metadata files}
+For signing and validating metadata files we are using XML Digital Signature API. \\
+Metadata files could be signed using p12 Grid Certificates or DSA/RSA private keys. \\
+Verification and Validation automatically detects signature algorithm and type of private key used for signing metadata files, verify metadata file and print DN of user who signed the metadata file ( In case of grid certificates). \\
+
+Codes : \\
+GenXmlSign.java for signing metadata files \\
+
+Usage: java GenXmlSign [medatadalfile] [outputfile] [P12 GridCertificate] [P12 GridCertificate Passwd] \\
+
+ValidateSign.java to verify and validate metadata file. \\
+
+Usage : java ValidateSign signedmetadatafile \\
+
+centos.xml : metadatfile for testing
+
+
+\end{document}

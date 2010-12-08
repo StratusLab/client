@@ -1,0 +1,20 @@
+Codes : 
+
+GenXmlSign.java for signing metadata files
+Usage: java GenXmlSign [medatadalfile] [outputfile] [P12 GridCertificate] [P12 GridCertificate Passwd]
+
+ValidateSign.java to verify and validate metadata file. 
+Usage : java ValidateSign signedmetadatafile centos.xml : metadatfile for testing
+
+Example : 
+
+To sign : 
+java GenXmlSign centos_dc.xml centos_dc_output.xml  myGridCert.p12 relatedpasswd
+
+
+
+To verify and validate : 
+
+java ValidateSign centos_dc_output.xml
+
+
