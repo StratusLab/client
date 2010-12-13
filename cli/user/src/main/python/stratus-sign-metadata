@@ -33,7 +33,7 @@ from stratuslab.Signator import Signator
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to sign image matadata.'''
+    '''A command-line program to sign image metadata.'''
 
     def __init__(self):
         self.metadataFile = None
