@@ -43,8 +43,10 @@ class OneInstallator(BaseInstallator):
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
-        leases = ['LEASES = [ IP="%s"]' % i for i in self.config.get('one_%s_network_addr' % networkName).split(' ')]
-        
+        ipMacs = zip(self.config.get('one_%s_network_addr' % networkName).split(' '),\
+                     self.config.get('one_%s_network_mac' % networkName).split(' '))
+        leases = ['LEASES = [ IP="%s", MAC="%s"]' % (ip, mac) for ip, mac in ipMacs]
+
         vnetTpl = vnetTpl % ({'network_name': networkName,
                              'bridge': self.config.get('node_bridge_name'),
                              'leases': '\n'.join(leases)})
