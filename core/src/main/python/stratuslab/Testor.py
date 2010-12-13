@@ -46,7 +46,6 @@ class Testor(unittest.TestCase):
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
         
-        self.vmIps = {}
         self.vmIds = []
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
@@ -100,7 +99,7 @@ class Testor(unittest.TestCase):
     def runInstanceTest(self):
         '''Start new instance, ping it via private network and ssh into it, then stop it'''
         runner = self._startVm()
-        self._repeatCall(self._ping)
+        self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh)
         self._stopVm(runner)
         
@@ -125,7 +124,6 @@ class Testor(unittest.TestCase):
 
         runner = Runner(image, configHolder)
         self.vmIds = runner.runInstance()        
-        self.vmIps = runner.vmIps
         
         for id in self.vmIds:
             vmStarted = runner.waitUntilVmRunningOrTimeout(id)            
@@ -134,12 +132,12 @@ class Testor(unittest.TestCase):
                 
         return runner
 
-    def _repeatCall(self, method):
+    def _repeatCall(self, method, args=[]):
         numberOfRepetition = 60
         for _ in range(numberOfRepetition):
             failed = False
             try:
-                method()
+                method(args)
             except Exception:
                 failed = True
                 time.sleep(10)
@@ -150,9 +148,10 @@ class Testor(unittest.TestCase):
             printError('Failed executing method %s %s times, giving-up' % (method, numberOfRepetition), exit=False)
             raise
         
-    def _ping(self):
+    def _ping(self, runner):
 
-        for networkName, ip in self.vmIps[:1]:
+        for vmId in self.vmIds:
+            networkName, ip = runner.getNetworkDetail(vmId)
             print 'Pinging %s at ip %s' % (networkName, ip)
             res = ping(ip)
             if not res:
