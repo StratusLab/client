@@ -29,7 +29,7 @@ class Signator(Configurable):
     def __init__(self, metadataFile, configHolder):
         super(Signator, self).__init__(configHolder)
         self.metadataFile = metadataFile
-        if not self.outputMetadataFile:
+        if 'outputMetadataFile' not in self.__dict__ or not self.outputMetadataFile:
             self.outputMetadataFile = self.metadataFile + '.sign'
 
     def sign(self):
@@ -38,7 +38,7 @@ class Signator(Configurable):
                        ' ' + self.p12Cert + ' ' + self.p12Password
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.GenXmlSign'))
         cmd += javaMainArgs
-        self.printDetail('Calling: %s' % cmd)
+        self._printCalling(cmd)
         return Util.execute(cmd.split(' '))
 
     def _findJar(self):
@@ -59,5 +59,14 @@ class Signator(Configurable):
     def _moduleDirname(self):
         return os.path.dirname(__file__)
         
-    def verify(self):
-        pass
+    def validate(self):
+        jarLocation = self._findJar()
+        javaMainArgs = ' ' + self.metadataFile + \
+                       ' ' + self.p12Cert + ' ' + self.p12Password
+        cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.ValidateSign'))
+        cmd += javaMainArgs
+        self._printCalling(cmd)
+        return Util.execute(cmd.split(' '))
+
+    def _printCalling(self, cmd):
+        self.printDetail('Calling: %s' % cmd)
