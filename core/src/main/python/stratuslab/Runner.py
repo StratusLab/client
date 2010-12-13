@@ -251,13 +251,17 @@ class Runner(object):
             except Exception, e:
                 printError(e)
             self.vmIds.append(vmId)
-            networkName, ip = self.cloud.getVmIp(vmId)
+            networkName, ip = self.getNetworkDetail(vmId)
             vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
             printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
 
         self._saveVmIds()
 
         return self.vmIds
+    
+    def getNetworkDetail(self, vmId):
+        networkName, ip = self.cloud.getVmIp(vmId)
+        return networkName, ip
     
     def _saveVmIds(self):
         if self.outVmIdsFile:
