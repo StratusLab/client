@@ -32,6 +32,7 @@ defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
+varLibDir = '/var/lib/stratuslab/python'
 shareDir = '/var/share/stratuslab/'
 etcDir = '/etc/stratuslab/'
 defaultConfigFile = etcDir + 'stratuslab.cfg'
@@ -360,3 +361,10 @@ def pingFile(url, mediaType='text/xml'):
     if fd.info().type == mediaType:
         return True
     return False
+
+def printEmphasisStart():
+    sys.stdout.write('\033[1;31m')
+
+def printEmphasisStop():
+    sys.stdout.write('\033[0m')
+

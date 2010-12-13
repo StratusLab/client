@@ -24,6 +24,7 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.CloudInfo import CloudInfo
 from stratuslab.Configurable import Configurable
 from stratuslab.Authn import AuthnFactory
+import Util
 
 try:
     from lxml import etree
@@ -140,10 +141,15 @@ class Monitor(Configurable):
         for item in list:
             self._printInfo(item, self.vmInfoDetailAttributes)
 
+
     def _printInfoHeader(self, headerAttributes):
-        for attrib in headerAttributes:
-            label = self._decorateLabel(attrib[0])
-            sys.stdout.write(label.ljust(int(attrib[1])))
+        Util.printEmphasisStart()
+        try:
+            for attrib in headerAttributes:
+                label = self._decorateLabel(attrib[0])
+                sys.stdout.write(label.ljust(int(attrib[1])))
+        finally:
+            Util.printEmphasisStop()
         sys.stdout.write('\n')
         
     def _decorateLabel(self, label):
