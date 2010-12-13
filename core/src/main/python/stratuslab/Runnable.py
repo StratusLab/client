@@ -43,7 +43,7 @@ class Runnable(AuthnCommand):
         self.parser.usage = '''%prog [defaultOptions] image'''
 
         self.parser.add_option('-k', '--key', dest='userKey',
-                help='SSH key to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',
+                help='SSH key to log on the machine. By default STRATUSLAB_SSH_PUBLIC_KEY', metavar='FILE',
                 default=defaultOptions['userKey'])
         self.parser.add_option('-t', '--type', dest='instanceType',
                 help='instance type to start', metavar='TYPE',
