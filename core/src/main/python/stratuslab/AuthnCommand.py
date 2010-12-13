@@ -71,7 +71,6 @@ class AuthnCommand(CommandBase):
         
         AuthnCommand.addUsernamePasswordOptions(self.parser, defaultOptions)
         AuthnCommand.addPemCertOptions(self.parser, defaultOptions)
-        AuthnCommand.addP12CertOptions(self.parser, defaultOptions)
 
     def checkPemCertOptions(self):
         pemCredentials = self.options.pemCert and self.options.pemKey
