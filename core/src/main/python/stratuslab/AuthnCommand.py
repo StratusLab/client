@@ -25,10 +25,55 @@ class AuthnCommand(CommandBase):
     
     @staticmethod
     def defaultRunOptions():
+        options = {}
+        options.update(AuthnCommand.userNamePasswordOptions())
+        options.update(AuthnCommand.certPemOptions())
+        options.update(AuthnCommand.certP12Options())
+        return options
+
+    @staticmethod
+    def userNamePasswordOptions():
         return {'username': os.getenv('STRATUSLAB_USERNAME', ''),
-                'password': os.getenv('STRATUSLAB_PASSWORD', ''),
-                'pemCert': os.getenv('STRATUSLAB_PEM_CERTIFICATE', ''),
-                'pemKey': os.getenv('STRATUSLAB_PEM_PASSWORD', '')}
+                'password': os.getenv('STRATUSLAB_PASSWORD', '')}
+
+    @staticmethod
+    def certPemOptions():
+        return {'pemCert': os.getenv('STRATUSLAB_PEM_CERTIFICATE', ''),
+                'pemKey': os.getenv('STRATUSLAB_PEM_KEY', '')}
+
+    @staticmethod
+    def certP12Options():
+        return {'p12Cert': os.getenv('STRATUSLAB_P12_CERTIFICATE', ''),
+                'p12Password': os.getenv('STRATUSLAB_P12_PASSWORD', '')}
+
+    @staticmethod
+    def addPemCertOptions(parser, defaultOptions=None):
+        if not defaultOptions:
+            defaultOptions = AuthnCommand.defaultRunOptions()
+
+        parser.add_option('--pem-cert', dest='pemCert', 
+                               help='PEM certificate file. Default STRATUSLAB_PEM_CERTIFICATE', 
+                               default=defaultOptions['pemCert'], metavar='FILE')
+        parser.add_option('--pem-key', dest='pemKey', 
+                               help='PEM certificate password. Default STRATUSLAB_PEM_KEY', 
+                               default=defaultOptions['pemKey'], metavar='KEY')
+        return parser
+
+    @staticmethod
+    def addP12CertOptions(parser, defaultOptions=None):
+        if not defaultOptions:
+            defaultOptions = AuthnCommand.defaultRunOptions()
+
+        parser.add_option('--p12-cert', dest='p12Cert', 
+                          help='PKCS12 (P12) certificate file. Default STRATUSLAB_P12_CERTIFICATE', 
+                          default=defaultOptions['p12Cert'], metavar='FILE')
+        parser.add_option('--p12-password', dest='p12Password', 
+                          help='PKCS12 (P12) password. Default STRATUSLAB_P12_PASSWORD', 
+                          default=defaultOptions['p12Password'], metavar='PASSWORD')
+        return parser
+
+    certPemOptionString = '--pem-cert/--pem-key'
+    certP12OptionString = '--p12-cert/--p12-password'
 
     def parse(self):
         defaultOptions = AuthnCommand.defaultRunOptions()
@@ -40,17 +85,38 @@ class AuthnCommand(CommandBase):
                 help='cloud password. Default STRATUSLAB_PASSWORD',
                 default=defaultOptions['password'])
 
-        self.parser.add_option('--pem-cert', dest='pemCert',
-                help='PEM certificate file. Default STRATUSLAB_PEM_CERTIFICATE',
-                default=defaultOptions['pemCert'], metavar='FILE')
-        self.parser.add_option('--pem-key', dest='pemKey',
-                help='PEM certificate password. Default STRATUSLAB_PEM_PASSWORD',
-                default=defaultOptions['pemKey'], metavar='PASSWORD')
+        AuthnCommand.addPemCertOptions(self.parser, defaultOptions)
 
+        AuthnCommand.addP12CertOptions(self.parser, defaultOptions)
+
+
+    def checkPemCertOptions(self):
+        pemCredentials = self.options.pemCert and self.options.pemKey
+        if not pemCredentials:
+            return False
+        return True
+
+    def checkP12CertOptions(self):
+        p12Credentials = self.options.p12Cert and self.options.p12Password
+        if not p12Credentials:
+            return False
+        return True
+
+    def checkUsernamePasswordOptions(self):
+        usernamePasswordCredentials = self.options.username and self.options.password
+        if not usernamePasswordCredentials:
+            return False
+        return True
 
     def checkOptions(self):
-        usernamePasswordCredentials = self.options.username and self.options.password
-        pemCredentials = self.options.pemCert and self.options.pemKey
-        if not (usernamePasswordCredentials or pemCredentials):
-            self.parser.error('Missing credentials. Please provide either --username/--password or --pem-cert/--pem-key')
+        if not (self.checkUsernamePasswordOptions() or self.checkPemCertOptions()):
+            self.parser.error('Missing credentials. Please provide either --username/--password or %s' % AuthnCommand.certPemOptionString)
+
+    def checkPemCertOptionsOnly(self):
+        if not self.checkPemCertOptions():
+            self.parser.error('Missing credentials. Please provide %s' % AuthnCommand.certPemOptionString)
+
+    def checkP12CertOptionsOnly(self):
+        if not self.checkP12CertOptions():
+            self.parser.error('Missing credentials. Please provide %s' % AuthnCommand.certP12OptionString)
 
