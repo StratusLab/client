@@ -69,4 +69,4 @@ class Signator(Configurable):
         return Util.execute(cmd.split(' '))
 
     def _printCalling(self, cmd):
-        self.printDetail('Calling: %s' % cmd)
+        self.printDetail('Calling: %s' % cmd, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)

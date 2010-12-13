@@ -26,6 +26,8 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
+from stratuslab.Util import printDetail
+from stratuslab.Util import printError
 from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
@@ -68,7 +70,11 @@ class MainProgram(AuthnCommand):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         signator = Signator(self.metadataFile, configHolder)
-        signator.sign()
+        isError = signator.sign()
+        if isError:
+            printError('Error signing metadata file')
+        else:
+            printDetail('Metadata file successfully signed: %s' % signator.outputMetadataFile)
 
 if __name__ == '__main__':
     try:
