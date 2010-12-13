@@ -298,31 +298,6 @@ VM_HOOK = [
     on        = "DONE",
     command   = "image.rb",
     arguments = "$VMID" ]
-
-#--------------------------------- StratusLab ----------------------------------
-# Generate an internal key for managing the instance
-#
-VM_HOOK = [
-    name      = "sshKeygen",
-    on        = "create",
-    command   = "%(one_share)s/share/hooks/keygen.sh",
-    arguments = "%(vm_dir)s/$VMID/internal_key",
-    remote    = "yes" ]
-
-#VM_HOOK = [
-#    name      = "retrieveManifest",
-#    on        = "running",
-#    command   = "%(one_share)s/share/hooks/retreive-manifest.py",
-#    arguments = "--out $CONTEXT[STRATUSLAB_MANIFEST] --address $NIC[IP, network=\"private\"] --ssh-key %(vm_dir)s/$VMID/internal_key --manifest $CONTEXT[STRATUSLAB_MANIFEST]",
-#    remote    = "yes" ]
-
-VM_HOOK = [
-    name      = "uploadImage",
-    on        = "done",
-    command   = "%(one_share)s/share/hooks/upload-img.py",
-    arguments = "--hook --address $NIC[IP, network=\"private\"] --disk %(vm_dir)s/$VMID/images/disk.0 --ssh-key %(vm_dir)s/$VMID/$CONTEXT[STRATUSLAB_INTERNAL_KEY] --manifest $CONTEXT[STRATUSLAB_MANIFEST] --upload-info $CONTEXT[STRATUSLAB_UPLOAD_INFO]",
-    remote    = "yes" ]
-
 #-------------------------------------------------------------------------------
 
 #-------------------------------- Hook Examples --------------------------------
