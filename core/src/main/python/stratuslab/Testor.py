@@ -31,7 +31,7 @@ from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import NetworkException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Util import execute
+from stratuslab.Util import execute, printDetail
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
 from stratuslab.Util import printError
@@ -137,7 +137,10 @@ class Testor(unittest.TestCase):
         for _ in range(numberOfRepetition):
             failed = False
             try:
-                method(args)
+                if args:
+                    method(args)
+                else:
+                    method()
             except Exception:
                 failed = True
                 time.sleep(10)
@@ -172,8 +175,16 @@ class Testor(unittest.TestCase):
 
     def applianceRepositoryTest(self):
         '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
+
+        self._checkAttributePresent(['appRepoUsername', 'appRepoPassword'])
         self._testRepoConnection()
         self._uploadAndDeleteDummyImage()
+
+    def _checkAttributePresent(self, attrs):
+        for attr in attrs:
+            if attr not in self.__dict__:
+                raise Exception('Missing attribute %s. Missing an option argument?' % attr)
+            
         
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -219,6 +230,7 @@ class Testor(unittest.TestCase):
         configHolder.options['infoDriver'] = 'kvm'
         configHolder.options['virtDriver'] = 'kvm'
         configHolder.options['transfertDriver'] = 'nfs'
+        configHolder.options['username'] = self.oneUsername
         configHolder.options['password'] = self.onePassword
         registrar = Registrar(configHolder)
         hostname = 'registrar.ip.test'

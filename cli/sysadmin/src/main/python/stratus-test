@@ -50,6 +50,14 @@ where test is a comma separated list of tests, according to the name provided by
                                help='list available tests', action='store_true',
                                default=False)
         
+        self.parser.add_option('--app-repo-username', dest='appRepoUsername', 
+                               help='Appliance repository username',
+                               default=None)
+        
+        self.parser.add_option('--app-repo-password', dest='appRepoPassword', 
+                               help='Appliance repository password',
+                               default=None)
+        
         self.options, self.tests = self.parser.parse_args()
 
     def doWork(self):
