@@ -30,8 +30,9 @@ from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import NetworkException
 from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Exceptions import ExecutionException
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Util import execute, printDetail
+from stratuslab.Util import execute
 from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
 from stratuslab.Util import printError
@@ -100,7 +101,7 @@ class Testor(unittest.TestCase):
         '''Start new instance, ping it via private network and ssh into it, then stop it'''
         runner = self._startVm()
         self._repeatCall(self._ping, runner)
-        self._repeatCall(self._loginViaSsh)
+        self._repeatCall(self._loginViaSsh, runner)
         self._stopVm(runner)
         
     def _prepareLog(self, logFile):
@@ -141,7 +142,7 @@ class Testor(unittest.TestCase):
                     method(args)
                 else:
                     method()
-            except Exception:
+            except ExecutionException:
                 failed = True
                 time.sleep(10)
             else:
@@ -154,22 +155,21 @@ class Testor(unittest.TestCase):
     def _ping(self, runner):
 
         for vmId in self.vmIds:
-            networkName, ip = runner.getNetworkDetail(vmId)
-            print 'Pinging %s at ip %s' % (networkName, ip)
+            _, ip = runner.getNetworkDetail(vmId)
             res = ping(ip)
             if not res:
-                raise Exception('Failed to ping %s' % ip)
+                raise ExecutionException('Failed to ping %s' % ip)
         
-    def _loginViaSsh(self):
+    def _loginViaSsh(self, runner):
 
         loginCommand = 'ls /tmp'
 
-        for networkName, ip in self.vmIps[:1]:
-            print 'SSHing into machine via address %s at ip %s' % (networkName, ip)
+        for vmId in self.vmIds:
+            _, ip = runner.getNetworkDetail(vmId)
             res = sshCmd(loginCommand, ip, self.sshKey)
             if res:
                 raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
-        
+
     def _stopVm(self, runner):
         runner.killInstances(self.vmIds)
 
