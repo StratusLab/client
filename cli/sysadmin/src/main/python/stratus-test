@@ -51,11 +51,11 @@ where test is a comma separated list of tests, according to the name provided by
                                default=False)
         
         self.parser.add_option('--app-repo-username', dest='appRepoUsername', 
-                               help='Appliance repository username',
+                               help='Appliance repository username', metavar='USERNAME',
                                default=None)
         
         self.parser.add_option('--app-repo-password', dest='appRepoPassword', 
-                               help='Appliance repository password',
+                               help='Appliance repository password', metavar='PASSWORD',
                                default=None)
         
         self.options, self.tests = self.parser.parse_args()
