@@ -21,6 +21,7 @@ import sys
 import time
 
 from stratuslab.Exceptions import OneException
+from stratuslab.Util import printError
 
 try:
     from lxml import etree
@@ -311,9 +312,11 @@ class OneVmState(object):
 
     def _lcmStateToString(self):
         lcm = self._lcmStateAsInt()
-        if (lcm < 0) and (lcm >= len(self.lcmStateDefintion)):
+        if lcm and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
+            return self.lcmStateDefintion[lcm]
+        else:
+            printError('Invalid state: %s' % lcm, exit=False)
             return self.invalidState
-        return self.lcmStateDefintion[lcm]
     
     def _lcmStateAsInt(self):
         lcm = None
