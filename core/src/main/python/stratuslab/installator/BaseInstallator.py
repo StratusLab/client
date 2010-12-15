@@ -33,9 +33,8 @@ from stratuslab.Authn import AuthnFactory
 class BaseInstallator(object):
     
     def __init__(self):
-        # Default network added automatically at installation
-        # Make sure one_%(name)s_* exist in the config 
-        self.defaultNetworks = ['private', 'public']
+        self.defaultStaticNetworks = ['public', 'local']
+        self.defaultRangedNetworks = ['private']
         
         self.configHolder = None
         self.config = None

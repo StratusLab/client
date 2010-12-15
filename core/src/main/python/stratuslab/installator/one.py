@@ -37,8 +37,10 @@ class OneInstallator(BaseInstallator):
         self.cloud.hostRemove(id)
         
     def _addDefaultNetworks(self):
-        for vnet in self.defaultNetworks:
+        for vnet in self.defaultStaticNetworks:
             self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
+        for vnet in self.defaultRangedNetworks:
+            self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
 
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
@@ -51,7 +53,15 @@ class OneInstallator(BaseInstallator):
                              'bridge': self.config.get('node_bridge_name'),
                              'leases': '\n'.join(leases)})
         return vnetTpl
-    
+
+    def _buildRangedNetworkTemplate(self, networkName):
+        vnetTpl = fileGetContent(Util.shareDir + 'vnet/ranged.net')
+        vnetTpl = vnetTpl % ({'network_name': networkName,
+                             'bridge': self.config.get('node_bridge_name'),
+                             'network_size': self.config.get('one_%s_network_size' % networkName),
+                             'network_addr': self.config.get('one_%s_network' % networkName)})
+        return vnetTpl
+
     # -------------------------------------------
     #   Front-end file sharing management
     # -------------------------------------------
