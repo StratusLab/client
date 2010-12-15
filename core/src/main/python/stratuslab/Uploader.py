@@ -67,7 +67,6 @@ class Uploader(object):
                                                              self.repoPassword)]
         self.uploadedFile = []
 
-        # Attribute initialization
         self.os = None
         self.osversion = None
         self.arch = None
