@@ -178,7 +178,7 @@ class Testor(unittest.TestCase):
             _, ip = runner.getNetworkDetail(vmId)
             res = sshCmd(loginCommand, ip, self.sshKey)
             if res:
-                raise Exception('Failed to SSH into machine for %s with return code %s' % (ip, res))
+                raise ExecutionException('Failed to SSH into machine for %s with return code %s' % (ip, res))
 
     def _stopVm(self, runner):
         runner.killInstances(self.vmIds)
