@@ -45,21 +45,25 @@ class OneInstallator(BaseInstallator):
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
-        ipMacs = zip(self.config.get('one_%s_network_addr' % networkName).split(' '),\
-                     self.config.get('one_%s_network_mac' % networkName).split(' '))
-        leases = ['LEASES = [ IP="%s", MAC="%s"]' % (ip, mac) for ip, mac in ipMacs]
+        ips = self.config.get('one_%s_network_addr' % networkName)
+        ips = (ips and []) or ips.split(' ')
+        
+        macs = self.config.get('one_%s_network_mac' % networkName)
+        macs = (macs and []) or macs.split(' ')
+        
+        leases = ['LEASES = [ IP="%s", MAC="%s"]' % (ip, mac) for ip, mac in zip(ips, macs)]
 
         vnetTpl = vnetTpl % ({'network_name': networkName,
-                             'bridge': self.config.get('node_bridge_name'),
-                             'leases': '\n'.join(leases)})
+                              'bridge': self.config.get('node_bridge_name'),
+                              'leases': '\n'.join(leases)})
         return vnetTpl
 
     def _buildRangedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/ranged.net')
         vnetTpl = vnetTpl % ({'network_name': networkName,
-                             'bridge': self.config.get('node_bridge_name'),
-                             'network_size': self.config.get('one_%s_network_size' % networkName),
-                             'network_addr': self.config.get('one_%s_network' % networkName)})
+                              'bridge': self.config.get('node_bridge_name'),
+                              'network_size': self.config.get('one_%s_network_size' % networkName),
+                              'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
 
     # -------------------------------------------
