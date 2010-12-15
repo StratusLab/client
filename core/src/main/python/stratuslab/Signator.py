@@ -26,15 +26,15 @@ from Exceptions import ConfigurationException
 
 class Signator(Configurable):
     
-    def __init__(self, metadataFile, configHolder):
+    def __init__(self, manifestFile, configHolder):
         super(Signator, self).__init__(configHolder)
-        self.metadataFile = metadataFile
-        if 'outputMetadataFile' not in self.__dict__ or not self.outputMetadataFile:
-            self.outputMetadataFile = self.metadataFile + '.sign'
+        self.manifestFile = manifestFile
+        if 'outputManifestFile' not in self.__dict__ or not self.outputManifestFile:
+            self.outputManifestFile = self.manifestFile + '.sign'
 
     def sign(self):
         jarLocation = self._findJar()
-        javaMainArgs = ' ' + self.metadataFile + ' ' + self.outputMetadataFile + \
+        javaMainArgs = ' ' + self.manifestFile + ' ' + self.outputManifestFile + \
                        ' ' + self.p12Cert + ' ' + self.p12Password
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.GenXmlSign'))
         cmd += javaMainArgs
@@ -42,26 +42,30 @@ class Signator(Configurable):
         return Util.execute(cmd.split(' '))
 
     def _findJar(self):
-        devLocation = os.path.join(self._moduleDirname(),'../../../../..','sign_validate/target/sign-validate-0.0.1-SNAPSHOT.jar')
-        if os.path.exists(devLocation):
-            return devLocation
-
-        devLocation = os.path.join('../../../../..','sign_validate/target/sign-validate-0.0.1.jar')
-        if os.path.exists(devLocation):
-            return devLocation
-
-        sysLocation = os .path.join('/var/lib/stratuslab/java', 'sign-validate-0.0.1.jar')
-        if os.path.exists(sysLocation):
-            return sysLocation
+        dirs = []
+        dirs.append(os.path.join(self._moduleDirname(),'../../../../..', 'sign_validate/target'))
+        dirs.append('/var/lib/stratuslab/java')
+        
+        for dir in dirs:
+            try:
+                return self._findFile(dir, 'sign-validate', '.jar')
+            except:
+                pass
 
         raise ConfigurationException('Failed to find sign-validate jar file')
+
+    def _findFile(self, dir, start='', end=''):
+        for file in os.listdir(dir):
+            if file.startswith(start) and file.endswith(end):
+                return os.path.join(dir, file)
+        raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
 
     def _moduleDirname(self):
         return os.path.dirname(__file__)
         
     def validate(self):
         jarLocation = self._findJar()
-        javaMainArgs = ' ' + self.metadataFile + \
+        javaMainArgs = ' ' + self.manifestFile + \
                        ' ' + self.p12Cert + ' ' + self.p12Password
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.ValidateSign'))
         cmd += javaMainArgs

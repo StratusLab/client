@@ -33,37 +33,36 @@ from stratuslab.Signator import Signator
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to validate image metadata.'''
+    '''A command-line program to validate image manifest.'''
 
     def __init__(self):
-        self.metadataFile = None
+        self.manifestFile = None
         self.args = None
         super(MainProgram, self).__init__()
 
     def parse(self):
         AuthnCommand.addP12CertOptions(self.parser)
 
-        self.parser.usage='''usage: %prog [options] [metadata-file]'''
+        self.parser.usage='''usage: %prog [options] [manifest-file]'''
 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
         if not self.args:
-            self.parser.error('Missing metadata file')
+            self.parser.error('Missing manifest file')
 
-        self.metadataFile = self.args[0]
+        self.manifestFile = self.args[0]
 
-        isFile = os.path.isfile(self.metadataFile)
-        exists = os.path.exists(self.metadataFile)
+        isFile = os.path.isfile(self.manifestFile)
+        exists = os.path.exists(self.manifestFile)
         if not (exists and isFile):
-            self.parser.error('Metadata file doesn\'t exist or is not a file')
+            self.parser.error('Manifest file doesn\'t exist or is not a file')
             
         AuthnCommand.checkP12CertOptionsOnly(self)
 
-
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        signator = Signator(self.metadataFile, configHolder)
+        signator = Signator(self.manifestFile, configHolder)
         signator.validate()
 
 if __name__ == '__main__':
