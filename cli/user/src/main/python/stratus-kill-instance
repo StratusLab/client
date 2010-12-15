@@ -49,7 +49,7 @@ class MainProgram(AuthnCommand):
                 default=os.getenv('STRATUSLAB_ENDPOINT', ''))
 
         self.parser.add_option('-i', '--input', dest='inVmIdsFile',
-                help='file containing line separated vm-ids',
+                help='file containing line separated vm-ids', metavar='FILE',
                 default=None)
 
         super(MainProgram, self).parse()
