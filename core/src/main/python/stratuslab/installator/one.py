@@ -46,10 +46,10 @@ class OneInstallator(BaseInstallator):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
         
         ips = self.config.get('one_%s_network_addr' % networkName)
-        ips = (ips and []) or ips.split(' ')
+        ips = (ips and ips.split(' ')) or []
         
         macs = self.config.get('one_%s_network_mac' % networkName)
-        macs = (macs and []) or macs.split(' ')
+        macs = (macs and macs.split(' ')) or []
         
         leases = ['LEASES = [ IP="%s", MAC="%s"]' % (ip, mac) for ip, mac in zip(ips, macs)]
 
