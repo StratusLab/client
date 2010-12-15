@@ -131,6 +131,7 @@ class Runner(object):
                 'rawData': '',
                 'vmKernel': '',
                 'vmRamdisk': '',
+                'isLocalIp': False,
                 'isPrivateIp': False,
                 'extraContextFile': '',
                 'extraContextData': '',
@@ -173,9 +174,18 @@ class Runner(object):
 
         self.os_options = 'OS = [ %s ]' % self.os_options
 
+
     def _manageNetwork(self):
-        networkName = (self.isPrivateIp and 'private') or ('public')
+        networkName = self._getNetworkName()
         self.vm_nic = ('NIC = [ network = "%s" ]\n' % networkName)
+
+    def _getNetworkName(self):
+        networkName = 'public'
+        if self.isLocalIp:
+            networkName = 'local'
+        elif self.isPrivateIp:
+            networkName = 'private'
+        return networkName
 
     def _manageRawData(self):
         if self.rawData:

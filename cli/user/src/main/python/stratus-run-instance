@@ -41,11 +41,18 @@ class MainProgram(Runnable):
                 help='number of machines to start (default 1)', metavar='INT',
                 default=options['instanceNumber'], type='int')
 
+        self.parser.add_option('--local-ip', dest='isLocalIp', action='store_true',
+                help='By default, virtual machines are assigned a public IP address. ' \
+                'With this option, a local address is provided, which means that it ' \
+                'not be reachable from the outside, but will be reachable from other ' \
+                'instances in the same data-center.',
+                default=False)
+
         self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
                 help='By default, virtual machines are assigned a public IP address. ' \
                 'With this option, a private address is provided, which means that it ' \
-                'not be reachable from the outside, but will be reachable from other ' \
-                'instances in the same data-center.',
+                'not be reachable anywhere. This is useful for instances that initiate '\
+                'the connection to other machinces.',
                 default=False)
 
         self.parser.add_option('--save', dest='saveDisk', action='store_true',
