@@ -97,9 +97,16 @@ class Testor(unittest.TestCase):
     def runMethod(self, method):
         return method()
     
-    def runInstanceTest(self):
-        '''Start new instance, ping it via private network and ssh into it, then stop it'''
-        runner = self._startVm()
+    def runInstancePublicNetworkTest(self):
+        '''Start new instance, ping it via public network and ssh into it, then stop it'''
+        self._runInstanceTest()
+        
+    def runInstanceLocalNetworkTest(self):
+        '''Start new instance, ping it via local network and ssh into it, then stop it'''
+        self._runInstanceTest(True)
+        
+    def _runInstanceTest(self, withLocalNetwork=False):
+        runner = self._startVm(withLocalNetwork)
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner)
         self._stopVm(runner)
@@ -111,7 +118,7 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n'*3)
         return log
 
-    def _startVm(self):
+    def _startVm(self, withLocalNetwork=False):
         generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
@@ -119,6 +126,9 @@ class Testor(unittest.TestCase):
         options['password'] = self.onePassword
         options['userKey'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
+
+        if withLocalNetwork:
+            options['isLocalIp'] = True
 
         configHolder = ConfigHolder(options)
         image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.5-i486-base/1.0/ttylinux-9.5-i486-base-1.0.img.gz'
