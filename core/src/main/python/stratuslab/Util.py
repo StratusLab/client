@@ -68,11 +68,9 @@ def _wget(url):
     return urllib2.urlopen(url)
     
 def ping(host, timeout=5, number=1, ** kwargs):
-    '''Ping <host> and return True if successful'''
-    #    p = subprocess.Popen(['ping', '-q', '-c', str(number), '-W', str(timeout), host], ** kwargs)
     p = subprocess.Popen(['ping', '-q', '-c', str(number), host], ** kwargs)
     p.wait()
-    success = p.returncode == 0
+    success = (p.returncode == 0)
     return success
 
 def appendOrReplaceInFile(filename, search, replace):
