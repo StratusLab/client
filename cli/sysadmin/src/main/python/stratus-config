@@ -70,13 +70,11 @@ If the [value] is not provided, the command returns the current value of the key
             print configurator.getValue(self.args[0])
         else:
             self.checkArgumentsLength()
-            configurator.setOption(key=self.args[0], value=self.args[1])
+            configurator.setOption(key=self.args[0], value=' '.join(self.args[1:]))
 
     def checkArgumentsLength(self):
         if len(self.args) < 1:
             raise self.usageExitTooFewArguments()
-        elif len(self.args) > 2:
-            raise self.usageExitTooManyArguments()
 
 
 if __name__ == '__main__':
