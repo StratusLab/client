@@ -157,6 +157,20 @@
 								</source>
 							</sources>
 						</mapping>
+						<mapping>
+							<directory>/var/lib/stratuslab/java/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>${project.build.directory}/jar/</location>
+									<includes>
+										<include>**/*.jar</include>
+									</includes>
+								</source>
+							</sources>
+						</mapping>
 					</mappings>
 					<installScriptlet>
 						<script>
