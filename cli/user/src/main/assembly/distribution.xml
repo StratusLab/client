@@ -33,6 +33,11 @@
 			<directoryMode>0755</directoryMode>
 		</fileSet>
 
+		<fileSet>
+			<directory>${project.build.directory}/jar/</directory>
+			<outputDirectory>java</outputDirectory>
+		</fileSet>
+
 	</fileSets>
 
 </assembly>
