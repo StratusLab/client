@@ -65,8 +65,7 @@ class Signator(Configurable):
         
     def validate(self):
         jarLocation = self._findJar()
-        javaMainArgs = ' ' + self.manifestFile + \
-                       ' ' + self.p12Cert + ' ' + self.p12Password
+        javaMainArgs = ' ' + self.manifestFile
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.ValidateSign'))
         cmd += javaMainArgs
         self._printCalling(cmd)

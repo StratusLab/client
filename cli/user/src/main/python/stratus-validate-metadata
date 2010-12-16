@@ -28,11 +28,10 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Util import modulePath
 from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.Signator import Signator
 
 
-class MainProgram(AuthnCommand):
+class MainProgram(CommandBase):
     '''A command-line program to validate image manifest.'''
 
     def __init__(self):
@@ -41,8 +40,6 @@ class MainProgram(AuthnCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        AuthnCommand.addP12CertOptions(self.parser)
-
         self.parser.usage='''usage: %prog [options] [manifest-file]'''
 
         self.options, self.args = self.parser.parse_args()
@@ -57,8 +54,6 @@ class MainProgram(AuthnCommand):
         exists = os.path.exists(self.manifestFile)
         if not (exists and isFile):
             self.parser.error('Manifest file doesn\'t exist or is not a file')
-            
-        AuthnCommand.checkP12CertOptionsOnly(self)
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
