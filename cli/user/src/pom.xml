@@ -24,6 +24,13 @@
 			<type>zip</type>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>eu.stratuslab.pkgs</groupId>
+			<artifactId>sign-validate-jar</artifactId>
+			<version>1.2-SNAPSHOT</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -110,7 +117,7 @@
 
 				<executions>
 					<execution>
-						<id>unpack-sources</id>
+						<id>unpack-core-sources</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>unpack</goal>
@@ -120,10 +127,26 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>eu.stratuslab.pkgs</groupId>
-									<artifactId>
-										stratuslab-core-zip</artifactId>
+									<artifactId>stratuslab-core-zip</artifactId>
 									<classifier>core-bundle</classifier>
 									<type>zip</type>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-sign-validate-jar</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/jar</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>eu.stratuslab.pkgs</groupId>
+									<artifactId>sign-validate-jar</artifactId>
+									<type>jar</type>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
