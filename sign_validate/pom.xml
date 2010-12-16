@@ -15,7 +15,7 @@
 	</parent>
 
 	<build>
-		<plugins>
+		<plugins><!--
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
@@ -29,7 +29,7 @@
 					</execution>
 				</executions>
 			</plugin>
-		</plugins>
+		--></plugins>
 	</build>
 
 </project>
