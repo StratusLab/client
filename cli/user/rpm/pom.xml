@@ -164,7 +164,7 @@
 							<groupname>root</groupname>
 							<sources>
 								<source>
-									<location>${project.build.directory}/jar/</location>
+									<location>${project.build.directory}/zip-sources/java</location>
 									<includes>
 										<include>**/*.jar</include>
 									</includes>
