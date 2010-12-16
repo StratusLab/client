@@ -101,7 +101,7 @@ class Testor(unittest.TestCase):
         '''Start new instance, ping it via public network and ssh into it, then stop it'''
         self._runInstanceTest()
         
-    def runInstanceLocalNetworkTest_(self):
+    def runInstanceLocalNetworkTest(self):
         '''Start new instance, ping it via local network and ssh into it, then stop it'''
         self._runInstanceTest(True)
         
