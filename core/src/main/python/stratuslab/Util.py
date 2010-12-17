@@ -102,6 +102,7 @@ def fileGetContent(filename):
     return content
 
 def filePutContent(filename, data):
+    _printDetail('Creating file %s with content: \n%s\n' % (filename, data))
     fd = open(filename, 'wb')
     fd.write(data)
     fd.close()
@@ -156,10 +157,7 @@ def execute(cmd, **kwargs):
     if kwargs.has_key('noWait'):
         del kwargs['noWait']
         
-    verboseLevel = _extractVerboseLevel(kwargs)
-    verboseThreshold = _extractVerboseThreshold(kwargs)
-    
-    printDetail('Calling: ' + ' '.join(cmd), verboseLevel, verboseThreshold)
+    _printDetail('Calling: ' + ' '.join(cmd), kwargs)
 
     process = subprocess.Popen(cmd, **kwargs)
 
@@ -167,6 +165,11 @@ def execute(cmd, **kwargs):
         process.wait()
 
     return process.returncode
+
+def _printDetail(message, kwargs={}):
+    verboseLevel = _extractVerboseLevel(kwargs)
+    verboseThreshold = _extractVerboseThreshold(kwargs)
+    printDetail(message, verboseLevel, verboseThreshold)
 
 def _extractVerboseLevel(kwargs):
     return _extractAndDeleteKey('verboseLevel', 0, kwargs)
