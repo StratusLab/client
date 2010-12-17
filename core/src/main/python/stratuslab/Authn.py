@@ -55,7 +55,13 @@ class UsernamePasswordCredentialsConnector(CredentialsConnector):
         self.password = runnable.password
     
     def createRpcConnection(self):
-        return xmlrpclib.ServerProxy(self.runnable.cloud.server)
+        url = self._insertUsernamePassword(self.runnable.cloud.server)
+        return xmlrpclib.ServerProxy(url)
+
+    def _insertUsernamePassword(self, url):
+        protocolSeparator = '://'
+        parts = url.split(protocolSeparator)
+        return parts[0] + protocolSeparator + self.username + ':' + self.password + "@" + ''.join(parts[1:])
 
     def createSessionString(self):
         return '%s:%s' % (self.username, Util.shaHexDigest(self.password))
