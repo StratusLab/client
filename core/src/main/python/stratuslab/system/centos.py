@@ -169,5 +169,5 @@ class CentOS(BaseSystem):
                         '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
-        
+
 system = CentOS()

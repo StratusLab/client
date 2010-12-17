@@ -134,12 +134,19 @@ class BaseInstallator(object):
     def _runInstallFrontend(self):
         printStep('Configuring file sharing')
 
+        self.frontendIp = 'localhost'
         self._setCloud()
 
         self._setFrontend()
 
         self._setupFileSharingServer()
 
+        printStep('Configuring cloud proxy service')
+        self._configureCloudProxyService()
+        
+        printStep('Configuring firewall')
+        self._configureFireWall()
+        
         printStep('Configuring cloud admin account')
         self._configureCloudAdminFrontend()
         
@@ -184,6 +191,12 @@ class BaseInstallator(object):
     
     def _configureCloudAdminNode(self):
         self.node.configureCloudAdminSshKeysNode()
+
+    def _configureCloudProxyService(self):
+        self.frontend.configureCloudProxyService()
+
+    def _configureFireWall(self):
+        self.frontend.configureFireWall()
 
     def _configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminAccount()

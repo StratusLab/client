@@ -411,3 +411,13 @@ class BaseSystem(object):
         self.chmodCmd = self._remoteChmod
         self.copyCmd = self._nodeCopy
         self.removeCmd = self._remoteRemove
+
+    def configureCloudProxyService(self):
+        self.installPackages(['stratuslab-cloud-proxy'])
+
+    def configureFireWall(self):
+        self._configureFireWallForProxy()
+        
+    def _configureFireWallForProxy(self):
+        self.executeCmd('iptables -A INPUT -s 127.0.0.1 -p tcp -m tcp --dport 2633 -j ACCEPT'.split(' '))
+        self.executeCmd('iptables -A INPUT -p tcp -m tcp --dport 2633 -j REJECT --reject-with icmp-port-unreachable'.split(' '))
