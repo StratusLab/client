@@ -79,7 +79,7 @@ class BaseInstallator(object):
           
     def _runInstallNodes(self):
 
-        self.frontendIp = 'localhost'
+#        self.frontendIp = 'localhost'
         self._setFrontend()
 
         self._setCloud()
@@ -135,7 +135,7 @@ class BaseInstallator(object):
     def _runInstallFrontend(self):
         printStep('Configuring file sharing')
 
-        self.frontendIp = 'localhost'
+#        self.frontendIp = 'localhost'
         self._setCloud()
 
         self._setFrontend()
