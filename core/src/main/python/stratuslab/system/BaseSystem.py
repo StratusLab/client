@@ -81,10 +81,6 @@ class BaseSystem(object):
         self._execute(['git', 'clone', repoUrl, cloneName, '-b', branch])
         os.chdir(cloneName)
 
-#    def buildCloudSystem(self):
-#        self._applyPatchs()
-#        self.executeCmd(['scons', '-j2'])
-        
     def _applyPatchs(self):
         patchDir = os.path.abspath(Util.shareDir + 'patch')
         
@@ -94,10 +90,6 @@ class BaseSystem(object):
             printDetail('Applying patch %s' % patch, self.verboseLevel)
             self.executeCmd(['patch', '-p1'], stdin=patchFile)
             patchFile.close()
-
-#    def installCloudSystem(self):
-#        self._execute(['bash', 'install.sh', '-d', self.oneHome, '-u',
-#                      self.oneUsername, '-g', self.oneGroup])
 
     def startCloudSystem(self):
         self._cloudAdminExecute(['one start'])
@@ -413,7 +405,21 @@ class BaseSystem(object):
         self.removeCmd = self._remoteRemove
 
     def configureCloudProxyService(self):
-        self.installPackages(['stratuslab-cloud-proxy'])
+        self.installPackages(['stratuslab-cloud-proxy'])        
+        self._configureProxyDefaultUsers()
+        
+    def _configureProxyDefaultUsers(self):
+        jettyLoginPropertiesFilename = '/opt/jetty-7/etc/login/login.properties'
+        jettyLoginProperties = '''# Entries look like the following:
+#
+# username=password,cloud-access
+#
+# 'cloud-access' is a required role
+# 
+%(oneUsername)s=%(onePassword)s,cloud-access
+''' % self.__dict__
+        if not os.path.exists(jettyLoginPropertiesFilename):
+            Util.filePutContent(jettyLoginPropertiesFilename, jettyLoginProperties)
 
     def configureFireWall(self):
         self._configureFireWallForProxy()
