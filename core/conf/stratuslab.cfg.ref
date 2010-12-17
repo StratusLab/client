@@ -41,7 +41,7 @@ one_group = cloud
 one_gid = 9000
 one_uid = 9000
 one_username = oneadmin
-one_password = oneadmin
+one_password = XYZXYZ
 
 [one-advanced]
 one_home = 
