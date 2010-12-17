@@ -409,18 +409,11 @@ class BaseSystem(object):
         self._configureProxyDefaultUsers()
         
     def _configureProxyDefaultUsers(self):
-        jettyLoginPropertiesFilename = '/opt/jetty-7/etc/login/login.properties'
-        jettyLoginProperties = '''# Entries look like the following:
-#
-# username=password,cloud-access
-#
-# 'cloud-access' is a required role
-# 
-%(oneUsername)s=%(onePassword)s,cloud-access
-''' % self.__dict__
-        if not os.path.exists(jettyLoginPropertiesFilename):
-            Util.filePutContent(jettyLoginPropertiesFilename, jettyLoginProperties)
-
+        filename = '/opt/jetty-7/etc/login/login.properties'
+        search = self.oneUsername
+        replace = '%(oneUsername)s=%(onePassword)s,cloud-access' % self.__dict__
+        Util.appendOrReplaceInFile(filename, search, replace)
+        
     def configureFireWall(self):
         self._configureFireWallForProxy()
         
