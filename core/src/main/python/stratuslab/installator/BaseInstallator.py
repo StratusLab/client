@@ -79,6 +79,7 @@ class BaseInstallator(object):
           
     def _runInstallNodes(self):
 
+        self.frontendIp = 'localhost'
         self._setFrontend()
 
         self._setCloud()
