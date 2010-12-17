@@ -366,3 +366,24 @@ def printEmphasisStart():
 def printEmphasisStop():
     sys.stdout.write('\033[0m')
 
+def constructEndPoint(fragment, protocol='https', port=8443, path='xmlrpc'):
+    _url = fragment
+    parts = fragment.split('://')
+    _protocol = parts[0]
+    if not _protocol:
+        _protocol = protocol
+
+    address = parts.split(':')[0]
+
+    parts = parts.split(':')[1:].split('/')
+    _port = parts[0]
+    try:
+        _port = int(_port)
+    except:
+        _port = port
+
+    _path = parts.split(':')[1:].split('/')[1:]
+    if not _path:
+        _path = path
+    
+    return '%s://%s:%s/%s' % (_protocol, address, _port, _path)

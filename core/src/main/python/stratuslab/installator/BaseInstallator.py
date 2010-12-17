@@ -113,12 +113,12 @@ class BaseInstallator(object):
 
     def _setCloud(self):
         self.username = self.oneUsername
-        self.password = self.onePassword
+        self.password = self.proxyOneadminPassword
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.configHolder.assign(self.cloud)
         
-        self.cloud.setEndpointFromParts(self.frontendIp, self.onePort)
+        self.cloud.setEndpointFromParts(self.frontendIp, self.proxyPort)
 
     def _propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)

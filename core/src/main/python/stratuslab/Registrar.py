@@ -35,7 +35,7 @@ class Registrar(OneInstallator):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpointFromParts(self.frontendIp,
-                                        self.onePort)        
+                                        self.proxyPort)        
 
         self._assignDrivers()
 
