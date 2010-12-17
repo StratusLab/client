@@ -79,7 +79,7 @@ class BaseInstallator(object):
           
     def _runInstallNodes(self):
 
-#        self.frontendIp = 'localhost'
+        self.frontendIp = 'localhost'
         self._setFrontend()
 
         self._setCloud()
@@ -113,12 +113,14 @@ class BaseInstallator(object):
 
     def _setCloud(self):
         self.username = self.oneUsername
-        self.password = self.proxyOneadminPassword
+        self.password = self.onePassword
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.configHolder.assign(self.cloud)
-        
-        self.cloud.setEndpointFromParts(self.frontendIp, self.proxyPort)
+        self._setLocalhostEndpoint()
+
+    def _setLocalhostEndpoint(self):
+        self.cloud.setEndpointFromParts('localhost', self.onePort, 'RPC2', 'http')
 
     def _propagateNodeInfos(self):
         self.node.setNodeAddr(self.nodeAddr)
