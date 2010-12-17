@@ -411,7 +411,7 @@ class BaseSystem(object):
     def _configureProxyDefaultUsers(self):
         filename = '/opt/jetty-7/etc/login/login.properties'
         search = self.oneUsername
-        replace = '%(oneUsername)s=%(onePassword)s,cloud-access' % self.__dict__
+        replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
         
     def configureFireWall(self):
