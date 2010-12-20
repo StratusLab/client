@@ -46,6 +46,11 @@ class CredentialsConnector(object):
 
     def __init__(self, runnable):
         self.runnable = runnable
+        self.pathPrefix = ''
+
+    def _manglePath(self, url):
+        parts = url.split('/')
+        return '/'.join(parts[0:-1]) + self.pathPrefix + parts[-1]
 
 class UsernamePasswordCredentialsConnector(CredentialsConnector):
     
@@ -53,9 +58,11 @@ class UsernamePasswordCredentialsConnector(CredentialsConnector):
         super(UsernamePasswordCredentialsConnector, self).__init__(runnable)
         self.username = runnable.username
         self.password = runnable.password
+        self.pathPrefix = '/pswd/'        
     
     def createRpcConnection(self):
         url = self._insertUsernamePassword(self.runnable.cloud.server)
+        url = self._manglePath(url)
         return xmlrpclib.ServerProxy(url)
 
     def _insertUsernamePassword(self, url):
@@ -87,10 +94,12 @@ class CertificateCredentialsConnector(CredentialsConnector):
         super(CertificateCredentialsConnector, self).__init__(runnable)
         self.pemCert = runnable.pemCert
         self.pemKey = runnable.pemKey
+        self.pathPrefix = '/cert/'
     
     def createRpcConnection(self):
         transport = CertificateCredentialsConnector.SafeTransportWithCert(self.pemCert, self.pemKey)
-        return xmlrpclib.ServerProxy(self.runnable.cloud.server, transport=transport)
+        url = self._manglePath(self.runnable.cloud.server)
+        return xmlrpclib.ServerProxy(url, transport=transport)
     
     def createSessionString(self):
         return 'dummy:pass'

@@ -407,12 +407,19 @@ class BaseSystem(object):
     def configureCloudProxyService(self):
         self.installPackages(['stratuslab-cloud-proxy'])        
         self._configureProxyDefaultUsers()
+        self._restartJetty()
         
     def _configureProxyDefaultUsers(self):
-        filename = '/opt/jetty-7/etc/login/login.properties'
+        self._configureProxyDefaultUsersUsernamePassword()
+
+    def _configureProxyDefaultUsersUsernamePassword(self):
+        filename = '/opt/jetty-7/etc/login/login-pswd.properties'
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
+
+    def _restartJetty(self):
+        self.executeCmd('/etc/init.d/jetty restart'.split(' '))
         
     def configureFireWall(self):
         self._configureFireWallForProxy()
