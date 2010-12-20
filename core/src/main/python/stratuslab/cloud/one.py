@@ -57,6 +57,8 @@ class OneConnector(object):
         self.setEndpoint(self.server)
 
     def setEndpoint(self, address):
+        if not address:
+            raise ValueError('Missing endpoint')
         if not address.startswith('http'):
             self.setEndpointFromParts(address)
         else:
