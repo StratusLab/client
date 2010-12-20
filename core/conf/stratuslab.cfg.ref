@@ -83,7 +83,7 @@ node_network_interface = eth0
 node_bridge_name = br0
 
 [proxy]
-proxy_port = 8443
+proxy_port = 2634
 proxy_oneadmin_password = oneadmin
 
 [app-repo]
