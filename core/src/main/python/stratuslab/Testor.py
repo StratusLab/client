@@ -98,11 +98,11 @@ class Testor(unittest.TestCase):
         return method()
     
     def runInstancePublicNetworkTest(self):
-        '''Start new instance, ping it via public network and ssh into it, then stop it'''
+        '''Start new instance, ping it via public network and ssh into it, then stop it.'''
         self._runInstanceTest()
         
     def runInstanceLocalNetworkTest(self):
-        '''Start new instance, ping it via local network and ssh into it, then stop it'''
+        '''Start new instance, ping it via local network and ssh into it, then stop it.'''
         self._runInstanceTest(True)
         
     def _runInstanceTest(self, withLocalNetwork=False):
