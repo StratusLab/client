@@ -103,3 +103,23 @@ class CertificateCredentialsConnector(CredentialsConnector):
     
     def createSessionString(self):
         return 'dummy:pass'
+
+
+class LocalhostCredentialsConnector(CredentialsConnector):
+    
+    def __init__(self, runnable):
+        super(LocalhostCredentialsConnector, self).__init__(runnable)
+        self.username = runnable.username
+        self.password = runnable.password
+    
+    def createRpcConnection(self):
+        url = self._insertUsernamePassword('http://localhost:2633/RPC2')
+        return xmlrpclib.ServerProxy(url)
+
+    def _insertUsernamePassword(self, url):
+        protocolSeparator = '://'
+        parts = url.split(protocolSeparator)
+        return parts[0] + protocolSeparator + self.username + ':' + self.password + "@" + ''.join(parts[1:])
+
+    def createSessionString(self):
+        return '%s:%s' % (self.username, Util.shaHexDigest(self.password))
