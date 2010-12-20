@@ -75,7 +75,7 @@ class Testor(unittest.TestCase):
             return
         if not self.frontendIp:
             raise ConfigurationException('Missing environment variable %s or configuration parameter frontend_ip' % Util.envEndpoint)
-        os.environ[Util.envEndpoint] = 'https://%s:8443/xmlrpc' % self.frontendIp
+        os.environ[Util.envEndpoint] = self.frontendIp
 
     def dummy(self):
         pass
