@@ -51,7 +51,6 @@ class OneConnector(object):
         self._sessionString = None
         self._rpc = None
         self._credentials = credentials
-        self.setEndpoint('localhost')
     
     def setEndpointFromParts(self, server, port=2634, path='xmlrpc', protocol='https'):
         self.server = '%s://%s:%s/%s' % (protocol, server, port, path)
