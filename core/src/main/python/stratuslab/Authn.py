@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import xmlrpclib
 
 import Util
@@ -95,6 +96,14 @@ class CertificateCredentialsConnector(CredentialsConnector):
         self.pemCert = runnable.pemCert
         self.pemKey = runnable.pemKey
         self.pathPrefix = '/cert/'
+        self._validate()
+
+    def _validate(self):
+        if not os.path.exists(self.pemCert):
+            raise ValueError('Can\'t find certificate file %s' % self.pemCert)
+        
+        if not os.path.exists(self.pemKey):
+            raise ValueError('Can\'t find key file %s' % self.pemKey)
     
     def createRpcConnection(self):
         transport = CertificateCredentialsConnector.SafeTransportWithCert(self.pemCert, self.pemKey)
