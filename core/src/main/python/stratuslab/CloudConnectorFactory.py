@@ -29,4 +29,4 @@ class CloudConnectorFactory:
         elif type == 'qemu':
             return qemu.QEmuConnector(credentials)
         else:
-            raise NotImplementedError('Cloud type not implemented yet.')
+            raise NotImplementedError('Unknown cloud type: %s' % type)
