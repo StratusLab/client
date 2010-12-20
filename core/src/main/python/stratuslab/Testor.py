@@ -123,7 +123,7 @@ class Testor(unittest.TestCase):
 
         options = Runner.defaultRunOptions()
         options['username'] = self.oneUsername
-        options['password'] = self.onePassword
+        options['password'] = self.proxyOneadminPassword
         options['userKey'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
 
@@ -241,7 +241,7 @@ class Testor(unittest.TestCase):
         configHolder.options['virtDriver'] = 'kvm'
         configHolder.options['transfertDriver'] = 'nfs'
         configHolder.options['username'] = self.oneUsername
-        configHolder.options['password'] = self.onePassword
+        configHolder.options['password'] = self.proxyOneadminPassword
         registrar = Registrar(configHolder)
         hostname = 'registrar.ip.test'
         id = registrar.register([hostname])
