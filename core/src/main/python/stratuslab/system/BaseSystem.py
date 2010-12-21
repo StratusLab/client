@@ -407,6 +407,7 @@ class BaseSystem(object):
     def configureCloudProxyService(self):
         self.installPackages(['stratuslab-cloud-proxy'])        
         self._configureProxyDefaultUsers()
+        self._patchProxyWarFileName()
         self._restartJetty()
         
     def _configureProxyDefaultUsers(self):
@@ -417,6 +418,12 @@ class BaseSystem(object):
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
+
+    def _patchProxyWarFileName(self):
+        brokenWarFile = '/opt/jetty-7/stratuslab-webapps/authn-proxy-0.0.1-SNAPSHOT.war'
+        warFileNameV006 = '/opt/jetty-7/stratuslab-webapps/authn-proxy-0.0.6.war'
+        if os.path.exists(brokenWarFile):
+            os.rename(brokenWarFile, warFileNameV006)
 
     def _restartJetty(self):
         self.executeCmd('/etc/init.d/jetty restart'.split(' '))
