@@ -96,7 +96,7 @@ class HtmlGenerator(object):
             data = self._getData()
         except Exception, ex:
             if retryCount <= 0:
-                raise self._createHttpError('', 500, 'Error getting data' + str(ex))
+                raise self._createHttpError('', 500, 'Error getting data ' + str(ex))
             data = self._getDataRetryAndRaise(retryCount-1)
         return data
 
