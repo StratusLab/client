@@ -92,7 +92,8 @@ class MainProgram(CommandBase):
     def multiInstallWorkaround(self):
         self.sshCmd('su -l oneadmin -c "one stop"')
         self.sshCmd("kill -9 $(ps aux | grep oneadmin | grep -v grep | awk '{print $2}')")
-        self.sshCmd('yum remove one -y')
+        self.sshCmd('yum remove one-2.0-StratusLab -y')
+        self.sshCmd('yum remove stratuslab-cloud-proxy -y')
         self.sshCmd('userdel -r oneadmin')
         self.sshCmd('rm -rf /home/oneadmin')
         self.sshCmd('groupdel cloud')
