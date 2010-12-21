@@ -27,6 +27,10 @@ class AuthnFactory(object):
     
     @staticmethod
     def getCredentials(runnable):
+
+        if AuthnFactory._useLocalHostCredentials(runnable):
+            return LocalhostCredentialsConnector(runnable)
+        
         try:
             usernamePasswordCredentials = runnable.username and runnable.password
         except AttributeError:
@@ -42,6 +46,21 @@ class AuthnFactory(object):
             return UsernamePasswordCredentialsConnector(runnable)
         
         raise ValueError('Missing credentials')
+
+    @staticmethod
+    def _useLocalHostCredentials(runnable):
+        endpoint = getattr(runnable, 'endpoint', None)
+        frontend = getattr(runnable, 'frontendIp', None)
+
+        if AuthnFactory._isLocalhost(endpoint):
+            return True
+        if AuthnFactory._isLocalhost(frontend):
+            return True
+        return False
+
+    @staticmethod
+    def _isLocalhost(host):
+        return (host == 'localhost' or host == '127.0.0.1')
 
 class CredentialsConnector(object):
 
@@ -118,8 +137,15 @@ class LocalhostCredentialsConnector(CredentialsConnector):
     
     def __init__(self, runnable):
         super(LocalhostCredentialsConnector, self).__init__(runnable)
-        self.username = runnable.username
-        self.password = runnable.password
+        self._setUsernamePassword(runnable)
+        
+    def _setUsernamePassword(self, runnable):
+        oneUsername = getattr(runnable, 'oneUsername', None)
+        onePassword = getattr(runnable, 'onePassword', None)
+        username = getattr(runnable, 'username', None)
+        password = getattr(runnable, 'password', None)
+        self.username = username or oneUsername
+        self.password = password or onePassword
     
     def createRpcConnection(self):
         url = self._insertUsernamePassword('http://localhost:2633/RPC2')
