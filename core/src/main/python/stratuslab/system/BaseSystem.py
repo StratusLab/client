@@ -420,10 +420,18 @@ class BaseSystem(object):
         Util.appendOrReplaceInFile(filename, search, replace)
 
     def _patchProxyWarFileName(self):
-        brokenWarFile = '/opt/jetty-7/stratuslab-webapps/authn-proxy-0.0.1-SNAPSHOT.war'
-        warFileNameV006 = '/opt/jetty-7/stratuslab-webapps/authn-proxy-0.0.6.war'
-        if os.path.exists(brokenWarFile):
-            os.rename(brokenWarFile, warFileNameV006)
+        warDir = '/opt/jetty-7/stratuslab-webapps'
+        files = os.listdir(warDir)
+        warFile = None
+        for file in files:
+            if file.startswith('authn-proxy') and file.endswith('.war'):
+                warFile = os.path.join(warDir, file)
+
+        if not warFile:
+            return
+
+        newWarFile = warFile.replace('-SNAPSHOT', '')
+        os.rename(warFile, newWarFile)
 
     def _restartJetty(self):
         self.executeCmd('/etc/init.d/jetty restart'.split(' '))
