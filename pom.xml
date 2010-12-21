@@ -6,7 +6,7 @@
   <groupId>eu.stratuslab.pkgs</groupId>
   <artifactId>stratuslab-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <name>StratusLab Parent POM</name>
   <url>http://stratuslab.eu/</url>
 

@@ -11,14 +11,14 @@
 	<parent>
 		<groupId>eu.stratuslab.pkgs</groupId>
 		<artifactId>stratuslab-cli</artifactId>
-		<version>1.4-SNAPSHOT</version>
+		<version>1.4</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>eu.stratuslab.pkgs</groupId>
 			<artifactId>stratuslab-core-zip</artifactId>
-			<version>1.4-SNAPSHOT</version>
+			<version>1.4</version>
 			<classifier>core-bundle</classifier>
 			<type>zip</type>
 			<scope>compile</scope>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>eu.stratuslab.pkgs</groupId>
 			<artifactId>sign-validate-jar</artifactId>
-			<version>1.4-SNAPSHOT</version>
+			<version>1.4</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
