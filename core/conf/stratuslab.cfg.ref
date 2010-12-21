@@ -13,8 +13,8 @@
 [general]
 hypervisor = kvm
 #hypervisor = xen
-share_type = nfs
-#share_type = ssh
+#share_type = nfs
+share_type = ssh
 debug_level = 3
 mac_prefix = 02:00
 stratuslab_location =
@@ -73,7 +73,7 @@ one_private_network_addr = 172.16.0.1
 
 [one-deployment]
 frontend_ip = 127.0.0.1
-frontend_system = ubuntu
+frontend_system = centos
 node_system = centos
 default_gateway = 3.13.3.7
 
