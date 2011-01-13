@@ -131,8 +131,8 @@ class Testor(unittest.TestCase):
             options['isLocalIp'] = True
 
         configHolder = ConfigHolder(options)
-        image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.5-i486-base/1.0/ttylinux-9.5-i486-base-1.0.img.gz'
-
+        #image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.5-i486-base/1.0/ttylinux-9.5-i486-base-1.0.img.gz'
+        image = 'http://appmirror-grnet.stratuslab.org/images/base/ttylinux-9.5-i486-base/1.0/ttylinux-9.5-i486-base-1.0.img.gz'
         runner = Runner(image, configHolder)
         self.vmIds = runner.runInstance()        
         
