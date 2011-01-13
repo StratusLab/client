@@ -28,6 +28,7 @@ from stratuslab.AppRepo import AppRepo
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printError
 from stratuslab.Authn import LocalhostCredentialsConnector
+from stratuslab.installator.Claudia import Claudia
 
 
 class BaseInstallator(object):
@@ -42,8 +43,6 @@ class BaseInstallator(object):
         self.nodeAddr = None
         self.frontend = None
         self.node = None
-        self.stdout = None
-        self.stderr = None
         self.cloud = None
 
     def runInstall(self, configHolder):
@@ -64,13 +63,19 @@ class BaseInstallator(object):
             self._runInstallAppRepo()
             printStep('Installation completed')
             return
+        elif self.installCloudia:
+            printAction('Claudia installation')
+            self._runInstallClaudia()
+            return
         else:
             printAction('Frontend installation')
             self._runInstallFrontend()
-            
+            self._printInstalCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
+
+
+    def _printInstalCompleted(self, stdoutFilename, stderrFilename):
         printStep('Installation completed')
-        print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.frontend.stdout.name, 
-                                                                        self.frontend.stderr.name)
+        print '\n\tInstallation details can be found at: \n\t%s, %s' % (stdoutFilename, stderrFilename)
 
     def _assignDrivers(self):
         self.infoDriver = (True and self.infoDriver) or ('im_%s' % self.hypervisor)
@@ -79,7 +84,6 @@ class BaseInstallator(object):
           
     def _runInstallNodes(self):
 
-#        self.frontendIp = 'localhost'
         self._setFrontend()
 
         self._setCloud()
@@ -130,6 +134,11 @@ class BaseInstallator(object):
     def _runInstallAppRepo(self):
         appRepo = AppRepo(self.configHolder)
         appRepo.run()
+
+    def _runInstallClaudia(self):
+        claudiaInstaller = Claudia(self.configHolder)
+        claudiaInstaller.run()
+        self._printInstalCompleted(claudiaInstaller.system.stdout.name, claudiaInstaller.system.stderr.name)
 
     def _runInstallFrontend(self):
         printStep('Configuring file sharing')
@@ -220,3 +229,4 @@ class BaseInstallator(object):
 
     def _assignKey(self, options, config):
         self.privateKey = (True and options.privateKey) or (self.nodePrivateKey)
+

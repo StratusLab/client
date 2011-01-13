@@ -58,6 +58,9 @@ class MainProgram(CommandBase):
         self.parser.add_option('--setup', dest='onlySetup',
                                help='Only setup system, don\'t install packages', 
                                action='store_true', default=None)
+        self.parser.add_option('--claudia', dest='installCloudia',
+                               help='Install Claudia', 
+                               action='store_true', default=False)
         
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 

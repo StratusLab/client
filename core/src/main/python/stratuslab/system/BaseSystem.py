@@ -240,15 +240,18 @@ class BaseSystem(object):
     #     Front-end related methods
     # -------------------------------------------
 
+    def execute(self, command):
+        return self._execute(command)
+
     def _execute(self, command, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
-        
+
         if kwargs.has_key('stdout'):
             del kwargs['stdout']
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
-        
+
         return execute(command, 
                        stdout=stdout, 
                        stderr=stderr, 
