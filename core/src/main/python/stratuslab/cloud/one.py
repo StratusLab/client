@@ -102,8 +102,9 @@ class OneConnector(object):
             raise OneException(reason)        
         
     def listVms(self):
-        ret, info = self._rpc.one.vmpool.info(self._sessionString, -1)
-        
+        showVmsFromAllUsers = -2
+        ret, info = self._rpc.one.vmpool.info(self._sessionString, showVmsFromAllUsers)        
+
         if not ret:
             raise Exception(info)
 
