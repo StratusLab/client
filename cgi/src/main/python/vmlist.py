@@ -45,7 +45,7 @@ class VmListGenerator(ListGenerator):
         self.idTemplate = '            <td><a href="vmdetail.py?id=%(value)s"/>%(value)s</a></td>\n'
     
     def _getData(self):
-        return self.monitor.listVms()
+        return self.monitor.listVms(showVmsFromAllUsers=True)
 
     def _getState(self, info):
         stateValue = info.attribs.get('state','')

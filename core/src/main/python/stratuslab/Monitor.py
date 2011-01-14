@@ -109,8 +109,8 @@ class Monitor(Configurable):
         nodes = self.cloud.listHosts()
         return self._iterate(etree.fromstring(nodes))
         
-    def listVms(self):
-        vms = self.cloud.listVms(showAllUsers=True)
+    def listVms(self, showVmsFromAllUsers=False):
+        vms = self.cloud.listVms(showVmsFromAllUsers)
         return self._iterate(etree.fromstring(vms))
 
     def _iterate(self, list):
