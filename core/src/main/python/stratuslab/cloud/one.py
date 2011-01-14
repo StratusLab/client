@@ -101,9 +101,16 @@ class OneConnector(object):
         if not isSuccess:
             raise OneException(reason)        
         
-    def listVms(self):
+    def listVms(self, showAllUsers=False):
         showVmsFromAllUsers = -2
-        ret, info = self._rpc.one.vmpool.info(self._sessionString, showVmsFromAllUsers)        
+        showVmsForCurrentUserOnly = -1
+
+        if showAllUsers:
+            visibilitySwitch = showVmsFromAllUsers
+        else:
+            visibilitySwitch = showVmsForCurrentUserOnly
+
+        ret, info = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch)        
 
         if not ret:
             raise Exception(info)
