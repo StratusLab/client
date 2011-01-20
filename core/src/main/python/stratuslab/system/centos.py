@@ -24,6 +24,9 @@ from BaseSystem import BaseSystem
 from stratuslab.Util import wget
 from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.Util import sleep
+from stratuslab.Util import filePutContent
+from stratuslab.Util import printDetail
+
 
 class CentOS(BaseSystem):
 
@@ -169,5 +172,17 @@ class CentOS(BaseSystem):
                         '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
+
+    # -------------------------------------------
+    # Network related methods
+    # -------------------------------------------
+    
+    def _configureNetworkInterface(self, device, ip, netmask):
+        deviceConf = '/etc/sysconfig/network-scripts/ifcfg-%s' % device
+        data = """DEVICE=%s
+IPADDR=%s
+NETMASK=%s
+""" % (device, ip, netmask)
+        filePutContent(deviceConf, data)
 
 system = CentOS()

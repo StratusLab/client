@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import re
 import os
 import shutil
 from datetime import datetime
@@ -30,6 +31,8 @@ from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
 import stratuslab.Util as Util
 from stratuslab.Util import printDetail
+from stratuslab.Util import gatewayIpFromNetAddress
+from stratuslab.Exceptions import ExecutionException
 
 class BaseSystem(object):
     
@@ -259,6 +262,10 @@ class BaseSystem(object):
                        verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
                        **kwargs)
 
+    def _executeWithOutput(self, command, **kwargs):
+        kwargs['withOutput'] = True
+        return self._execute(command, **kwargs)
+    
     def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.oneUsername, '-c']
         su.extend(command)
@@ -387,6 +394,7 @@ class BaseSystem(object):
         self.appendOrReplaceInFileCmd = appendOrReplaceInFile
         self.setOwnerCmd = self._setCloudAdminOwner
         self.executeCmd = self._execute
+        self.executeCmdWithOutput = self._executeWithOutput
         self.createDirsCmd = self._createDirs
         self.filePutContentsCmd = filePutContent
         self.fileAppendContentsCmd = fileAppendContent
@@ -438,10 +446,143 @@ class BaseSystem(object):
 
     def _restartJetty(self):
         self.executeCmd('/etc/init.d/jetty restart'.split(' '))
-        
+
+    # -------------------------------------------
+    # Firewall
+    # -------------------------------------------
+
+    # TODO: extract Firewall class from the code below
+
+    DEFAULT_FIREWALL_TABLE = 'filter'
+    
+    # redefine in sub-class to point to required file
+    FILE_FIREWALL_RULES = '/etc/sysconfig/iptables'
+    
+    def _configureNetworkInterface(self, device, ip, netmask):
+        pass
+
     def configureFireWall(self):
         self._configureFireWallForProxy()
-        
+        self._configureFireWallNat()
+        self._persistFireWallRules()
+    
     def _configureFireWallForProxy(self):
-        self.executeCmd('iptables -A INPUT -s 127.0.0.1 -p tcp -m tcp --dport 2633 -j ACCEPT'.split(' '))
-        self.executeCmd('iptables -A INPUT -p tcp -m tcp --dport 2633 -j REJECT --reject-with icmp-port-unreachable'.split(' '))
+        port = str(self.onePort)
+        rules = ({'table':'filter',
+                  'rule' :'-A INPUT -s 127.0.0.1 -p tcp -m tcp --dport %s -j ACCEPT' % port},
+                 {'table':'filter',
+                  'rule' :'-A INPUT -p tcp -m tcp --dport %s -j REJECT --reject-with icmp-port-unreachable' % port})
+
+        if not self._isSetFireWallRulesAll(rules):
+            self._setFireWallRulesAll(rules)
+
+    def _configureFireWallNat(self):
+        if self.nat.lower() in ['false', 'no', 'off', '0', '']:
+            return None
+
+        self._configureFireWallNatNetworking()
+
+        networkWithMask = '%s/%s' % (self.natNetwork, self.natNetmask)
+        rules = ({'table':'nat',
+                  'rule':'-A POSTROUTING -s %s -d ! %s -j MASQUERADE' % ((networkWithMask,)*2)},
+                  {'table':'filter',
+                   'rule':'-A FORWARD -d %s -m state --state RELATED,ESTABLISHED -j ACCEPT' % networkWithMask},
+                  {'table':'filter',
+                   'rule':'-A FORWARD -d %s -j ACCEPT' % networkWithMask})
+
+        if not self._isSetFireWallRulesAll(rules):
+            self._setFireWallRulesAll(rules)
+ 
+    def _configureFireWallNatNetworking(self):
+        enableIpForwarding()
+
+        device = self.natNetworkInterface
+        ip = gatewayIpFromNetAddress(self.natNetwork)
+        
+        self._configureVirtualNetInterface(device, ip, 
+                                           self.natNetmask)
+
+    def _configureVirtualNetInterface(self, device, ip, netmask):
+        device = device + ':privlan'
+
+        printDetail('Configuring network interface %s.' % device)
+        self._configureNetworkInterface(device, ip, netmask)
+        
+        printDetail('Starting network interface %s.' % device) 
+        self.executeCmd(['ifup', device])
+
+    def _persistFireWallRules(self):
+        self._saveFireWallRules(self.FILE_FIREWALL_RULES)
+
+    def _saveFireWallRules(self, filename):
+        # back-up
+        self.executeCmd(('cp -fp %s %s.LAST'%((filename,)*2)).split(' '))
+        
+        _,output = self.executeCmdWithOutput(['iptables-save'])
+        printDetail('Saving firewall rules to %s.' % filename)
+        filePutContent(filename, output)
+        os.chmod(filename, 0600)
+
+    def _isSetFireWallRulesAll(self, rules):
+        tables = dict.fromkeys([r.get('table', self.DEFAULT_FIREWALL_TABLE) 
+                                                        for r in rules]).keys()
+        currentRules = self._getFireWallRulesPerTable(tables)
+        for ruleSpec in rules:
+            if not self._isSetFireWallRule(currentRules, ruleSpec):
+                return False
+        return True
+    
+    def _getFireWallRulesPerTable(self, tables=['filter','nat','mangle','raw']):
+        rules = {}
+        for table in tables:
+            rc, output = self.executeCmdWithOutput(('iptables-save -t %s' % 
+                                                   table).split(' '))
+            if rc != 0:
+                raise ExecutionException('iptables-save reported an error:\n%s'% 
+                                         output)
+            rules.update({table:output})
+        return rules
+
+    def _isSetFireWallRule(self, currentRules, ruleSpec):
+        rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
+        rulesInTable = currentRules[table]
+        
+        if re.search(rule, rulesInTable, re.M):
+            return True
+        return False
+    
+    def _setFireWallRulesAll(self, rules):
+        self._deleteFireWallRulesAllGiven(rules)
+        
+        for ruleSpec in rules:
+            self._setFireWallRule(ruleSpec)
+
+    def _deleteFireWallRulesAllGiven(self, rules):
+        for ruleSpec in rules:
+            self._deleteFireWallRule(ruleSpec)
+
+    def _deleteFireWallRule(self, ruleSpec):
+        rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
+        rule = '-D %s' % rule[3:] # remove action; leave chain and rule
+
+        self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))        
+        
+    def _setFireWallRule(self, ruleSpec):
+        rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
+        
+        self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))        
+
+    def _getRuleAndTableFromRuleSpec(self, ruleSpec):
+        return ruleSpec['rule'], \
+               ruleSpec.get('table', self.DEFAULT_FIREWALL_TABLE)
+
+
+FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
+FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
+
+def enableIpForwarding():
+    printDetail('Enabling packets forwarding.')
+    file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
+    appendOrReplaceInFile(FILE_IPFORWARD_PERSIST, 
+                          'net.ipv4.ip_forward', 
+                          'net.ipv4.ip_forward = 1')

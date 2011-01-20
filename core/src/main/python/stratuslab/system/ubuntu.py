@@ -19,6 +19,7 @@
 #
 from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
+from stratuslab.Util import appendOrReplaceMultilineBlockInFile
 
 class Ubuntu(BaseSystem):
 
@@ -75,6 +76,23 @@ class Ubuntu(BaseSystem):
         super(Ubuntu, self)._configureKvm()
         self.executeCmd(['/etc/init.d/libvirt-bin start'])
         self.executeCmd(['usermod', '-G', 'libvirtd', '-a', self.oneUsername])
-        
-system = Ubuntu()
 
+    # -------------------------------------------
+    # Network related methods
+    # -------------------------------------------
+    
+    FILE_INTERFACES = '/etc/network/interfaces'
+    # re-defining for ubuntu
+    FILE_FIREWALL_RULES = '/etc/iptables.rules'
+
+    def _configureNetworkInterface(self, device, ip, netmask):
+        data = """auto %s
+iface %s inet static
+  address %s
+  netmask %s
+  pre-up iptables-restore < %s""" % (device, device, ip, netmask, 
+                                     self.FILE_FIREWALL_RULES)
+        
+        appendOrReplaceMultilineBlockInFile(self.FILE_INTERFACES, data)
+
+system = Ubuntu()

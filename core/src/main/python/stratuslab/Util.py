@@ -95,6 +95,48 @@ def appendOrReplaceInFile(filename, search, replace):
     
     filePutContent(filename, '\n'.join(newContent))
 
+def appendOrReplaceMultilineBlockInFile(filename, data):
+    content = fileGetContent(filename)
+    newContent = appendOrReplaceMultilineBlockInString(content, data)
+    filePutContent(filename, newContent)
+    
+def appendOrReplaceMultilineBlockInString(content, data):
+    """Block in 'content' starts with the first line from 'data'. Block ends 
+    right before an empty line or '[ ]*#.*'.
+    """
+    data = data.strip()
+    beginStr = data.split('\n', 1)[0]
+
+    if not re.search(beginStr, content, re.M):
+        return '%s%s%s\n\n' % (content, content.endswith('\n') and '\n' or '\n\n', 
+                           data)
+    
+    lines = content.split('\n')
+    
+    lineNums = []
+    for i,line in enumerate(lines):
+        if line.startswith(beginStr):
+            lineNums.append(i)
+            break
+    
+    insertIndex = lineNums[0]
+    k = lineNums[0] + 1
+    try:
+        emptyOrComment = re.compile('([ ]*|[ ]*#.*)$')
+        while not emptyOrComment.match(lines[k]):
+            lineNums.append(k)
+            k += 1
+    except IndexError: 
+        pass
+    lineNums.reverse()
+    for n in lineNums:
+        del lines[n]
+    if insertIndex == len(lines)-1:
+        data = data + '\n'
+    lines.insert(insertIndex, data)
+    
+    return '\n'.join(lines)
+
 def fileGetContent(filename):
     fd = open(filename, 'rb')
     content = fd.read()
@@ -156,6 +198,14 @@ def execute(cmd, **kwargs):
 
     if kwargs.has_key('noWait'):
         del kwargs['noWait']
+
+    output = kwargs.get('withOutput', False)
+    if output:
+        kwargs['stdout'] = subprocess.PIPE
+        kwargs['stderr'] = subprocess.STDOUT
+        kwargs['close_fds'] = True
+    if kwargs.has_key('withOutput'):
+        del kwargs['withOutput']
         
     _printDetail('Calling: ' + ' '.join(cmd), kwargs)
 
@@ -164,7 +214,10 @@ def execute(cmd, **kwargs):
     if wait:
         process.wait()
 
-    return process.returncode
+    if output:
+        return process.returncode, process.stdout.read()
+    else:
+        return process.returncode
 
 def _printDetail(message, kwargs={}):
     verboseLevel = _extractVerboseLevel(kwargs)
@@ -334,6 +387,10 @@ def networkSizeToNetmask(netsize):
         if 2**pow >= netsize:
             return MAX_MASK_LENTGH - pow
     return MAX_MASK_LENTGH
+
+def gatewayIpFromNetAddress(network):
+    net, start = network.rsplit('.', 1)
+    return '%s.%i' % (net, int(start) + 1)
 
 def assignAttributes(instance, dictionary):
     for key, value in dictionary.items():
