@@ -61,10 +61,16 @@ class Runner(object):
         self.extra_context = ''
         self.graphics = ''
         self.vmIds = []
+        self.disk_driver = None
 
         self._setUserKeyIfDefined()
         self._setSaveDisk()
         self._setExtraDiskOptional()
+        self._setDiskImageFormat()
+    
+    def _setDiskImageFormat(self):
+        useQcowDiskFormat = getattr(self, 'useQcowDiskFormat', False)
+        self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
     
     def _setUserKeyIfDefined(self):
         if getattr(self, 'userKey', None):
@@ -137,6 +143,8 @@ class Runner(object):
                 'extraContextData': '',
                 'vncPort': None,
                 'vncListen': '',
+                'specificAddressRequest': None,
+                'diskFormat': 'raw',
                 'saveDisk': 'no',
                 'inVmIdsFile': None,
                 'outVmIdsFile': None }
@@ -177,7 +185,12 @@ class Runner(object):
 
     def _manageNetwork(self):
         networkName = self._getNetworkName()
-        self.vm_nic = ('NIC = [ network = "%s" ]\n' % networkName)
+        networkPrefix = 'NIC = [ network = "%s" ' % networkName
+        networkPostfix = ']\n'
+        if self.specificAddressRequest:
+            self.vm_nic = networkPrefix + ',\nIP = "%s"' % self.specificAddressRequest + networkPostfix
+        else:
+            self.vm_nic = networkPrefix + networkPostfix
 
     def _getNetworkName(self):
         networkName = 'public'
