@@ -9,7 +9,8 @@ DISK = [
 source   = "%(vm_image)s",
 target   = "hda",
 save     = %(save_disk)s,
-readonly = "no"
+readonly = "no",
+driver = "%(disk_driver)s"
 ]
 
 DISK = [
