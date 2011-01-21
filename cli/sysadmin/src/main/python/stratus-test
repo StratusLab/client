@@ -58,6 +58,10 @@ where test is a comma separated list of tests, according to the name provided by
                                help='Appliance repository password', metavar='PASSWORD',
                                default=None)
         
+        self.parser.add_option('--requested-ip-address', dest='requestedIpAddress', 
+                               help='IP address for requested IP address assignment', metavar='IP',
+                               default=None)
+        
         self.options, self.tests = self.parser.parse_args()
 
     def doWork(self):
