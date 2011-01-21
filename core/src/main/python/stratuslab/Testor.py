@@ -61,6 +61,7 @@ class Testor(unittest.TestCase):
         self._setSingleEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
         self._setSingleEnvVar('username', 'STRATUSLAB_USERNAME')
         self._setSingleEnvVar('password', 'STRATUSLAB_PASSWORD')
+        self._setSingleEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
         self._fillEndpointOption()
         
     def _setSingleEnvVar(self, field, env):
@@ -105,6 +106,20 @@ class Testor(unittest.TestCase):
         '''Start new instance, ping it via local network and ssh into it, then stop it.'''
         self._runInstanceTest(True)
         
+    def runInstanceRequestedNetworkTest(self):
+        '''Start new instance, ping it via requested IP address and ssh into it, then stop it.'''
+        self._checkAttributePresent(['requestedIpAddress'])
+        runner = self._startVm(requestedIpAddress=self.requestedIpAddress)
+
+        print 'id=', runner.vmIds[0]
+        _, allocatedIp = runner.getNetworkDetail(runner.vmIds[0])
+        
+        self.assertEqual(self.requestedIpAddress, allocatedIp)
+        
+        self._repeatCall(self._ping, runner)
+        self._repeatCall(self._loginViaSsh, runner)
+        self._stopVm(runner)
+        
     def _runInstanceTest(self, withLocalNetwork=False):
         runner = self._startVm(withLocalNetwork)
         self._repeatCall(self._ping, runner)
@@ -118,7 +133,7 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n'*3)
         return log
 
-    def _startVm(self, withLocalNetwork=False):
+    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None):
         generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
@@ -126,6 +141,7 @@ class Testor(unittest.TestCase):
         options['password'] = self.proxyOneadminPassword
         options['userKey'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
+        options['specificAddressRequest'] = requestedIpAddress
 
         if withLocalNetwork:
             options['isLocalIp'] = True
@@ -143,13 +159,13 @@ class Testor(unittest.TestCase):
                 
         return runner
 
-    def _repeatCall(self, method, args=[]):
+    def _repeatCall(self, method, *args):
         numberOfRepetition = 60
         for _ in range(numberOfRepetition):
             failed = False
             try:
                 if args:
-                    method(args)
+                    method(*args)
                 else:
                     method()
             except ExecutionException:
