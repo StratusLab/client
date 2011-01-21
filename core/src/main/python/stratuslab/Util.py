@@ -243,16 +243,16 @@ def printAction(msg):
     printAndFlush(' :::%s:::\n' % (':' *len(msg)))
     
 def printStep(msg):
-    printAndFlush('\n :: %s' % msg)
+    printAndFlush(' :: %s\n' % msg)
 
 def printError(msg, exitCode=1, exit=True):
-    printAndFlush('\n  [ERROR] %s\n' % msg)
+    printAndFlush('  [ERROR] %s\n' % msg)
 
     if exit:
         sys.exit(exitCode)
 
 def printWarning(msg):
-    printAndFlush('\n  [WARNING] %s\n' % msg)
+    printAndFlush('  [WARNING] %s\n' % msg)
 
 def printAndFlush(msg):
     sys.stdout.flush()

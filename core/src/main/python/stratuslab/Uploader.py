@@ -22,10 +22,11 @@ import os.path
 import urllib2
 from ConfigParser import RawConfigParser
 
-from stratuslab.Exceptions import NetworkException
+import stratuslab.Util as Util
 from stratuslab.Exceptions import InputException
+from stratuslab.Exceptions import NetworkException
 
-from stratuslab.Util import assignAttributes
+from stratuslab.Util import assignAttributes, printWarning
 from stratuslab.Util import defaultRepoConfigPath
 from stratuslab.Util import defaultRepoConfigSection
 from stratuslab.Util import execute
@@ -112,7 +113,7 @@ class Uploader(object):
     def __init__(self, manifest, options):
         assignAttributes(self, options)
         self.manifest = manifest
-        self.appliance = self.manifest.replace(manifestExt, '')        
+        self.appliance = self.manifest.replace('.xml', '.img')
         self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.repoUsername,
                                                              self.repoPassword)]
         self.uploadedFile = []
@@ -165,23 +166,26 @@ class Uploader(object):
             curlUploadCmd.append(self.uploadOption)
             
         curlUploadCmd.append(uploadUrl)
-        devNull = self._openDevNull()
-        ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
-        devNull.close()
         
+        ret = self._execute(curlUploadCmd)
+
         if ret != 0:
             raise NetworkException('An error occurred while uploading %s' % uploadUrl)
 
         self.uploadedFile.append(uploadUrl)
 
-    def _openDevNull(self):
-        return open('/dev/null', 'w')
+    def _execute(self, command):
+        if self.verboseLevel <= Util.NORMAL_VERBOSE_LEVEL:
+            devNull = open('/dev/null', 'w')
+            ret = execute(command, stdout=devNull, stderr=devNull)
+            devNull.close()
+        else:
+            ret = execute(command)
+        return ret
 
     def deleteFile(self, url):
-        devNull = self._openDevNull()
         deleteCmd = self.curlCmd + [ '-X', 'DELETE', url]
-        execute(deleteCmd, stdout = devNull, stderr = devNull)
-        devNull.close()
+        self._execute(deleteCmd)
 
     def _getDirectoriesOfUrl(self, url):
         urlDirs = '/'.join(url.split('//')[1:])
@@ -192,7 +196,6 @@ class Uploader(object):
         return newDirs[1:]
 
     def _createRemoteDirectoryStructure(self, url):
-        devNull = self._openDevNull()
         curlCreateDirCmd = self.curlCmd + ['-X', 'MKCOL']
         urlDirs = self._getDirectoriesOfUrl(url)
         repoAddress = '/'.join(url.split('/')[0:3])
@@ -201,9 +204,8 @@ class Uploader(object):
             if dir == '':
                 continue
             curlCreateDirCmd.append('%s/%s' % (repoAddress, dir))
-            execute(curlCreateDirCmd, stderr=devNull, stdout=devNull)
+            self._execute(curlCreateDirCmd)
             curlCreateDirCmd.pop()
-        devNull.close()
 
     def _checkFileAlreadyExists(self, filename):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -220,7 +222,7 @@ class Uploader(object):
 
         if status != 404 and not self.forceUpload:
             raise InputException('An appliance already exist at this URL.\n'
-                       'Change the appliance version of force upload with '
+                       'Change the appliance version or force upload with '
                        '-f --force option')
 
     def _parseManifest(self):
@@ -264,15 +266,19 @@ class Uploader(object):
         elif format == 'bz2':
             compressionCmd = 'bzip2'
         else:
-            raise NotImplementedError('Unknow compression format')
+            raise NotImplementedError('Unknown compression format')
 
         compressedFilename = '%s.%s' % (file, format)
         if os.path.isfile(compressedFilename):
-            printError('Compressed file %s already exists, skipping' % compressedFilename, exit=False)
+            printWarning('Compressed file %s already exists, skipping' % compressedFilename)
+            return compressedFilename
 
-        devNull = self._openDevNull()
-        execute([compressionCmd, file], stderr=devNull, stdout=devNull)
-        devNull.close()
+        if not os.path.exists(file):
+            printError('Missing file: ' + file, exit=True)
+
+        ret = self._execute([compressionCmd, file])
+        if ret != 0:
+            printError('Error compressing file: ' % compressedFilename, exit=True)
 
         return compressedFilename
 

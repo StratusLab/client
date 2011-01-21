@@ -54,9 +54,7 @@ class MainProgram(CommandBase):
         if not self.manifest.endswith(manifestExt):
             self.parser.error('Manifest must ends with %s' % manifestExt)
         if not os.path.isfile(self.manifest):
-            self.parser.error('Appliance manifest does not exist')
-        if not os.path.isfile(self.manifest.replace(manifestExt, '')):
-            self.parser.error('Appliance does not exist')
+            self.parser.error('Appliance manifest does not exist: ' + self.manifest)
 
     def doWork(self):
         uploader = Uploader(self.manifest, self.options.__dict__)
