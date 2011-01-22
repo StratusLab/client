@@ -238,7 +238,7 @@ class Testor(unittest.TestCase):
         options['repoAddress'] = self.appRepoUrl
         options['uploadOption'] = ''
         uploader = Uploader(manifest, options)
-        uploader.uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
+        uploader._uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
         uploader.deleteFile(uploader.uploadedFile[-1])
 
     def _openDevNull(self):

@@ -149,13 +149,12 @@ class Uploader(object):
         print '\n\t%s' % '\n\t'.join(self.uploadedFile)
         
     def _uploadAppliance(self):
-        self.uploadFile(self.appliance, '%s/%s' % (self.repoStructure, self.repoFilename))
+        self._uploadFile(self.appliance, '%s/%s' % (self.repoStructure, self.repoFilename))
 
     def _uploadManifest(self):
-        repoFilename = self.repoFilename.replace('.%s' % self.compression, manifestExt)
-        self.uploadFile(self.manifest, '%s/%s' % (self.repoStructure, repoFilename))
+        self._uploadFile(self.manifest, '%s/%s' % (self.repoStructure, self.repoManifestFilename))
                                                        
-    def uploadFile(self, filename, remoteName):
+    def _uploadFile(self, filename, remoteName):
         uploadUrl = '%s/%s' % (self.repoAddress, remoteName)
         curlUploadCmd = self.curlCmd + ['-T', filename]
 
@@ -248,6 +247,7 @@ class Uploader(object):
 
         self.repoStructure = self._buildRepoNameStructure(repoStructure)
         self.repoFilename = self._buildRepoNameStructure(repoFilename)
+        self.repoManifestFilename = self._buildManifestName(self.repoFilename)
 
     def _buildRepoNameStructure(self, structure):
         varPattern = '#%s#'
@@ -259,6 +259,9 @@ class Uploader(object):
             if structure.find(dirVarPattern % part) != -1:
                 structure = structure.replace(dirVarPattern % part, getattr(self, part, '').replace('.', '/'))
         return structure
+
+    def _buildManifestName(self, repoFilename):
+        return repoFilename.split('.img')[0] + '.xml'
 
     def _compressFile(self, file, format):
         if format == 'gz':
@@ -287,11 +290,15 @@ class Uploader(object):
         self._addCompressionFormatToManifest()
 
     def _addCompressionFormatToManifest(self):
-        compressionElem = etree.Element('compression')
-        compressionElem.text = self.compressionFormat
-
         xml = etree.ElementTree()
-        manifest = xml.parse(self.manifest)
-        manifest.append(compressionElem)
+        docElement = xml.parse(self.manifest)
 
+        compressionElem = xml.find('compression')        
+        if compressionElem != None:
+            printWarning("compression already defined in the manifest file with value: " + compressionElem.text)
+        else:
+            compressionElem = etree.Element('compression')
+            docElement.append(compressionElem)
+
+        compressionElem.text = self.compressionFormat
         xml.write(self.manifest)
