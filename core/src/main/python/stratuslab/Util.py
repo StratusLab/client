@@ -246,10 +246,11 @@ def printStep(msg):
     printAndFlush(' :: %s\n' % msg)
 
 def printError(msg, exitCode=1, exit=True):
-    printAndFlush('  [ERROR] %s\n' % msg)
-
+    err = '  [ERROR] %s\n' % msg
     if exit:
-        sys.exit(exitCode)
+        raise SystemExit(err)
+    else:
+        printAndFlush(msg)
 
 def printWarning(msg):
     printAndFlush('  [WARNING] %s\n' % msg)
