@@ -47,7 +47,7 @@ class CommandBase(object):
         
     def _callAndHandleErrors(self, methodName, *args, **kw):
         
-        res = 0
+        res = -1
         try:
             res = runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
@@ -95,4 +95,4 @@ class CommandBase(object):
         if self.verboseLevel > 0:
             raise
         else:
-            printError(errorMsg)
+            printError(errorMsg, exit=False)
