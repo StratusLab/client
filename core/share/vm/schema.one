@@ -1,6 +1,7 @@
 # ---- Stratuslab VM template ----
 
 CPU    = %(vm_cpu)s
+VCPU    = %(vm_cpu)s
 MEMORY = %(vm_ram)s
 
 %(os_options)s
