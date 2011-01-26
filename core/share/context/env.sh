@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 export STRATUSLAB_ENDPOINT=http://localhost:2633/RPC2
 export STRATUSLAB_USERNAME=oneadmin
