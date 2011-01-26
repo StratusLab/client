@@ -21,10 +21,6 @@ import socket
 import sys
 from optparse import OptionParser
 
-from stratuslab.Exceptions import InputException
-from stratuslab.Exceptions import NetworkException
-from stratuslab.Exceptions import ValidationException
-from stratuslab.Exceptions import ExecutionException
 from stratuslab.Util import printError
 from stratuslab.Util import runMethodByName
 
@@ -47,31 +43,17 @@ class CommandBase(object):
         
     def _callAndHandleErrors(self, methodName, *args, **kw):
         
-        res = -1
         try:
-            res = runMethodByName(methodName, *args, **kw)
+            runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
             sys.stderr.writelines('\nError: %s\n' % str(ex))
             sys.exit(3)
-        except ExecutionException, ex:
-            printError('%s' % ex)
-        except ValidationException, ex:
-            printError('%s' % ex)
-        except NetworkException, ex:
-            printError('%s' % ex)
-        except InputException, ex:
-            printError('%s' % ex)
-        except KeyboardInterrupt, ex:
-            self.raiseOrDisplayError(ex)
-        except SystemExit, ex:
-            self.raiseOrDisplayError(ex)
         except socket.error, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except socket.gaierror, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exception, ex:
             self.raiseOrDisplayError(ex)
-        return res
         
     def parse(self):
         pass
@@ -96,3 +78,4 @@ class CommandBase(object):
             raise
         else:
             printError(errorMsg, exit=False)
+        sys.exit(-1)
