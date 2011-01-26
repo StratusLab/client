@@ -30,7 +30,6 @@ from stratuslab.Util import assignAttributes, printWarning
 from stratuslab.Util import defaultRepoConfigPath
 from stratuslab.Util import defaultRepoConfigSection
 from stratuslab.Util import execute
-from stratuslab.Util import manifestExt
 from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
