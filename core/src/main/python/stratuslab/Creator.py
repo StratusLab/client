@@ -174,7 +174,7 @@ class Creator(object):
     def _pingManifest(self):
         url = self.image[:-7] + '.xml'
         if not Util.pingFile(url, 'text/xml'):
-            raise ValidationException('Unable to access manifels file: %s' % url)
+            raise ValidationException('Unable to access manifest file: %s' % url)
 
     def _createRunner(self):
         self.configHolder.set('extraDiskSize', 8*1024)
