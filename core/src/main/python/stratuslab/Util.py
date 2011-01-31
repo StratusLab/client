@@ -276,6 +276,10 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
 
     return execute(sshCmd, **kwargs)
 
+def sshCmdWithOutput(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
+    return sshCmd(cmd, host, sshKey=sshKey, port=port,
+                  user=user, timeout=timeout, withOutput=True, **kwargs)
+
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port), '-r', '-o', 'StrictHostKeyChecking=no']
 
@@ -448,3 +452,17 @@ def constructEndPoint(fragment, protocol='https', port=8443, path='xmlrpc'):
         _path = path
     
     return '%s://%s:%s/%s' % (_protocol, address, _port, _path)
+
+def parseUri(uri):
+    "Return tuple (proto, hostname, port, path?query#fragment)"
+    m = re.match('([a-zA-Z0-9_]*://)?([^/:$]*):?(\d+)?/?(.*)', uri)
+    return m.group(1), m.group(2), m.group(3), m.group(4)
+
+def getHostnameFromUri(uri):
+    return parseUri(uri)[1]
+
+def getProtoFromUri(uri):
+    return parseUri(uri)[0]
+
+def getProtoHostnameFromUri(uri):
+    return ''.join(parseUri(uri)[:2])

@@ -17,10 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import re
 import os
 from datetime import datetime
 import time
 import urllib2
+import tempfile
+import shutil
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Runner import Runner
@@ -29,22 +32,38 @@ from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
+from stratuslab.Util import sshCmdWithOutput
 from stratuslab.Util import waitUntilPingOrTimeout
+from stratuslab.Util import getHostnameFromUri
+from stratuslab.Util import getProtoHostnameFromUri
+from stratuslab.Util import execute
 import stratuslab.Util as Util
 from Exceptions import ValidationException
 from Exceptions import ExecutionException
 from ManifestInfo import ManifestInfo
 from ConfigParser import SafeConfigParser
 from Authn import AuthnFactory
+from stratuslab.system.ubuntu import installCmd as aptInstallCmd
+from stratuslab.system.ubuntu import updateCmd as aptUpdateCmd
+from stratuslab.system.ubuntu import cleanPackageCacheCmd as aptCleanPackageCacheCmd
+from stratuslab.system.centos import installCmd as yumInstallCmd
+from stratuslab.system.centos import updateCmd as yumUpdateCmd
+from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCacheCmd
+from stratuslab.Uploader import Uploader
+from stratuslab.Signator import Signator
 
- 
+VM_START_TIMEOUT = 150
+
+INSTALLERS = ['yum', 'apt'] # TODO: should go to system/__init__.py
+
 class Creator(object):
-    
+
     def __init__(self, image, configHolder):
         self.image = image
         self.configHolder = configHolder
         self.options = Runner.defaultRunOptions()
         self.options.update(configHolder.options)
+
         configHolder.assign(self)
 
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -59,19 +78,56 @@ class Creator(object):
         self.newManifestFileName = None
         self.vmAddress = None
         self.vmId = None
+        self.vmIp = None
+
+        if self.options.get('repoAddress'):
+            self.repoAddress = self.options.get('repoAddress')
+        else:
+            self.repoAddress = self.options['repoAddress'] = getProtoHostnameFromUri(self.image)
 
         # Structure of the repository
-        self.appRepoStructure = '#type_#/#os#-#osversion#-#arch#-#type#/#version#'
+        self.appRepoStructure = 'images/#type_#/#os#-#osversion#-#arch#-#type#/#version#'
         # Repository image filename structure
         self.appRepoFilename = '#os#-#osversion#-#arch#-#type#-#version#.img.#compression#'
 
-        self.manifest = None
+        self.manifest = ''
+
+        _defaultChecksum = 'NOT CHECKSUMMED'
+        self.checksums = {'md5'   :{'cmd':'md5sum',   'sum':_defaultChecksum},
+                          'sha1'  :{'cmd':'sha1sum',  'sum':_defaultChecksum},
+                          'sha256':{'cmd':'sha256sum','sum':_defaultChecksum},
+                          'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
+
+        self.userPublicKeyFile = self.options.get('userPublicKeyFile',
+                                                 '%s/.ssh/id_rsa.pub' %
+                                                    os.path.expanduser("~"))
+
+        self.mainDisk = ''
+        self.extraDisk = ''
+        self.mountPointExtraDisk = '/media'
+        self.imageFile = ''
+        self.imageFileBundled = ''
+
+        self.excludeFromBundle = ['/tmp/*',
+                                  '/etc/ssh/ssh_host_*',
+                                  '/root/.ssh/{authorized_keys,known_hosts}'
+                                  ] + \
+                                  self.options.get('excludeFromBundle','').split(',')
+
+        installers = ('yum', 'apt')
+        self.installer = self.options.get('installer')
+        if self.installer not in installers:
+            raise ValidationException('Installer should be one of %s. Given %s.' %
+                                      (','.join(installers), self.installer))
+
+        self.targetImageUri = ''
+        self.targetManifestUri = ''
 
     def printDetail(self, msg):
-        return Util.printDetail(msg, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)        
+        return Util.printDetail(msg, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)
 
     def showName(self):
-        
+
         self._updateAppRepoStructures()
         self._retrieveManifest()
         info = self._updateManifest()
@@ -105,37 +161,26 @@ class Creator(object):
         root = '/'.join(self.image.split('/')[:-4])
         return root
 
-    def _buildRepoNameStructure(self, structure, info):
-        varPattern = '#%s#'
-        dirVarPattern = '#%s_#'
-        for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression', 'author'):
-            if structure.find(varPattern % part) != -1:
-                structure = structure.replace(varPattern % part, getattr(info, part, ''))
-
-            if structure.find(dirVarPattern % part) != -1:
-                structure = structure.replace(dirVarPattern % part, getattr(info, part, '').replace('.', '/'))
-        return structure
-
     def create(self):
         printAction('Starting image creation')
 
         printStep('Checking that base image exists')
         self._imageExists()
-        
+
+        printStep('Retrieving image manifest')
+        self._retrieveManifest()
+        self._setAttributesFromManifest()
+
         self._createRunner()
 
         printStep('Starting base image')
         self._startMachine()
 
         self.vmAddress = self._getPublicAddress()
-        
+
         if not waitUntilPingOrTimeout(self.vmAddress, 600):
             self.cloud.vmStop(self.vmId)
             printError('Unable to ping VM')
-
-        printStep('Creating image manifest')
-        self._retrieveManifest()
-        self._updateManifest()
 
         printStep('Installing user packages')
         self._installPackages()
@@ -143,27 +188,43 @@ class Creator(object):
         printStep('Executing user scripts')
         self._executeScripts()
 
+        printStep('Creating image')
+        self._createImage()
+
+        printStep('Checksumming image')
+        self._checksumImage()
+
+        printStep('Updating image manifest')
+        self.manifestObject = self._updateAndSaveManifest()
+
+        printStep('Signing image manifest')
+        self._signManifest()
+
         printStep('Bundling image')
         self._bundleImage()
 
-        printStep('Uploading image to appliance repository')
-        self._upload()
+        printStep('Uploading image and manifest to appliance repository')
+        self._uploadImageAndManifest()
 
         if self.shutdownVm:
             printStep('Shutting down machine')
             self.cloud.vmStop(self.vmId)
         else:
             printStep('Machine ready for your usage')
-            print '\n\tMachine IP: %s' % ', '.join(dict(self.vmIps).values())
+            print '\n\tMachine IP: %s' % self.vmIp
             print '\tRemember to stop the machine when finished',
-            
+
         printAction('Image creation finished')
+        print ' Image: %s' % self.targetImageUri
+        print ' Manifest: %s' % self.targetManifestUri
         print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
                                                                         self.stderr.name)
+        self._localCleanUp()
+
     def _imageExists(self):
         self._pingImage()
         self._pingManifest()
-    
+
     def _pingImage(self):
         ending = 'img.gz'
         if not self.image.endswith(ending):
@@ -179,30 +240,44 @@ class Creator(object):
     def _createRunner(self):
         self.configHolder.set('extraDiskSize', 8*1024)
         self.runner = Runner(self.image, self.configHolder)
-        
+
     def _startMachine(self):
         try:
-            self.vmIds = self.runner.runInstance()
-            self.vmIps = self.runner.vmIps
+            self.vmId = self.runner.runInstance()[0]
+            _, self.vmIp = self.runner.getNetworkDetail(self.vmId)
         except Exception, msg:
             printError('An error occurred while starting machine: \n\t%s' % msg)
 
-        self.vmId = self.vmIds[0]
         printStep('Waiting for machine to boot')
-        vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId)
+        vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
+                                                            VM_START_TIMEOUT)
         if not vmStarted:
             printError('Failed to start VM!')
 
     def _getPublicAddress(self):
-        return dict(self.vmIps)['public']
+        return self.vmIp
 
     def _retrieveManifest(self):
         self.printDetail('Retrieving Manifest')
         manifestFileName = self.image[:-6] + 'xml'
         self.manifest = Util.wstring(manifestFileName)
 
-    def _updateManifest(self):
+    def _setAttributesFromManifest(self):
+        self._setOsFromManifest()
+
+    def _setOsFromManifest(self):
+        # could have been set via command line parameter
+        if not self.os:
+            self.os = self._getAttrFromManifest('os').lower()
+
+    def _getAttrFromManifest(self, attr):
+        info = ManifestInfo()
+        info.parseManifest(self.manifest)
+        return getattr(info, attr)
+
+    def _updateAndSaveManifest(self):
         self.printDetail('Updating manifest')
+
         info = ManifestInfo()
         info.parseManifest(self.manifest)
 
@@ -213,33 +288,97 @@ class Creator(object):
         info.user = self.author or info.user
         info.version = self.newImageGroupVersion or info.version
         info.comment = self.comment or info.comment
-        
+        for name, checksum in self.checksums.items():
+            setattr(info, name, checksum['sum'])
+
         self.manifest = info.tostring()
-        
+
+        fd, self.manifestLocalFileName = tempfile.mkstemp('.xml')
+        self.printDetail('Writing manifest to local temporary file: %s' %
+                         self.manifestLocalFileName)
+        os.write(fd, self.manifest)
+        os.close(fd)
+
         return info
+
+    def _signManifest(self):
+        signator = Signator(self.manifestLocalFileName, self.configHolder)
+        signator.sign()
+        shutil.move(signator.outputManifestFile, self.manifestLocalFileName)
 
     def _installPackages(self):
         if len(self.packages) == 0:
-            printStep('No packages to install')
+            self.printDetial('No packages to install')
             return
-        
-        printStep('Installing packages: ' % self.packages)
-        
-        cmd = self._buildInstallerCommand() + ' '
-        cmd += ' '.join(self.packages.split(','))
-        ret = sshCmd(cmd, self.vmAddress, self.sshKey,
-               stderr=self.stderr, stdout=self.stdout)
+
+        self._setUpExtraRepositories()
+
+        self.printDetail('Installing packages: %s' % self.packages)
+
+        ret = self._doInstallPackages(self.packages)
 
         if ret != 0:
             printError('An error occurred while installing packages')
 
+    def _setUpExtraRepositories(self):
+        if not self.extraOsReposUrls:
+            return
+
+
+        self.printDetail('Adding extra repositories')
+
+        if self.installer not in INSTALLERS:
+            ValidationException('Unknown installer %s. Bailing out.' %
+                                self.installer)
+
+        extraReposList = self.extraOsReposUrls.split(',')
+
+        if self.installer == 'yum':
+            for i,repoUrl in enumerate(extraReposList):
+                repoName = getHostnameFromUri(repoUrl)
+                cmd = """cat >> /etc/yum.repos.d/%(name)s.repo << EOF
+[%(name)s]
+name=%(name)s
+baseurl=%(url)s
+gpgcheck=0
+enabled=1
+EOF
+""" % {'name' : '%s-%i'%(repoName,i), 'id': i, 'url' : repoUrl}
+        elif self.installer == 'apt':
+            for repoUrl in extraReposList:
+                repoName = getHostnameFromUri(repoUrl)
+                cmd = """cat >> /etc/apt/sourses.list.d/%(name)s.list
+deb %(name)s
+""" % {'name' : repoName}
+
+        self._sshCmdWithOutput(cmd)
+
+    def _doInstallPackages(self, packages):
+        cmd = self._buildInstallerCommand() + ' '
+        cmd += ' '.join(packages.split(','))
+        return self._sshCmd(cmd, stderr=self.stderr, stdout=self.stdout)
+
     def _buildInstallerCommand(self):
-        # TODO: do this properly
-        return 'yum -q -y --nogpgcheck install'
+        if self.installer == 'yum':
+            return yumInstallCmd
+        elif self.installer == 'apt':
+            return aptInstallCmd
+
+    def _buildUpdaterCommand(self):
+        if self.installer == 'yum':
+            return yumUpdateCmd
+        elif self.installer == 'apt':
+            return aptUpdateCmd
+
+    def _buildPackageCacheCleanerCommand(self):
+        if self.installer == 'yum':
+            return yumCleanPackageCacheCmd
+        elif self.installer == 'apt':
+            return aptCleanPackageCacheCmd
 
     def _executeScripts(self):
         if len(self.scripts) == 0:
-            printStep('No scripts to execute')
+            self.printDetail('No scripts to execute')
             return
 
         printStep('Executing scripts: ' % self.scripts)
@@ -247,39 +386,209 @@ class Creator(object):
         for script in self.scripts.split(','):
             scriptPath = '/tmp/%s' % os.path.basename(script)
             scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
-                self.sshKey, stderr=self.stderr, stdout=self.stdout)
+                self.userPublicKeyFile, stderr=self.stderr, stdout=self.stdout)
 
-            ret = sshCmd('%s' % scriptPath, self.vmAddress, self.sshKey,
-                         stderr=self.stderr, stdout=self.stdout)
+            ret = self._sshCmd('%s' % scriptPath, stderr=self.stderr, stdout=self.stdout)
 
             if ret != 0:
                 printError('An error occurred while executing script %s' % script)
 
+    def _createImage(self):
+
+        self._setDiskNamesOfRemoteNode()
+
+        extraDiskFirstPart = '%s1' % self.extraDisk
+        extraDiskFirstPartMntPoint = '%s/%s' % (self.mountPointExtraDisk,
+                                                extraDiskFirstPart)
+
+        def umountAllPartitionsOfExtraDisk():
+            cmd = 'for dev in /dev/%s*; do umount $dev; done' % self.extraDisk
+            self._sshCmdWithOutput(cmd, throwOnError=False)
+
+        def partitionExtraDisk():
+            cmd = """sfdisk /dev/%s << EOF
+,,L
+;
+;
+;
+EOF
+""" % self.extraDisk
+            self._sshCmdWithOutput(cmd)
+        def makeFileSystemsOnExtraDisk():
+            cmd = "mkfs.ext3 /dev/%s" % extraDiskFirstPart
+            self._sshCmdWithOutput(cmd)
+
+        def mountPartitionsFromExtraDisk():
+            cmd = "mkdir -p %(mnt)s; mount /dev/%(ed1stPart)s %(mnt)s" % \
+                    {'mnt' : extraDiskFirstPartMntPoint,
+                     'ed1stPart': extraDiskFirstPart}
+            self._sshCmdWithOutput(cmd)
+
+        def stopServices():
+            # don't stop those services
+            runlevelOneSericesUp = ('sshd', 'network', 'iptables', 'ip6tables')
+
+            cmd = 'ls -1 /etc/rc1.d/K*'
+            _, services = self._sshCmdWithOutput(cmd)
+
+            servicesToStop = []
+            for s in services.split('\n'):
+                if not re.search('(%s)$' % '|'.join(runlevelOneSericesUp), s):
+                    servicesToStop.append(s)
+
+            for srv in servicesToStop:
+                if srv:
+                    self._sshCmdWithOutput('%s stop' % srv, throwOnError=False)
+
+        def doCleanupOnMainDisk():
+            pkgCacheCleanCmd = self._buildPackageCacheCleanerCommand()
+            self._sshCmdWithOutput(pkgCacheCleanCmd, throwOnError=False)
+
+        def cloneMainDiskToRawImageFile():
+            self.imageFile = '%s/%s.img' % (extraDiskFirstPartMntPoint,
+                                            self.mainDisk)
+            cmd = 'dd if=/dev/%(main)s of=%(image)s bs=$((64*1024))' % \
+                    {'main'  : self.mainDisk,
+                     'image' : self.imageFile}
+            _, stat = self._sshCmdWithOutput(cmd)
+            self.printDetail('Statistics on image creation:\n%s' % stat)
+
+            self.imageFileBundled = '%s.gz' % self.imageFile
+
+        def _removeFilesForExclusion(base=''):
+            printStep('Removing files/directories to be excluded')
+
+            filesOnBase = ['%s/%s' % (base, x) for x in self.excludeFromBundle if x]
+            cmd = 'rm -rf %s' % ' '.join(filesOnBase).strip()
+
+            self._sshCmd(cmd, throwOnError=False)
+
+        def doCleanupOnImamge():
+            imageFileMntDir = '%s.mntdir' % self.imageFile
+
+            self._mountImageFirstLvmPart(imageFileMntDir)
+            _removeFilesForExclusion(imageFileMntDir)
+            self._umountOnRemote(imageFileMntDir)
+
+        umountAllPartitionsOfExtraDisk()
+        partitionExtraDisk()
+        makeFileSystemsOnExtraDisk()
+        mountPartitionsFromExtraDisk()
+        stopServices()
+        doCleanupOnMainDisk()
+        cloneMainDiskToRawImageFile()
+        doCleanupOnImamge()
+
+    def _setDiskNamesOfRemoteNode(self):
+        if self.os == 'centos':
+            self.mainDisk  = 'hda'
+            self.extraDisk = 'hdd'
+        elif self.os == 'ubuntu':
+            self.mainDisk  = 'sda'
+            self.extraDisk = 'sdd'
 
     def _bundleImage(self):
-        self._removeFilesForExclusion()
-                
-        printStep('Mounting the extra disk for bundling')
-        mountPoint = '/extra-disk'
-        self._sshCmd('mkdir -p %s' % mountPoint)
-        self._sshCmd('mount /dev/hdd %s' % mountPoint)
-        
-        printStep('Bundling')
-        newImageName = '/tmp/newimage.img.gz'
-        ddCmd = 'dd if=/dev/hda conv=sync,noerror bs=64K | gzip -c  > %s' % newImageName
-        sshCmd(ddCmd)
-        
-    def _removeFilesForExclusion(self):
-        printStep('Removing files/directories to be excluded')
-        excludeFiles = self.excludeFromBundle + ', /tmp, /mnt'
-        self._sshCmd('rm -rf %s' % ' '.join(excludeFiles.split(',')))
+        cmd = 'gzip -c %s > %s' % (self.imageFile, self.imageFileBundled)
+        self._sshCmd(cmd)
 
-    def _sshCmd(self, cmd, throwOnError=True):
-        ret = sshCmd(cmd)
+    def _mountImageFirstLvmPart(self, imageFileMntDir):
+
+        cmd = 'mkdir -p %s' % imageFileMntDir
+        self._sshCmdWithOutput(cmd)
+
+        # get start sector of LVM partition (ID: 8e)
+        cmd = "fdisk -lu %(imageFile)s 2>/dev/null|grep 8e|awk '{print $2}'" % \
+                {'imageFile': self.imageFile}
+        _, offsetInSectors = self._sshCmdWithOutput(cmd)
+
+        # offset to the first logical volume
+        peStartSectors = 384
+        peStartBytes = peStartSectors * 512
+        offsetInBytes = '%i' % (int(offsetInSectors) * 512 + peStartBytes)
+
+        # mount first logical volume
+        cmd = "mount -o loop,offset=%(offset)s %(imageFile)s %(mntDir)s" % \
+                {'offset'   : offsetInBytes,
+                 'imageFile': self.imageFile,
+                 'mntDir'   : imageFileMntDir}
+        self._sshCmdWithOutput(cmd)
+
+    def _umountOnRemote(self, dir):
+        cmd = 'umount %s' % dir
+        try:
+            self._sshCmd(cmd, throwOnError=True)
+        except ExecutionException:
+            cmd = 'umount -lf %s' % dir
+            self._sshCmdWithOutput(cmd)
+
+    def _checksumImage(self):
+        self._checksumFile(self.imageFile)
+
+    def _checksumFile(self, filename):
+        for name, meta in self.checksums.items():
+            checksumingCmd = '%s %s' % (meta['cmd'], filename)
+            rc, output = sshCmdWithOutput(checksumingCmd, self.vmAddress)
+            if rc != 0:
+                raise ExecutionException('Could not get %s checksum for image: %s' %
+                                         (name, output))
+            self.checksums[name]['sum'] = output.split(' ')[0]
+
+    def _sshCmd(self, cmd, throwOnError=True, **kwargs):
+        ret = sshCmd(cmd, self.vmAddress,
+                     sshKey=self.userPublicKeyFile,
+                     verboseLevel=self.verboseLevel,
+                     verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                     **kwargs)
         if ret and throwOnError:
             raise ExecutionException('Error executing command: %s' % cmd)
         return ret
-        
-    def _upload(self):
-        self._constructImageName()
-        pass
+
+    def _sshCmdWithOutput(self, cmd, throwOnError=True, **kwargs):
+        rc, output = sshCmdWithOutput(cmd, self.vmAddress,
+                                      sshKey=self.userPublicKeyFile,
+                                      verboseLevel=self.verboseLevel,
+                                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                                      **kwargs)
+        if rc and throwOnError:
+            raise ExecutionException('Error executing command: %s\n%s' % (cmd, output))
+        return rc, output
+
+    def _uploadImageAndManifest(self):
+        if self.options.get('noUpload', False):
+            printStep('Asked not to upload image to appliance repository')
+            return
+
+        self._doInstallPackages('curl')
+
+        self.options['remoteImage'] = True
+        self.options['uploadOption'] = ''
+        uploader = Uploader(self.manifestLocalFileName, self.options)
+        uploader.remoteServerAddress = self.vmAddress
+
+        self.targetImageUri, self.targetManifestUri = \
+            self._constructRemoteImageAndManifestUris()
+
+        printStep('Uploading appliance\n')
+        uploader.uploadFileFromRemoteServer(self.imageFileBundled, self.targetImageUri)
+
+        printStep('Uploading manifest')
+        uploader.uploadFile(self.manifestLocalFileName, self.targetManifestUri)
+
+    def _constructRemoteImageAndManifestUris(self):
+        image, manifest = self._constructRemoteImageAndManifestFileNames()
+        return '%s/%s' % (self.repoAddress, image), \
+                '%s/%s' % (self.repoAddress, manifest)
+
+    def _constructRemoteImageAndManifestFileNames(self):
+        imageName = self._consturctRemoteImageName()
+        nameBase = imageName.rsplit('.',2)[0] # remove .img.gz
+        manifestName = '%s.xml' % nameBase
+        return imageName, manifestName
+
+    def _consturctRemoteImageName(self):
+        fileName = Uploader.buildRepoNameStructure(self.appRepoFilename, self.manifestObject)
+        path = Uploader.buildRepoNameStructure(self.appRepoStructure, self.manifestObject)
+        return os.path.join(path, fileName)
+
+    def _localCleanUp(self):
+        execute(['rm', '-rf', self.manifestLocalFileName])

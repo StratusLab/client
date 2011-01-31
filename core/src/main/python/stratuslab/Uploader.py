@@ -34,6 +34,9 @@ from stratuslab.Util import printAction
 from stratuslab.Util import printError
 from stratuslab.Util import printStep
 from stratuslab.Util import wget
+from stratuslab.Util import sshCmd
+from stratuslab.Util import getHostnameFromUri
+from stratuslab.Util import getProtoFromUri
 
 try:
     from lxml import etree
@@ -55,7 +58,7 @@ except ImportError:
                     import elementtree.ElementTree as etree
                 except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
-                
+
 
 class Uploader(object):
 
@@ -72,25 +75,25 @@ class Uploader(object):
     @staticmethod
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] manifest'''
-    
+
         parser.add_option('-r', '--repository', dest='repoAddress',
                 help='appliance repository address. Default STRATUSLAB_REPO',
                 default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
-    
+
         parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
                 help='additional curl option', default='')
-    
+
         parser.add_option('-C', '--compress', dest='compressionFormat',
                 help='compression format',
                 default='gz', metavar='FORMAT')
         parser.add_option('-f', '--force', dest='forceUpload',
                 help='force upload of the appliance even if already exist.',
                 default=False, action='store_true')
-    
+
         parser.add_option('--list-compression', dest='listCompressionFormat',
                 help='list available compression format',
                 default=False, action='store_true')
-    
+
         parser.add_option('-U', '--repo-username', dest='repoUsername',
                 help='repository username. Default STRATUSLAB_REPO_USERNAME',
                 default=os.getenv('STRATUSLAB_REPO_USERNAME'))
@@ -109,6 +112,18 @@ class Uploader(object):
         if not options.repoPassword:
             parser.error('Unspecified repository password')
 
+    @staticmethod
+    def buildRepoNameStructure(structure, info):
+        varPattern = '#%s#'
+        dirVarPattern = '#%s_#'
+        for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
+            if structure.find(varPattern % part) != -1:
+                structure = structure.replace(varPattern % part, getattr(info, part, ''))
+
+            if structure.find(dirVarPattern % part) != -1:
+                structure = structure.replace(dirVarPattern % part, getattr(info, part, '').replace('.', '/'))
+        return structure
+
     def __init__(self, manifest, options):
         assignAttributes(self, options)
         self.manifest = manifest
@@ -123,8 +138,16 @@ class Uploader(object):
         self.type = None
         self.version = None
         self.compression = None
+        self.compressionFormat = 'gz'
         self.repoStructure = ''
         self.repoFilename = ''
+
+        if not hasattr(self, 'remoteImage'):
+            self.remoteImage = False
+        if not hasattr(self, 'remoteManifest'):
+            self.remoteManifest = False
+
+        self.remoteServerAddress = None
 
     def start(self):
         printAction('Starting appliance upload')
@@ -146,15 +169,32 @@ class Uploader(object):
 
         printAction('Appliance uploaded successfully')
         print '\n\t%s' % '\n\t'.join(self.uploadedFile)
-        
+
     def _uploadAppliance(self):
-        self._uploadFile(self.appliance, '%s/%s' % (self.repoStructure, self.repoFilename))
+        if self.remoteImage:
+            self.uploadFileFromRemoteServer(self.appliance, '%s/%s' % (self.repoStructure,
+                                                                   self.repoFilename))
+        else:
+            self.uploadFile(self.appliance, '%s/%s' % (self.repoStructure,
+                                                       self.repoFilename))
 
     def _uploadManifest(self):
-        self._uploadFile(self.manifest, '%s/%s' % (self.repoStructure, self.repoManifestFilename))
-                                                       
-    def _uploadFile(self, filename, remoteName):
-        uploadUrl = '%s/%s' % (self.repoAddress, remoteName)
+        repoFilename = self.repoFilename.replace('.%s' % self.compression, 'xml')
+        if self.remoteManifest:
+            self.uploadFileFromRemoteServer(self.manifest, '%s/%s' % (self.repoStructure,
+                                                                  repoFilename))
+        else:
+            self.uploadFile(self.manifest, '%s/%s' % (self.repoStructure,
+                                                      repoFilename))
+
+    def uploadFileFromRemoteServer(self, filename, remoteName):
+        self.uploadFile(filename, remoteName, remoteServer=True)
+
+    def uploadFile(self, filename, remoteName, remoteServer=False):
+        if getProtoFromUri(remoteName) and getHostnameFromUri(remoteName):
+            uploadUrl = remoteName
+        else:
+            uploadUrl = '%s/%s' % (self.repoAddress, remoteName)
         curlUploadCmd = self.curlCmd + ['-T', filename]
 
         self._checkFileAlreadyExists(remoteName)
@@ -162,15 +202,23 @@ class Uploader(object):
 
         if self.uploadOption:
             curlUploadCmd.append(self.uploadOption)
-            
+
         curlUploadCmd.append(uploadUrl)
-        
-        ret = self._execute(curlUploadCmd)
+        if remoteServer:
+            strCurlUploadCmd = ' '.join(curlUploadCmd)
+            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress, sshKey=self.userPublicKeyFile)
+        else:
+            devNull = self._openDevNull()
+            ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
+            devNull.close()
 
         if ret != 0:
             raise NetworkException('An error occurred while uploading %s' % uploadUrl)
 
         self.uploadedFile.append(uploadUrl)
+
+    def _openDevNull(self):
+        return open('/dev/null', 'w')
 
     def _execute(self, command):
         if self.verboseLevel <= Util.NORMAL_VERBOSE_LEVEL:
@@ -224,6 +272,7 @@ class Uploader(object):
                        '-f --force option')
 
     def _parseManifest(self):
+        # TODO: ManifestInfo class should be use here.
         xml = etree.ElementTree()
         xml.parse(self.manifest)
         self.os = xml.find('os').text
@@ -244,20 +293,8 @@ class Uploader(object):
         repoStructure = repoConf.get(defaultRepoConfigSection, 'repo_structure')
         repoFilename = repoConf.get(defaultRepoConfigSection, 'repo_filename')
 
-        self.repoStructure = self._buildRepoNameStructure(repoStructure)
-        self.repoFilename = self._buildRepoNameStructure(repoFilename)
-        self.repoManifestFilename = self._buildManifestName(self.repoFilename)
-
-    def _buildRepoNameStructure(self, structure):
-        varPattern = '#%s#'
-        dirVarPattern = '#%s_#'
-        for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
-            if structure.find(varPattern % part) != -1:
-                structure = structure.replace(varPattern % part, getattr(self, part, ''))
-
-            if structure.find(dirVarPattern % part) != -1:
-                structure = structure.replace(dirVarPattern % part, getattr(self, part, '').replace('.', '/'))
-        return structure
+        self.repoStructure = self.buildRepoNameStructure(repoStructure, self)
+        self.repoFilename = self.buildRepoNameStructure(repoFilename, self)
 
     def _buildManifestName(self, repoFilename):
         return repoFilename.split('.img')[0] + '.xml'
@@ -292,7 +329,7 @@ class Uploader(object):
         xml = etree.ElementTree()
         docElement = xml.parse(self.manifest)
 
-        compressionElem = xml.find('compression')        
+        compressionElem = xml.find('compression')
         if compressionElem != None:
             printWarning("compression already defined in the manifest file with value: " + compressionElem.text)
         else:

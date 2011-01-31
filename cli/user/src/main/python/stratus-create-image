@@ -24,18 +24,17 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util
-
+from stratuslab.AuthnCommand import AuthnCommand
 
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
 
     def parse(self):
-        
+
         self.parser.usage = '''%prog [options] base-image'''
 
         self.parser.add_option('--show-name', dest='showImageName',
@@ -67,15 +66,24 @@ class MainProgram(Runnable):
                 default='', metavar='FILE')
 
         self.parser.add_option('-a', '--packages', dest='packages',
-                help='packages to install on the machine (comma separated list)',
+                help='packages to install on the machine (comma separated)',
                 default='', metavar='PACKAGE')
 
         self.parser.add_option('--installer', dest='installer',
                 help='package installer (default yum)',
-                default='yum', metavar='INSTALLER')
+                default='yum', metavar='NAME')
+
+        self.parser.add_option('--os', dest='os',
+                help='operation system. By default is taken from Manifest.',
+                default='', metavar='OS')
+
+        self.parser.add_option('--extra-os-repos', dest='extraOsReposUrls',
+                help='extra repositories to install [--packages] from (comma separated). For apt \
+"base_uri distribution [component1] ..."',
+                default='', metavar='URL')
 
         self.parser.add_option('--exclude', dest='excludeFromBundle',
-                help='exclude file/dir from bundle (comma separated list). Note: /tmp and /mnt are automatically excluded',
+                help='exclude file/dir from bundle (comma separated). Note: /tmp and /mnt are automatically excluded',
                 default='', metavar='FILE')
 
         self.parser.add_option('--comment', dest='comment',
@@ -85,11 +93,11 @@ class MainProgram(Runnable):
         self.parser.add_option('--no-shutdown', dest='shutdownVm',
                 help='leave the VM running. A public IP will be assigned.',
                 default=True, action='store_false')
-        
+
         self.parser.add_option('-r', '--repository', dest='repoAddress',
-                help='appliance repository address. Default STRATUSLAB_REPO',
+                help='appliance repository address. Default STRATUSLAB_REPO_ADDRESS',
                 default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
-    
+
         self.parser.add_option('-U', '--repo-username', dest='repoUsername',
                 help='repository username. Default STRATUSLAB_REPO_USERNAME',
                 default=os.getenv('STRATUSLAB_REPO_USERNAME'))
@@ -98,15 +106,25 @@ class MainProgram(Runnable):
                 help='repository password. Default STRATUSLAB_REPO_PASSWORD',
                 default=os.getenv('STRATUSLAB_REPO_PASSWORD'))
 
-        self.parser.add_option('--no-upload', dest='upload',
+        self.parser.add_option('--no-upload', dest='noUpload',
                 help='do not upload the new image to an appliances repository. \
                 Requires --no-shutdown (otherwise it makes little sense ;-)',
-                default=True, action='store_true')
+                default=False, action='store_true')
 
         self.parser.add_option('--root-url', dest='rootUrl',
                 help='Url of the root of the applicance repository. By default the root is computed from the default'\
                 ' repository structure and the base image',
                 default='')
+
+        # Uploader
+        self.parser.add_option('-f', '--force', dest='forceUpload',
+                help='force upload of the appliance even if already exist.',
+                default=False, action='store_true')
+
+        self.parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
+                help='additional curl option', default='')
+
+        AuthnCommand.addP12CertOptions(self.parser)
 
         super(MainProgram, self).parse()
 
@@ -121,9 +139,9 @@ class MainProgram(Runnable):
         if self.options.showImageName:
             return
 
-        if not self.options.upload and not self.options.shutdownVm:
-            self.parser.error('If you specify --no-upload you also need to specify --no-shutdown, otherwise\
-            you\'ll never be able to retrieve the new image')
+        if self.options.noUpload and self.options.shutdownVm:
+            self.parser.error('If you specify --no-upload you also need to specify --no-shutdown, otherwise \
+you\'ll never be able to retrieve the new image')
 
         if not self.options.comment:
             self.parser.error('Please provide a comment describing the new image')
@@ -132,24 +150,28 @@ class MainProgram(Runnable):
             self.parser.error('Please provide an author for the new image')
 
         if not self.options.repoAddress and not self.options.noUpload:
-            self.parser.error('Missing repository address')
+            if Util.getProtoFromUri(self.image) and Util.getProtoHostnameFromUri(self.image):
+                self.options.repoAddress = Util.getProtoHostnameFromUri(self.image)
+            else:
+                self.parser.error('Missing repository address')
         if not self.options.repoUsername and not self.options.noUpload:
             self.parser.error('Missing repository username')
         if not self.options.repoPassword and not self.options.noUpload:
             self.parser.error('Missing repository password')
 
+        AuthnCommand.checkP12CertOptionsOnly(self)
+
     def doWork(self):
-        
+
         configHolder = ConfigHolder(self.options.__dict__)
         self.creator = Creator(self.image, configHolder)
-        
+
         if self.options.showImageName:
             Util.printAction('Simulating new image name')
             Util.printStep(self.creator.showName())
             return
-        
         self.creator.create()
-        
+
 
 if __name__ == '__main__':
     try:

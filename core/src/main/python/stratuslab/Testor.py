@@ -139,7 +139,7 @@ class Testor(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options['username'] = self.oneUsername
         options['password'] = self.proxyOneadminPassword
-        options['userKey'] = self.sshKeyPub
+        options['userPublicKeyFile'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
         options['specificAddressRequest'] = requestedIpAddress
 
@@ -238,7 +238,7 @@ class Testor(unittest.TestCase):
         options['repoAddress'] = self.appRepoUrl
         options['uploadOption'] = ''
         uploader = Uploader(manifest, options)
-        uploader._uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
+        uploader.uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
         uploader.deleteFile(uploader.uploadedFile[-1])
 
     def _openDevNull(self):
