@@ -139,7 +139,7 @@ class Testor(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options['username'] = self.oneUsername
         options['password'] = self.proxyOneadminPassword
-        options['userKey'] = self.sshKeyPub
+        options['userPublicKeyFile'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
         options['specificAddressRequest'] = requestedIpAddress
 

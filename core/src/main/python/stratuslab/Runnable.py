@@ -42,9 +42,9 @@ class Runnable(AuthnCommand):
 
         self.parser.usage = '''%prog [defaultOptions] image'''
 
-        self.parser.add_option('-k', '--key', dest='userKey',
-                help='SSH key to log on the machine. By default STRATUSLAB_SSH_PUBLIC_KEY', metavar='FILE',
-                default=defaultOptions['userKey'])
+        self.parser.add_option('-k', '--key', dest='userPublicKeyFile',
+                help='SSH key to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',
+                default=defaultOptions['userPublicKeyFile'])
         self.parser.add_option('-t', '--type', dest='instanceType',
                 help='instance type to start', metavar='TYPE',
                 default=defaultOptions['instanceType'])
@@ -127,10 +127,10 @@ class Runnable(AuthnCommand):
 
     def _checkPrivateKey(self):
         if self.checkCredentials:
-            if not self.options.userKey:
+            if not self.options.userPublicKeyFile:
                 self.parser.error('Unspecified user private key. See --key option.')
-            if not os.path.isfile(self.options.userKey):
-                self.parser.error('Key `%s` does not exist' % self.options.userKey)
+            if not os.path.isfile(self.options.userPublicKeyFile):
+                self.parser.error('Key `%s` does not exist' % self.options.userPublicKeyFile)
 
     def displayInstanceType(self):
         types = Runner.getInstanceType()

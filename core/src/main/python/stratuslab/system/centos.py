@@ -25,15 +25,17 @@ from stratuslab.Util import wget
 from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.Util import sleep
 from stratuslab.Util import filePutContent
-from stratuslab.Util import printDetail
 
+installCmd = 'yum -q -y --nogpgcheck install'
+updateCmd = 'yum update'
+cleanPackageCacheCmd = 'yum clean all'
 
 class CentOS(BaseSystem):
 
     def __init__(self):
         self.systemName = 'CentOS 5.5'
         self.arch = self.getSystemArch()
-        self.installCmd = 'yum -q -y --nogpgcheck install'
+        self.installCmd = installCmd
         self.remotePackages = [
             # ('name', 'version', 'arch', 'uri')
             # --> <uri>/<name>-<version>.<arch>.rpm
@@ -63,9 +65,9 @@ class CentOS(BaseSystem):
             'nfs': [],
             'ssh': [],
         }
-        
+
         self.packages = {'apache2': PackageInfo('httpd','/etc/httpd')}
-        
+
         super(CentOS, self).__init__()
 
     def getSystemArch(self):
@@ -74,7 +76,7 @@ class CentOS(BaseSystem):
         if arch == 'x86_64':
             return arch
         else:
-            return 'i386' 
+            return 'i386'
 
     # -------------------------------------------
     #     Package manager and related
@@ -93,7 +95,7 @@ class CentOS(BaseSystem):
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
-            self._nodeShell('%s %s' % 
+            self._nodeShell('%s %s' %
                             (self.installCmd, ' '.join(packages)))
 
     def installFrontendDependencies(self):
@@ -103,12 +105,12 @@ class CentOS(BaseSystem):
 
     def remotePackagesAddress(self, packages):
         remotePackages = []
-        
+
         for name, version, arch, uri in packages:
             remotePackages.append('%s/%s-%s.%s.rpm' % (uri % ({'arch': arch}), name, version, arch))
-        
+
         return remotePackages
-    
+
     def installRemotePackages(self, packages):
         rpmName = '/tmp/stratus-%d.rpm'
         pkgList = []
@@ -123,19 +125,19 @@ class CentOS(BaseSystem):
     # -------------------------------------------
     #     Source build and installation methods
     # -------------------------------------------
-        
+
     def remoteSourcesAddress(self, sources):
         remoteSources = []
-        
+
         for name, version, uri, ext in sources:
             remoteSources.append('%s/%s-%s.%s' % (uri, name, version, ext))
-            
+
         return remoteSources
-    
+
     def installSourceDependencies(self, sourcesAddress):
         for dep in sourcesAddress:
             self.buildAndInstall(dep)
-    
+
     def buildAndInstall(self, sourceAddr):
         archive = '/tmp/stratus-deps-src.tar.gz'
         wget(sourceAddr, archive)
@@ -149,15 +151,15 @@ class CentOS(BaseSystem):
         self._execute(['./configure'])
         self._execute(['make', '-j2', 'install'])
         os.chdir('../')
-        
+
     # -------------------------------------------
     #     File sharing related methods
     # -------------------------------------------
-        
+
     def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
         super(CentOS, self).configureNewNfsServer(mountPoint, networkAddr, networkMask)
         self._execute(['service', 'nfs', 'start'])
-        
+
     # -------------------------------------------
     #     Hypervisor related methods
     # -------------------------------------------
@@ -168,7 +170,7 @@ class CentOS(BaseSystem):
         # Sleep to give a chance to libvirt to create the libvirt-sock
         sleep(5)
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.oneUsername])
-        self.executeCmd(['chown', 'root:kvm', 
+        self.executeCmd(['chown', 'root:kvm',
                         '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
@@ -176,7 +178,7 @@ class CentOS(BaseSystem):
     # -------------------------------------------
     # Network related methods
     # -------------------------------------------
-    
+
     def _configureNetworkInterface(self, device, ip, netmask):
         deviceConf = '/etc/sysconfig/network-scripts/ifcfg-%s' % device
         data = """DEVICE=%s

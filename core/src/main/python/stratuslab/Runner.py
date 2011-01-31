@@ -45,7 +45,7 @@ class Runner(object):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpoint(self.endpoint)
-        
+
         self.vm_image = image
 
         self._initAttributes()
@@ -67,14 +67,14 @@ class Runner(object):
         self._setSaveDisk()
         self._setExtraDiskOptional()
         self._setDiskImageFormat()
-    
+
     def _setDiskImageFormat(self):
         useQcowDiskFormat = getattr(self, 'useQcowDiskFormat', False)
         self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
-    
+
     def _setUserKeyIfDefined(self):
-        if getattr(self, 'userKey', None):
-            self.public_key = fileGetContent(self.userKey)
+        if getattr(self, 'userPublicKeyFile', None):
+            self.public_key = fileGetContent(self.userPublicKeyFile)
 
     def _setSaveDisk(self):
         saveDisk = getattr(self, 'saveDisk', False)
@@ -118,7 +118,7 @@ class Runner(object):
         if not os.path.exists(vmTemplate):
             vmTemplate = '%s/../../../share/vm/schema.one' % modulePath
         return vmTemplate
-    
+
     @staticmethod
     def _findTokensInTemplate(template):
         return re.findall('%\(\w+\)s', template)
@@ -127,9 +127,9 @@ class Runner(object):
     def _extractTokenName(token):
         return re.sub(r'%\((\w+)\)s', r'\1', token)
 
-    @staticmethod        
+    @staticmethod
     def defaultRunOptions():
-        return {'userKey': os.getenv('STRATUSLAB_KEY', ''),
+        return {'userPublicKeyFile': os.getenv('STRATUSLAB_KEY', ''),
                 'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
                 'instanceNumber': 1,
                 'instanceType': 'm1.small',
@@ -242,7 +242,7 @@ class Runner(object):
 
     def _appendContextData(self, context):
         self.extra_context += '\n'.join(context)
-    
+
     def _manageVnc(self):
         vncInfo = []
 
@@ -281,15 +281,15 @@ class Runner(object):
         self._saveVmIds()
 
         return self.vmIds
-    
+
     def getNetworkDetail(self, vmId):
         networkName, ip = self.cloud.getVmIp(vmId)
         return networkName, ip
-    
+
     def _saveVmIds(self):
         if self.outVmIdsFile:
             open(self.outVmIdsFile,'w').write('\n'.join(map(str,self.vmIds)))
-     
+
     def _loadVmIdsFromFile(self):
         vmIds = []
 
@@ -297,7 +297,7 @@ class Runner(object):
             vmIds = open(self.inVmIdsFile).read().split('\n')
 
         return vmIds
-     
+
     def killInstances(self, ids):
         _ids = ids
         if self.inVmIdsFile:
@@ -306,12 +306,12 @@ class Runner(object):
             self.cloud.vmKill(int(id))
         plural = (len(_ids) > 1 and 's') or ''
         self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
-    
-    def printDetail(self, msg):
-        return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)        
 
-    def waitUntilVmRunningOrTimeout(self, vmId):
-        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, 120)
+    def printDetail(self, msg):
+        return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)
+
+    def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120):
+        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
         return vmStarted
 
     def checkImageUrl(self):
