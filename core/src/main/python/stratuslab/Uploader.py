@@ -36,6 +36,7 @@ from stratuslab.Util import printStep
 from stratuslab.Util import wget
 from stratuslab.Util import sshCmd
 from stratuslab.Util import getHostnameFromUri
+from stratuslab.Util import getProtoFromUri
 
 try:
     from lxml import etree
@@ -190,7 +191,7 @@ class Uploader(object):
         self.uploadFile(filename, remoteName, remoteServer=True)
 
     def uploadFile(self, filename, remoteName, remoteServer=False):
-        if getHostnameFromUri(remoteName):
+        if getProtoFromUri(remoteName) and getHostnameFromUri(remoteName):
             uploadUrl = remoteName
         else:
             uploadUrl = '%s/%s' % (self.repoAddress, remoteName)
