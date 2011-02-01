@@ -134,7 +134,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>copy-sign-validate-jar</id>
+						<id>copy-metadata-jar</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>copy</goal>
@@ -143,8 +143,8 @@
 							<outputDirectory>${project.build.directory}/jar</outputDirectory>
 							<artifactItems>
 								<artifactItem>
-									<groupId>eu.stratuslab.pkgs</groupId>
-									<artifactId>sign-validate-jar</artifactId>
+									<groupId>eu.stratuslab.marketplace</groupId>
+									<artifactId>metadata</artifactId>
 									<type>jar</type>
 								</artifactItem>
 							</artifactItems>

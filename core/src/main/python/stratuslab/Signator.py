@@ -46,16 +46,15 @@ class Signator(Configurable):
         tarballRelativePath = '../../../..'
         devRelativePath = '../../../../..'
         dirs.append(os.path.join(self._moduleDirname(), tarballRelativePath, 'java'))
-        dirs.append(os.path.join(self._moduleDirname(), devRelativePath, 'sign_validate/target'))
         dirs.append('/var/lib/stratuslab/java')
         
         for dir in dirs:
             try:
-                return self._findFile(dir, 'sign-validate', '.jar')
+                return self._findFile(dir, 'metadata', '.jar')
             except:
                 pass
 
-        raise ConfigurationException('Failed to find sign-validate jar file')
+        raise ConfigurationException('Failed to find metadata jar file')
 
     def _findFile(self, dir, start='', end=''):
         for file in os.listdir(dir):
