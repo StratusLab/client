@@ -24,9 +24,9 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>eu.stratuslab.pkgs</groupId>
-			<artifactId>sign-validate-jar</artifactId>
-			<version>1.5-SNAPSHOT</version>
+			<groupId>eu.stratuslab.marketplace</groupId>
+			<artifactId>metadata</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>

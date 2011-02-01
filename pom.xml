@@ -13,7 +13,6 @@
   <modules>
     <module>core</module>
     <module>cgi</module>
-    <module>sign_validate</module>
     <module>cli</module>
   </modules>
 
