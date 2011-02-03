@@ -55,6 +55,10 @@ class ManifestInfo(object):
         self.os = None
         self.osversion = None
         self.comment = None   
+        self.md5 = ''
+        self.sha1 = ''
+        self.sha256 = ''
+        self.sha512 = ''
         self.template = os.path.join(Util.getShareDir(),'template/manifest.xml.tpl')
     
     def parseManifest(self, manifest):
