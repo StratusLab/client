@@ -262,7 +262,8 @@ def printAndFlush(msg):
 
 def printDetail(msg,verboseLevel=1,verboseThreshold=1):
     if verboseLevel >= verboseThreshold:
-        printAndFlush('\n    %s' % msg) 
+        _msg = (msg.endswith('\n') and msg) or msg+'\n'
+        printAndFlush('    %s' % _msg)
     
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout, '-o', 'StrictHostKeyChecking=no']
