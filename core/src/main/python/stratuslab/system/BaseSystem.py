@@ -21,6 +21,7 @@ import re
 import os
 import shutil
 from datetime import datetime
+import time
 
 from stratuslab.Util import appendOrReplaceInFile
 from stratuslab.Util import fileGetContent
@@ -96,6 +97,8 @@ class BaseSystem(object):
 
     def startCloudSystem(self):
         self._cloudAdminExecute(['one start'])
+        printDetail('Waiting for ONE to finish starting')
+        time.sleep(10)
 
     # -------------------------------------------
     #     ONE admin creation
@@ -418,7 +421,6 @@ class BaseSystem(object):
     def configureCloudProxyService(self):
         self.installPackages(['stratuslab-cloud-proxy'])        
         self._configureProxyDefaultUsers()
-        self._patchProxyWarFileName()
         self._restartJetty()
         
     def _configureProxyDefaultUsers(self):
@@ -429,20 +431,6 @@ class BaseSystem(object):
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
-
-    def _patchProxyWarFileName(self):
-        warDir = '/opt/jetty-7/stratuslab-webapps'
-        files = os.listdir(warDir)
-        warFile = None
-        for file in files:
-            if file.startswith('authn-proxy') and file.endswith('.war'):
-                warFile = os.path.join(warDir, file)
-
-        if not warFile:
-            return
-
-        newWarFile = warFile.replace('-SNAPSHOT', '')
-        os.rename(warFile, newWarFile)
 
     def _restartJetty(self):
         self.executeCmd('/etc/init.d/jetty restart'.split(' '))
