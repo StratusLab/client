@@ -21,8 +21,6 @@ import unittest
 import os
 import sys
 
-sys.path.insert(1, os.getcwd().rsplit('/',2)[0] + '/src/main/python')
-
 from stratuslab.Util import appendOrReplaceMultilineBlockInString
 from stratuslab.Util import execute
 from stratuslab.Util import gatewayIpFromNetAddress

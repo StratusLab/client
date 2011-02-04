@@ -23,8 +23,6 @@ import os
 import sys
 import commands
 
-sys.path.insert(1, os.getcwd().rsplit('/',2)[0] + '/src/main/python')
-
 import stratuslab.system.BaseSystem as system
 from stratuslab.system.BaseSystem import BaseSystem as Firewall
 from stratuslab.system.BaseSystem import enableIpForwarding
