@@ -272,7 +272,10 @@ class BaseSystem(object):
     def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.oneUsername, '-c']
         su.extend(command)
-        return self._execute(su, **kwargs)
+        res = self._execute(su, **kwargs)
+        if res:
+            raise ExecutionException('error starting OpenNebula (one), with code: %s' % res)
+            
     
     def _setCloudAdminOwner(self, path):
         os.chown(path, int(self.oneUid), int(self.oneGid)) 
