@@ -20,6 +20,7 @@
 import socket
 import sys
 from optparse import OptionParser
+import xmlrpclib
 
 from stratuslab.Util import printError
 from stratuslab.Util import runMethodByName
@@ -48,6 +49,8 @@ class CommandBase(object):
         except ValueError, ex:
             sys.stderr.writelines('\nError: %s\n' % str(ex))
             sys.exit(3)
+        except xmlrpclib.ProtocolError, ex:
+            self.raiseOrDisplayError('Error: %s' % ex.errmsg)
         except socket.error, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except socket.gaierror, ex:
