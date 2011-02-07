@@ -99,8 +99,9 @@ class Creator(object):
                           'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
 
         self.userPublicKeyFile = self.options.get('userPublicKeyFile',
-                                                 '%s/.ssh/id_rsa.pub' %
+                                                  '%s/.ssh/id_rsa.pub' %
                                                     os.path.expanduser("~"))
+        self.userPrivateKeyFiel = self.userPublicKeyFile.strip('.pub')
 
         self.mainDisk = ''
         self.extraDisk = ''
@@ -386,7 +387,7 @@ deb %(name)s
         for script in self.scripts.split(','):
             scriptPath = '/tmp/%s' % os.path.basename(script)
             scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
-                self.userPublicKeyFile, stderr=self.stderr, stdout=self.stdout)
+                self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
 
             ret = self._sshCmd('%s' % scriptPath, stderr=self.stderr, stdout=self.stdout)
 
@@ -535,7 +536,7 @@ EOF
 
     def _sshCmd(self, cmd, throwOnError=True, **kwargs):
         ret = sshCmd(cmd, self.vmAddress,
-                     sshKey=self.userPublicKeyFile,
+                     sshKey=self.userPrivateKeyFile,
                      verboseLevel=self.verboseLevel,
                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                      **kwargs)
@@ -545,7 +546,7 @@ EOF
 
     def _sshCmdWithOutput(self, cmd, throwOnError=True, **kwargs):
         rc, output = sshCmdWithOutput(cmd, self.vmAddress,
-                                      sshKey=self.userPublicKeyFile,
+                                      sshKey=self.userPrivateKeyFile,
                                       verboseLevel=self.verboseLevel,
                                       verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                                       **kwargs)

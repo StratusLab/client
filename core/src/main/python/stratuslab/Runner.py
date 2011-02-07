@@ -130,6 +130,7 @@ class Runner(object):
     @staticmethod
     def defaultRunOptions():
         return {'userPublicKeyFile': os.getenv('STRATUSLAB_KEY', ''),
+                'userPrivateKeyFile': os.getenv('STRATUSLAB_KEY', '').strip('.pub'),
                 'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
                 'instanceNumber': 1,
                 'instanceType': 'm1.small',
