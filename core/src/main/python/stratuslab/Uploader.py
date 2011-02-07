@@ -206,7 +206,7 @@ class Uploader(object):
         curlUploadCmd.append(uploadUrl)
         if remoteServer:
             strCurlUploadCmd = ' '.join(curlUploadCmd)
-            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress, sshKey=self.userPublicKeyFile)
+            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress, sshKey=self.userPrivateKeyFile)
         else:
             devNull = self._openDevNull()
             ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
