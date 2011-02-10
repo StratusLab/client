@@ -68,7 +68,7 @@ class Signator(Configurable):
     def validate(self):
         jarLocation = self._findJar()
         javaMainArgs = ' ' + self.manifestFile
-        cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.ValidateSign'))
+        cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.CheckXMLSignatures'))
         cmd += javaMainArgs
         self._printCalling(cmd)
         return Util.execute(cmd.split(' '))
