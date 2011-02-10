@@ -36,7 +36,7 @@ class Signator(Configurable):
         jarLocation = self._findJar()
         javaMainArgs = ' ' + self.manifestFile + ' ' + self.outputManifestFile + \
                        ' ' + self.p12Cert + ' ' + self.p12Password
-        cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.metadata.GenXmlSign'))
+        cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.SignMetadata'))
         cmd += javaMainArgs
         self._printCalling(cmd)
         return Util.execute(cmd.split(' '))
