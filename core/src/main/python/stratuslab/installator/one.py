@@ -91,11 +91,9 @@ class OneInstallator(BaseInstallator):
 
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), mountPoint)
         else:
-            if self.config.get('vm_dir') != '':
-                mountPoint = self.config.get('vm_dir')
-            else:
-                mountPoint = '%s/var' % self.config.get('one_home')
-
+            mountPoint = self.config.get('vm_dir')
+            defaultOneShareDir = '%s/var' % self.config.get('one_home')
+            self.executeCmd(['ln', '-fs', defaultOneShareDir, mountPoint])
             self.frontend.configureNewNfsServer(mountPoint,
                                                 self.config['network_addr'],
                                                 self.config['network_mask'])
