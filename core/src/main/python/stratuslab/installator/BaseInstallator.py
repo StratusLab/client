@@ -228,7 +228,7 @@ class BaseInstallator(object):
                                          fileGetContent(self.onedTpl) % conf)
 
     def _configurePolicies(self):
-        self.cloud._applyPolicies()
+        pass
 
     def _addDefaultNetworks(self):
         pass

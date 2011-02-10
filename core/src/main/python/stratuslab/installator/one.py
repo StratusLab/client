@@ -66,7 +66,7 @@ class OneInstallator(BaseInstallator):
                               'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
 
-    def _applyPolicies(self):
+    def _configurePolicies(self):
         authConfFile = self.cloudConfDir + 'auth/auth.conf' 
         Util.appendOrReplaceInFile(authConfFile, ':cpu: 20.0', ':cpu: %(quotaVm)s')
         
