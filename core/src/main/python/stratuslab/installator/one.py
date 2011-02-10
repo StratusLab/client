@@ -73,18 +73,25 @@ class OneInstallator(BaseInstallator):
                        '%s does not exists' % oneAuthTpl)
 
         authConfFile = self.cloudConfDir + 'auth/auth.conf' 
-        conf = self.config.copy()
 
-        quotaMemory = conf.quotaMemory
         # need KB
-        if(quotaMemory.upper().endswith('GB')):
-            quotaMemory = quotaMemory*(1024**2)
-        if(quotaMemory.upper().endswith('MB')):
-            quotaMemory = quotaMemory*1024
-        conf.quotaMemory = quotaMemory
-            
+        try:
+            quotaMemory = int(self.quotaMemory)
+        except ValueError:            
+            quotaMemory = self.quotaMemory.strip()
+            if(self.quotaMemory.upper().endswith('GB')):
+                quotaMemory = int(quotaMemory[:-2])*(1024**2)
+            elif(quotaMemory.upper().endswith('MB')):
+                quotaMemory = int(quotaMemory[:-2])*1024
+            elif(quotaMemory.upper().endswith('KB')):
+                quotaMemory = int(quotaMemory[:-2])
+            else:
+                raise
+
+        self.quotaMemoryKB = quotaMemory
+
         self.frontend.filePutContentsCmd(authConfFile,
-                                         fileGetContent(oneAuthTpl) % conf)
+                                         fileGetContent(oneAuthTpl % self.__dict__)
         
     # -------------------------------------------
     #   Front-end file sharing management

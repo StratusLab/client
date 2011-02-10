@@ -4,4 +4,4 @@
   :enabled: true
   :defaults:
     :cpu: %(quotaCpu)s
-    :memory: %(quotaMemory)
+    :memory: %(quotaMemoryKB)s
