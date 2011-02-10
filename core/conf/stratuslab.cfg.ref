@@ -85,6 +85,9 @@ nat_network_interface = eth0
 proxy_port = 2634
 proxy_oneadmin_password = oneadmin
 
+[policy]
+quota-vm = 20
+
 [app-repo]
 # Appliance Repository
 app_repo_url = https://appliances.stratuslab.eu/images
