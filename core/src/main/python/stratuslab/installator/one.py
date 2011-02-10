@@ -91,7 +91,7 @@ class OneInstallator(BaseInstallator):
         self.quotaMemoryKB = quotaMemory
 
         self.frontend.filePutContentsCmd(authConfFile,
-                                         fileGetContent(oneAuthTpl % self.__dict__)
+                                         fileGetContent(oneAuthTpl) % self.__dict__)
         
     # -------------------------------------------
     #   Front-end file sharing management
