@@ -162,6 +162,9 @@ class BaseInstallator(object):
         printStep('Configuring cloud system')
         self._configureCloudSystem()
         
+        printStep('Applying local policies')
+        self._configurePolicies()
+        
         printStep('Starting cloud')
         self._startCloudSystem()
 
@@ -223,6 +226,9 @@ class BaseInstallator(object):
         conf = self.config.copy()
         self.frontend.filePutContentsCmd(self.cloudConfFile,
                                          fileGetContent(self.onedTpl) % conf)
+
+    def _configurePolicies(self):
+        self.cloud._applyPolicies()
 
     def _addDefaultNetworks(self):
         pass
