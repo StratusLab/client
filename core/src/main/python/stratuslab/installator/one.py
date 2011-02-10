@@ -68,7 +68,7 @@ class OneInstallator(BaseInstallator):
 
     def _configurePolicies(self):
         authConfFile = self.cloudConfDir + 'auth/auth.conf' 
-        Util.appendOrReplaceInFile(authConfFile, ':cpu: 20.0', ':cpu: %(quotaVm)s')
+        Util.appendOrReplaceInFile(authConfFile, '    :cpu: 10.0', '    :cpu: %(quotaVm)s')
         
     # -------------------------------------------
     #   Front-end file sharing management
