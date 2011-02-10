@@ -86,7 +86,8 @@ proxy_port = 2634
 proxy_oneadmin_password = oneadmin
 
 [policy]
-quota-vm = 20
+quota-cpu = 20
+quota-memory = 1GB
 
 [app-repo]
 # Appliance Repository

@@ -67,8 +67,24 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
 
     def _configurePolicies(self):
+        oneAuthTpl = Util.shareDir + 'template/auth.conf.tpl'
+        if not os.path.isfile(oneAuthTpl):
+            Util.printError('ONE auth configuration template '
+                       '%s does not exists' % oneAuthTpl)
+
         authConfFile = self.cloudConfDir + 'auth/auth.conf' 
-        Util.appendOrReplaceInFile(authConfFile, '    :cpu: 10.0', '    :cpu: %(quotaVm)s')
+        conf = self.config.copy()
+
+        quotaMemory = conf.quotaMemory
+        # need KB
+        if(quotaMemory.upper().endswith('GB')):
+            quotaMemory = quotaMemory*(1024**2)
+        if(quotaMemory.upper().endswith('MB')):
+            quotaMemory = quotaMemory*1024
+        conf.quotaMemory = quotaMemory
+            
+        self.frontend.filePutContentsCmd(authConfFile,
+                                         fileGetContent(oneAuthTpl) % conf)
         
     # -------------------------------------------
     #   Front-end file sharing management
@@ -97,7 +113,7 @@ class OneInstallator(BaseInstallator):
         else:
             mountPoint = self.config.get('vm_dir')
             defaultOneShareDir = '%s/var' % self.config.get('one_home')
-            self.executeCmd(['ln', '-fs', defaultOneShareDir, mountPoint])
+            self.frontend.executeCmd(['ln', '-fs', defaultOneShareDir, mountPoint])
             self.frontend.configureNewNfsServer(mountPoint,
                                                 self.config['network_addr'],
                                                 self.config['network_mask'])
