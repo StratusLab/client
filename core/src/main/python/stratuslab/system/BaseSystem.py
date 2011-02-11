@@ -96,6 +96,10 @@ class BaseSystem(object):
             patchFile.close()
 
     def startCloudSystem(self):
+        try:
+            self._cloudAdminExecute(['one stop'])
+        except ExecutionException:
+            pass
         self._cloudAdminExecute(['one start'])
         printDetail('Waiting for ONE to finish starting')
         time.sleep(10)
@@ -274,8 +278,7 @@ class BaseSystem(object):
         su.extend(command)
         res = self._execute(su, **kwargs)
         if res:
-            raise ExecutionException('error starting OpenNebula (one), with code: %s' % res)
-            
+            raise ExecutionException('error executing command %s, with code: %s' % (command, res))            
     
     def _setCloudAdminOwner(self, path):
         os.chown(path, int(self.oneUid), int(self.oneGid)) 
