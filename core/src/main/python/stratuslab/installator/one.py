@@ -29,6 +29,7 @@ class OneInstallator(BaseInstallator):
         super(OneInstallator, self).__init__()
         self.cloudConfDir = '/etc/one/'
         self.cloudConfFile = self.cloudConfDir + 'oned.conf'
+        self.cloudVarLibDir = '/var/lib/one'
 
     def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
@@ -111,16 +112,11 @@ class OneInstallator(BaseInstallator):
 
     def _configureNfsServer(self):
         if self._nfsShareAlreadyExists():
-            if self.config.get('vm_dir') != '':
-                mountPoint = self.config.get('vm_dir')
-            else:
-                mountPoint = os.path.dirname(self.config.get('one_home'))
-
+            mountPoint = self.config.get('vm_dir')
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), mountPoint)
         else:
             mountPoint = self.config.get('vm_dir')
-            defaultOneShareDir = '%s/var' % self.config.get('one_home')
-            self.frontend.executeCmd(['ln', '-fs', defaultOneShareDir, mountPoint])
+            self.frontend.executeCmd(['ln', '-fs', self.cloudVarLibDir, mountPoint])
             self.frontend.configureNewNfsServer(mountPoint,
                                                 self.config['network_addr'],
                                                 self.config['network_mask'])
