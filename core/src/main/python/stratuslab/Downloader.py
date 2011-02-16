@@ -1,11 +1,9 @@
-import tempfile
-import urllib2
-from stratuslab import Util
 import os
 import shutil
-from stratuslab.Signator import Signator
+import tempfile
+import urllib2
 import hashlib
-from stratuslab.Compressor import Compressor
+from stratuslab.Exceptions import ExecutionException
 
 try:
     from lxml import etree
@@ -28,11 +26,12 @@ except ImportError:
                 except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
-
+from stratuslab import Util
+from stratuslab.Signator import Signator
+from stratuslab.Compressor import Compressor
 from ConfigHolder import ConfigHolder
 from Exceptions import InputException
 from Exceptions import ValidationException
-#from stratuslab.Signator import Signator
 
 class Downloader(object):
 
@@ -121,10 +120,11 @@ class Downloader(object):
             locations.append(location.text)
         return locations
     
-    def _verifySignature(self, tempFile, metadataFilename):
-        return
+    def _verifySignature(self, imageFilename, metadataFilename):
         signator = Signator(metadataFilename, self.configHolder)
-        signator.validate()
+        res = signator.validate()
+        if res:
+            raise ExecutionException('Failed to validate metadata file')
 
     def _inflateImage(self, imageFilename):
         extension = self._extractCompressionExtension(imageFilename)
