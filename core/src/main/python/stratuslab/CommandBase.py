@@ -22,8 +22,7 @@ import sys
 from optparse import OptionParser
 import xmlrpclib
 
-from stratuslab.Util import printError
-from stratuslab.Util import runMethodByName
+import stratuslab.Util as Util
 
 class CommandBase(object):
     
@@ -45,7 +44,7 @@ class CommandBase(object):
     def _callAndHandleErrors(self, methodName, *args, **kw):
         
         try:
-            runMethodByName(methodName, *args, **kw)
+            Util.runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
             sys.stderr.writelines('\nError: %s\n' % str(ex))
             sys.exit(3)
@@ -80,5 +79,8 @@ class CommandBase(object):
         if self.verboseLevel > 0:
             raise
         else:
-            printError(errorMsg, exit=False)
+            Util.printError(errorMsg, exit=False)
         sys.exit(-1)
+
+    def printDetail(self, message):
+        Util.printDetail(message, self)
