@@ -44,7 +44,6 @@ class Signator(Configurable):
     def _findJar(self):
         dirs = []
         tarballRelativePath = '../../../..'
-        devRelativePath = '../../../../..'
         dirs.append(os.path.join(self._moduleDirname(), tarballRelativePath, 'java'))
         dirs.append('/var/lib/stratuslab/java')
         
