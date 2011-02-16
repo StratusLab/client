@@ -104,7 +104,7 @@ class Uploader(object):
     @staticmethod
     def checkUploadOptions(options, parser):
         if options.compressionFormat not in Uploader.availableCompressionFormat():
-            parser.error('Unknow compression format')
+            parser.error('Unknown compression format')
         if not options.repoAddress:
             parser.error('Unspecified repository address')
         if not options.repoUsername:
