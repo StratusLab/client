@@ -28,7 +28,7 @@ from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
-from stratuslab.Exceptions import NetworkException
+from stratuslab.Exceptions import NetworkException, OneException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.ConfigHolder import ConfigHolder
@@ -120,6 +120,23 @@ class Testor(unittest.TestCase):
         self._repeatCall(self._loginViaSsh, runner)
         self._stopVm(runner)
         
+    def exceedCpuQuotaTest(self):
+        '''Start three instances, having a cpu quota of 2, then stop it.'''
+        self.instanceNumber = 3
+        try:
+            self._startVm(requestedIpAddress=self.requestedIpAddress)
+        except OneException:
+            pass
+        else:
+            self.fail('Quota not enforced')
+
+        runner = self._createRunner()
+        for i in range(8):
+            try:
+                runner.killInstances([i])
+            except:
+                pass
+
     def _runInstanceTest(self, withLocalNetwork=False):
         runner = self._startVm(withLocalNetwork)
         self._repeatCall(self._ping, runner)
@@ -134,6 +151,20 @@ class Testor(unittest.TestCase):
         return log
 
     def _startVm(self, withLocalNetwork=False, requestedIpAddress=None):
+        runner = self._createRunner(withLocalNetwork, requestedIpAddress)
+        
+        self.vmIds = runner.runInstance()        
+        
+        for id in self.vmIds:
+            vmStarted = runner.waitUntilVmRunningOrTimeout(id)            
+            if not vmStarted:
+                error = 'Failed to start VM id: %s' % id
+                printError(error, exit=False)
+                raise OneException(error)
+                
+        return runner
+
+    def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None):
         generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
@@ -148,15 +179,7 @@ class Testor(unittest.TestCase):
 
         configHolder = ConfigHolder(options)
         image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.0/ttylinux-9.7-i486-base-1.0.img.gz'
-        runner = Runner(image, configHolder)
-        self.vmIds = runner.runInstance()        
-        
-        for id in self.vmIds:
-            vmStarted = runner.waitUntilVmRunningOrTimeout(id)            
-            if not vmStarted:
-                printError('Failed to start VM id: %s' % id)
-                
-        return runner
+        return Runner(image, configHolder)        
 
     def _repeatCall(self, method, *args):
         numberOfRepetition = 60
