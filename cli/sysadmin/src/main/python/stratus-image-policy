@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010, SixSq Sarl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Util import modulePath
+import stratuslab.Util as Util
+from stratuslab.CommandBase import CommandBase
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Policy import Policy
+
+class MainProgram(CommandBase):
+    '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
+
+    def __init__(self):
+        self.metadataFilename = None
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        usage = '''usage: %prog [options] <metadata>
+        
+<metadata>    Image metadata corresponding to the image required to be checked
+'''
+        self.parser.usage = usage
+
+        self.parser.add_option('-o', '--output', dest='localImageFilename',
+                               help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME, 
+                               metavar='FILE',
+                               default=Downloader.LOCAL_IMAGE_FILENAME)
+
+        self.options, self.args = self.parser.parse_args()
+
+        self.checkArgumentsLength()
+
+    def checkArgumentsLength(self):
+        if len(self.args) < 1:
+            self.usageExitTooFewArguments()
+        if len(self.args) > 1:
+            self.usageExitTooManyArguments()
+
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        
+        self.metadataFilename = self.args[0]
+
+        policy = Policy(configHolder)
+        policy.run(self.metadataFilename)
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
