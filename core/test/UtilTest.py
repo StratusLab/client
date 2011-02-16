@@ -21,9 +21,7 @@ import unittest
 import os
 import sys
 
-from stratuslab.Util import appendOrReplaceMultilineBlockInString
-from stratuslab.Util import execute
-from stratuslab.Util import gatewayIpFromNetAddress
+import stratuslab.Util as Util
 
 class UtilTest(unittest.TestCase):
 
@@ -34,7 +32,7 @@ class UtilTest(unittest.TestCase):
         pass
 
     def testAppendOrReplaceMultilineBlockInString(self):
-        self.assertEqual(appendOrReplaceMultilineBlockInString('', ''), '')
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString('', ''), '')
 
         content = """
 line one
@@ -54,7 +52,7 @@ start block
   block LINE ONE
 
 """
-        self.assertEqual(appendOrReplaceMultilineBlockInString(content, data), 
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data), 
                          result)
 
         content = """
@@ -72,7 +70,7 @@ start block
 
 #
 """
-        self.assertEqual(appendOrReplaceMultilineBlockInString(content, data), 
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data), 
                          result)
 
         content = """
@@ -87,11 +85,11 @@ start block
   block LINE ONE
 
 """
-        self.assertEqual(appendOrReplaceMultilineBlockInString(content, data), 
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data), 
                          result)
 
     def testExecuteWithOutput(self):
-        output = execute('ls -l'.split(), withOutput=True)
+        output = Util.execute('ls -l'.split(), withOutput=True)
 
         self.assertEquals(type(output), tuple)
         self.assertEquals(len(output), 2)
@@ -99,7 +97,12 @@ start block
         assert len(output[1]) >= 1
     
     def testGatewayIpFromNetAddress(self):
-        self.assertEquals(gatewayIpFromNetAddress('0.0.0.0'), '0.0.0.1')
+        self.assertEquals(Util.gatewayIpFromNetAddress('0.0.0.0'), '0.0.0.1')
         
+        
+    def testConstructEndPoint(self):
+        self.assertEquals(Util.constructEndPoint('protocol://address:1234/path'), 'protocol://address:1234/path')
+        self.assertEquals(Util.constructEndPoint('address', 'protocol', '1234', 'path'), 'protocol://address:1234/path')
+    
 if __name__ == "__main__":
     unittest.main()

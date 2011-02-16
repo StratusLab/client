@@ -26,6 +26,7 @@ import urllib2
 from random import sample
 from string import ascii_lowercase
 from Exceptions import ImportException
+from Compressor import Compressor
 
 
 defaultRepoConfigSection = 'stratuslab_repo'
@@ -432,30 +433,19 @@ def printEmphasisStart():
 def printEmphasisStop():
     sys.stdout.write('\033[0m')
 
-def constructEndPoint(fragment, protocol='https', port=8443, path='xmlrpc'):
-    _url = fragment
-    parts = fragment.split('://')
-    _protocol = parts[0]
-    if not _protocol:
-        _protocol = protocol
+def constructEndPoint(fragment, protocol='https', port=8443, path=''):
 
-    address = parts.split(':')[0]
+    _protocol, _hostname, _port, _path = parseUri(fragment)
 
-    parts = parts.split(':')[1:].split('/')
-    _port = parts[0]
-    try:
-        _port = int(_port)
-    except:
-        _port = port
+    _protocol = (_protocol and _protocol) or protocol + '://'
+    _hostname = (_hostname and _hostname) or fragment
+    _port = (_port and _port) or port
+    _path = (_path and _path) or path
 
-    _path = parts.split(':')[1:].split('/')[1:]
-    if not _path:
-        _path = path
-
-    return '%s://%s:%s/%s' % (_protocol, address, _port, _path)
+    return '%s%s:%s/%s' % (_protocol, _hostname, _port, _path)
 
 def parseUri(uri):
-    "Return tuple (proto, hostname, port, path?query#fragment)"
+    "Return tuple (protocol, hostname, port, path?query#fragment)"
     m = re.match('([a-zA-Z0-9_]*://)?([^/:$]*):?(\d+)?/?(.*)', uri)
     return m.group(1), m.group(2), m.group(3), m.group(4)
 
@@ -471,3 +461,6 @@ def getProtoHostnameFromUri(uri):
 def getTimeInIso8601():
     "Return current time in iso8601 format."
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()))
+
+def inflate(filename):
+    return Compressor.inflate(filename)

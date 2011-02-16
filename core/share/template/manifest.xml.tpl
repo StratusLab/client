@@ -1,15 +1,50 @@
-<manifest>
-    <created>%(created)s</created>
-    <type>%(type)s</type>
-    <version>%(version)s</version>
-    <arch>%(arch)s</arch>
-    <user>%(user)s</user>
-    <os>%(os)s</os>
-    <osversion>%(osversion)s</osversion>
-    <compression>%(compression)s</compression>
-    <comment>%(comment)s</comment>
-    <checksum type="md5">%(md5)s</checksum>
-    <checksum type="sha1">%(sha1)s</checksum>
-    <checksum type="sha256">%(sha256)s</checksum>
-    <checksum type="sha512">%(sha512)s</checksum>
-</manifest>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns:slterms="http://stratuslab.eu/terms#"
+    xmlns:slreq="http://mp.stratuslab.eu/slreq#"
+    xml:base="http://mp.stratuslab.eu/">
+
+    <rdf:Description rdf:about="#%(identifier)s">
+
+        <dcterms:identifier>%(identifier)s</dcterms:identifier>
+
+        <slreq:bytes>%(bytes)s</slreq:bytes>
+
+        <slreq:checksum rdf:parseType="Resource">
+            <slreq:algorithm>MD5</slreq:algorithm>
+            <slreq:value>%(md5)s</slreq:value>
+        </slreq:checksum>
+        <slreq:checksum rdf:parseType="Resource">
+            <slreq:algorithm>SHA-1</slreq:algorithm>
+            <slreq:value>%(sha1)s</slreq:value>
+        </slreq:checksum>
+        <slreq:checksum rdf:parseType="Resource">
+            <slreq:algorithm>SHA-256</slreq:algorithm>
+            <slreq:value>%(sha256)s</slreq:value>
+        </slreq:checksum>
+        <slreq:checksum rdf:parseType="Resource">
+            <slreq:algorithm>SHA-512</slreq:algorithm>
+            <slreq:value>%(sha512)s</slreq:value>
+        </slreq:checksum>
+
+        <slreq:endorsement rdf:parseType="Resource"/>
+
+        <dcterms:created>%(created)s</dcterms:created>
+        <dcterms:creator>%(user)s</dcterms:creator>
+
+        <dcterms:type>%(type)s</dcterms:type>
+        <dcterms:valid>%(valid)s</dcterms:valid>
+        <dcterms:publisher>%(publisher)s</dcterms:publisher>
+        <dcterms:title>%(filename)s</dcterms:title>
+        <dcterms:description>%(comment)s</dcterms:description>
+        <slterms:version>%(version)s</slterms:version>
+        <slterms:serial-number>%(serialnumber)s</slterms:serial-number>
+        <slterms:os>%(os)s</slterms:os>
+        <slterms:os-version>%(osversion)s</slterms:os-version>
+        <slterms:os-arch>%(arch)s</slterms:os-arch>
+        <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
+        <dcterms:format>%(compression)s</dcterms:format>
+
+    </rdf:Description>
+</rdf:RDF>

@@ -282,7 +282,7 @@ class Creator(object):
         info = ManifestInfo()
         info.parseManifest(self.manifest)
 
-        info.created = time.time()
+        info.created = Util.getTimeInIso8601()
         info.type = self.newImageGroupName or info.type
         info.os = self.newInstalledSoftwareName or info.os
         info.osversion = self.newInstalledSoftwareVersion or info.osversion
