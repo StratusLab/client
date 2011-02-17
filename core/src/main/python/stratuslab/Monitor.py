@@ -48,7 +48,7 @@ except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
 class Monitor(Configurable):
-    
+
     def __init__(self, configHolder):
         super(Monitor, self).__init__(configHolder)
 
@@ -56,12 +56,12 @@ class Monitor(Configurable):
 
         self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
         self.hostInfoListAttributes = (('id',4), ('name',16))
-        
-        self.vmInfoDetailAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
-        self.vmInfoListAttributes = (('id',4), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
-        
+
+        self.vmInfoDetailAttributes = (('id',5), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
+        self.vmInfoListAttributes = (('id',5), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
+
         self.labelDecorator = {'state_summary': 'state'}
-        
+
     def _setCloud(self):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
@@ -108,7 +108,7 @@ class Monitor(Configurable):
     def listNodes(self):
         nodes = self.cloud.listHosts()
         return self._iterate(etree.fromstring(nodes))
-        
+
     def listVms(self, showVmsFromAllUsers=False):
         vms = self.cloud.listVms(showVmsFromAllUsers)
         return self._iterate(etree.fromstring(vms))
@@ -151,10 +151,10 @@ class Monitor(Configurable):
         finally:
             Util.printEmphasisStop()
         sys.stdout.write('\n')
-        
+
     def _decorateLabel(self, label):
         return self.labelDecorator.get(label,label)
-    
+
     def _printInfo(self, info, headerAttributes):
         for attrib in headerAttributes:
             sys.stdout.write(getattr(info, attrib[0]).ljust(int(attrib[1])))
