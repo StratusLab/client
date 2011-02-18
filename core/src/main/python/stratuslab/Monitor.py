@@ -54,11 +54,11 @@ class Monitor(Configurable):
 
         self._setCloud()
 
-        self.hostInfoDetailAttributes = (('id',4), ('name',16), ('im_mad',8), ('vm_mad',8), ('tm_mad',8))
-        self.hostInfoListAttributes = (('id',4), ('name',16))
+        self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
+        self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (('id',5), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
-        self.vmInfoListAttributes = (('id',5), ('state_summary', 16), ('cpu', 10), ('memory', 10), ('ip', 16))
+        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16])
+        self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16])
 
         self.labelDecorator = {'state_summary': 'state'}
 
@@ -122,25 +122,28 @@ class Monitor(Configurable):
         return infoList
 
     def printList(self, list):
+        self._adjustHostAttributeFields(list)
         self._printInfoHeader(self.hostInfoListAttributes)
         for item in list:
             self._printInfo(item, self.hostInfoDetailAttributes)
 
     def printDetails(self, list):
+        self._adjustHostAttributeFields(list)
         self._printInfoHeader(self.hostInfoDetailAttributes)
         for item in list:
             self._printInfo(item, self.hostInfoDetailAttributes)
 
     def printVmList(self, list):
+        self._adjustVmAttributeFields(list)
         self._printInfoHeader(self.vmInfoListAttributes)
         for item in list:
             self._printInfo(item, self.vmInfoListAttributes)
 
     def printVmDetails(self, list):
+        self._adjustVmAttributeFields(list)
         self._printInfoHeader(self.vmInfoDetailAttributes)
         for item in list:
             self._printInfo(item, self.vmInfoDetailAttributes)
-
 
     def _printInfoHeader(self, headerAttributes):
         Util.printEmphasisStart()
@@ -159,3 +162,18 @@ class Monitor(Configurable):
         for attrib in headerAttributes:
             sys.stdout.write(getattr(info, attrib[0]).ljust(int(attrib[1])))
         sys.stdout.write('\n')
+
+    def _adjustVmAttributeFields(self, _list):
+        attrList = ('vmInfoDetailAttributes', 'vmInfoListAttributes')
+        self._adjustAttributeFields(_list, attrList)
+
+    def _adjustHostAttributeFields(self, _list):
+        attrList = ('hostInfoDetailAttributes','hostInfoDetailAttributes')
+        self._adjustAttributeFields(_list, attrList)
+
+    def _adjustAttributeFields(self, _list, attrList):
+        for attr in attrList:
+            for i,attrVal in enumerate(getattr(self, attr)):
+                lenMax = max(map(lambda x: len(getattr(x, attrVal[0])), _list))
+                if lenMax >= getattr(self, attr)[i][1]:
+                    getattr(self, attr)[i][1] = lenMax + 1
