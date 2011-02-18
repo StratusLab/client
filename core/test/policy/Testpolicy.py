@@ -11,9 +11,8 @@ if __name__ == "__main__":
     xmltree2.parse("hackers-full.xml")
     
     xmltrees = [xmltree, xmltree2]
-    
+    Policy.init('policy.cfg') 
     print 'len(xmltrees)=',len(xmltrees)
     Policy.filter(xmltrees)
     print 'len(xmltrees)=',len(xmltrees)
-    Policy.init('policy.cfg')
     print Policy.WhiteListEndorsers
