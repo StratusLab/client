@@ -24,12 +24,12 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 from stratuslab.Util import printWarning
+from stratuslab.Util import shareDir
 from stratuslab.AppRepo import AppRepo
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printError
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
-
 
 class BaseInstallator(object):
     
@@ -44,6 +44,7 @@ class BaseInstallator(object):
         self.frontend = None
         self.node = None
         self.cloud = None
+        self.onedTpl = shareDir + 'template/oned.conf.tpl'
 
     def runInstall(self, configHolder):
         # TODO: fix the logs for apprepo installs
@@ -162,6 +163,9 @@ class BaseInstallator(object):
         printStep('Configuring cloud system')
         self._configureCloudSystem()
         
+        printStep('Applying local policies')
+        self._configurePolicies()
+        
         printStep('Starting cloud')
         self._startCloudSystem()
 
@@ -223,6 +227,9 @@ class BaseInstallator(object):
         conf = self.config.copy()
         self.frontend.filePutContentsCmd(self.cloudConfFile,
                                          fileGetContent(self.onedTpl) % conf)
+
+    def _configurePolicies(self):
+        pass
 
     def _addDefaultNetworks(self):
         pass

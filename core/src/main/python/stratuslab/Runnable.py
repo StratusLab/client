@@ -43,8 +43,9 @@ class Runnable(AuthnCommand):
         self.parser.usage = '''%prog [defaultOptions] image'''
 
         self.parser.add_option('-k', '--key', dest='userPublicKeyFile',
-                help='SSH key to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',
+                help='SSH public key (.pub) to log on the machine. By default STRATUSLAB_KEY', metavar='FILE',
                 default=defaultOptions['userPublicKeyFile'])
+
         self.parser.add_option('-t', '--type', dest='instanceType',
                 help='instance type to start', metavar='TYPE',
                 default=defaultOptions['instanceType'])
@@ -109,7 +110,7 @@ class Runnable(AuthnCommand):
 
         self.image = self.args[0]
 
-        self._checkPrivateKey()
+        self._checkKeyPair()
 
         if self.options.instanceType not in Runner.getInstanceType().keys():
             self.parser.error('Specified instance type not available')
@@ -125,12 +126,16 @@ class Runnable(AuthnCommand):
         if len(self.args) != 1:
             self.parser.error('Please specify the machine image to start')
 
-    def _checkPrivateKey(self):
+    def _checkKeyPair(self):
         if self.checkCredentials:
             if not self.options.userPublicKeyFile:
-                self.parser.error('Unspecified user private key. See --key option.')
-            if not os.path.isfile(self.options.userPublicKeyFile):
-                self.parser.error('Key `%s` does not exist' % self.options.userPublicKeyFile)
+                self.parser.error('Unspecified user public key. See --key option.')
+
+            self.options.userPrivateKeyFile = self.options.userPublicKeyFile.strip('.pub')
+
+            for key in [self.options.userPublicKeyFile, self.options.userPrivateKeyFile]:
+                if not os.path.isfile(key):
+                    self.parser.error('Key `%s` does not exist' % key)
 
     def displayInstanceType(self):
         types = Runner.getInstanceType()

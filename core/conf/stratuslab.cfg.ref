@@ -27,14 +27,6 @@ existing_nfs =
 network_addr = 127.0.0.0
 network_mask = 24
 
-[one-build]
-# TODO: remove since using package
-one_git_repo = git://opennebula.org/one.git
-one_branch = one-2.0
-#one_branch = one-1.4
-one_build_dir = /tmp/one
-one_clone_name = two
-
 [one-user]
 ## TODO: Be less specific in key value
 one_group = cloud
@@ -92,6 +84,10 @@ nat_network_interface = eth0
 [proxy]
 proxy_port = 2634
 proxy_oneadmin_password = oneadmin
+
+[policy]
+quota_cpu = 20
+quota_memory = 1GB
 
 [app-repo]
 # Appliance Repository

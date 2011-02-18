@@ -58,6 +58,12 @@ INSTALLERS = ['yum', 'apt'] # TODO: should go to system/__init__.py
 
 class Creator(object):
 
+    _defaultChecksum = 'NOT CHECKSUMMED'
+    checksums = {'md5'   :{'cmd':'md5sum',   'sum':_defaultChecksum},
+                 'sha1'  :{'cmd':'sha1sum',  'sum':_defaultChecksum},
+                 'sha256':{'cmd':'sha256sum','sum':_defaultChecksum},
+                 'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
+
     def __init__(self, image, configHolder):
         self.image = image
         self.configHolder = configHolder
@@ -92,15 +98,10 @@ class Creator(object):
 
         self.manifest = ''
 
-        _defaultChecksum = 'NOT CHECKSUMMED'
-        self.checksums = {'md5'   :{'cmd':'md5sum',   'sum':_defaultChecksum},
-                          'sha1'  :{'cmd':'sha1sum',  'sum':_defaultChecksum},
-                          'sha256':{'cmd':'sha256sum','sum':_defaultChecksum},
-                          'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
-
         self.userPublicKeyFile = self.options.get('userPublicKeyFile',
-                                                 '%s/.ssh/id_rsa.pub' %
+                                                  '%s/.ssh/id_rsa.pub' %
                                                     os.path.expanduser("~"))
+        self.userPrivateKeyFiel = self.userPublicKeyFile.strip('.pub')
 
         self.mainDisk = ''
         self.extraDisk = ''
@@ -122,6 +123,28 @@ class Creator(object):
 
         self.targetImageUri = ''
         self.targetManifestUri = ''
+
+    @staticmethod
+    def checksumImageLocal(filename, chksums=('sha1',)):
+        # TODO: use 'hashlib'
+        import commands
+        darwinChksumCmds = {'md5'   :'md5 -q',
+                            'sha1'  :'shasum -a 1',
+                            'sha256':'shasum -a 256',
+                            'sha512':'shasum -a 512'}
+        chksumCmds = {}
+        for chksum in chksums:
+            if commands.getoutput('uname') == 'Darwin':
+                chksumCmds[chksum] = darwinChksumCmds[chksum]
+            else:
+                chksumCmds[chksum] = Creator.checksums[chksum]['cmd']
+
+        chksumsResults = {}
+        for chksum, cmd in chksumCmds.items():
+            output = commands.getoutput(cmd + ' ' + filename)
+            chksumsResults[chksum] = output.split(' ')[0]
+
+        return chksumsResults
 
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)
@@ -281,7 +304,7 @@ class Creator(object):
         info = ManifestInfo()
         info.parseManifest(self.manifest)
 
-        info.created = time.time()
+        info.created = Util.getTimeInIso8601()
         info.type = self.newImageGroupName or info.type
         info.os = self.newInstalledSoftwareName or info.os
         info.osversion = self.newInstalledSoftwareVersion or info.osversion
@@ -386,7 +409,7 @@ deb %(name)s
         for script in self.scripts.split(','):
             scriptPath = '/tmp/%s' % os.path.basename(script)
             scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
-                self.userPublicKeyFile, stderr=self.stderr, stdout=self.stdout)
+                self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
 
             ret = self._sshCmd('%s' % scriptPath, stderr=self.stderr, stdout=self.stdout)
 
@@ -535,7 +558,7 @@ EOF
 
     def _sshCmd(self, cmd, throwOnError=True, **kwargs):
         ret = sshCmd(cmd, self.vmAddress,
-                     sshKey=self.userPublicKeyFile,
+                     sshKey=self.userPrivateKeyFile,
                      verboseLevel=self.verboseLevel,
                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                      **kwargs)
@@ -545,7 +568,7 @@ EOF
 
     def _sshCmdWithOutput(self, cmd, throwOnError=True, **kwargs):
         rc, output = sshCmdWithOutput(cmd, self.vmAddress,
-                                      sshKey=self.userPublicKeyFile,
+                                      sshKey=self.userPrivateKeyFile,
                                       verboseLevel=self.verboseLevel,
                                       verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                                       **kwargs)

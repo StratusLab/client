@@ -29,6 +29,7 @@ class OneInstallator(BaseInstallator):
         super(OneInstallator, self).__init__()
         self.cloudConfDir = '/etc/one/'
         self.cloudConfFile = self.cloudConfDir + 'oned.conf'
+        self.cloudVarLibDir = '/var/lib/one'
 
     def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
@@ -66,6 +67,33 @@ class OneInstallator(BaseInstallator):
                               'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
 
+    def _configurePolicies(self):
+        oneAuthTpl = Util.shareDir + 'template/auth.conf.tpl'
+        if not os.path.isfile(oneAuthTpl):
+            Util.printError('ONE auth configuration template '
+                       '%s does not exists' % oneAuthTpl)
+
+        authConfFile = self.cloudConfDir + 'auth/auth.conf' 
+
+        # need KB
+        try:
+            quotaMemory = int(self.quotaMemory)
+        except ValueError:            
+            quotaMemory = self.quotaMemory.strip()
+            if(self.quotaMemory.upper().endswith('GB')):
+                quotaMemory = int(quotaMemory[:-2])*(1024**2)
+            elif(quotaMemory.upper().endswith('MB')):
+                quotaMemory = int(quotaMemory[:-2])*1024
+            elif(quotaMemory.upper().endswith('KB')):
+                quotaMemory = int(quotaMemory[:-2])
+            else:
+                raise
+
+        self.quotaMemoryKB = quotaMemory
+
+        self.frontend.filePutContentsCmd(authConfFile,
+                                         fileGetContent(oneAuthTpl) % self.__dict__)
+        
     # -------------------------------------------
     #   Front-end file sharing management
     # -------------------------------------------
@@ -84,18 +112,11 @@ class OneInstallator(BaseInstallator):
 
     def _configureNfsServer(self):
         if self._nfsShareAlreadyExists():
-            if self.config.get('vm_dir') != '':
-                mountPoint = self.config.get('vm_dir')
-            else:
-                mountPoint = os.path.dirname(self.config.get('one_home'))
-
+            mountPoint = self.config.get('vm_dir')
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), mountPoint)
         else:
-            if self.config.get('vm_dir') != '':
-                mountPoint = self.config.get('vm_dir')
-            else:
-                mountPoint = '%s/var' % self.config.get('one_home')
-
+            mountPoint = self.config.get('vm_dir')
+            self.frontend.executeCmd(['ln', '-fs', self.cloudVarLibDir, mountPoint])
             self.frontend.configureNewNfsServer(mountPoint,
                                                 self.config['network_addr'],
                                                 self.config['network_mask'])

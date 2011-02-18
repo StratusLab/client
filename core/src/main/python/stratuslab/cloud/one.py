@@ -215,7 +215,7 @@ class OneConnector(object):
         ret, id = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
         
         if not ret:
-            raise Exception(id)
+            raise OneException('Error creating ONE network')
         
         return id
     

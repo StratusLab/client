@@ -23,6 +23,7 @@ import urllib2
 from ConfigParser import RawConfigParser
 
 import stratuslab.Util as Util
+from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.Exceptions import InputException
 from stratuslab.Exceptions import NetworkException
 
@@ -104,7 +105,7 @@ class Uploader(object):
     @staticmethod
     def checkUploadOptions(options, parser):
         if options.compressionFormat not in Uploader.availableCompressionFormat():
-            parser.error('Unknow compression format')
+            parser.error('Unknown compression format')
         if not options.repoAddress:
             parser.error('Unspecified repository address')
         if not options.repoUsername:
@@ -124,10 +125,10 @@ class Uploader(object):
                 structure = structure.replace(dirVarPattern % part, getattr(info, part, '').replace('.', '/'))
         return structure
 
-    def __init__(self, manifest, options):
+    def __init__(self, manifestFile, options):
         assignAttributes(self, options)
-        self.manifest = manifest
-        self.appliance = self.manifest.replace('.xml', '.img')
+        self.manifestFile = manifestFile
+        self.appliance = self.manifestFile.replace('.xml', '.img')
         self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.repoUsername,
                                                              self.repoPassword)]
         self.uploadedFile = []
@@ -181,10 +182,10 @@ class Uploader(object):
     def _uploadManifest(self):
         repoFilename = self.repoFilename.replace('.%s' % self.compression, 'xml')
         if self.remoteManifest:
-            self.uploadFileFromRemoteServer(self.manifest, '%s/%s' % (self.repoStructure,
+            self.uploadFileFromRemoteServer(self.manifestFile, '%s/%s' % (self.repoStructure,
                                                                   repoFilename))
         else:
-            self.uploadFile(self.manifest, '%s/%s' % (self.repoStructure,
+            self.uploadFile(self.manifestFile, '%s/%s' % (self.repoStructure,
                                                       repoFilename))
 
     def uploadFileFromRemoteServer(self, filename, remoteName):
@@ -206,7 +207,7 @@ class Uploader(object):
         curlUploadCmd.append(uploadUrl)
         if remoteServer:
             strCurlUploadCmd = ' '.join(curlUploadCmd)
-            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress, sshKey=self.userPublicKeyFile)
+            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress, sshKey=self.userPrivateKeyFile)
         else:
             devNull = self._openDevNull()
             ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
@@ -272,15 +273,11 @@ class Uploader(object):
                        '-f --force option')
 
     def _parseManifest(self):
-        # TODO: ManifestInfo class should be use here.
-        xml = etree.ElementTree()
-        xml.parse(self.manifest)
-        self.os = xml.find('os').text
-        self.osversion = xml.find('osversion').text
-        self.arch = xml.find('arch').text
-        self.type = xml.find('type').text
-        self.version = xml.find('version').text
-        self.compression = xml.find('compression').text
+        manifestInfo = ManifestInfo()
+        manifestInfo.parseManifestFromFile(self.manifestFile)
+        attrList = ['os', 'osversion', 'arch', 'type', 'version', 'compression']
+        for attr in attrList:
+            setattr(self, attr, getattr(manifestInfo, attr, getattr(self, attr, 'NOT_DEFINED')))
 
     def _parseRepoConfig(self):
         tmpRepoCfg = '/tmp/stratus-repo.tmp'
@@ -327,14 +324,15 @@ class Uploader(object):
 
     def _addCompressionFormatToManifest(self):
         xml = etree.ElementTree()
-        docElement = xml.parse(self.manifest)
+        docElement = xml.parse(self.manifestFile)
 
-        compressionElem = xml.find('compression')
+        compressionElem = xml.find('.//{%s}format' % ManifestInfo.NS_DCTERMS)
         if compressionElem != None:
             printWarning("compression already defined in the manifest file with value: " + compressionElem.text)
         else:
-            compressionElem = etree.Element('compression')
-            docElement.append(compressionElem)
+            compressionElem = etree.Element('{%s}format' % ManifestInfo.NS_DCTERMS)
+            descriptionElement = docElement.find('.//{%s}Description' % ManifestInfo.NS_RDF)
+            descriptionElement.append(compressionElem)
 
         compressionElem.text = self.compressionFormat
-        xml.write(self.manifest)
+        xml.write(self.manifestFile)

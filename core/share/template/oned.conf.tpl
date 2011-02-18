@@ -337,6 +337,6 @@ VM_HOOK = [
 #               in /)
 #-------------------------------------------------------------------------------
 
-#AUTH_MAD = [
-#    executable = "one_auth_mad" ]
+AUTH_MAD = [
+    executable = "one_dummy_auth_mad" ]
 

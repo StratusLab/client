@@ -26,6 +26,7 @@ import urllib2
 from random import sample
 from string import ascii_lowercase
 from Exceptions import ImportException
+from Compressor import Compressor
 
 
 defaultRepoConfigSection = 'stratuslab_repo'
@@ -56,17 +57,17 @@ def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())
     fd.close()
-    
+
 def wstring(url):
     fd = _wget(url)
     return fd.read()
-    
+
 def wread(url):
     return _wget(url)
 
 def _wget(url):
     return urllib2.urlopen(url)
-    
+
 def ping(host, timeout=5, number=1, ** kwargs):
     p = subprocess.Popen(['ping', '-q', '-c', str(number), host], ** kwargs)
     p.wait()
@@ -76,11 +77,11 @@ def ping(host, timeout=5, number=1, ** kwargs):
 def appendOrReplaceInFile(filename, search, replace):
     if not os.path.isfile(filename):
         filePutContent(filename, replace)
-        return 
-    
+        return
+
     fileContent = fileGetContent(filename)
     lines = fileContent.split('\n')
-    
+
     newContent = []
     insertionMade = False
     for line in lines:
@@ -89,36 +90,36 @@ def appendOrReplaceInFile(filename, search, replace):
             insertionMade = True
         else:
             newContent.append(line)
-    
+
     if insertionMade is False:
         newContent.append('%s\n' % replace)
-    
+
     filePutContent(filename, '\n'.join(newContent))
 
 def appendOrReplaceMultilineBlockInFile(filename, data):
     content = fileGetContent(filename)
     newContent = appendOrReplaceMultilineBlockInString(content, data)
     filePutContent(filename, newContent)
-    
+
 def appendOrReplaceMultilineBlockInString(content, data):
-    """Block in 'content' starts with the first line from 'data'. Block ends 
+    """Block in 'content' starts with the first line from 'data'. Block ends
     right before an empty line or '[ ]*#.*'.
     """
     data = data.strip()
     beginStr = data.split('\n', 1)[0]
 
     if not re.search(beginStr, content, re.M):
-        return '%s%s%s\n\n' % (content, content.endswith('\n') and '\n' or '\n\n', 
+        return '%s%s%s\n\n' % (content, content.endswith('\n') and '\n' or '\n\n',
                            data)
-    
+
     lines = content.split('\n')
-    
+
     lineNums = []
     for i,line in enumerate(lines):
         if line.startswith(beginStr):
             lineNums.append(i)
             break
-    
+
     insertIndex = lineNums[0]
     k = lineNums[0] + 1
     try:
@@ -126,7 +127,7 @@ def appendOrReplaceMultilineBlockInString(content, data):
         while not emptyOrComment.match(lines[k]):
             lineNums.append(k)
             k += 1
-    except IndexError: 
+    except IndexError:
         pass
     lineNums.reverse()
     for n in lineNums:
@@ -134,7 +135,7 @@ def appendOrReplaceMultilineBlockInString(content, data):
     if insertIndex == len(lines)-1:
         data = data + '\n'
     lines.insert(insertIndex, data)
-    
+
     return '\n'.join(lines)
 
 def fileGetContent(filename):
@@ -153,7 +154,7 @@ def fileAppendContent(filename, data):
     fd = open(filename, 'a')
     fd.write(data)
     fd.close()
-        
+
 def shaHexDigest(string):
     shaMethod = None
     try:
@@ -171,7 +172,7 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
         stdout = open('/dev/null', 'w')
     if not stderr:
         stderr = open('/dev/null', 'w')
-    
+
     start = time.time()
     hostUp = False
     while not hostUp:
@@ -180,10 +181,10 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
             sys.stdout.write('.')
         hostUp = ping(host, stdout=stdout, stderr=stderr)
         sleep(1)
-        
+
         if time.time() - start > timeout:
             return False
-        
+
     return hostUp
 
 def sleep(seconds):
@@ -206,7 +207,7 @@ def execute(cmd, **kwargs):
         kwargs['close_fds'] = True
     if kwargs.has_key('withOutput'):
         del kwargs['withOutput']
-        
+
     _printDetail('Calling: ' + ' '.join(cmd), kwargs)
 
     process = subprocess.Popen(cmd, **kwargs)
@@ -241,7 +242,7 @@ def printAction(msg):
     printAndFlush('\n :::%s:::\n' % (':' *len(msg)))
     printAndFlush(' :: %s ::\n' % msg)
     printAndFlush(' :::%s:::\n' % (':' *len(msg)))
-    
+
 def printStep(msg):
     printAndFlush(' :: %s\n' % msg)
 
@@ -262,8 +263,9 @@ def printAndFlush(msg):
 
 def printDetail(msg,verboseLevel=1,verboseThreshold=1):
     if verboseLevel >= verboseThreshold:
-        printAndFlush('\n    %s' % msg) 
-    
+        _msg = (msg.endswith('\n') and msg) or msg+'\n'
+        printAndFlush('    %s' % _msg)
+
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout, '-o', 'StrictHostKeyChecking=no']
 
@@ -289,7 +291,7 @@ def scp(src, dest, sshKey=None, port=22, **kwargs):
 
     scpCmd.append(src)
     scpCmd.append(dest)
-    
+
     return execute(scpCmd, **kwargs)
 
 def importSystem(system):
@@ -382,7 +384,7 @@ def unifyNetsize(netsize):
     for letter, mask in classes.items():
         if netsize == letter:
             return mask
-        
+
     return netsize
 
 def networkSizeToNetmask(netsize):
@@ -431,30 +433,19 @@ def printEmphasisStart():
 def printEmphasisStop():
     sys.stdout.write('\033[0m')
 
-def constructEndPoint(fragment, protocol='https', port=8443, path='xmlrpc'):
-    _url = fragment
-    parts = fragment.split('://')
-    _protocol = parts[0]
-    if not _protocol:
-        _protocol = protocol
+def constructEndPoint(fragment, protocol='https', port=8443, path=''):
 
-    address = parts.split(':')[0]
+    _protocol, _hostname, _port, _path = parseUri(fragment)
 
-    parts = parts.split(':')[1:].split('/')
-    _port = parts[0]
-    try:
-        _port = int(_port)
-    except:
-        _port = port
+    _protocol = (_protocol and _protocol) or protocol + '://'
+    _hostname = (_hostname and _hostname) or fragment
+    _port = (_port and _port) or port
+    _path = (_path and _path) or path
 
-    _path = parts.split(':')[1:].split('/')[1:]
-    if not _path:
-        _path = path
-    
-    return '%s://%s:%s/%s' % (_protocol, address, _port, _path)
+    return '%s%s:%s/%s' % (_protocol, _hostname, _port, _path)
 
 def parseUri(uri):
-    "Return tuple (proto, hostname, port, path?query#fragment)"
+    "Return tuple (protocol, hostname, port, path?query#fragment)"
     m = re.match('([a-zA-Z0-9_]*://)?([^/:$]*):?(\d+)?/?(.*)', uri)
     return m.group(1), m.group(2), m.group(3), m.group(4)
 
@@ -466,3 +457,14 @@ def getProtoFromUri(uri):
 
 def getProtoHostnameFromUri(uri):
     return ''.join(parseUri(uri)[:2])
+
+def getTimeInIso8601():
+    "Return current time in iso8601 format."
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()))
+
+def toTimeInIso8601(_time):
+    "Convert int or float to time in iso8601 format."
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_time))
+
+def inflate(filename):
+    return Compressor.inflate(filename)
