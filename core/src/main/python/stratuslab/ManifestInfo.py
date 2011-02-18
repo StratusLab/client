@@ -21,6 +21,7 @@
 import os
 import re
 import string
+import time
 
 try:
     from lxml import etree
@@ -50,6 +51,8 @@ NS_DCTERMS = 'http://purl.org/dc/terms/'
 NS_SLTERMS = 'http://stratuslab.eu/terms#'
 NS_SLREQ   = 'http://mp.stratuslab.eu/slreq#'
 
+imageTypes = ('machine', 'disk')
+
 class ManifestInfo(object):
 
     NS_RDF     = NS_RDF
@@ -57,18 +60,23 @@ class ManifestInfo(object):
     NS_SLTERMS = NS_SLTERMS
     NS_SLREQ   = NS_SLREQ
 
-    def __init__(self, ):
+    IMAGE_VALIDITY = (356/2) * 24 * 3600 # 1/2 year in sec
+
+    def __init__(self, options={}):
+
         self.created = ''
         self.type = ''
         self.version = ''
         self.os = ''
         self.arch = ''
-        self.user = ''
+        self.user = self.creator = ''
         self.os = ''
         self.osversion = ''
         self.compression = ''
         self.comment = ''
         self.filename = ''
+
+        self.format = ''
 
         self.bytes = '0'
         self.md5 = ''
@@ -83,6 +91,11 @@ class ManifestInfo(object):
         self.hypervisor = ''
 
         self.publisher = 'StratusLab'
+
+        if options:
+            Util.assignAttributes(self, options)
+
+        self.user = self.creator
 
         self.template = os.path.join(Util.getShareDir(),'template/manifest.xml.tpl')
 
@@ -106,6 +119,7 @@ class ManifestInfo(object):
             self.type = xml.find('.//{%s}type' % NS_DCTERMS).text
             self.created = xml.find('.//{%s}created' % NS_DCTERMS).text
             self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text', '')
+            self.creator = self.user
             self.valid = xml.find('.//{%s}valid' % NS_DCTERMS).text
             self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
                                      self.publisher) or self.publisher
@@ -116,8 +130,10 @@ class ManifestInfo(object):
             self.osversion = xml.find('.//{%s}os-version' % NS_SLTERMS).text
             self.hypervisor = xml.find('.//{%s}hypervisor' % NS_SLTERMS).text
             self.filename = xml.find('.//{%s}title' % NS_DCTERMS).text
-            self.compression = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
+            self.compression = getattr(xml.find('.//{%s}compression' % NS_DCTERMS), 'text',
                                        self.compression)
+            self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
+                                       self.format)
             self.identifier = xml.find('.//{%s}identifier' % NS_DCTERMS).text
             self.bytes = xml.find('.//{%s}bytes' % NS_SLREQ).text
             checksums = xml.findall('.//{%s}checksum' % NS_SLREQ)
@@ -131,6 +147,20 @@ class ManifestInfo(object):
     def parseManifestFromFile(self, filename):
         manifest = file(filename).read()
         self.parseManifest(manifest)
+
+    def buildAndSave(self):
+        manifestText = self.build()
+        filename = '%s-%s-%s-%s-%s%s' % (self.os, self.osversion,
+                                          self.arch, self.type,
+                                          self.version, Util.manifestExt)
+        file(filename, 'w').write(manifestText)
+
+    def build(self):
+        self.created = Util.getTimeInIso8601()
+        self.valid = Util.toTimeInIso8601(time.time() + self.IMAGE_VALIDITY)
+        identifier = ManifestIdentifier()
+        self.identifier = identifier.sha1ToIdentifier(self.sha1)
+        return self.tostring()
 
     def tostring(self):
         template = open(self.template).read()

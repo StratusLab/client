@@ -44,7 +44,8 @@
         <slterms:os-version>%(osversion)s</slterms:os-version>
         <slterms:os-arch>%(arch)s</slterms:os-arch>
         <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
-        <dcterms:format>%(compression)s</dcterms:format>
+        <dcterms:compression>%(compression)s</dcterms:compression>
+        <dcterms:format>%(format)s</dcterms:format>
 
     </rdf:Description>
 </rdf:RDF>

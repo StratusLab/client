@@ -462,5 +462,9 @@ def getTimeInIso8601():
     "Return current time in iso8601 format."
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()))
 
+def toTimeInIso8601(_time):
+    "Convert int or float to time in iso8601 format."
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_time))
+
 def inflate(filename):
     return Compressor.inflate(filename)
