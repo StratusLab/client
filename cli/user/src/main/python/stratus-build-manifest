@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010, SixSq Sarl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.CommandBase import CommandBase
+from stratuslab.ManifestInfo import ManifestInfo, imageTypes
+from stratuslab.Creator import Creator
+
+class MainProgram(CommandBase):
+    '''A command-line program to generate manifest.'''
+
+    def __init__(self):
+        self.image = None
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        self.parser.usage = 'usage: %prog [options] image'
+
+        self.parser.add_option('--author', dest='creator',
+                help='Author of the new image',
+                default='', metavar='NAME')
+
+        self.parser.add_option('--type', dest='type',
+                help='Image type. (%s)' % ', '.join(imageTypes),
+                default='machine', metavar='NAME')
+
+        self.parser.add_option('--os', dest='os',
+                help='Operation system',
+                default='', metavar='NAME')
+
+        self.parser.add_option('--os-version', dest='osversion',
+                help='Operation system version',
+                default='', metavar='VERSION')
+
+        self.parser.add_option('--os-arch', dest='arch',
+                help='Operation system architecture',
+                default='', metavar='ARCH')
+
+        self.parser.add_option('--version', dest='version',
+                help='Image version',
+                default='')
+
+        self.parser.add_option('--format', dest='format',
+                help='Image format. Eg. qcow2, raw.',
+                default='raw', metavar='FORMAT')
+
+        self.parser.add_option('--comment', dest='comment',
+                help='Comment to append to the manifest file',
+                default='', metavar='TEXT')
+
+        self.options, self.args = self.parser.parse_args()
+
+    def checkOptions(self):
+        if len(self.args) != 1:
+            self.parser.error('Please specify an image')
+        self.image = self.args[0]
+
+        if not os.path.isfile(self.image):
+            self.parser.error('Image does not exist: ' + self.image)
+
+    def doWork(self):
+        chksums = Creator.checksumImageLocal(self.image, ('md5','sha1','sha256','sha512'))
+        self.options.__dict__.update(chksums)
+
+        statinfo = os.stat(self.image)
+        bytes = str(statinfo.st_size)
+        self.options.__dict__.update({'bytes':bytes})
+
+        manifest = ManifestInfo(self.options.__dict__)
+        manifest.buildAndSave()
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
