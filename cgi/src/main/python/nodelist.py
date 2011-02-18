@@ -24,23 +24,22 @@ import cgi
 import cgitb
 cgitb.enable()
 
-from stratuslab.Monitor import Monitor
 from stratuslab.web.Generator import ListGenerator
 from stratuslab.cloud.one import OneHostState
 
 class NodeListGenerator(ListGenerator):
-    
+
     def __init__(self):
         super(NodeListGenerator,self).__init__()
         self.title = 'List of nodes'
         self.template = open('list.html.tpl').read()
         self.idTemplate = '            <td><a href="nodedetail.py?id=%(value)s"/>%(value)s</a></td>\n'
-        self.fields = [['id','Id'], 
-                       ['name', 'IP'], 
-                       ['max_cpu', 'Total CPU'], 
-                       ['free_cpu', 'Free CPU'], 
-                       ['max_mem', 'Total mem'], 
-                       ['free_mem', 'Free mem'], 
+        self.fields = [['id','Id'],
+                       ['name', 'IP'],
+                       ['max_cpu', 'Total CPU'],
+                       ['free_cpu', 'Free CPU'],
+                       ['max_mem', 'Total mem'],
+                       ['free_mem', 'Free mem'],
                        ['running_vms', 'Running VMs'],
                        ['state', 'State']]
 

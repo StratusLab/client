@@ -58,6 +58,12 @@ INSTALLERS = ['yum', 'apt'] # TODO: should go to system/__init__.py
 
 class Creator(object):
 
+    _defaultChecksum = 'NOT CHECKSUMMED'
+    checksums = {'md5'   :{'cmd':'md5sum',   'sum':_defaultChecksum},
+                 'sha1'  :{'cmd':'sha1sum',  'sum':_defaultChecksum},
+                 'sha256':{'cmd':'sha256sum','sum':_defaultChecksum},
+                 'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
+
     def __init__(self, image, configHolder):
         self.image = image
         self.configHolder = configHolder
@@ -92,12 +98,6 @@ class Creator(object):
 
         self.manifest = ''
 
-        _defaultChecksum = 'NOT CHECKSUMMED'
-        self.checksums = {'md5'   :{'cmd':'md5sum',   'sum':_defaultChecksum},
-                          'sha1'  :{'cmd':'sha1sum',  'sum':_defaultChecksum},
-                          'sha256':{'cmd':'sha256sum','sum':_defaultChecksum},
-                          'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
-
         self.userPublicKeyFile = self.options.get('userPublicKeyFile',
                                                   '%s/.ssh/id_rsa.pub' %
                                                     os.path.expanduser("~"))
@@ -123,6 +123,28 @@ class Creator(object):
 
         self.targetImageUri = ''
         self.targetManifestUri = ''
+
+    @staticmethod
+    def checksumImageLocal(filename, chksums=('sha1',)):
+        # TODO: use 'hashlib'
+        import commands
+        darwinChksumCmds = {'md5'   :'md5 -q',
+                            'sha1'  :'shasum -a 1',
+                            'sha256':'shasum -a 256',
+                            'sha512':'shasum -a 512'}
+        chksumCmds = {}
+        for chksum in chksums:
+            if commands.getoutput('uname') == 'Darwin':
+                chksumCmds[chksum] = darwinChksumCmds[chksum]
+            else:
+                chksumCmds[chksum] = Creator.checksums[chksum]['cmd']
+
+        chksumsResults = {}
+        for chksum, cmd in chksumCmds.items():
+            output = commands.getoutput(cmd + ' ' + filename)
+            chksumsResults[chksum] = output.split(' ')[0]
+
+        return chksumsResults
 
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)

@@ -33,10 +33,43 @@ class Claudia(object):
         #self.packages = ['apache2']
         self.packages = []
 
+        # claudia configuration files
+        self.smFile = "/root/claudiaprops/sm.properties"
+        self.tcloudFile = "/root/claudiaprops/tcloud.properties"
+        self.claudiaClientFile= "/root/claudiaprops/claudiaClient.properties"
+
+        # temp global variables to be included in stratus.cfg
+        self.domainName = "grnet"
+        self.claudiaHome = "/opt/claudia/prueba/"
+
+        # properties translation
+        # sm.properties
+        self.smprops = {"java.naming.provider.url":"tcp://"+self.frontendIp+":61616", \
+                        "RestListenerHost":self.frontendIp, \
+                        "SMIHost":self.frontendIp, \
+                        "ImagesServerHost":self.frontendIp, \
+                        "VEEMHost":self.frontendIp, \
+                        "SiteRoot":self.domainName
+                        # missing network configuration
+                        }
+
+        # tcloud.properties
+        self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
+                            "oneUser":self.oneUsername, \
+                            "onePassword":self.onePassword, \
+                            "oneEnvironmentPath":self.claudiaHome+"repository/"
+                            }
+
+        # claudiaClient.properties
+        self.ccprops = {"domain.root":self.domainName, \
+                        "smi.host":self.frontendIp, \
+                        "rest.host":self.frontendIp
+                        }
+
     def _overrideValueInFile(self, key, value, fileName):
         # Here's how you could override config files...
-        search = key + ' = '
-        replace = key + ' = ' + value
+        search = key + '='
+        replace = key + '=' + value
         Util.appendOrReplaceInFile(fileName, search, replace)
 
     def run(self):
@@ -49,8 +82,25 @@ class Claudia(object):
             self.system.installPackages(self.packages)
 
     def _configure(self):
-        pass
+        # configure sm.properties file
+        print " :: Configuring "+self.smFile
+        for k in self.smprops:
+            #print k + " |-----> " + self.smprops[k]
+            self._overrideValueInFile(k, self.smprops[k], self.smFile)
+
+        # configure tcloud.properties file
+        print " :: Configuring "+self.tcloudFile
+        for k in self.tcloudprops:
+            #print k + " |-----> " + self.tcloudprops[k]
+            self._overrideValueInFile(k, self.tcloudprops[k], self.tcloudFile)
+
+        # configure claudiaClient.properties file
+        print " :: Configuring "+self.claudiaClientFile
+        for k in self.ccprops:
+            #print k + " |-----> " + self.ccprops[k]
+            self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
 
     def _startServices(self):
         self.system.execute(['ls', '-l'])
         self.system.execute(['pwd'])
+
