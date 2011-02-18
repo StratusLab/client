@@ -35,8 +35,6 @@ from stratuslab.Downloader import Downloader
 class MainProgram(CommandBase):
     '''A command-line program to download machine and disk images from a StratusLab Market-Place.'''
 
-    ENDPOINT = 'http://marketplace.stratuslab.eu'
-
     def __init__(self):
         self.uri = None
         super(MainProgram, self).__init__()
@@ -49,9 +47,9 @@ class MainProgram(CommandBase):
         self.parser.usage = usage
 
         self.parser.add_option('-e', '--endpoint', dest='endpoint',
-                               help='URL of the root StratusLab Market-Place endpoint (default: %s)' % MainProgram.ENDPOINT, 
+                               help='URL of the root StratusLab Market-Place endpoint (default: %s)' % Downloader.ENDPOINT, 
                                metavar='URL',
-                               default=MainProgram.ENDPOINT)
+                               default=Downloader.ENDPOINT)
 
         self.parser.add_option('-o', '--output', dest='localImageFilename',
                                help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME, 
