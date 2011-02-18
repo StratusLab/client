@@ -35,6 +35,7 @@ from Exceptions import ValidationException
 
 class Downloader(object):
 
+    ENDPOINT = 'http://appliances.stratuslab.eu/marketplace/metadata'
     LOCAL_IMAGE_FILENAME = '/tmp/image.img'
 
     def __init__(self, configHolder = ConfigHolder()):
@@ -116,7 +117,7 @@ class Downloader(object):
 
     def _extractLocations(self):
         locations = []
-        for location in self.metadataDom.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://mp.stratuslab.eu/slterms#}location'):
+        for location in self.metadataDom.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://stratuslab.eu/terms#}location'):
             locations.append(location.text)
         return locations
     
