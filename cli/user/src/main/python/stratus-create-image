@@ -116,6 +116,15 @@ class MainProgram(Runnable):
                 ' repository structure and the base image',
                 default='')
 
+        self.parser.add_option('--address', dest='specificAddressRequest',
+                help='request a specific ip address',
+                metavar='IP', default=None)
+
+        self.parser.add_option('--extra-disk', dest='extraDiskSize',
+                help='extra data disk size in GB', metavar='INT',
+                action='callback', callback=self.diskSizeOptionCallback,
+                default=0, type='int')
+
         # Uploader
         self.parser.add_option('-f', '--force', dest='forceUpload',
                 help='force upload of the appliance even if already exist.',
@@ -128,6 +137,8 @@ class MainProgram(Runnable):
 
         super(MainProgram, self).parse()
 
+    def diskSizeOptionCallback(self, option, opt_str, value, parser):
+        setattr(parser.values, option.dest, 1024*value)
 
     def checkOptions(self):
 
