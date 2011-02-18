@@ -172,8 +172,9 @@ class Monitor(Configurable):
         self._adjustAttributeFields(_list, attrList)
 
     def _adjustAttributeFields(self, _list, attrList):
-        for attr in attrList:
-            for i,attrVal in enumerate(getattr(self, attr)):
-                lenMax = max(map(lambda x: len(getattr(x, attrVal[0])), _list))
-                if lenMax >= getattr(self, attr)[i][1]:
-                    getattr(self, attr)[i][1] = lenMax + 1
+        if _list:
+            for attr in attrList:
+                for i,attrVal in enumerate(getattr(self, attr)):
+                    lenMax = max(map(lambda x: len(getattr(x, attrVal[0])), _list))
+                    if lenMax >= getattr(self, attr)[i][1]:
+                        getattr(self, attr)[i][1] = lenMax + 1
