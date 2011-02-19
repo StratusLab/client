@@ -458,6 +458,8 @@ class BaseSystem(object):
         pass
 
     def configureFireWall(self):
+        self._loadNetfilterModules()
+
         self._configureFireWallForProxy()
         self._configureFireWallNat()
         self._persistFireWallRules()
@@ -510,13 +512,18 @@ class BaseSystem(object):
     def _persistFireWallRules(self):
         self._saveFireWallRules(self.FILE_FIREWALL_RULES)
 
+
+    def _loadNetfilterModules(self):
+        # just in case if kernel modules were not yet loaded
+        devNull = open('/dev/null', 'w')
+        for table in self.IP_TABLES_LIST:
+            cmd = 'iptables -nL -t %s' % table
+            self.executeCmd(cmd.split(), stdout=devNull)
+        devNull.close()
+
     def _saveFireWallRules(self, filename):
         # back-up
         self.executeCmd(('cp -fp %s %s.LAST'%((filename,)*2)).split(' '))
-
-        # just in case if kernel modules were not yet loaded
-        for table in self.IP_TABLES_LIST:
-            self.executeCmd(('iptables -nL -t %s >/dev/null 2>&1'%table).split())
 
         _,output = self.executeCmdWithOutput(['iptables-save'])
         printDetail('Saving firewall rules to %s.' % filename)
