@@ -6,7 +6,6 @@
   <artifactId>stratuslab-cli-sysadmin</artifactId>
   <name>StratusLab Command-Line Interface (CLI) for System Administrators parent POM</name>
   <packaging>pom</packaging>
-  <url>http://stratuslab.eu</url>
 
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
