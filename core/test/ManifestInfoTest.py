@@ -127,7 +127,8 @@ class ManifestIdentifierTest(unittest.TestCase):
     def testConversion(self):
         sha1 = 'c319bbd5afc0a22ba3eaed0507c39383ec28eeff'
         id = ManifestIdentifier()
-        self.assertEquals(sha1, id.identifierToSha1(id.sha1ToIdentifier(sha1)))
+        self.assertEquals(int(sha1, 16),
+                          int(id.identifierToSha1(id.sha1ToIdentifier(sha1)), 16))
 
 if __name__ == "__main__":
     unittest.main()
