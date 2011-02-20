@@ -36,7 +36,7 @@ from stratuslab.Util import gatewayIpFromNetAddress
 from stratuslab.Exceptions import ExecutionException
 
 class BaseSystem(object):
-    
+
     def __init__(self):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
@@ -49,7 +49,7 @@ class BaseSystem(object):
     # -------------------------------------------
     #     Packages manager and related
     # -------------------------------------------
-    
+
     def updatePackageManager(self):
         pass
 
@@ -87,7 +87,7 @@ class BaseSystem(object):
 
     def _applyPatchs(self):
         patchDir = os.path.abspath(Util.shareDir + 'patch')
-        
+
         for patch in \
             [os.path.abspath('%s/%s' % (patchDir, f)) for f in os.listdir(patchDir)]:
             patchFile = open(patch, 'rb')
@@ -112,13 +112,13 @@ class BaseSystem(object):
         self.oneGroup = groupname
         self.oneGid = gid
 
-        self.executeCmd(['groupadd', '-g', self.oneGid, 
+        self.executeCmd(['groupadd', '-g', self.oneGid,
                         self.oneGroup])
 
     def createCloudAdmin(self):
 
         self.createDirsCmd(os.path.dirname(self.oneHome))
-        self.executeCmd(['useradd', '-d', self.oneHome, '-g', 
+        self.executeCmd(['useradd', '-d', self.oneHome, '-g',
                         self.oneGroup, '-u', self.oneUid, self.oneUsername,
                         '-s', '/bin/bash', '-p', self.onePassword, '--create-home'])
 
@@ -132,7 +132,7 @@ class BaseSystem(object):
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome,
                                       'export ONE_LOCATION',
                                       'export ONE_LOCATION=%s' % self.oneHome)
-        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome, 
+        self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome,
                                       'export ONE_XMLRPC',
                                       'export ONE_XMLRPC=http://localhost:%s/RPC2' % self.ONeDPort)
         self.appendOrReplaceInFileCmd('%s/.bashrc' % self.oneHome,
@@ -149,10 +149,10 @@ class BaseSystem(object):
         self.setOwnerCmd('%s/.bash_login' % self.oneHome)
 
         # Hack to always load .bashrc
-        self.executeCmd(['sed -i \'s/\[ -z \\\"\$PS1\\\" \\] \\&\\& ' 
+        self.executeCmd(['sed -i \'s/\[ -z \\\"\$PS1\\\" \\] \\&\\& '
                         'return/#&/\' %s/.bashrc' % self.oneHome], shell=True)
 
-    def configureCloudAdminSshKeys(self):  
+    def configureCloudAdminSshKeys(self):
         keyFileName = '%s/.ssh/id_rsa' % self.oneHome
 
         if os.path.exists(keyFileName):
@@ -166,7 +166,7 @@ class BaseSystem(object):
         self.setOwnerCmd(keyFileName)
         self.setOwnerCmd('%s.pub' % keyFileName)
 
-        self.copyCmd('%s.pub' % keyFileName, 
+        self.copyCmd('%s.pub' % keyFileName,
                      '%s/.ssh/authorized_keys' % self.oneHome)
         self.setOwnerCmd('%s/.ssh/authorized_keys' % self.oneHome)
         self._configureCloudAdminSsh()
@@ -174,10 +174,10 @@ class BaseSystem(object):
     def configureCloudAdminSshKeysNode(self):
         self.createDirsCmd('%s/.ssh/' % self.oneHome)
         self.setOwnerCmd('%s/.ssh/' % self.oneHome)
-        
+
         oneKey = fileGetContent('%s/.ssh/id_rsa' % self.oneHome)
         self._filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.oneHome, oneKey)
-        
+
         oneKeyPub = fileGetContent('%s/.ssh/id_rsa.pub' % self.oneHome)
         self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.oneHome,
                                        oneKeyPub)
@@ -185,14 +185,14 @@ class BaseSystem(object):
         self._configureCloudAdminSsh()
 
     def _configureCloudAdminSsh(self):
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome, 
+        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome,
                                       'Host', 'Host *')
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome, 
+        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome,
                                       '\tStrictHost', '\tStrictHostKeyChecking no')
 
     def configureCloudAdminAccount(self):
         oneAuthFile = '%s/.one/one_auth' % self.oneHome
-        self.appendOrReplaceInFileCmd(oneAuthFile, 
+        self.appendOrReplaceInFileCmd(oneAuthFile,
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
 
     def _setOneHome(self):
@@ -205,7 +205,7 @@ class BaseSystem(object):
 
     def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
         self.createDirsCmd(mountPoint)
-        self.appendOrReplaceInFileCmd('/etc/exports', 
+        self.appendOrReplaceInFileCmd('/etc/exports',
                                       mountPoint, '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' %
                                       (mountPoint, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
@@ -216,7 +216,7 @@ class BaseSystem(object):
                                       '%s %s nfs soft,intr,rsize=32768,wsize=32768,rw 0 0' % (
                                       shareLocation, mountPoint))
         self.executeCmd(['mount', '-a'])
-        
+
     def configureSshServer(self):
         pass
 
@@ -262,27 +262,27 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        return execute(command, 
-                       stdout=stdout, 
-                       stderr=stderr, 
-                       verboseLevel=self.verboseLevel, 
-                       verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+        return execute(command,
+                       stdout=stdout,
+                       stderr=stderr,
+                       verboseLevel=self.verboseLevel,
+                       verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                        **kwargs)
 
     def _executeWithOutput(self, command, **kwargs):
         kwargs['withOutput'] = True
         return self._execute(command, **kwargs)
-    
+
     def _cloudAdminExecute(self, command, **kwargs):
         su = ['su', '-l', self.oneUsername, '-c']
         su.extend(command)
         res = self._execute(su, **kwargs)
         if res:
-            raise ExecutionException('error executing command %s, with code: %s' % (command, res))            
-    
+            raise ExecutionException('error executing command %s, with code: %s' % (command, res))
+
     def _setCloudAdminOwner(self, path):
-        os.chown(path, int(self.oneUid), int(self.oneGid)) 
-        
+        os.chown(path, int(self.oneUid), int(self.oneGid))
+
     def _createDirs(self, path):
         if not os.path.isdir(path) and not os.path.isfile(path):
             os.makedirs(path)
@@ -302,7 +302,7 @@ class BaseSystem(object):
     # -------------------------------------------
     #     Node related methods
     # -------------------------------------------
-    
+
     def _nodeShell(self, command, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
@@ -315,13 +315,13 @@ class BaseSystem(object):
         if type(command) == type(list()):
             command = ' '.join(command)
 
-        return sshCmd(command, 
-                      self.nodeAddr, 
+        return sshCmd(command,
+                      self.nodeAddr,
                       self.nodePrivateKey,
-                      stdout=stdout, 
+                      stdout=stdout,
                       stderr=stderr,
                       verboseLevel=self.verboseLevel,
-                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                       **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
@@ -333,22 +333,22 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        return scp(source, 
+        return scp(source,
                    'root@%s:%s' % (self.nodeAddr, dest),
                    self.nodePrivateKey,
                    stdout=stdout,
                    stderr=stderr,
                    verboseLevel=self.verboseLevel,
-                   verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+                   verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
                    **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):
-        self._nodeShell(['chown %s:%s %s' % (self.oneUid, 
+        self._nodeShell(['chown %s:%s %s' % (self.oneUid,
                         self.oneGid, path)])
-            
+
     def _remoteCreateDirs(self, path):
         self._nodeShell('mkdir -p %s' % path)
-        
+
     def _remoteAppendOrReplaceInFile(self, filename, search, replace):
         res = self._nodeShell(['grep', search, filename])
 
@@ -360,30 +360,30 @@ class BaseSystem(object):
 
     def _patternExists(self, returnCode):
         return returnCode == 0
-    
+
     def _remoteCopyFile(self, src, dest):
         self._nodeShell(['cp -rf %s %s' % (src, dest)])
 
     def _remoteRemove(self, path):
         self._nodeShell(['rm -rf %s' % path])
-        
+
     def _remoteFilePutContents(self, filename, data):
         self._nodeShell('echo \'%s\' > %s' % (data, filename))
 
     def _remoteFileAppendContents(self, filename, data):
         self._nodeShell('echo \'%s\' >> %s' % (data, filename))
-        
+
     def _filePutContentAsOneAdmin(self, filename, content):
         self.filePutContentsCmd(filename, content)
         self.setOwnerCmd(filename)
 
     def _remoteChmod(self, path, mode):
         return self._nodeShell('chmod %o %s' % (mode, path))
-        
+
     # -------------------------------------------
     #     General
     # -------------------------------------------
-    
+
     def setNodeAddr(self, nodeAddr):
         self.nodeAddr = nodeAddr
 
@@ -411,7 +411,7 @@ class BaseSystem(object):
         self.copyCmd = self._copy
         self.duplicateCmd = self._copy
         self.removeCmd = self._remove
-        
+
     def workOnNode(self):
         self.appendOrReplaceInFileCmd = self._remoteAppendOrReplaceInFile
         self.setOwnerCmd = self._remoteSetCloudAdminOwner
@@ -425,10 +425,10 @@ class BaseSystem(object):
         self.removeCmd = self._remoteRemove
 
     def configureCloudProxyService(self):
-        self.installPackages(['stratuslab-cloud-proxy'])        
+        self.installPackages(['stratuslab-cloud-proxy'])
         self._configureProxyDefaultUsers()
         self._restartJetty()
-        
+
     def _configureProxyDefaultUsers(self):
         self._configureProxyDefaultUsersUsernamePassword()
 
@@ -448,18 +448,22 @@ class BaseSystem(object):
     # TODO: extract Firewall class from the code below
 
     DEFAULT_FIREWALL_TABLE = 'filter'
-    
+
     # redefine in sub-class to point to required file
     FILE_FIREWALL_RULES = '/etc/sysconfig/iptables'
-    
+
+    IP_TABLES_LIST = ['filter','nat','mangle','raw']
+
     def _configureNetworkInterface(self, device, ip, netmask):
         pass
 
     def configureFireWall(self):
+        self._loadNetfilterModules()
+
         self._configureFireWallForProxy()
         self._configureFireWallNat()
         self._persistFireWallRules()
-    
+
     def _configureFireWallForProxy(self):
         port = str(self.onePort)
         rules = ({'table':'filter',
@@ -486,14 +490,14 @@ class BaseSystem(object):
 
         if not self._isSetFireWallRulesAll(rules):
             self._setFireWallRulesAll(rules)
- 
+
     def _configureFireWallNatNetworking(self):
         enableIpForwarding()
 
         device = self.natNetworkInterface
         ip = gatewayIpFromNetAddress(self.natNetwork)
-        
-        self._configureVirtualNetInterface(device, ip, 
+
+        self._configureVirtualNetInterface(device, ip,
                                            self.natNetmask)
 
     def _configureVirtualNetInterface(self, device, ip, netmask):
@@ -501,38 +505,47 @@ class BaseSystem(object):
 
         printDetail('Configuring network interface %s.' % device)
         self._configureNetworkInterface(device, ip, netmask)
-        
-        printDetail('Starting network interface %s.' % device) 
+
+        printDetail('Starting network interface %s.' % device)
         self.executeCmd(['ifup', device])
 
     def _persistFireWallRules(self):
         self._saveFireWallRules(self.FILE_FIREWALL_RULES)
 
+
+    def _loadNetfilterModules(self):
+        # just in case if kernel modules were not yet loaded
+        devNull = open('/dev/null', 'w')
+        for table in self.IP_TABLES_LIST:
+            cmd = 'iptables -nL -t %s' % table
+            self.executeCmd(cmd.split(), stdout=devNull)
+        devNull.close()
+
     def _saveFireWallRules(self, filename):
         # back-up
         self.executeCmd(('cp -fp %s %s.LAST'%((filename,)*2)).split(' '))
-        
+
         _,output = self.executeCmdWithOutput(['iptables-save'])
         printDetail('Saving firewall rules to %s.' % filename)
         filePutContent(filename, output)
         os.chmod(filename, 0600)
 
     def _isSetFireWallRulesAll(self, rules):
-        tables = dict.fromkeys([r.get('table', self.DEFAULT_FIREWALL_TABLE) 
+        tables = dict.fromkeys([r.get('table', self.DEFAULT_FIREWALL_TABLE)
                                                         for r in rules]).keys()
         currentRules = self._getFireWallRulesPerTable(tables)
         for ruleSpec in rules:
             if not self._isSetFireWallRule(currentRules, ruleSpec):
                 return False
         return True
-    
-    def _getFireWallRulesPerTable(self, tables=['filter','nat','mangle','raw']):
+
+    def _getFireWallRulesPerTable(self, tables=IP_TABLES_LIST):
         rules = {}
         for table in tables:
-            rc, output = self.executeCmdWithOutput(('iptables-save -t %s' % 
+            rc, output = self.executeCmdWithOutput(('iptables-save -t %s' %
                                                    table).split(' '))
             if rc != 0:
-                raise ExecutionException('iptables-save reported an error:\n%s'% 
+                raise ExecutionException('iptables-save reported an error:\n%s'%
                                          output)
             rules.update({table:output})
         return rules
@@ -540,14 +553,14 @@ class BaseSystem(object):
     def _isSetFireWallRule(self, currentRules, ruleSpec):
         rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
         rulesInTable = currentRules[table]
-        
+
         if re.search(rule, rulesInTable, re.M):
             return True
         return False
-    
+
     def _setFireWallRulesAll(self, rules):
         self._deleteFireWallRulesAllGiven(rules)
-        
+
         for ruleSpec in rules:
             self._setFireWallRule(ruleSpec)
 
@@ -559,12 +572,12 @@ class BaseSystem(object):
         rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
         rule = '-D %s' % rule[3:] # remove action; leave chain and rule
 
-        self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))        
-        
+        self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))
+
     def _setFireWallRule(self, ruleSpec):
         rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
-        
-        self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))        
+
+        self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))
 
     def _getRuleAndTableFromRuleSpec(self, ruleSpec):
         return ruleSpec['rule'], \
@@ -577,6 +590,6 @@ FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
 def enableIpForwarding():
     printDetail('Enabling packets forwarding.')
     file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
-    appendOrReplaceInFile(FILE_IPFORWARD_PERSIST, 
-                          'net.ipv4.ip_forward', 
+    appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
+                          'net.ipv4.ip_forward',
                           'net.ipv4.ip_forward = 1')

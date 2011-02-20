@@ -29,44 +29,49 @@ from stratuslab.Util import modulePath
 import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Policy import Policy
+from stratuslab.marketplace.Policy import Policy
+from stratuslab.Downloader import Downloader
 
 class MainProgram(CommandBase):
     '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
 
     def __init__(self):
         self.metadataFilename = None
+        self.policyConfigFilename = None
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] <metadata>
+        usage = '''usage: %prog [options] <identifier-uri> <policy-config>
         
-<metadata>    Image metadata corresponding to the image required to be checked
-'''
+<identifier-uri>       Image identifier, corresponding to a unique entry (i.e. checksum/email/date)
+<policy-config>    Policy configuration file'''
+
         self.parser.usage = usage
 
-        self.parser.add_option('-o', '--output', dest='localImageFilename',
-                               help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME, 
-                               metavar='FILE',
-                               default=Downloader.LOCAL_IMAGE_FILENAME)
+        self.parser.add_option('-e', '--endpoint', dest='endpoint',
+                               help='URL of the root StratusLab Market-Place endpoint (default: %s)' % Downloader.ENDPOINT, 
+                               metavar='URL',
+                               default=Downloader.ENDPOINT)
 
         self.options, self.args = self.parser.parse_args()
 
         self.checkArgumentsLength()
 
     def checkArgumentsLength(self):
-        if len(self.args) < 1:
+        if len(self.args) < 2:
             self.usageExitTooFewArguments()
-        if len(self.args) > 1:
+        if len(self.args) > 2:
             self.usageExitTooManyArguments()
-
+            
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         
-        self.metadataFilename = self.args[0]
+        identifierUri = self.args[0]
+        policyConfigFilename = self.args[1]
 
-        policy = Policy(configHolder)
-        policy.run(self.metadataFilename)
+        policy = Policy(policyConfigFilename, configHolder)
+        policy.check(identifierUri)
+        self.printDetail("Valid according to site policy")
 
 if __name__ == '__main__':
     try:
