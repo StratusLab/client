@@ -7,7 +7,6 @@
   <artifactId>stratuslab-web-monitor-rpm</artifactId>
   <packaging>rpm</packaging>
   <name>StratusLab Web Monitor (RPM)</name>
-  <url>http://stratuslab.eu/</url>
 
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
