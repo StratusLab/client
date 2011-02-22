@@ -62,6 +62,9 @@ class ManifestInfo(object):
 
     IMAGE_VALIDITY = (356/2) * 24 * 3600 # 1/2 year in sec
 
+    MANDATORY_CHECKSUMS = ('sha1',)
+    CHECKSUM_NAMES = ('md5','sha1','sha256','sha512')
+
     def __init__(self, options={}):
 
         self.created = ''

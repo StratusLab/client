@@ -70,6 +70,29 @@ class MainProgram(CommandBase):
                 help='Comment to append to the manifest file',
                 default='', metavar='TEXT')
 
+        self.parser.add_option('--md5', dest='md5',
+                help='md5 checksum.',
+                default='', metavar='HEX')
+        self.parser.add_option('--sha1', dest='sha1',
+                help='sha1 checksum.',
+                default='', metavar='HEX')
+        self.parser.add_option('--sha256', dest='sha256',
+                help='sha256 checksum.',
+                default='', metavar='HEX')
+        self.parser.add_option('--sha512', dest='sha512',
+                help='sha512 checksum.',
+                default='', metavar='HEX')
+
+        self.parser.add_option('--no-md5', dest='noMd5',
+                help='do not do md5 checksum.',
+                default=False, action='store_true')
+        self.parser.add_option('--no-sha256', dest='noSha256',
+                help='do not do sha256 checksum.',
+                default=False, action='store_true')
+        self.parser.add_option('--no-sha512', dest='noSha512',
+                help='do not do sha512 checksum.',
+                default=False, action='store_true')
+
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
@@ -81,8 +104,7 @@ class MainProgram(CommandBase):
             self.parser.error('Image does not exist: ' + self.image)
 
     def doWork(self):
-        chksums = Creator.checksumImageLocal(self.image, ('md5','sha1','sha256','sha512'))
-        self.options.__dict__.update(chksums)
+        self._calculateCheckSums()
 
         statinfo = os.stat(self.image)
         bytes = str(statinfo.st_size)
@@ -90,6 +112,22 @@ class MainProgram(CommandBase):
 
         manifest = ManifestInfo(self.options.__dict__)
         manifest.buildAndSave()
+
+    def _calculateCheckSums(self):
+        checkSumNames = ManifestInfo.CHECKSUM_NAMES
+        # checksums to do if we were not given any
+        checkSums = dict([ (x, getattr(self.options, x, '')) for x in checkSumNames ])
+        checkSumsToDo = [ k for k,v in checkSums.items() if not v ]
+        # remove the ones we told not to do
+        for c in checkSumsToDo[:]:
+            if getattr(self.options, 'no%s'%c.title(), False):
+                checkSumsToDo.remove(c)
+        if not checkSumsToDo and not self.options.sha1:
+            checkSumsToDo = ManifestInfo.MANDATORY_CHECKSUMS
+
+        chksums = Creator.checksumImageLocal(self.image, checkSumsToDo)
+
+        self.options.__dict__.update(chksums)
 
 if __name__ == '__main__':
     try:
