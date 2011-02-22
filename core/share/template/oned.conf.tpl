@@ -338,5 +338,5 @@ VM_HOOK = [
 #-------------------------------------------------------------------------------
 
 AUTH_MAD = [
-    executable = "one_dummy_auth_mad" ]
+    executable = "one_external_authn_mad" ]
 

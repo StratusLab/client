@@ -144,6 +144,7 @@
 								<artifactItem>
 									<groupId>eu.stratuslab.marketplace</groupId>
 									<artifactId>metadata</artifactId>
+									<classifier>jar-with-dependencies</classifier>
 									<type>jar</type>
 								</artifactItem>
 							</artifactItems>
