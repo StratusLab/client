@@ -60,7 +60,10 @@ class BaseSystem(object):
         pass
 
     def installNodePackages(self, packages):
-        pass
+        if len(packages) > 0:
+            if self._nodeShell('%s %s' %
+                (self.installCmd, ' '.join(packages))):
+                raise ExecutionException('Error installing packages: %s' % packages)
 
     def installFrontendDependencies(self):
         self.updatePackageManager()
@@ -71,29 +74,6 @@ class BaseSystem(object):
 
     def installHypervisor(self):
         self.installNodePackages(self.hypervisorDeps.get(self.hypervisor))
-
-    # -------------------------------------------
-    #     ONE build and related
-    # -------------------------------------------
-
-    def cloneGitRepository(self, buildDir, repoUrl, cloneName, branch):
-        self.ONeRepo = repoUrl
-        self.ONeSrcDir = buildDir
-
-        self._createDirs(self.ONeSrcDir)
-        os.chdir(self.ONeSrcDir)
-        self._execute(['git', 'clone', repoUrl, cloneName, '-b', branch])
-        os.chdir(cloneName)
-
-    def _applyPatchs(self):
-        patchDir = os.path.abspath(Util.shareDir + 'patch')
-        
-        for patch in \
-            [os.path.abspath('%s/%s' % (patchDir, f)) for f in os.listdir(patchDir)]:
-            patchFile = open(patch, 'rb')
-            printDetail('Applying patch %s' % patch, self.verboseLevel)
-            self.executeCmd(['patch', '-p1'], stdin=patchFile)
-            patchFile.close()
 
     def startCloudSystem(self):
         try:
@@ -302,7 +282,7 @@ class BaseSystem(object):
     # -------------------------------------------
     #     Node related methods
     # -------------------------------------------
-    
+
     def _nodeShell(self, command, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
