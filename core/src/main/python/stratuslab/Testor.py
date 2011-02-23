@@ -34,7 +34,6 @@ from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import execute
-from stratuslab.Util import generateSshKeyPair
 from stratuslab.Util import ping
 from stratuslab.Util import printError
 from stratuslab.Util import sshCmd
@@ -181,7 +180,7 @@ class Testor(unittest.TestCase):
         return runner
 
     def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None):
-        generateSshKeyPair(self.sshKey)
+        Util.generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
         options['username'] = self.oneUsername
@@ -352,12 +351,15 @@ class Testor(unittest.TestCase):
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
     def _deleteImageAndManifestFromAppRepo(self, imageUri):
-        urlDir = imageUri.rsplit('/',1)[0]
+        urlDir = imageUri.rsplit('/',1)[0] + '/'
 
         curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.appRepoUsername,
                                                         self.appRepoPassword)]
         deleteUrlCmd = curlCmd + [ '-X', 'DELETE', urlDir]
-        Util.execute(deleteUrlCmd)
+
+        Util.execute(deleteUrlCmd,
+                     verboseLevel=self.verboseLevel,
+                     verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
     def _createCreator(self, image):
         Util.generateSshKeyPair(self.sshKey)
