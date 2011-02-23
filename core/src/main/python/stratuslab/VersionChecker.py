@@ -31,4 +31,4 @@ class VersionChecker(object):
     
     def check(self):
         if self._getPythonVersion() < VersionChecker.MINIMUM_VERSION:
-            raise ValidationException('python version must by %s or greater' % '.'.join(map(str,VersionChecker.MINIMUM_VERSION)))
+            raise ValidationException('python version must be %s or greater' % '.'.join(map(str,VersionChecker.MINIMUM_VERSION)))
