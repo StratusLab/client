@@ -35,7 +35,6 @@ from stratuslab.Util import sshCmd
 from stratuslab.Util import sshCmdWithOutput
 from stratuslab.Util import waitUntilPingOrTimeout
 from stratuslab.Util import getHostnameFromUri
-from stratuslab.Util import getProtoHostnameFromUri
 from stratuslab.Util import execute
 import stratuslab.Util as Util
 from Exceptions import ValidationException
@@ -54,7 +53,7 @@ from stratuslab.Signator import Signator
 
 VM_START_TIMEOUT = 150
 
-INSTALLERS = ['yum', 'apt'] # TODO: should go to system/__init__.py
+INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
 
 class Creator(object):
 
@@ -67,8 +66,30 @@ class Creator(object):
     def __init__(self, image, configHolder):
         self.image = image
         self.configHolder = configHolder
+
+        self.newImageGroupName = ''
+        self.newInstalledSoftwareName = ''
+        self.newInstalledSoftwareVersion = ''
+        self.newImageGroupVersion = ''
+        self.author = ''
+        self.comment = ''
+        self.os = ''
+
+        self.endpoint = ''
+        self.appRepoUrl = ''
+
+        self.extraOsReposUrls = ''
+        self.packages = ''
+
+        self.scripts = ''
+
+        self.verboseLevel = ''
+
+        self.shutdownVm = False
+
         self.options = Runner.defaultRunOptions()
         self.options.update(configHolder.options)
+        self.configHolder.options.update(self.options)
 
         configHolder.assign(self)
 
@@ -81,27 +102,19 @@ class Creator(object):
         self.cloud.setEndpoint(self.endpoint)
 
         self.runner = None
-        self.newManifestFileName = None
         self.vmAddress = None
         self.vmId = None
         self.vmIp = None
-
-        if self.options.get('repoAddress'):
-            self.repoAddress = self.options.get('repoAddress')
-        else:
-            self.repoAddress = self.options['repoAddress'] = getProtoHostnameFromUri(self.image)
 
         # Structure of the repository
         self.appRepoStructure = 'images/#type_#/#os#-#osversion#-#arch#-#type#/#version#'
         # Repository image filename structure
         self.appRepoFilename = '#os#-#osversion#-#arch#-#type#-#version#.img.#compression#'
 
-        self.manifest = ''
-
         self.userPublicKeyFile = self.options.get('userPublicKeyFile',
                                                   '%s/.ssh/id_rsa.pub' %
                                                     os.path.expanduser("~"))
-        self.userPrivateKeyFiel = self.userPublicKeyFile.strip('.pub')
+        self.userPrivateKeyFile = self.userPublicKeyFile.strip('.pub')
 
         self.mainDisk = ''
         self.extraDisk = ''
@@ -119,14 +132,21 @@ class Creator(object):
         self.installer = self.options.get('installer')
         if self.installer not in installers:
             raise ValidationException('Installer should be one of %s. Given %s.' %
-                                      (','.join(installers), self.installer))
+                                      (', '.join(installers), self.installer))
 
         self.targetImageUri = ''
         self.targetManifestUri = ''
 
+        self.manifest = ''
+        self.manifestObject = None
+        self.newManifestFileName = None
+
     @staticmethod
-    def checksumImageLocal(filename, chksums=('sha1',)):
-        # TODO: use 'hashlib'
+    def checksumImageLocal(filename, chksums=ManifestInfo.MANDATORY_CHECKSUMS):
+        # TODO: use 'hashlib' ?
+        if not chksums:
+            return {}
+
         import commands
         darwinChksumCmds = {'md5'   :'md5 -q',
                             'sha1'  :'shasum -a 1',
@@ -176,13 +196,16 @@ class Creator(object):
         self.appRepoFilename = parser.get('stratuslab_repo', 'repo_filename')
 
     def _buildConfigFileUrl(self):
-        url = self.rootUrl or self._extractRootPath()
+        url = self.appRepoUrl or self._extractRootPath()
         self.printDetail('Using root url: %s' % url)
         return url
 
     def _extractRootPath(self):
         root = '/'.join(self.image.split('/')[:-4])
         return root
+
+    def _buildRepoNameStructure(self, structure, info):
+        return Uploader.buildRepoNameStructure(structure, info)
 
     def create(self):
         printAction('Starting image creation')
@@ -205,6 +228,9 @@ class Creator(object):
             self.cloud.vmStop(self.vmId)
             printError('Unable to ping VM')
 
+        printStep('Check if we can connect.')
+        self._checkIfCanConnectToMachine()
+
         printStep('Installing user packages')
         self._installPackages()
 
@@ -218,7 +244,7 @@ class Creator(object):
         self._checksumImage()
 
         printStep('Updating image manifest')
-        self.manifestObject = self._updateAndSaveManifest()
+        self._updateAndSaveManifest()
 
         printStep('Signing image manifest')
         self._signManifest()
@@ -244,6 +270,26 @@ class Creator(object):
                                                                         self.stderr.name)
         self._localCleanUp()
 
+    def _checkIfCanConnectToMachine(self):
+        cmd = 'true'
+        try:
+            self._sshCmdWithOutputVerb(cmd)
+        except ExecutionException, e:
+            sleepTime = 5
+            maxCount = 2
+            counter = 0
+            while True:
+                try:
+                    self.printDetail('Sleeping %i sec. Retry %i out of %i.' % \
+                                     (sleepTime, counter+1, maxCount))
+                    time.sleep(sleepTime)
+                    self._sshCmdWithOutputVerb(cmd)
+                    break
+                except ExecutionException, e:
+                    if counter >= maxCount:
+                        raise ExecutionException(e)
+                    counter += 1
+
     def _imageExists(self):
         self._pingImage()
         self._pingManifest()
@@ -261,7 +307,6 @@ class Creator(object):
             raise ValidationException('Unable to access manifest file: %s' % url)
 
     def _createRunner(self):
-        self.configHolder.set('extraDiskSize', 8*1024)
         self.runner = Runner(self.image, self.configHolder)
 
     def _startMachine(self):
@@ -299,11 +344,17 @@ class Creator(object):
         return getattr(info, attr)
 
     def _updateAndSaveManifest(self):
+        self.manifestObject = self._updateManifest()
+
+        self.manifest = self.manifestObject.tostring()
+
+        self._saveManifest()
+
+    def _updateManifest(self):
         self.printDetail('Updating manifest')
-
         info = ManifestInfo()
-        info.parseManifest(self.manifest)
 
+        info.parseManifest(self.manifest)
         info.created = Util.getTimeInIso8601()
         info.type = self.newImageGroupName or info.type
         info.os = self.newInstalledSoftwareName or info.os
@@ -314,15 +365,13 @@ class Creator(object):
         for name, checksum in self.checksums.items():
             setattr(info, name, checksum['sum'])
 
-        self.manifest = info.tostring()
+        return info
 
+    def _saveManifest(self):
         fd, self.manifestLocalFileName = tempfile.mkstemp('.xml')
-        self.printDetail('Writing manifest to local temporary file: %s' %
-                         self.manifestLocalFileName)
+        self.printDetail('Writing manifest to local temporary file: %s' % self.manifestLocalFileName)
         os.write(fd, self.manifest)
         os.close(fd)
-
-        return info
 
     def _signManifest(self):
         signator = Signator(self.manifestLocalFileName, self.configHolder)
@@ -331,7 +380,7 @@ class Creator(object):
 
     def _installPackages(self):
         if len(self.packages) == 0:
-            self.printDetial('No packages to install')
+            self.printDetail('No packages to install')
             return
 
         self._setUpExtraRepositories()
@@ -346,7 +395,6 @@ class Creator(object):
     def _setUpExtraRepositories(self):
         if not self.extraOsReposUrls:
             return
-
 
         self.printDetail('Adding extra repositories')
 
@@ -430,9 +478,6 @@ deb %(name)s
 
         def partitionExtraDisk():
             cmd = """sfdisk /dev/%s << EOF
-,,L
-;
-;
 ;
 EOF
 """ % self.extraDisk
@@ -550,10 +595,10 @@ EOF
     def _checksumFile(self, filename):
         for name, meta in self.checksums.items():
             checksumingCmd = '%s %s' % (meta['cmd'], filename)
-            rc, output = sshCmdWithOutput(checksumingCmd, self.vmAddress)
+            rc, output = self._sshCmdWithOutput(checksumingCmd, self.vmAddress)
             if rc != 0:
-                raise ExecutionException('Could not get %s checksum for image: %s' %
-                                         (name, output))
+                raise ExecutionException('Could not get %s checksum for image:\n%s\n%s' %
+                                         (name, checksumingCmd, output))
             self.checksums[name]['sum'] = output.split(' ')[0]
 
     def _sshCmd(self, cmd, throwOnError=True, **kwargs):
@@ -575,6 +620,9 @@ EOF
         if rc and throwOnError:
             raise ExecutionException('Error executing command: %s\n%s' % (cmd, output))
         return rc, output
+
+    def _sshCmdWithOutputVerb(self, cmd, **kwargs):
+        return self._sshCmdWithOutput(cmd, sshVerb=True, **kwargs)
 
     def _uploadImageAndManifest(self):
         if self.options.get('noUpload', False):
@@ -599,18 +647,18 @@ EOF
 
     def _constructRemoteImageAndManifestUris(self):
         image, manifest = self._constructRemoteImageAndManifestFileNames()
-        return '%s/%s' % (self.repoAddress, image), \
-                '%s/%s' % (self.repoAddress, manifest)
+        return '%s/%s' % (self.appRepoUrl, image), \
+                '%s/%s' % (self.appRepoUrl, manifest)
 
     def _constructRemoteImageAndManifestFileNames(self):
-        imageName = self._consturctRemoteImageName()
+        imageName = self._constructRemoteImageName()
         nameBase = imageName.rsplit('.',2)[0] # remove .img.gz
         manifestName = '%s.xml' % nameBase
         return imageName, manifestName
 
-    def _consturctRemoteImageName(self):
-        fileName = Uploader.buildRepoNameStructure(self.appRepoFilename, self.manifestObject)
-        path = Uploader.buildRepoNameStructure(self.appRepoStructure, self.manifestObject)
+    def _constructRemoteImageName(self):
+        fileName = self._buildRepoNameStructure(self.appRepoFilename, self.manifestObject)
+        path = self._buildRepoNameStructure(self.appRepoStructure, self.manifestObject)
         return os.path.join(path, fileName)
 
     def _localCleanUp(self):

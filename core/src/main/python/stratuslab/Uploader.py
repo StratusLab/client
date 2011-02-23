@@ -77,8 +77,8 @@ class Uploader(object):
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] manifest'''
 
-        parser.add_option('-r', '--repository', dest='repoAddress',
-                help='appliance repository address. Default STRATUSLAB_REPO',
+        parser.add_option('-r', '--repository', dest='appRepoUrl',
+                help='appliance repository address. Default STRATUSLAB_REPO_ADDRESS',
                 default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
 
         parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
@@ -106,7 +106,7 @@ class Uploader(object):
     def checkUploadOptions(options, parser):
         if options.compressionFormat not in Uploader.availableCompressionFormat():
             parser.error('Unknown compression format')
-        if not options.repoAddress:
+        if not options.appRepoUrl:
             parser.error('Unspecified repository address')
         if not options.repoUsername:
             parser.error('Unspecified repository username')
@@ -115,14 +115,17 @@ class Uploader(object):
 
     @staticmethod
     def buildRepoNameStructure(structure, info):
+        if not isinstance(info, ManifestInfo):
+            raise TypeError('Expected ManifestInfo type, got %s' % type(info))
+
         varPattern = '#%s#'
         dirVarPattern = '#%s_#'
         for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
             if structure.find(varPattern % part) != -1:
-                structure = structure.replace(varPattern % part, getattr(info, part, ''))
+                structure = structure.replace(varPattern % part, getattr(info, part))
 
             if structure.find(dirVarPattern % part) != -1:
-                structure = structure.replace(dirVarPattern % part, getattr(info, part, '').replace('.', '/'))
+                structure = structure.replace(dirVarPattern % part, getattr(info, part).replace('.', '/'))
         return structure
 
     def __init__(self, manifestFile, options):
@@ -195,7 +198,8 @@ class Uploader(object):
         if getProtoFromUri(remoteName) and getHostnameFromUri(remoteName):
             uploadUrl = remoteName
         else:
-            uploadUrl = '%s/%s' % (self.repoAddress, remoteName)
+            uploadUrl = '%s/%s' % (self.appRepoUrl, remoteName)
+
         curlUploadCmd = self.curlCmd + ['-T', filename]
 
         self._checkFileAlreadyExists(remoteName)
@@ -207,10 +211,15 @@ class Uploader(object):
         curlUploadCmd.append(uploadUrl)
         if remoteServer:
             strCurlUploadCmd = ' '.join(curlUploadCmd)
-            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress, sshKey=self.userPrivateKeyFile)
+            ret = sshCmd(strCurlUploadCmd, self.remoteServerAddress,
+                         sshKey=self.userPrivateKeyFile,
+                         verboseLevel=self.verboseLevel,
+                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
         else:
             devNull = self._openDevNull()
-            ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull)
+            ret = execute(curlUploadCmd, stdout=devNull, stderr=devNull,
+                          verboseLevel=self.verboseLevel,
+                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
             devNull.close()
 
         if ret != 0:
@@ -259,14 +268,14 @@ class Uploader(object):
 
     def _checkFileAlreadyExists(self, filename):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, self.repoAddress, self.repoUsername, self.repoPassword)
+        passwordMgr.add_password(None, self.appRepoUrl, self.repoUsername, self.repoPassword)
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
 
         status = 0
         try:
-            opener.open('%s/%s' % (self.repoAddress, filename))
+            opener.open('%s/%s' % (self.appRepoUrl, filename))
         except urllib2.HTTPError, e:
             status = e.code
 
@@ -284,7 +293,7 @@ class Uploader(object):
 
     def _parseRepoConfig(self):
         tmpRepoCfg = '/tmp/stratus-repo.tmp'
-        wget('%s/%s' % (self.repoAddress, defaultRepoConfigPath), tmpRepoCfg)
+        wget('%s/%s' % (self.appRepoUrl, defaultRepoConfigPath), tmpRepoCfg)
 
         repoConf = RawConfigParser()
         repoConf.read(tmpRepoCfg)

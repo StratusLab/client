@@ -28,6 +28,7 @@ from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
+from stratuslab.Creator import Creator
 from stratuslab.Exceptions import NetworkException, OneException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
@@ -40,30 +41,35 @@ from stratuslab.Util import sshCmd
 import Util
 
 class Testor(unittest.TestCase):
-    
+
     configHolder = None
     testNames = []
-    
+
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
-        
+
         self.vmIds = []
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
-        
+
         Testor.configHolder.assign(self)
         self._setEnvVars()
+
+        self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.0/ttylinux-9.7-i486-base-1.0.img.gz'
 
     def _setEnvVars(self):
         self._setSingleEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
         self._setSingleEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
         self._setSingleEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
+        self._setSingleEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
         self._setSingleEnvVar('username', 'STRATUSLAB_USERNAME')
         self._setSingleEnvVar('password', 'STRATUSLAB_PASSWORD')
         self._setSingleEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
+        self._setSingleEnvVar('p12Cert', 'STRATUSLAB_P12_CERTIFICATE')
+        self._setSingleEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
         self._fillEndpointOption()
-        
+
     def _setSingleEnvVar(self, field, env):
         if env in os.environ:
             setattr(self, field, os.environ[env])
@@ -84,7 +90,7 @@ class Testor(unittest.TestCase):
     def runTests(self):
         suite = unittest.TestSuite()
         tests = []
-        if self.testNames:  
+        if self.testNames:
             tests = self.testNames
         else:
             tests = self._extractTestMethodNames()
@@ -97,15 +103,15 @@ class Testor(unittest.TestCase):
 
     def runMethod(self, method):
         return method()
-    
+
     def runInstancePublicNetworkTest(self):
         '''Start new instance, ping it via public network and ssh into it, then stop it.'''
         self._runInstanceTest()
-        
+
     def runInstanceLocalNetworkTest(self):
         '''Start new instance, ping it via local network and ssh into it, then stop it.'''
         self._runInstanceTest(True)
-        
+
     def runInstanceRequestedNetworkTest(self):
         '''Start new instance, ping it via requested IP address and ssh into it, then stop it.'''
         self._checkAttributePresent(['requestedIpAddress'])
@@ -113,13 +119,13 @@ class Testor(unittest.TestCase):
 
         print 'id=', runner.vmIds[0]
         _, allocatedIp = runner.getNetworkDetail(runner.vmIds[0])
-        
+
         self.assertEqual(self.requestedIpAddress, allocatedIp)
-        
+
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner)
         self._stopVm(runner)
-        
+
     def exceedCpuQuotaTest(self):
         '''Start three instances, having a cpu quota of 2, then stop it.'''
         self.instanceNumber = 3
@@ -142,26 +148,26 @@ class Testor(unittest.TestCase):
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner)
         self._stopVm(runner)
-        
+
     def _prepareLog(self, logFile):
-        log = open(logFile,'aw')
-        log.write('\n'*3 + '=' * 60 + '\n')
+        log = open(logFile, 'aw')
+        log.write('\n' * 3 + '=' * 60 + '\n')
         log.write(str(datetime.datetime.now()) + '\n')
-        log.write('=' * 60 + '\n'*3)
+        log.write('=' * 60 + '\n' * 3)
         return log
 
     def _startVm(self, withLocalNetwork=False, requestedIpAddress=None):
         runner = self._createRunner(withLocalNetwork, requestedIpAddress)
-        
-        self.vmIds = runner.runInstance()        
-        
+
+        self.vmIds = runner.runInstance()
+
         for id in self.vmIds:
-            vmStarted = runner.waitUntilVmRunningOrTimeout(id)            
+            vmStarted = runner.waitUntilVmRunningOrTimeout(id)
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
                 printError(error, exit=False)
                 raise OneException(error)
-                
+
         return runner
 
     def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None):
@@ -178,8 +184,7 @@ class Testor(unittest.TestCase):
             options['isLocalIp'] = True
 
         configHolder = ConfigHolder(options)
-        image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.0/ttylinux-9.7-i486-base-1.0.img.gz'
-        return Runner(image, configHolder)        
+        return Runner(self.image, configHolder)
 
     def _repeatCall(self, method, *args):
         numberOfRepetition = 60
@@ -195,11 +200,11 @@ class Testor(unittest.TestCase):
                 time.sleep(10)
             else:
                 break
-                
+
         if failed:
             printError('Failed executing method %s %s times, giving-up' % (method, numberOfRepetition), exit=False)
             raise
-        
+
     def _ping(self, runner):
 
         for vmId in self.vmIds:
@@ -207,7 +212,7 @@ class Testor(unittest.TestCase):
             res = ping(ip)
             if not res:
                 raise ExecutionException('Failed to ping %s' % ip)
-        
+
     def _loginViaSsh(self, runner):
 
         loginCommand = 'ls /tmp'
@@ -232,8 +237,8 @@ class Testor(unittest.TestCase):
         for attr in attrs:
             if attr not in self.__dict__:
                 raise Exception('Missing attribute %s. Missing an option argument?' % attr)
-            
-        
+
+
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
         passwordMgr.add_password(None,
@@ -257,10 +262,10 @@ class Testor(unittest.TestCase):
         options = self.configHolder.options.copy()
         options['repoUsername'] = self.appRepoUsername
         options['repoPassword'] = self.appRepoPassword
-        options['repoAddress'] = self.appRepoUrl
+        options['appRepoUrl'] = self.appRepoUrl
         options['uploadOption'] = ''
         uploader = Uploader(manifest, options)
-        uploader.uploadFile(dummyFile, os.path.join('base',os.path.basename(dummyFile)))
+        uploader.uploadFile(dummyFile, os.path.join('base', os.path.basename(dummyFile)))
         uploader.deleteFile(uploader.uploadedFile[-1])
 
     def _openDevNull(self):
@@ -287,7 +292,7 @@ class Testor(unittest.TestCase):
         info = monitor.nodeDetail([id])[0]
         self.assertEqual(hostname, info.name)
         registrar.deregister(hostname)
-        self.assertRaises(Exception, monitor.nodeDetail,[id])
+        self.assertRaises(Exception, monitor.nodeDetail, [id])
 
     def listAvalableTests(self):
         print 'Available tests:'
@@ -298,19 +303,89 @@ class Testor(unittest.TestCase):
         methods = []
         for attrib in self.__class__.__dict__:
             if self._isTestMethod(attrib):
-                methods.append((attrib,self.__class__.__dict__[attrib].__doc__))
+                methods.append((attrib, self.__class__.__dict__[attrib].__doc__))
         return methods
-    
+
     def _extractTestMethodNames(self):
         methods = []
         for attrib in self.__class__.__dict__:
             if self._isTestMethod(attrib):
                 methods.append(attrib)
         return methods
-    
+
     def _isTestMethod(self, attrib):
         return inspect.ismethod(getattr(self, attrib)) and \
                (attrib.lower().startswith('test') or attrib.lower().endswith('test')) and \
                not attrib.startswith('_')
-                                                     
-                                                
+
+    def createImageTest(self):
+        '''Create a machine image based on a given one.'''
+        image = 'http://appliances.stratuslab.org/images/base/CentOS-5.5-x86_64-base/1.0/CentOS-5.5-x86_64-base-1.0.img.gz'
+        creator = self._createCreator(image)
+
+        newImage = creator.showName()
+        newImageUri = '%s/%s'%(creator.appRepoUrl, newImage)
+
+        self._deleteImageAndManifestFromAppRepo(newImageUri)
+
+        creator.create()
+
+        assert creator.targetImageUri == newImageUri
+        assert Util.pingFile(creator.targetImageUri, 'application/x-gzip')
+        assert Util.pingFile(creator.targetManifestUri, 'text/xml')
+
+        self.image = creator.targetImageUri
+        self.oneUsername = self.username
+        self.proxyOneadminPassword =  self.password
+        self._runInstanceTest()
+
+        self._deleteImageAndManifestFromAppRepo(newImageUri)
+
+    def _deleteImageAndManifestFromAppRepo(self, imageUri):
+        urlDir = imageUri.rsplit('/',1)[0]
+
+        curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.appRepoUsername,
+                                                        self.appRepoPassword)]
+        deleteUrlCmd = curlCmd + [ '-X', 'DELETE', urlDir]
+        Util.execute(deleteUrlCmd)
+
+    def _createCreator(self, image):
+        Util.generateSshKeyPair(self.sshKey)
+        options = {}
+
+        options['verboseLevel'] = self.verboseLevel
+
+        options['author'] = 'Konstantin Skaburskas'
+        options['comment'] = 'CentOS with python-dirq.'
+        options['newImageGroupVersion'] = '1.99'
+        options['newImageGroupName'] = 'base'
+        options['newInstalledSoftwareName'] = 'CentOS'
+        options['newInstalledSoftwareVersion'] = '5.5'
+        options['excludeFromBundle'] = '/etc/resolve.conf,/usr/sbin/pppdump'
+        options['extraDiskSize'] = str(7*1024)
+        options['scripts'] = '' # TODO: add some
+        options['packages'] = 'python-dirq'
+        options['extraOsReposUrls'] = 'http://download.fedora.redhat.com/pub/epel/5/i386/'
+
+        options['installer'] = 'yum'
+        options['os'] = 'centos'
+
+        options['endpoint'] = self.endpoint
+        options['username'] = self.username
+        options['password'] = self.password
+
+        options['appRepoUrl'] = self.appRepoUrl
+        options['repoUsername'] = self.appRepoUsername
+        options['repoPassword'] = self.appRepoPassword
+
+        options['userPublicKeyFile'] = self.sshKeyPub
+        options['userPrivateKeyFile'] = self.sshKey
+
+        options['p12Cert'] = self.p12Cert
+        options['p12Password'] = self.p12Password
+
+        options['shutdownVm'] = True
+
+        configHolder = ConfigHolder(options)
+
+        return Creator(image, configHolder)
