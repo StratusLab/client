@@ -54,30 +54,30 @@ class Testor(unittest.TestCase):
         self.testsToRun = []
 
         Testor.configHolder.assign(self)
-        self._setEnvVars()
+        self._setFieldsFromEnvVars()
 
         self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.0/ttylinux-9.7-i486-base-1.0.img.gz'
 
-    def _setEnvVars(self):
-        self._setSingleEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
-        self._setSingleEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
-        self._setSingleEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
-        self._setSingleEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
-        self._setSingleEnvVar('username', 'STRATUSLAB_USERNAME')
-        self._setSingleEnvVar('password', 'STRATUSLAB_PASSWORD')
-        self._setSingleEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
-        self._setSingleEnvVar('p12Cert', 'STRATUSLAB_P12_CERTIFICATE')
-        self._setSingleEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
-        self._fillEndpointOption()
+    def _setFieldsFromEnvVars(self):
+        self._setSingleFieldFromEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
+        self._setSingleFieldFromEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
+        self._setSingleFieldFromEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
+        self._setSingleFieldFromEnvVar('username', 'STRATUSLAB_USERNAME')
+        self._setSingleFieldFromEnvVar('password', 'STRATUSLAB_PASSWORD')
+        self._setSingleFieldFromEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
+        self._setSingleFieldFromEnvVar('p12Cert', 'STRATUSLAB_P12_CERTIFICATE')
+        self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
+        self._exportEndpointIfNotInEnv()
+        self._setSingleFieldFromEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
 
-    def _setSingleEnvVar(self, field, env):
+    def _setSingleFieldFromEnvVar(self, field, env):
         if env in os.environ:
             setattr(self, field, os.environ[env])
 
     def _setOption(self, key, value):
         Testor.configHolder.options[key] = value
 
-    def _fillEndpointOption(self):
+    def _exportEndpointIfNotInEnv(self):
         if Util.envEndpoint in os.environ:
             return
         if not self.frontendIp:
