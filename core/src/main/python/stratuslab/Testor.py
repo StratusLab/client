@@ -95,11 +95,20 @@ class Testor(unittest.TestCase):
         else:
             tests = self._extractTestMethodNames()
 
+        self._excludeTests(tests)
+
         for test in tests:
             suite.addTest(Testor(test))
 
         testResult = unittest.TextTestRunner(verbosity=2).run(suite)
         return testResult.wasSuccessful()
+
+    def _excludeTests(self, tests):
+        for test in self.testsToExclude.split(','):
+            try:
+                tests.remove(test)
+            except Exception, e:
+                print "WARNING: Test '%s' not in a list of defined tests." % test
 
     def runMethod(self, method):
         return method()
@@ -337,7 +346,7 @@ class Testor(unittest.TestCase):
         self.image = creator.targetImageUri
         self.oneUsername = self.username
         self.proxyOneadminPassword =  self.password
-        self._runInstanceTest()
+        self._runInstanceTest() # TODO: add checking of installed RPMs in the new image.
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
