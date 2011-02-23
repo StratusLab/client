@@ -103,13 +103,6 @@ class Testor(unittest.TestCase):
         testResult = unittest.TextTestRunner(verbosity=2).run(suite)
         return testResult.wasSuccessful()
 
-    def _excludeTests(self, tests):
-        for test in self.testsToExclude.split(','):
-            try:
-                tests.remove(test)
-            except Exception, e:
-                print "WARNING: Test '%s' not in a list of defined tests." % test
-
     def runMethod(self, method):
         return method()
 
@@ -151,6 +144,14 @@ class Testor(unittest.TestCase):
                 runner.killInstances([i])
             except:
                 pass
+
+    def _excludeTests(self, tests):
+        if self.testsToExclude:
+            for test in self.testsToExclude.split(','):
+                try:
+                    tests.remove(test)
+                except ValueError:
+                    print "WARNING: Test '%s' not in a list of defined tests." % test
 
     def _runInstanceTest(self, withLocalNetwork=False):
         runner = self._startVm(withLocalNetwork)
@@ -379,9 +380,9 @@ class Testor(unittest.TestCase):
         options['installer'] = 'yum'
         options['os'] = 'centos'
 
-        options['endpoint'] = self.endpoint
-        options['username'] = self.username
-        options['password'] = self.password
+        options['endpoint'] = getattr(self, 'endpoint')
+        options['username'] = getattr(self, 'username', self.oneUsername)
+        options['password'] = getattr(self, 'password', self.proxyOneadminPassword)
 
         options['appRepoUrl'] = self.appRepoUrl
         options['repoUsername'] = self.appRepoUsername
