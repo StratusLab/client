@@ -54,30 +54,30 @@ class Testor(unittest.TestCase):
         self.testsToRun = []
 
         Testor.configHolder.assign(self)
-        self._setEnvVars()
+        self._setFieldsFromEnvVars()
 
         self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.0/ttylinux-9.7-i486-base-1.0.img.gz'
 
-    def _setEnvVars(self):
-        self._setSingleEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
-        self._setSingleEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
-        self._setSingleEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
-        self._setSingleEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
-        self._setSingleEnvVar('username', 'STRATUSLAB_USERNAME')
-        self._setSingleEnvVar('password', 'STRATUSLAB_PASSWORD')
-        self._setSingleEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
-        self._setSingleEnvVar('p12Cert', 'STRATUSLAB_P12_CERTIFICATE')
-        self._setSingleEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
-        self._fillEndpointOption()
+    def _setFieldsFromEnvVars(self):
+        self._setSingleFieldFromEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
+        self._setSingleFieldFromEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
+        self._setSingleFieldFromEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
+        self._setSingleFieldFromEnvVar('username', 'STRATUSLAB_USERNAME')
+        self._setSingleFieldFromEnvVar('password', 'STRATUSLAB_PASSWORD')
+        self._setSingleFieldFromEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
+        self._setSingleFieldFromEnvVar('p12Cert', 'STRATUSLAB_P12_CERTIFICATE')
+        self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
+        self._exportEndpointIfNotInEnv()
+        self._setSingleFieldFromEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
 
-    def _setSingleEnvVar(self, field, env):
+    def _setSingleFieldFromEnvVar(self, field, env):
         if env in os.environ:
             setattr(self, field, os.environ[env])
 
     def _setOption(self, key, value):
         Testor.configHolder.options[key] = value
 
-    def _fillEndpointOption(self):
+    def _exportEndpointIfNotInEnv(self):
         if Util.envEndpoint in os.environ:
             return
         if not self.frontendIp:
@@ -94,6 +94,8 @@ class Testor(unittest.TestCase):
             tests = self.testNames
         else:
             tests = self._extractTestMethodNames()
+
+        self._excludeTests(tests)
 
         for test in tests:
             suite.addTest(Testor(test))
@@ -142,6 +144,14 @@ class Testor(unittest.TestCase):
                 runner.killInstances([i])
             except:
                 pass
+
+    def _excludeTests(self, tests):
+        if self.testsToExclude:
+            for test in self.testsToExclude.split(','):
+                try:
+                    tests.remove(test)
+                except ValueError:
+                    print "WARNING: Test '%s' not in a list of defined tests." % test
 
     def _runInstanceTest(self, withLocalNetwork=False):
         runner = self._startVm(withLocalNetwork)
@@ -337,7 +347,7 @@ class Testor(unittest.TestCase):
         self.image = creator.targetImageUri
         self.oneUsername = self.username
         self.proxyOneadminPassword =  self.password
-        self._runInstanceTest()
+        self._runInstanceTest() # TODO: add checking of installed RPMs in the new image.
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
@@ -370,9 +380,9 @@ class Testor(unittest.TestCase):
         options['installer'] = 'yum'
         options['os'] = 'centos'
 
-        options['endpoint'] = self.endpoint
-        options['username'] = self.username
-        options['password'] = self.password
+        options['endpoint'] = getattr(self, 'endpoint')
+        options['username'] = getattr(self, 'username', self.oneUsername)
+        options['password'] = getattr(self, 'password', self.proxyOneadminPassword)
 
         options['appRepoUrl'] = self.appRepoUrl
         options['repoUsername'] = self.appRepoUsername

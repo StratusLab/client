@@ -40,37 +40,41 @@ class MainProgram(CommandBase):
     def parse(self):
         usage = '''usage: %prog [options] [test] ...\n\n
 where test is a comma separated list of tests, according to the name provided by -l/--list.'''
-        
+
         self.parser.usage = usage
-        self.parser.add_option('-c', '--config', dest='configFile', 
+        self.parser.add_option('-c', '--config', dest='configFile',
                                help='configuration file', metavar='PATH',
                                default=Util.defaultConfigFile)
-        
-        self.parser.add_option('-l', '--list', dest='listTests', 
+
+        self.parser.add_option('-l', '--list', dest='listTests',
                                help='list available tests', action='store_true',
                                default=False)
-        
-        self.parser.add_option('--app-repo-username', dest='appRepoUsername', 
+
+        self.parser.add_option('--app-repo-username', dest='appRepoUsername',
                                help='Appliance repository username', metavar='USERNAME',
                                default=None)
-        
-        self.parser.add_option('--app-repo-password', dest='appRepoPassword', 
+
+        self.parser.add_option('--app-repo-password', dest='appRepoPassword',
                                help='Appliance repository password', metavar='PASSWORD',
                                default=None)
-        
-        self.parser.add_option('--requested-ip-address', dest='requestedIpAddress', 
+
+        self.parser.add_option('--requested-ip-address', dest='requestedIpAddress',
                                help='IP address for requested IP address assignment', metavar='IP',
                                default=None)
-        
+
+        self.parser.add_option('--exclude', dest='testsToExclude',
+                               help='list of tests to exclude (comma separated)',
+                               default='', metavar='TESTS')
+
         self.options, self.tests = self.parser.parse_args()
 
     def doWork(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
         Testor.configHolder = configHolder
         Testor.testNames = self.tests
         testor = Testor()
-        
+
         if self.options.listTests:
             self._listTests(testor)
         else:
@@ -83,7 +87,7 @@ where test is a comma separated list of tests, according to the name provided by
         wasSuccessful = testor.runTests()
         if not wasSuccessful:
             sys.exit(-1)
-        
+
 
 if __name__ == '__main__':
     try:
