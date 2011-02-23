@@ -273,6 +273,12 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
         sshCmd.append('-i')
         sshCmd.append(sshKey)
 
+    if kwargs.get('sshVerb', False):
+        sshCmd.append('-v')
+    try:
+        del kwargs['sshVerb']
+    except: pass
+
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
@@ -281,6 +287,10 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
 def sshCmdWithOutput(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
                   user=user, timeout=timeout, withOutput=True, **kwargs)
+
+def sshCmdWithOutputVerb(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
+    return sshCmd(cmd, host, sshKey=sshKey, port=port,
+                  user=user, timeout=timeout, withOutput=True, sshVerb=True, **kwargs)
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port), '-r', '-o', 'StrictHostKeyChecking=no']
