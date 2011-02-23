@@ -270,10 +270,7 @@ class Runner(object):
         self.printDetail('with template:\n%s' % vmTpl)
 
         for vmNb in range(self.instanceNumber):
-            try:
-                vmId = self.cloud.vmStart(vmTpl)
-            except Exception, e:
-                printError(e)
+            vmId = self.cloud.vmStart(vmTpl)
             self.vmIds.append(vmId)
             networkName, ip = self.getNetworkDetail(vmId)
             vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
