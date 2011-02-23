@@ -33,7 +33,7 @@ one_group = cloud
 one_gid = 9000
 one_uid = 9000
 one_username = oneadmin
-one_password = XYZXYZ
+one_password = oneadmin
 
 [one-advanced]
 one_home = 
@@ -65,7 +65,9 @@ one_private_network_addr = 172.16.0.1
 
 [one-deployment]
 frontend_ip = 127.0.0.1
+# Can be centos/ubuntu
 frontend_system = centos
+# Can be centos/ubuntu
 node_system = centos
 default_gateway = 3.13.3.7
 
