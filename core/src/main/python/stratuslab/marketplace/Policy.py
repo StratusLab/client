@@ -31,8 +31,8 @@ from stratuslab.Exceptions import ValidationException, InputException
 class Policy(object):
 
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
-        self.whiteListEndorsers = []
-        self.blackListChecksums = []
+        self.whiteListEndorsers = ['whiteListEndorsersFlag']
+        self.blackListChecksums = ['blackListChecksumsFlag']
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
         self._loadConfig(self.policyConfigFilename)
@@ -44,8 +44,6 @@ class Policy(object):
         config.read(configfile)
         for _,j in config.items('whitelistendorsers'):
             self.whiteListEndorsers.append(j)
-        for _,j in config.items('blacklistendorsers'):
-            self.whiteListEndorsers.append(j)
         for _,j in config.items('blacklistchecksums'):
             self.blackListChecksums.append(j)    
 
@@ -55,14 +53,15 @@ class Policy(object):
 
         metadatas = self._retrieveMetadataList()
         metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
-        filtered = self._filter(metadataEntries)
-        if len(filtered) == 0:
+        filtered1 = self._filter(metadataEntries, whiteListEndorsers)
+	filtered2 = self._filter(filtered1, blackListChecksums)	
+        if len(filtered2) == 0:
             raise ValidationException('Failed policy check')
-        print len(filtered)
+        print len(filtered2)
 
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
-        url = endpoint + '/' + identifierUri
+	url = endpoint + '/' + identifierUri
         try:
             manifest = Util.wstring(url)
         except urllib2.HTTPError:
@@ -91,9 +90,9 @@ class Policy(object):
     #     remove unwanted element tree from metadata list
     #     return metadata list  
     
-    def _filter(self, metadatas):
+    def _filter(self, metadatas, whiteOrblackList):
         for metadata in metadatas:
-            if not self._keep(metadata):
+            if not self._keep(metadata, whiteOrblackList):
                 metadatas.remove(metadata)
                 print 'removing...'
         return metadatas
@@ -102,14 +101,29 @@ class Policy(object):
     #	retrieve email endorser and checksum value from the elemet tree
     #	return true email endorser listed in WhiteListEndorsers and checksum value is not listed in BlackListChecksums
 
-    def _keep(self, metadata):
+    def _keep(self, metadata, whiteOrblackList):
         xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
         emailendorser = metadata.findtext(xpathPrefix % 'endorser' + 'email')
         checksumimage = metadata.findtext(xpathPrefix % 'checksum' + 'value')
         print emailendorser, checksumimage
-        if (emailendorser in self.whiteListEndorsers) and (checksumimage not in self.blackListChecksums):
+	if (whiteOrblackList[0] = 'whiteListEndorsersFlag'):
+	    return self._whiteListEndorsersPlugin(emailendorser)
+	elif (whiteOrblackList[0] = 'blackListChecksumsFlag'):
+	    return self._blackListChecksumsPlugin(checksumimage)
+
+    def _whiteListEndorsersPlugin(self, emailendorser)
+	if (emailendorser in self.whiteListEndorsers):
             print True
             return True
         else:
             print False
             return False
+
+    def _blackListChecksumsPlugin(self, checksumimage)
+        if (checksumimage not in self.blackListChecksums):
+            print True
+            return True
+        else:
+            print False
+            return False
+
