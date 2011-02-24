@@ -25,7 +25,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBase
-from stratuslab.ManifestInfo import ManifestInfo, imageTypes
+from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageFormats
 from stratuslab.Creator import Creator
 
 class MainProgram(CommandBase):
@@ -43,7 +43,11 @@ class MainProgram(CommandBase):
                 default='', metavar='NAME')
 
         self.parser.add_option('--type', dest='type',
-                help='Image type. (%s)' % ', '.join(imageTypes),
+                help='Image type. (E.g. %s). Default: base' % ', '.join(imageTypes),
+                default='base', metavar='NAME')
+
+        self.parser.add_option('--kind', dest='kind',
+                help='Image kind. (%s). Default: machine' % ', '.join(imageKinds),
                 default='machine', metavar='NAME')
 
         self.parser.add_option('--os', dest='os',
@@ -63,8 +67,12 @@ class MainProgram(CommandBase):
                 default='')
 
         self.parser.add_option('--format', dest='format',
-                help='Image format. Eg. qcow2, raw.',
-                default='raw', metavar='FORMAT')
+                help='Image format. (E.g. %s). Default: raw' % ', '.join(imageFormats),
+                default='raw')
+
+        self.parser.add_option('--hypervisor', dest='hypervisor',
+                help='Hypervisor. (E.g. kvm, xen). Default: kvm',
+                default='kvm', metavar='NAME')
 
         self.parser.add_option('--comment', dest='comment',
                 help='Comment to append to the manifest file',

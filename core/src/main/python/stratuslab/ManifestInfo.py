@@ -23,6 +23,8 @@ import re
 import string
 import time
 
+import Util
+
 try:
     from lxml import etree
 except ImportError:
@@ -44,14 +46,15 @@ except ImportError:
                 except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
-import Util
 
 NS_RDF     = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 NS_DCTERMS = 'http://purl.org/dc/terms/'
 NS_SLTERMS = 'http://stratuslab.eu/terms#'
 NS_SLREQ   = 'http://mp.stratuslab.eu/slreq#'
 
-imageTypes = ('machine', 'disk')
+imageTypes = ['base', 'grid']
+imageKinds = ('machine', 'disk')
+imageFormats = ['raw', 'qcow2']
 
 class ManifestInfo(object):
 
@@ -67,31 +70,36 @@ class ManifestInfo(object):
 
     def __init__(self, options={}):
 
-        self.created = ''
-        self.type = ''
-        self.version = ''
-        self.os = ''
-        self.arch = ''
-        self.user = self.creator = ''
         self.os = ''
         self.osversion = ''
-        self.compression = ''
+        self.arch = ''
+        self.type = '' # image type: base, grid, ..
+        self.version = '' # image version
+
+        self.created = '' # image creation time (in iso8601)
+        self.user = self.creator = '' # full name of image creator
+
+        self.compression = '' # image compression: gz, bz2, ..
         self.comment = ''
-        self.filename = ''
+        self.filename = '' # filename of compressed image (old manifest)
 
-        self.format = ''
+        self.location = '' # URI of image in appliance repository
 
-        self.bytes = '0'
+        self.kind = '' # image kind: machine, disk
+
+        self.format = '' # image format: raw, qcow2, ..
+
+        self.bytes = '0' # size of the uncompressed image on disk (in bytes)
         self.md5 = ''
         self.sha1 = ''
         self.sha256 = ''
         self.sha512 = ''
 
-        self.valid = ''
+        self.valid = '' # ManifestInfo.created + ManifestInfo.IMAGE_VALIDITY (in iso8601)
 
-        self.identifier = ''
+        self.identifier = '' # base64 of int(sha1_hex, 16)
         self.serialnumber = ''
-        self.hypervisor = ''
+        self.hypervisor = '' # kvm, xen, ..
 
         self.publisher = 'StratusLab'
 
@@ -118,26 +126,11 @@ class ManifestInfo(object):
             for checksum in checksums:
                 setattr(self, checksum.attrib['type'], checksum.text)
         else:
-            self.title = xml.find('.//{%s}title' % NS_DCTERMS).text
-            self.type = xml.find('.//{%s}type' % NS_DCTERMS).text
-            self.created = xml.find('.//{%s}created' % NS_DCTERMS).text
-            self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text', '')
-            self.creator = self.user
-            self.valid = xml.find('.//{%s}valid' % NS_DCTERMS).text
-            self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
-                                     self.publisher) or self.publisher
-            self.version = xml.find('.//{%s}version' % NS_SLTERMS).text
-            self.serialnumber = xml.find('.//{%s}serial-number' % NS_SLTERMS).text
-            self.arch = xml.find('.//{%s}os-arch' % NS_SLTERMS).text
-            self.os = xml.find('.//{%s}os' % NS_SLTERMS).text
-            self.osversion = xml.find('.//{%s}os-version' % NS_SLTERMS).text
-            self.hypervisor = xml.find('.//{%s}hypervisor' % NS_SLTERMS).text
-            self.filename = xml.find('.//{%s}title' % NS_DCTERMS).text
-            self.compression = getattr(xml.find('.//{%s}compression' % NS_DCTERMS), 'text',
-                                       self.compression)
-            self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
-                                       self.format)
+            # skip endorsement element
+
+            # required by Schema attributes
             self.identifier = xml.find('.//{%s}identifier' % NS_DCTERMS).text
+
             self.bytes = xml.find('.//{%s}bytes' % NS_SLREQ).text
             checksums = xml.findall('.//{%s}checksum' % NS_SLREQ)
             for checksum in checksums:
@@ -145,7 +138,33 @@ class ManifestInfo(object):
                 checkSumType = _normalizeForInstanceAttribute(checkSumType)
                 checkSumValue = checksum.find('.//{%s}value' % NS_SLREQ).text
                 setattr(self, checkSumType, checkSumValue)
+
+            # attributes from integration XML template
+            self.type = xml.find('.//{%s}type' % NS_DCTERMS).text
+            self.created = xml.find('.//{%s}created' % NS_DCTERMS).text
+            self.valid = xml.find('.//{%s}valid' % NS_DCTERMS).text
+            self.os = xml.find('.//{%s}os' % NS_SLTERMS).text
+            self.osversion = xml.find('.//{%s}os-version' % NS_SLTERMS).text
+            self.arch = xml.find('.//{%s}os-arch' % NS_SLTERMS).text
+            self.version = xml.find('.//{%s}version' % NS_SLTERMS).text
+            self.compression = getattr(xml.find('.//{%s}compression' % NS_DCTERMS), 'text',
+                                       self.compression)
             self.comment = xml.find('.//{%s}description' % NS_DCTERMS).text
+
+            # extra elements with defaults
+            self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
+                                self.creator)
+            self.creator = self.user
+            self.kind = getattr(xml.find('.//{%s}kind' % NS_SLTERMS), 'text',
+                                self.kind)
+            self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
+                                       self.format)
+            self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
+                                      self.hypervisor)
+            self.location = getattr(xml.find('.//{%s}location' % NS_SLTERMS), 'text',
+                                    self.location)
+            self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
+                                     self.publisher)
 
     def parseManifestFromFile(self, filename):
         manifest = file(filename).read()
@@ -157,6 +176,8 @@ class ManifestInfo(object):
                                           self.arch, self.type,
                                           self.version, Util.manifestExt)
         file(filename, 'w').write(manifestText)
+        Util.printDetail("Manifest: %s"%filename, verboseLevel=self.verboseLevel,
+                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
     def build(self):
         self.created = Util.getTimeInIso8601()
@@ -185,12 +206,11 @@ class ManifestIdentifier(object):
     def sha1ToIdentifier(self, sha1):
         sha1 = int(sha1, 16)
         sb = ''
-        for i in range(self.identifierChars):
+        for _ in range(self.identifierChars):
             values = divmod(sha1, self.devisor)
             sha1 = values[0]
             sb += self.encoding[int(values[1])]
         return sb[::-1]
-
 
     def identifierToSha1(self, identifier):
         sha1 = long(0)
