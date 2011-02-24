@@ -106,12 +106,12 @@ class Policy(object):
         emailendorser = metadata.findtext(xpathPrefix % 'endorser' + 'email')
         checksumimage = metadata.findtext(xpathPrefix % 'checksum' + 'value')
         print emailendorser, checksumimage
-	if (whiteOrblackList[0] = 'whiteListEndorsersFlag'):
+	if (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
 	    return self._whiteListEndorsersPlugin(emailendorser)
-	elif (whiteOrblackList[0] = 'blackListChecksumsFlag'):
+	elif (whiteOrblackList[0] == 'blackListChecksumsFlag'):
 	    return self._blackListChecksumsPlugin(checksumimage)
 
-    def _whiteListEndorsersPlugin(self, emailendorser)
+    def _whiteListEndorsersPlugin(self, emailendorser):
 	if (emailendorser in self.whiteListEndorsers):
             print True
             return True
@@ -119,7 +119,7 @@ class Policy(object):
             print False
             return False
 
-    def _blackListChecksumsPlugin(self, checksumimage)
+    def _blackListChecksumsPlugin(self, checksumimage):
         if (checksumimage not in self.blackListChecksums):
             print True
             return True
