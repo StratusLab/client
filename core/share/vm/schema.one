@@ -3,6 +3,7 @@
 CPU    = %(vm_cpu)s
 VCPU    = %(vm_cpu)s
 MEMORY = %(vm_ram)s
+RANK = "- RUNNING_VMS"
 
 %(os_options)s
 

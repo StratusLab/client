@@ -20,12 +20,15 @@
 import sys
 import os.path
 import urllib2
+import shutil
 from ConfigParser import RawConfigParser
 
 import stratuslab.Util as Util
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.Exceptions import InputException
 from stratuslab.Exceptions import NetworkException
+from stratuslab.Signator import Signator
+from stratuslab.ConfigHolder import ConfigHolder
 
 from stratuslab.Util import assignAttributes, printWarning
 from stratuslab.Util import defaultRepoConfigPath
@@ -65,7 +68,7 @@ class Uploader(object):
 
     @staticmethod
     def availableCompressionFormat(printIt=False):
-        list = ('gz', 'bz2')
+        list = ('gz', 'bz2') # TODO: refactor - move out from here
 
         if printIt:
             print 'Available compression format: %s' % ', '.join(list)
@@ -115,9 +118,6 @@ class Uploader(object):
 
     @staticmethod
     def buildRepoNameStructure(structure, info):
-        if not isinstance(info, ManifestInfo):
-            raise TypeError('Expected ManifestInfo type, got %s' % type(info))
-
         varPattern = '#%s#'
         dirVarPattern = '#%s_#'
         for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
@@ -136,13 +136,12 @@ class Uploader(object):
                                                              self.repoPassword)]
         self.uploadedFile = []
 
-        self.os = None
-        self.osversion = None
-        self.arch = None
-        self.type = None
-        self.version = None
-        self.compression = None
-        self.compressionFormat = 'gz'
+        self.os = ''
+        self.osversion = ''
+        self.arch = ''
+        self.type = ''
+        self.version = ''
+        self.compression = ''
         self.repoStructure = ''
         self.repoFilename = ''
 
@@ -160,13 +159,16 @@ class Uploader(object):
         self._compressAppliance()
 
         printStep('Parsing manifest')
-        self._parseManifest()
+        self._parseManifestAndSetObjectAttributes()
 
         printStep('Parsing repository configuration')
         self._parseRepoConfig()
 
         printStep('Uploading appliance')
         self._uploadAppliance()
+
+        printStep('Signing manifest')
+        self._signManifest()
 
         printStep('Uploading manifest')
         self._uploadManifest()
@@ -175,15 +177,22 @@ class Uploader(object):
         print '\n\t%s' % '\n\t'.join(self.uploadedFile)
 
     def _uploadAppliance(self):
+        applianceUri = '%s/%s' % (self.repoStructure, self.repoFilename)
         if self.remoteImage:
-            self.uploadFileFromRemoteServer(self.appliance, '%s/%s' % (self.repoStructure,
-                                                                   self.repoFilename))
+            self.uploadFileFromRemoteServer(self.appliance, applianceUri)
         else:
-            self.uploadFile(self.appliance, '%s/%s' % (self.repoStructure,
-                                                       self.repoFilename))
+            self.uploadFile(self.appliance, applianceUri)
+
+        self._addLocationToManifest('%s/%s' % (self.appRepoUrl, applianceUri))
+
+    def _signManifest(self):
+        configHolder = ConfigHolder(self.__dict__)
+        signator = Signator(self.manifestFile, configHolder)
+        signator.sign()
+        self.manifestFile = signator.outputManifestFile
 
     def _uploadManifest(self):
-        repoFilename = self.repoFilename.replace('.%s' % self.compression, 'xml')
+        repoFilename = self.repoFilename.replace('img.%s' % self.compression, 'xml')
         if self.remoteManifest:
             self.uploadFileFromRemoteServer(self.manifestFile, '%s/%s' % (self.repoStructure,
                                                                   repoFilename))
@@ -244,6 +253,8 @@ class Uploader(object):
         self._execute(deleteCmd)
 
     def deleteDirectory(self, url):
+        if not url.endswith('/'):
+            url += '/'
         self.deleteFile(url)
 
     def _getDirectoriesOfUrl(self, url):
@@ -284,12 +295,12 @@ class Uploader(object):
                        'Change the appliance version or force upload with '
                        '-f --force option')
 
-    def _parseManifest(self):
+    def _parseManifestAndSetObjectAttributes(self):
         manifestInfo = ManifestInfo()
         manifestInfo.parseManifestFromFile(self.manifestFile)
         attrList = ['os', 'osversion', 'arch', 'type', 'version', 'compression']
         for attr in attrList:
-            setattr(self, attr, getattr(manifestInfo, attr, getattr(self, attr, 'NOT_DEFINED')))
+            setattr(self, attr, getattr(manifestInfo, attr))
 
     def _parseRepoConfig(self):
         tmpRepoCfg = '/tmp/stratus-repo.tmp'
@@ -303,12 +314,16 @@ class Uploader(object):
         repoFilename = repoConf.get(defaultRepoConfigSection, 'repo_filename')
 
         self.repoStructure = self.buildRepoNameStructure(repoStructure, self)
+        # compression is a special case
+        if not self.compression:
+            self.compression = self.compressionFormat
         self.repoFilename = self.buildRepoNameStructure(repoFilename, self)
 
     def _buildManifestName(self, repoFilename):
         return repoFilename.split('.img')[0] + '.xml'
 
     def _compressFile(self, file, format):
+        # TODO: use stratuslab.Compressor
         if format == 'gz':
             compressionCmd = 'gzip'
         elif format == 'bz2':
@@ -335,16 +350,35 @@ class Uploader(object):
         self._addCompressionFormatToManifest()
 
     def _addCompressionFormatToManifest(self):
+        # TODO: extract _addToManifest()
         xml = etree.ElementTree()
         docElement = xml.parse(self.manifestFile)
 
-        compressionElem = xml.find('.//{%s}format' % ManifestInfo.NS_DCTERMS)
-        if compressionElem != None:
+        compressionElem = xml.find('.//{%s}compression' % ManifestInfo.NS_DCTERMS)
+        if compressionElem and compressionElem.text != None:
             printWarning("compression already defined in the manifest file with value: " + compressionElem.text)
         else:
-            compressionElem = etree.Element('{%s}format' % ManifestInfo.NS_DCTERMS)
+            compressionElem = etree.Element('{%s}compression' % ManifestInfo.NS_DCTERMS)
             descriptionElement = docElement.find('.//{%s}Description' % ManifestInfo.NS_RDF)
             descriptionElement.append(compressionElem)
 
         compressionElem.text = self.compressionFormat
+        xml.write(self.manifestFile)
+
+    def _addLocationToManifest(self, applianceUri):
+        # TODO: extract _addToManifest()
+        xml = etree.ElementTree()
+        docElement = xml.parse(self.manifestFile)
+
+        locationElem = xml.find('.//{%s}location' % ManifestInfo.NS_SLTERMS)
+
+        if locationElem and locationElem.text != None:
+            printWarning("<location> already defined in the manifest file with value: " +
+                        locationElem.text)
+        else:
+            locationElem = etree.Element('{%s}location' % ManifestInfo.NS_SLTERMS)
+            descriptionElement = docElement.find('.//{%s}Description' % ManifestInfo.NS_RDF)
+            descriptionElement.append(locationElem)
+
+        locationElem.text = applianceUri
         xml.write(self.manifestFile)

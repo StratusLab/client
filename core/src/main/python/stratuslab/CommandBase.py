@@ -23,6 +23,8 @@ from optparse import OptionParser
 import xmlrpclib
 
 import stratuslab.Util as Util
+from stratuslab.VersionChecker import VersionChecker
+from stratuslab.Exceptions import ValidationException
 
 class CommandBase(object):
     
@@ -50,11 +52,20 @@ class CommandBase(object):
             sys.exit(3)
         except xmlrpclib.ProtocolError, ex:
             self.raiseOrDisplayError('Error: %s' % ex.errmsg)
+        except socket.sslerror, ex:
+            self._checkPythonVersionAndRaise()
+            self.raiseOrDisplayError('Network error: %s' % ex)
         except socket.error, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except socket.gaierror, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exception, ex:
+            self.raiseOrDisplayError(ex)
+
+    def _checkPythonVersionAndRaise(self):
+        try:
+            VersionChecker().check()
+        except ValidationException, ex:
             self.raiseOrDisplayError(ex)
         
     def parse(self):
