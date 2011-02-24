@@ -1,6 +1,5 @@
 import os
 import ConfigParser
-import tempfile
 import urllib2
 
 try:
@@ -53,15 +52,15 @@ class Policy(object):
 
         metadatas = self._retrieveMetadataList()
         metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
-        filtered1 = self._filter(metadataEntries, whiteListEndorsers)
-	filtered2 = self._filter(filtered1, blackListChecksums)	
+        filtered1 = self._filter(metadataEntries, self.whiteListEndorsers)
+        filtered2 = self._filter(filtered1, self.blackListChecksums)	
         if len(filtered2) == 0:
             raise ValidationException('Failed policy check')
         print len(filtered2)
 
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
-	url = endpoint + '/' + identifierUri
+        url = endpoint + '/' + identifierUri
         try:
             manifest = Util.wstring(url)
         except urllib2.HTTPError:
