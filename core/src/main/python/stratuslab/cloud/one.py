@@ -325,7 +325,7 @@ class OneVmState(object):
 
     def _lcmStateToString(self):
         lcm = self._lcmStateAsInt()
-        if lcm and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
+        if (lcm != None) and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
             return self.lcmStateDefintion[lcm]
         else:
             printError('Invalid state: %s' % lcm, exit=False)
