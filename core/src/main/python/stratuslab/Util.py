@@ -293,7 +293,10 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
             _printDetail('[%i] Retrying ssh command in %i sec.' % (i, sleepTime), kwargs)
             time.sleep(sleepTime)
         output = execute(sshCmd, **kwargs)
-        es = isinstance(output, int) and output or output[0]
+        if isinstance(output, int):
+            es = output
+        else:
+            es= output[0]
         if es != SSH_EXIT_STATUS_ERROR:
             return output
     return output
