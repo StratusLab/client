@@ -50,6 +50,7 @@ except ImportError:
 class Monitor(Configurable):
 
     def __init__(self, configHolder):
+        self.endpoint = None
         super(Monitor, self).__init__(configHolder)
 
         self._setCloud()
