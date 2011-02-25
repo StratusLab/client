@@ -329,7 +329,7 @@ class Testor(unittest.TestCase):
 
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
-        image = 'http://appliances.stratuslab.org/images/base/CentOS-5.5-x86_64-base/1.0/CentOS-5.5-x86_64-base-1.0.img.gz'
+        image = 'http://appliances.stratuslab.org/images/base/centos-5.5-x86_64-base/1.0/centos-5.5-x86_64-base-1.0.img.gz'
         creator = self._createCreator(image)
 
         newImage = creator.showName()

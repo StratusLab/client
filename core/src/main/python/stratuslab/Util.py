@@ -23,6 +23,7 @@ import subprocess
 import sys
 import time
 import urllib2
+import random
 from random import sample
 from string import ascii_lowercase
 from Exceptions import ImportException
@@ -46,6 +47,10 @@ DETAILED_VERBOSE_LEVEL = 2
 
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
+
+SSH_EXIT_STATUS_ERROR = 255
+SSH_CONNECTION_RETRY_NUMBER = 2
+SSH_CONNECTION_RETRY_SLEEP_MAX = 5
 
 def getShareDir():
     if os.path.exists(shareDir):
@@ -282,7 +287,19 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
-    return execute(sshCmd, **kwargs)
+    for i in range(0, SSH_CONNECTION_RETRY_NUMBER + 1):
+        if i > 0:
+            sleepTime = random.randint(0, SSH_CONNECTION_RETRY_SLEEP_MAX)
+            _printDetail('[%i] Retrying ssh command in %i sec.' % (i, sleepTime), kwargs)
+            time.sleep(sleepTime)
+        output = execute(sshCmd, **kwargs)
+        if isinstance(output, int):
+            es = output
+        else:
+            es= output[0]
+        if es != SSH_EXIT_STATUS_ERROR:
+            return output
+    return output
 
 def sshCmdWithOutput(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
