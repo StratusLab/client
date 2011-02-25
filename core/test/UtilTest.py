@@ -52,7 +52,7 @@ start block
   block LINE ONE
 
 """
-        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data), 
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data),
                          result)
 
         content = """
@@ -70,7 +70,7 @@ start block
 
 #
 """
-        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data), 
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data),
                          result)
 
         content = """
@@ -85,7 +85,7 @@ start block
   block LINE ONE
 
 """
-        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data), 
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data),
                          result)
 
     def testExecuteWithOutput(self):
@@ -95,14 +95,26 @@ start block
         self.assertEquals(len(output), 2)
         self.assertTrue(isinstance(output[1], basestring))
         assert len(output[1]) >= 1
-    
+
     def testGatewayIpFromNetAddress(self):
         self.assertEquals(Util.gatewayIpFromNetAddress('0.0.0.0'), '0.0.0.1')
-        
-        
+
+
     def testConstructEndPoint(self):
         self.assertEquals(Util.constructEndPoint('protocol://address:1234/path'), 'protocol://address:1234/path')
         self.assertEquals(Util.constructEndPoint('address', 'protocol', '1234', 'path'), 'protocol://address:1234/path')
-    
+
+    def testSshCmdRetry(self):
+        wrongPort = '33'
+        input = 'true', 'localhost', '', wrongPort, 'noname'
+
+        devNull = file('/dev/null','w')
+        assert Util.SSH_EXIT_STATUS_ERROR == Util.sshCmd(*input, stderr=devNull)
+        devNull.close()
+
+        output = Util.sshCmdWithOutput(*input)
+        assert Util.SSH_EXIT_STATUS_ERROR == output[0]
+        assert output[1].startswith('ssh: connect to host localhost port 33: Connection refused')
+
 if __name__ == "__main__":
     unittest.main()
