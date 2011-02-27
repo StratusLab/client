@@ -50,6 +50,7 @@ except ImportError:
 class Monitor(Configurable):
 
     def __init__(self, configHolder):
+        self.endpoint = None
         super(Monitor, self).__init__(configHolder)
 
         self._setCloud()
@@ -66,10 +67,8 @@ class Monitor(Configurable):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
 
-        endpointEnv = 'STRATUSLAB_ENDPOINT'
-
-        if endpointEnv in os.environ:
-            self.cloud.setEndpoint(os.environ[endpointEnv])
+        if self.endpoint:
+            self.cloud.setEndpoint(self.endpoint)
         elif 'frontendIp' in self.__dict__ and 'proxyPort' in self.__dict__:
             self.cloud.setEndpointFromParts(self.frontendIp, self.proxyPort)
         else:

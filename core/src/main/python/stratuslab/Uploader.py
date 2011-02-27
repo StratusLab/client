@@ -20,7 +20,6 @@
 import sys
 import os.path
 import urllib2
-import shutil
 from ConfigParser import RawConfigParser
 
 import stratuslab.Util as Util
