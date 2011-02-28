@@ -39,6 +39,8 @@ from stratuslab.Util import printError
 from stratuslab.Util import sshCmd
 import Util
 
+VM_START_TIMEOUT = 5 * 60 # 5 min
+
 class Testor(unittest.TestCase):
 
     configHolder = None
@@ -171,7 +173,7 @@ class Testor(unittest.TestCase):
         self.vmIds = runner.runInstance()
 
         for id in self.vmIds:
-            vmStarted = runner.waitUntilVmRunningOrTimeout(id)
+            vmStarted = runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
                 printError(error, exit=False)
