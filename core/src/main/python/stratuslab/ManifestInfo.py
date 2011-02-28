@@ -24,6 +24,7 @@ import string
 import time
 
 import Util
+from stratuslab.ConfigHolder import ConfigHolder
 
 try:
     from lxml import etree
@@ -68,7 +69,7 @@ class ManifestInfo(object):
     MANDATORY_CHECKSUMS = ('sha1',)
     CHECKSUM_NAMES = ('md5','sha1','sha256','sha512')
 
-    def __init__(self, options={}):
+    def __init__(self, configHolder=ConfigHolder()):
 
         self.os = ''
         self.osversion = ''
@@ -103,8 +104,7 @@ class ManifestInfo(object):
 
         self.publisher = 'StratusLab'
 
-        if options:
-            Util.assignAttributes(self, options)
+        configHolder.assign(self)
 
         self.user = self.creator
 
@@ -160,7 +160,7 @@ class ManifestInfo(object):
             self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
                                        self.format)
             self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
-                                      self.hypervisor)
+                                      self.hypervisor)            
             self.location = getattr(xml.find('.//{%s}location' % NS_SLTERMS), 'text',
                                     self.location)
             self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
