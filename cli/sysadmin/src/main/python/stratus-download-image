@@ -30,7 +30,7 @@ import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Configurator import Configurator
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Downloader import Downloader
+from stratuslab.marketplace.Downloader import Downloader
 
 class MainProgram(CommandBase):
     '''A command-line program to download machine and disk images from a StratusLab Market-Place.'''
