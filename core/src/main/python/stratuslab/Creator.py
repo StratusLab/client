@@ -312,9 +312,12 @@ class Creator(object):
     def _startMachine(self):
         try:
             self.vmId = self.runner.runInstance()[0]
-            _, self.vmIp = self.runner.getNetworkDetail(self.vmId)
         except Exception, msg:
             printError('An error occurred while starting machine: \n\t%s' % msg)
+        try:
+            _, self.vmIp = self.runner.getNetworkDetail(self.vmId)
+        except Exception, e:
+            printError('An error occurred while getting machine network details: \n\t%s' % str(e))
 
         printStep('Waiting for machine to boot')
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
