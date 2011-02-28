@@ -38,5 +38,11 @@ class ValidationException(Exception):
 class ExecutionException(Exception):
     pass
 
+class ClientException(Exception):
+    pass
+
+class ServerException(Exception):
+    pass
+
 
     
