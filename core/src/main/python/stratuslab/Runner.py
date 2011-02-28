@@ -24,10 +24,10 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
-from stratuslab.Util import printError
 from stratuslab.Util import printStep
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
+from stratuslab.Exceptions import ValidationException
 
 class Runner(object):
 
@@ -232,8 +232,8 @@ class Runner(object):
             contextLine = line.split('=')
 
             if len(contextLine) < 2:
-                printError('Error while parsing contextualization file.\n'
-                           'Syntax error in line `%s`' % line)
+                Util.printError('Error while parsing contextualization file.\n'
+                                'Syntax error in line `%s`' % line)
 
             extraContext[contextLine[0]] = '='.join(contextLine[1:])
 
@@ -259,6 +259,8 @@ class Runner(object):
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
 
     def runInstance(self):
+        self._checkImageUrl()
+
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 
         plurial = { True: 'machines',
@@ -267,6 +269,7 @@ class Runner(object):
         printStep('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
+        self.printDetail('on endpoint: %s' % self.endpoint)
         self.printDetail('with template:\n%s' % vmTpl)
 
         for vmNb in range(self.instanceNumber):
@@ -312,5 +315,19 @@ class Runner(object):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
         return vmStarted
 
-    def checkImageUrl(self):
-        pass
+    def _checkImageUrl(self):
+        return
+        self.printDetail('Checking image availability.')
+        if self.noCheckImageUrl:
+            Util.printWarning('Image availability check was disabled.')
+            return
+        extentionToMime = {'gz' :'application/x-gzip',
+                           'bz2':'application/x-bzip'}
+        mimeType = Util.guessMimeTypeByExtension(self.vm_image)
+        if not Util.pingFile(self.image, mimeType):
+            raise ValidationException('Unable to access the base image: %s' % self.image)
+#        try:
+#            Util.checkUrlExists(self.vm_image, timeout=5)
+#        except ExecutionException, e:
+#            Util.printError('Image availability check: %s' % str(e))
+        self.printDetail('Image available: %s' % self.vm_image)

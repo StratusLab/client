@@ -18,10 +18,9 @@
 # limitations under the License.
 #
 import unittest
-import os
-import sys
 
 import stratuslab.Util as Util
+import urllib2
 
 class UtilTest(unittest.TestCase):
 
@@ -115,6 +114,12 @@ start block
         output = Util.sshCmdWithOutput(*input)
         assert Util.SSH_EXIT_STATUS_ERROR == output[0]
         assert output[1].startswith('ssh: connect to host localhost port 33: Connection refused')
+
+    def testCheckUrlExists(self):
+
+        self.assertEqual(Util.checkUrlExists('http://www.google.com'), None)
+        self.assertRaises(ValueError, Util.checkUrlExists, (''))
+        self.assertRaises(urllib2.URLError, Util.checkUrlExists, ('http://my.dummy.site'))
 
 if __name__ == "__main__":
     unittest.main()
