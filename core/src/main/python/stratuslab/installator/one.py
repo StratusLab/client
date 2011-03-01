@@ -22,6 +22,7 @@ import os
 from BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 import stratuslab.Util as Util
+from stratuslab.Exceptions import OneException
 
 class OneInstallator(BaseInstallator):
     
@@ -37,10 +38,13 @@ class OneInstallator(BaseInstallator):
         self.cloud.hostRemove(id)
         
     def _addDefaultNetworks(self):
-        for vnet in self.defaultStaticNetworks:
-            self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
-        for vnet in self.defaultRangedNetworks:
-            self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
+        try:
+            for vnet in self.defaultStaticNetworks:
+                self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
+            for vnet in self.defaultRangedNetworks:
+                self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
+        except OneException:
+            Util.printWarning('Coulnd\'t create virtual networks, already present?')
 
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
