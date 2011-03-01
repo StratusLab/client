@@ -36,7 +36,7 @@ class MainProgram(Runnable):
 
     def parse(self):
         options = Runner.defaultRunOptions()
-        
+
         self.parser.add_option('-n', '--number', dest='instanceNumber',
                 help='number of machines to start (default 1)', metavar='INT',
                 default=options['instanceNumber'], type='int')
@@ -77,11 +77,16 @@ class MainProgram(Runnable):
                 help='request a specific ip address',
                 metavar='IP', default=None)
 
+        self.parser.add_option('--no-check-image-url', dest='noCheckImageUrl',
+                help='Do not check image availability.',
+                action='store_true',
+                default=False)
+
         super(MainProgram, self).parse()
 
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
         setattr(parser.values, option.dest, 1024*value)
-    
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(self.image, configHolder)

@@ -291,20 +291,23 @@ class Creator(object):
                     counter += 1
 
     def _imageExists(self):
-        self._pingImage()
-        self._pingManifest()
+        self._checkImageExists()
+        self._checkManifestExists()
 
-    def _pingImage(self):
-        ending = 'img.gz'
-        if not self.image.endswith(ending):
-            raise ValidationException('Image file must end with: %s' % ending)
-        if not Util.pingFile(self.image, 'application/x-gzip'):
-            raise ValidationException('Unable to access the base image: %s' % self.image)
+    def _checkImageExists(self):
+        try:
+            Util.checkUrlExists(self.image)
+        except Exception, e:
+            raise ValidationException("Unable to access image '%s': %s" %
+                                      (self.image, str(e)))
 
-    def _pingManifest(self):
-        url = self.image[:-7] + '.xml'
-        if not Util.pingFile(url, 'text/xml'):
-            raise ValidationException('Unable to access manifest file: %s' % url)
+    def _checkManifestExists(self):
+        manifestUrl = self.image.rsplit('.',2)[0] + '.xml'
+        try:
+            Util.checkUrlExists(manifestUrl)
+        except Exception, e:
+            raise ValidationException("Unable to access manifest '%s': %s" %
+                                      (manifestUrl, str(e)))
 
     def _createRunner(self):
         self.runner = Runner(self.image, self.configHolder)
@@ -312,9 +315,12 @@ class Creator(object):
     def _startMachine(self):
         try:
             self.vmId = self.runner.runInstance()[0]
-            _, self.vmIp = self.runner.getNetworkDetail(self.vmId)
         except Exception, msg:
             printError('An error occurred while starting machine: \n\t%s' % msg)
+        try:
+            _, self.vmIp = self.runner.getNetworkDetail(self.vmId)
+        except Exception, e:
+            printError('An error occurred while getting machine network details: \n\t%s' % str(e))
 
         printStep('Waiting for machine to boot')
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,

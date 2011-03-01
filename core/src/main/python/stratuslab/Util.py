@@ -26,9 +26,8 @@ import urllib2
 import random
 from random import sample
 from string import ascii_lowercase
-from Exceptions import ImportException
+from Exceptions import ImportException, ExecutionException
 from Compressor import Compressor
-
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -159,6 +158,15 @@ def fileAppendContent(filename, data):
     fd = open(filename, 'a')
     fd.write(data)
     fd.close()
+
+def fileGetExtension(filename):
+    try:
+        ending = filename.rsplit('.', 1)[1]
+    except IndexError:
+        return ''
+    if not ending:
+        return ''
+    return ending
 
 def shaHexDigest(string):
     shaMethod = None
@@ -445,14 +453,11 @@ def generateSshKeyPair(keyFilename):
     sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
     execute(sshCmd, shell=True)
 
-def pingFile(url, mediaType='text/xml'):
-    try:
-        fd = urllib2.urlopen(url)
-    except urllib2.HTTPError:
-        return False
-    if fd.info().type == mediaType:
-        return True
-    return False
+def checkUrlExists(url, timeout=5):
+    fh = urllib2.urlopen(url, timeout=timeout)
+    if not fh:
+        raise ExecutionException('urllib2.urlopen() did not return url handler.')
+    return True
 
 def printEmphasisStart():
     sys.stdout.write('\033[1;31m')

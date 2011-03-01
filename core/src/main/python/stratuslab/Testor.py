@@ -39,6 +39,8 @@ from stratuslab.Util import printError
 from stratuslab.Util import sshCmd
 import Util
 
+VM_START_TIMEOUT = 5 * 60 # 5 min
+
 class Testor(unittest.TestCase):
 
     configHolder = None
@@ -171,7 +173,7 @@ class Testor(unittest.TestCase):
         self.vmIds = runner.runInstance()
 
         for id in self.vmIds:
-            vmStarted = runner.waitUntilVmRunningOrTimeout(id)
+            vmStarted = runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
                 printError(error, exit=False)
@@ -340,8 +342,8 @@ class Testor(unittest.TestCase):
         creator.create()
 
         assert creator.targetImageUri == newImageUri
-        assert Util.pingFile(creator.targetImageUri, 'application/x-gzip')
-        assert Util.pingFile(creator.targetManifestUri, 'text/xml')
+        assert Util.checkUrlExists(creator.targetImageUri)
+        assert Util.checkUrlExists(creator.targetManifestUri)
 
         self.image = creator.targetImageUri
         self.oneUsername = self.username
