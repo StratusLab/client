@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import urllib2
+import hashlib
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
 
@@ -132,7 +133,6 @@ class Downloader(object):
     
     def _verifyHash(self, imageFilename, hashFromManifest):
 
-        import hashlib
         data = open(imageFilename).read()
         sha1 = hashlib.sha1()
         sha1.update(data)
