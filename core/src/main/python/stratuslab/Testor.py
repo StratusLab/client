@@ -270,12 +270,12 @@ class Testor(unittest.TestCase):
         self._generateDummyImage(dummyFile)
 
         manifest = ''
-        options = self.configHolder.options.copy()
-        options['repoUsername'] = self.appRepoUsername
-        options['repoPassword'] = self.appRepoPassword
-        options['appRepoUrl'] = self.appRepoUrl
-        options['uploadOption'] = ''
-        uploader = Uploader(manifest, options)
+        configHolder = Testor.configHolder.copy()
+        configHolder.set('repoUsername', self.appRepoUsername)
+        configHolder.set('repoPassword', self.appRepoPassword)
+        configHolder.set('appRepoUrl',  self.appRepoUrl)
+        configHolder.set('uploadOption', '')
+        uploader = Uploader(manifest, configHolder)
         uploader.uploadFile(dummyFile, os.path.join('base', os.path.basename(dummyFile)))
         uploader.deleteFile(uploader.uploadedFile[-1])
 
@@ -403,3 +403,6 @@ class Testor(unittest.TestCase):
         configHolder = ConfigHolder(options)
 
         return Creator(image, configHolder)
+
+    def marketPlaceTest(self):
+        pass
