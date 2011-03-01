@@ -111,6 +111,24 @@
 	      </artifactItems>
 	    </configuration>
 	  </execution>
+	  <execution>
+		<id>copy-metadata-jar</id>
+		<phase>generate-sources</phase>
+		<goals>
+			<goal>copy</goal>
+		</goals>
+		<configuration>
+			<outputDirectory>${project.build.directory}/jar</outputDirectory>
+			<artifactItems>
+				<artifactItem>
+					<groupId>eu.stratuslab.marketplace</groupId>
+					<artifactId>metadata</artifactId>
+					<classifier>jar-with-dependencies</classifier>
+					<type>jar</type>
+				</artifactItem>
+			</artifactItems>
+	    </configuration>
+	  </execution>
 	</executions>
 
       </plugin>
