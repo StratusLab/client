@@ -148,7 +148,8 @@ class Runner(object):
                 'diskFormat': 'raw',
                 'saveDisk': 'no',
                 'inVmIdsFile': None,
-                'outVmIdsFile': None }
+                'outVmIdsFile': None,
+                'noCheckImageUrl': False }
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)
@@ -316,18 +317,14 @@ class Runner(object):
         return vmStarted
 
     def _checkImageUrl(self):
-        return
         self.printDetail('Checking image availability.')
         if self.noCheckImageUrl:
-            Util.printWarning('Image availability check was disabled.')
+            Util.printWarning('Image availability check is disabled.')
             return
-        extentionToMime = {'gz' :'application/x-gzip',
-                           'bz2':'application/x-bzip'}
-        mimeType = Util.guessMimeTypeByExtension(self.vm_image)
-        if not Util.pingFile(self.image, mimeType):
-            raise ValidationException('Unable to access the base image: %s' % self.image)
-#        try:
-#            Util.checkUrlExists(self.vm_image, timeout=5)
-#        except ExecutionException, e:
-#            Util.printError('Image availability check: %s' % str(e))
-        self.printDetail('Image available: %s' % self.vm_image)
+        try:
+            Util.checkUrlExists(self.vm_image)
+        except Exception, e:
+            raise ValidationException("Unable to access image '%s': %s" %
+                                      (self.vm_image, str(e)))
+        else:
+            self.printDetail('Image available: %s' % self.vm_image)

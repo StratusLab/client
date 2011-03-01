@@ -24,12 +24,10 @@ import sys
 import time
 import urllib2
 import random
-import mimetypes
 from random import sample
 from string import ascii_lowercase
-from Exceptions import ImportException
+from Exceptions import ImportException, ExecutionException
 from Compressor import Compressor
-from Exceptions import ExecutionException
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -455,23 +453,11 @@ def generateSshKeyPair(keyFilename):
     sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
     execute(sshCmd, shell=True)
 
-def pingFile(url, mediaType='text/xml', timeout=5):
-    try:
-        fd = urllib2.urlopen(url, timeout=timeout)
-    except urllib2.HTTPError:
-        return False
-    if fd.info().type == mediaType:
-        return True
-    return False
-
-#def checkUrlExists(url, timeout=5):
-#    try:
-#        fh = urllib2.urlopen(url, timeout=timeout)
-#    except Exception, e:
-#        raise ExecutionException(e)
-#    else:
-#        if not fh:
-#            raise ExecutionException('urlopen() did not return url handler.')
+def checkUrlExists(url, timeout=5):
+    fh = urllib2.urlopen(url, timeout=timeout)
+    if not fh:
+        raise ExecutionException('urllib2.urlopen() did not return url handler.')
+    return True
 
 def printEmphasisStart():
     sys.stdout.write('\033[1;31m')
@@ -514,8 +500,3 @@ def toTimeInIso8601(_time):
 
 def inflate(filename):
     return Compressor.inflate(filename)
-
-def guessMimeTypeByExtension(filename):
-    if not fileGetExtension(filename):
-        raise ValueError("File doesn't contain extension.")
-    return mimetypes.guess_type(filename)

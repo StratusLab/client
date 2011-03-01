@@ -115,11 +115,17 @@ start block
         assert Util.SSH_EXIT_STATUS_ERROR == output[0]
         assert output[1].startswith('ssh: connect to host localhost port 33: Connection refused')
 
-    def testCheckUrlExists(self):
+    def testFileGetExtension(self):
+        assert Util.fileGetExtension('file.') == ''
+        assert Util.fileGetExtension('file') == ''
+        assert Util.fileGetExtension('file.txt') == 'txt'
 
-        self.assertEqual(Util.checkUrlExists('http://www.google.com'), None)
+    def testCheckUrlExists(self):
         self.assertRaises(ValueError, Util.checkUrlExists, (''))
-        self.assertRaises(urllib2.URLError, Util.checkUrlExists, ('http://my.dummy.site'))
+        self.assertRaises(urllib2.URLError, Util.checkUrlExists,
+                          ('file:///nosuchfile.txt'))
+        self.assertRaises(urllib2.URLError, Util.checkUrlExists,
+                          ('http://www.google.com/nosuchfile.txt'))
 
 if __name__ == "__main__":
     unittest.main()

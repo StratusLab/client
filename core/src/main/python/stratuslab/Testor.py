@@ -342,8 +342,8 @@ class Testor(unittest.TestCase):
         creator.create()
 
         assert creator.targetImageUri == newImageUri
-        assert Util.pingFile(creator.targetImageUri, 'application/x-gzip')
-        assert Util.pingFile(creator.targetManifestUri, 'text/xml')
+        assert Util.checkUrlExists(creator.targetImageUri)
+        assert Util.checkUrlExists(creator.targetManifestUri)
 
         self.image = creator.targetImageUri
         self.oneUsername = self.username
