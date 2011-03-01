@@ -40,14 +40,14 @@
 
 	    <configuration>
 	      <delimiters>
-		<delimiter>${*}</delimiter>
+	        <delimiter>${*}</delimiter>
 	      </delimiters>
 	      <outputDirectory>${project.build.directory}/python</outputDirectory>
 	      <resources>
-		<resource>
-		  <directory>src</directory>
-		  <filtering>true</filtering>
-		</resource>
+	        <resource>
+	          <directory>src</directory>
+	          <filtering>true</filtering>
+	        </resource>
 	      </resources>
 	    </configuration>
 

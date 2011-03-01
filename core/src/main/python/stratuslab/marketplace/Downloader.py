@@ -4,6 +4,7 @@ import tempfile
 import urllib2
 import hashlib
 from stratuslab.Exceptions import ExecutionException
+from stratuslab.ManifestInfo import ManifestInfo
 
 try:
     from lxml import etree
@@ -29,9 +30,9 @@ except ImportError:
 from stratuslab import Util
 from stratuslab.Signator import Signator
 from stratuslab.Compressor import Compressor
-from ConfigHolder import ConfigHolder
-from Exceptions import InputException
-from Exceptions import ValidationException
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Exceptions import InputException
+from stratuslab.Exceptions import ValidationException
 
 class Downloader(object):
 
@@ -44,7 +45,6 @@ class Downloader(object):
         self.imageUrl = None
         configHolder.assign(self)
         self.compression = None
-        self.metadataDom = None
         self.localImageFilename = os.path.abspath(self.localImageFilename)
     
     def download(self, uri):
@@ -57,9 +57,9 @@ class Downloader(object):
         except urllib2.HTTPError:
             raise InputException('Failed to find metadata entry: %s' % url)
 
-        self.metadataDom = self._loadDom(tempMetadataFilename)
+        manifestInfo = ManifestInfo(tempMetadataFilename)
 
-        locations = self._extractLocations()
+        locations = [manifestInfo.location]
 
         tempImageFilename = ''
         for location in locations:
@@ -77,7 +77,7 @@ class Downloader(object):
 
         tempImageFilename = self._inflateImage(tempImageFilename)
 
-        self._verifyHash(tempImageFilename)
+        self._verifyHash(tempImageFilename, manifestInfo.sha1)
 
         shutil.copy2(tempImageFilename, self.localImageFilename)
 
@@ -115,12 +115,6 @@ class Downloader(object):
         except urllib2.URLError, ex:
             raise InputException('Failed to download: %s, with detail: %s' % (url, str(ex)))
 
-    def _extractLocations(self):
-        locations = []
-        for location in self.metadataDom.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://stratuslab.eu/terms#}location'):
-            locations.append(location.text)
-        return locations
-    
     def _verifySignature(self, imageFilename, metadataFilename):
         signator = Signator(metadataFilename, self.configHolder)
         res = signator.validate()
@@ -137,28 +131,16 @@ class Downloader(object):
         
         return inflatedFilename
     
-    def _verifyHash(self, imageFilename):
+    def _verifyHash(self, imageFilename, hashFromManifest):
 
-        metadataHash = self._extractHash(self.metadataDom)
-        
         data = open(imageFilename).read()
         sha1 = hashlib.sha1()
         sha1.update(data)
         
         imageHash = sha1.hexdigest()
         
-        if imageHash != metadataHash:
-            raise ValidationException('Manifest hash code different from downloaded image: image=%s, matadata=%s' % (imageHash, metadataHash))
-
-    def _extractHash(self, dom):
-        checksums = dom.findall('.//{http://mp.stratuslab.eu/slreq#}checksum')
-        sha1 = None
-        for checksum in checksums:
-            if checksum.getchildren()[0].text == 'SHA-1':
-                sha1 = checksum.getchildren()[1].text
-        if not sha1:
-            raise InputException('Failed to find SHA-1 checksum in metadata')
-        return sha1
+        if imageHash != hashFromManifest:
+            raise ValidationException('Manifest hash code different from downloaded image: image=%s, matadata=%s' % (imageHash, hashFromManifest))
 
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, 1)

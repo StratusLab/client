@@ -214,10 +214,6 @@ class BaseInstallator(object):
     def _configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
-
-        if self.vmDir != '':
-            self.frontend.createDirsCmd(self.vmDir)
-            self.frontend.setOwnerCmd(self.vmDir)
         
     def _configureCloudSystem(self):
         if not os.path.isfile(self.onedTpl):

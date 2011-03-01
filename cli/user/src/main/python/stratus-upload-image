@@ -21,6 +21,7 @@
 
 import os
 import sys
+from stratuslab.ConfigHolder import ConfigHolder
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -60,7 +61,8 @@ class MainProgram(CommandBase):
             self.parser.error('Appliance manifest does not exist: ' + self.manifest)
 
     def doWork(self):
-        uploader = Uploader(self.manifest, self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__)
+        uploader = Uploader(self.manifest, configHolder)
         try:
             uploader.start()
         except InputException, e:

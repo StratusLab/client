@@ -43,7 +43,6 @@ host_monitoring_interval = 60
 vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
-vm_dir = /instances
 
 [one-network]
 # For public and local networks, use DHCP controlled IP/MAC addresses mapping.
