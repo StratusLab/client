@@ -29,7 +29,6 @@ class OneInstallator(BaseInstallator):
         super(OneInstallator, self).__init__()
         self.cloudConfDir = '/etc/one/'
         self.cloudConfFile = self.cloudConfDir + 'oned.conf'
-        self.cloudVarLibDir = '/var/lib/one'
 
     def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
@@ -111,11 +110,10 @@ class OneInstallator(BaseInstallator):
     # ---- NFS configuration
 
     def _configureNfsServer(self):
+        mountPoint = self.cloudVarLibDir
         if self._nfsShareAlreadyExists():
-            mountPoint = self.config.get('vm_dir')
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), mountPoint)
         else:
-            mountPoint = self.config.get('vm_dir')
             self.frontend.executeCmd(['ln', '-fs', self.cloudVarLibDir, mountPoint])
             self.frontend.configureNewNfsServer(mountPoint,
                                                 self.config['network_addr'],
@@ -136,25 +134,15 @@ class OneInstallator(BaseInstallator):
         if self.shareType == 'nfs':
             self._configureNfsClient()
         elif self.shareType == 'ssh':
-            self.node.configureSshClient(self.config.get('vm_dir'))
+            self.node.configureSshClient(self.cloudVarLibDir)
     
     # ---- NFS configuration   
          
     def _configureNfsClient(self):
+        mountPoint = self.cloudVarLibDir
         if self._nfsShareAlreadyExists():
-            if self.config.get('vm_dir') != '':
-                host = self.config.get('existing_nfs')
-                mountPoint = self.config.get('vm_dir')
-            else:
-                host = '%s/%s/var' % (self.config.get('existing_nfs'),
-                                  os.path.basename(self.config.get('one_home')))
-                mountPoint = '%s/var' % self.config.get('one_home')
+            host = self.config.get('existing_nfs')
         else:
-            if self.config.get('vm_dir') != '':
-                host = '%s:%s' % (self.config['frontend_ip'], self.config.get('vm_dir'))
-                mountPoint = self.config.get('vm_dir')
-            else:
-                host = '%s:%s/var' % (self.config['frontend_ip'], self.config.get('one_home'))
-                mountPoint = '%s/var' % self.config.get('one_home')
+            host = '%s:%s' % (self.config['frontend_ip'], self.cloudVarLibDir)
 
         self.node.configureExistingNfsShare(host, mountPoint)

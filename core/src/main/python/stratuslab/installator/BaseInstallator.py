@@ -45,6 +45,7 @@ class BaseInstallator(object):
         self.node = None
         self.cloud = None
         self.onedTpl = shareDir + 'template/oned.conf.tpl'
+        self.cloudVarLibDir = '/var/lib/one'
 
     def runInstall(self, configHolder):
         # TODO: fix the logs for apprepo installs
@@ -221,6 +222,7 @@ class BaseInstallator(object):
                        '%s does not exists' % self.onedTpl)
 
         conf = self.config.copy()
+        conf['vm_dir'] = self.cloudVarLibDir
         self.frontend.filePutContentsCmd(self.cloudConfFile,
                                          fileGetContent(self.onedTpl) % conf)
 
