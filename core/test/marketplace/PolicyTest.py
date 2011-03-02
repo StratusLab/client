@@ -1,37 +1,31 @@
-#
-# Created as part of the StratusLab project (http://stratuslab.eu),
-# co-funded by the European Commission under the Grant Agreement
-# INFSO-RI-261552."
-#
-# Copyright (c) 2011, SixSq Sarl
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-import stratuslab.marketplace.Policy as Policy 
+import unittest
+import stratuslab.marketplace.Policy as Policy
 from xml.etree.ElementTree import ElementTree
+from stratuslab.marketplace.Policy import Policy
+from stratuslab.ConfigHolder import ConfigHolder
 
+
+
+class PolicyTest(unittest.TestCase):
+    def testFilter(self):
+        metadata = ["valid-full.xml", "valid-full2.xml"]
+        xmltree = ElementTree()
+        xmltree2 = ElementTree()
+        xmltree.parse("valid-full.xml")
+        xmltree2.parse("valid-full2.xml")
+        metadataEntries = [xmltree, xmltree2]
+
+        configHolder = ConfigHolder()
+        policy = Policy("policy.cfg", configHolder)
+        filtered1 = policy._filter(metadataEntries, policy.whiteListEndorsers)
+        if len(filtered1) == 0:
+                raise ValidationException('Failed policy check')
+        print len(filtered1)
+
+        filtered2 = policy._filter(filtered1, policy.blackListChecksums)
+        if len(filtered2) == 0:
+                raise ValidationException('Failed policy check')
+        print len(filtered2)
 
 if __name__ == "__main__":
-    metadata = ["valid-full.xml", "hackers-full.xml"]
-    
-    xmltree = ElementTree()
-    xmltree2 = ElementTree()
-    xmltree.parse("valid-full.xml")
-    xmltree2.parse("hackers-full.xml")
-    
-    xmltrees = [xmltree, xmltree2]
-    Policy.init('policy.cfg') 
-    print 'len(xmltrees)=',len(xmltrees)
-    Policy.filter(xmltrees)
-    print 'len(xmltrees)=',len(xmltrees)
-    print Policy.WhiteListEndorsers
+    unittest.main()
