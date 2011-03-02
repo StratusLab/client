@@ -9,15 +9,14 @@ from stratuslab.Exceptions import ValidationException, InputException
 
 class PolicyTest(unittest.TestCase):
     def testFilter(self):
-        os.path.dirname(__file__)
 	xmltree = ElementTree()
         xmltree2 = ElementTree()
-        xmltree.parse("valid-full.xml")
-        xmltree2.parse("valid-full2.xml")
+        xmltree.parse(os.path.abspath("valid-full.xml"))
+        xmltree2.parse(os.path.abspath("valid-full2.xml"))
         metadataEntries = [xmltree, xmltree2]
 
         configHolder = ConfigHolder()
-        policy = Policy("policy.cfg", configHolder)
+        policy = Policy(os.path.abspath("policy.cfg"), configHolder)
         filtered1 = policy._filter(metadataEntries, policy.whiteListEndorsers)
         if len(filtered1) == 0:
                 raise ValidationException('Failed policy check')
