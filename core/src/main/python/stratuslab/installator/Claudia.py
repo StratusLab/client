@@ -83,7 +83,7 @@ class Claudia(object):
         if self.packages:
             print " :: Installing packages: "
             for p in self.packages:
-                print "::\t"+p
+                print " ::\t"+p
             print
             self.system.installPackages(self.packages)
 
@@ -107,6 +107,6 @@ class Claudia(object):
             self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
 
     def _startServices(self):
-        self.system.execute([self.claudiaHome+'/bin/tcloud', 'start &'])
-        self.system.execute([self.claudiaHome+'/bin/clotho', 'start &'])
+        self.system.execute(['/etc/init.d/tcloudd', 'start'])
+        self.system.execute(['/etc/init.d/clothod', 'start'])
 
