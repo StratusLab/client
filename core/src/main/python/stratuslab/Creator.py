@@ -639,7 +639,7 @@ EOF
 
         self.options['remoteImage'] = True
         self.options['uploadOption'] = ''
-        uploader = Uploader(self.manifestLocalFileName, self.options)
+        uploader = Uploader(self.manifestLocalFileName, self.configHolder)
         uploader.remoteServerAddress = self.vmAddress
 
         self.targetImageUri, self.targetManifestUri = \
