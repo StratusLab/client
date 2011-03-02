@@ -1,15 +1,16 @@
 import unittest
+import os
 import stratuslab.marketplace.Policy as Policy
 from xml.etree.ElementTree import ElementTree
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.ConfigHolder import ConfigHolder
-
+from stratuslab.Exceptions import ValidationException, InputException
 
 
 class PolicyTest(unittest.TestCase):
     def testFilter(self):
-        metadata = ["valid-full.xml", "valid-full2.xml"]
-        xmltree = ElementTree()
+        os.path.dirname(__file__)
+	xmltree = ElementTree()
         xmltree2 = ElementTree()
         xmltree.parse("valid-full.xml")
         xmltree2.parse("valid-full2.xml")
