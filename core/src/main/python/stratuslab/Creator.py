@@ -637,8 +637,8 @@ EOF
 
         self._doInstallPackages('curl')
 
-        self.options['remoteImage'] = True
-        self.options['uploadOption'] = ''
+        self.configHolder.options['remoteImage'] = True
+        self.configHolder.options['uploadOption'] = ''
         uploader = Uploader(self.manifestLocalFileName, self.configHolder)
         uploader.remoteServerAddress = self.vmAddress
 
