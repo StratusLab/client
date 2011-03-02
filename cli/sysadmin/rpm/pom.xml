@@ -110,7 +110,7 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
-	    <require>one-2.0-StratusLab</require>
+	    <require>opennebula</require>
 	  </requires>
 
 	  <mappings>
