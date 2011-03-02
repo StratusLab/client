@@ -51,6 +51,7 @@ class Claudia(object):
                         "ImagesServerHost":self.frontendIp, \
                         "VEEMHost":self.frontendIp, \
                         "SiteRoot":self.domainName
+                        # IMPORTANT
                         # missing network configuration
                         }
 
