@@ -118,7 +118,6 @@ class OneInstallator(BaseInstallator):
         if self._nfsShareAlreadyExists():
             self.frontend.configureExistingNfsShare(self.config.get('existing_nfs'), mountPoint)
         else:
-            self.frontend.executeCmd(['ln', '-fs', self.cloudVarLibDir, mountPoint])
             self.frontend.configureNewNfsServer(mountPoint,
                                                 self.config['network_addr'],
                                                 self.config['network_mask'])
