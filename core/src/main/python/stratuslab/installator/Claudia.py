@@ -31,16 +31,17 @@ class Claudia(object):
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         # add your packages here 
         #self.packages = ['apache2']
-        self.packages = []
-
-        # claudia configuration files
-        self.smFile = "/root/claudiaprops/sm.properties"
-        self.tcloudFile = "/root/claudiaprops/tcloud.properties"
-        self.claudiaClientFile= "/root/claudiaprops/claudiaClient.properties"
-
+        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm']
+        
         # temp global variables to be included in stratus.cfg
         self.domainName = "grnet"
-        self.claudiaHome = "/opt/claudia/prueba/"
+        self.claudiaHome = "/opt/claudia/"
+
+
+        # claudia configuration files
+        self.smFile = self.claudiaHome+"/conf/sm.properties"
+        self.tcloudFile = self.claudiaHome+"/conf/tcloud.properties"
+        self.claudiaClientFile= self.claudiaHome+"/conf/claudiaClient.properties"
 
         # properties translation
         # sm.properties
@@ -79,6 +80,10 @@ class Claudia(object):
         
     def _installPackages(self):
         if self.packages:
+            print " :: Installing packages: "
+            for p in self.packages:
+                print "::\t"+p
+            print
             self.system.installPackages(self.packages)
 
     def _configure(self):
@@ -101,6 +106,6 @@ class Claudia(object):
             self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
 
     def _startServices(self):
-        self.system.execute(['ls', '-l'])
-        self.system.execute(['pwd'])
+        self.system.execute([self.claudiaHome+'/bin/tcloud', 'start &'])
+        self.system.execute([self.claudiaHome+'/bin/clotho', 'start &'])
 
