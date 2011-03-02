@@ -30,7 +30,7 @@ import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Policy import Policy
-from stratuslab.Downloader import Downloader
+from stratuslab.marketplace.Downloader import Downloader
 
 class MainProgram(CommandBase):
     '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
