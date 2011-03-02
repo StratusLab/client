@@ -3,7 +3,7 @@
 # co-funded by the European Commission under the Grant Agreement
 # INFSO-RI-261552."
 #
-# Copyright (c) 2010, SixSq Sarl
+# Copyright (c) 2011, SixSq Sarl
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.Util import appendOrReplaceMultilineBlockInFile
-from stratuslab.Exceptions import ExecutionException
 
 installCmd = 'apt-get update; apt-get -q -y install'
 updateCmd = 'apt-get update'
