@@ -77,7 +77,9 @@ class Configurator(Configurable):
             first = False
             print '\033[1;31m%s\033[0m'.center(width) % section
             print line
-            for key in defaultConfig[section]:
+            keys = defaultConfig[section].keys()
+            keys.sort()
+            for key in keys:
                 print ' %s|  %s|  %s' % (
                                          key.ljust(columnSize),
                                          self.getValue(key).ljust(columnSize),

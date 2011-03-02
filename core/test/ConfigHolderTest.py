@@ -48,5 +48,14 @@ class ConfigHolderTest(unittest.TestCase):
         self.assertEquals('A', original.options['a'])
         self.assertEquals('B', original.config['b'])
 
+    def testToString(self):
+        configHolder = ConfigHolder({'a':'A'},{'b':'B'})
+        result = """OPTIONS:
+  a = A
+CONFIG:
+  b = B
+"""
+        self.assertEquals(str(configHolder), result)
+
 if __name__ == "__main__":
     unittest.main()

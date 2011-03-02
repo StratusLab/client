@@ -43,12 +43,12 @@ class CentOS(BaseSystem):
             ('xmlrpc-c', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
             ('xmlrpc-c-devel', '1.06.18-1.el5.kb', self.arch, 'http://centos.karan.org/el5/extras/testing/%(arch)s/RPMS'),
         ]
-        self.remoteSources = [
-            # ('name', 'version', 'uri', 'extension')
-            # --> <uri>/<name>-<version>.<extention>
-            ('git', '1.7.1.1', 'http://kernel.org/pub/software/scm/git', 'tar.gz'),
-            ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
-        ]
+#        self.remoteSources = [
+#            # ('name', 'version', 'uri', 'extension')
+#            # --> <uri>/<name>-<version>.<extention>
+#            ('git', '1.7.1.1', 'http://kernel.org/pub/software/scm/git', 'tar.gz'),
+#            ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
+#        ]
         self.frontendDeps = [
             'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'mkisofs', 'curl'
         ]
@@ -92,11 +92,6 @@ class CentOS(BaseSystem):
         cmd = self.installCmd.split(' ')
         cmd.extend(packages)
         self._execute(cmd)
-
-    def installNodePackages(self, packages):
-        if len(packages) > 0:
-            self._nodeShell('%s %s' %
-                            (self.installCmd, ' '.join(packages)))
 
     def installFrontendDependencies(self):
         super(CentOS, self).installFrontendDependencies()

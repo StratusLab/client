@@ -20,8 +20,8 @@
 		</fileSet>
 
 		<fileSet>
-			<directory>src/main/python/stratuslab</directory>
-			<outputDirectory>python/stratuslab</outputDirectory>
+			<directory>src/main/python</directory>
+			<outputDirectory>python</outputDirectory>
 			<excludes>
 				<exclude>**/*.pyc</exclude>
 			</excludes>

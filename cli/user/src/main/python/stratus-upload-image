@@ -24,9 +24,12 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
+from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Util import manifestExt
 from stratuslab.Uploader import Uploader
+from stratuslab.Exceptions import InputException
+from stratuslab.AuthnCommand import AuthnCommand
 
 class MainProgram(CommandBase):
     '''A command-line program to upload StratusLab appliance.'''
@@ -38,13 +41,14 @@ class MainProgram(CommandBase):
     def parse(self):
         self.parser.usage = 'usage: %prog [options] manifest'
         Uploader.buildUploadParser(self.parser)
-                
+        AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
+
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
         if self.options.listCompressionFormat:
             Uploader.availableCompressionFormat(True)
-        
+
         if len(self.args) != 1:
             self.parser.error('Please specify an appliance manifest')
         self.manifest = self.args[0]
@@ -57,9 +61,13 @@ class MainProgram(CommandBase):
             self.parser.error('Appliance manifest does not exist: ' + self.manifest)
 
     def doWork(self):
-        uploader = Uploader(self.manifest, self.options.__dict__)
-        uploader.start()
-        
+        configHolder = ConfigHolder(self.options.__dict__)
+        uploader = Uploader(self.manifest, configHolder)
+        try:
+            uploader.start()
+        except InputException, e:
+            print e
+            sys.exit(1)
 
 if __name__ == '__main__':
     try:

@@ -94,8 +94,9 @@ class MainProgram(Runnable):
                 help='leave the VM running. A public IP will be assigned.',
                 default=True, action='store_false')
 
-        self.parser.add_option('-r', '--repository', dest='repoAddress',
-                help='appliance repository address. Default STRATUSLAB_REPO_ADDRESS',
+        self.parser.add_option('-r', '--repository', dest='appRepoUrl',
+                help='appliance repository address. Url of the root of the appliance repository. '
+                'Default STRATUSLAB_REPO_ADDRESS',
                 default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
 
         self.parser.add_option('-U', '--repo-username', dest='repoUsername',
@@ -111,10 +112,10 @@ class MainProgram(Runnable):
                 Requires --no-shutdown (otherwise it makes little sense ;-)',
                 default=False, action='store_true')
 
-        self.parser.add_option('--root-url', dest='rootUrl',
-                help='Url of the root of the applicance repository. By default the root is computed from the default'\
-                ' repository structure and the base image',
-                default='')
+        self.parser.add_option('--extra-disk', dest='extraDiskSize',
+                help='extra data disk size in GB', metavar='INT',
+                action='callback', callback=self.diskSizeOptionCallback,
+                default=0, type='int')
 
         # Uploader
         self.parser.add_option('-f', '--force', dest='forceUpload',
@@ -128,6 +129,8 @@ class MainProgram(Runnable):
 
         super(MainProgram, self).parse()
 
+    def diskSizeOptionCallback(self, option, opt_str, value, parser):
+        setattr(parser.values, option.dest, 1024*value)
 
     def checkOptions(self):
 
@@ -149,9 +152,9 @@ you\'ll never be able to retrieve the new image')
         if not self.options.author:
             self.parser.error('Please provide an author for the new image')
 
-        if not self.options.repoAddress and not self.options.noUpload:
+        if not self.options.appRepoUrl and not self.options.noUpload:
             if Util.getProtoFromUri(self.image) and Util.getProtoHostnameFromUri(self.image):
-                self.options.repoAddress = Util.getProtoHostnameFromUri(self.image)
+                self.options.appRepoUrl = Util.getProtoHostnameFromUri(self.image)
             else:
                 self.parser.error('Missing repository address')
         if not self.options.repoUsername and not self.options.noUpload:

@@ -24,20 +24,20 @@ import Util
 from Exceptions import ConfigurationException
 
 class ConfigHolder(object):
-    
+
     @staticmethod
     def configFileToDict(configFileName):
         config = ConfigHolder.parseConfig(configFileName)
         dict = ConfigHolder._convertToDict(config)
         return dict
-        
+
     @staticmethod
-    def configToDict(config):
+    def configFileHandlerToDict(configFileHandler):
         config = SafeConfigParser()
-        config.readfp(config)
+        config.readfp(configFileHandler)
         dict = ConfigHolder._convertToDict(config)
         return dict
-        
+
     @staticmethod
     def convertToSectionDict(config):
         dicts = {}
@@ -88,6 +88,14 @@ class ConfigHolder(object):
     def copy(self):
         copy = ConfigHolder(self.options.copy(), self.config.copy())
         return copy
-    
+
     def set(self, key, value):
         self.options[key] = value
+
+    def __str__(self):
+        output = ''
+        for p in ['options', 'config']:
+            if getattr(self, p):
+                output += '%s:\n' % p.upper()
+                output += '\n'.join(['  %s = %s'%(k,v) for k,v in getattr(self, p).items()]) + '\n'
+        return output

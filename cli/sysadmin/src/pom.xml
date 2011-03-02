@@ -6,7 +6,6 @@
   <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
   <name>StratusLab Command-Line Interface (CLI) for System Administrators (ZIP)</name>
   <packaging>pom</packaging>
-  <url>http://stratuslab.eu</url>
 
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
@@ -22,6 +21,13 @@
       <classifier>core-bundle</classifier>
       <type>zip</type>
     </dependency>
+	<dependency>
+		<groupId>eu.stratuslab.marketplace</groupId>
+		<artifactId>metadata</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<type>jar</type>
+		<scope>compile</scope>
+	</dependency>
   </dependencies>
   
   <build>
@@ -110,6 +116,24 @@
 		  <type>zip</type>
 		</artifactItem>
 	      </artifactItems>
+	    </configuration>
+	  </execution>
+	  <execution>
+		<id>copy-metadata-jar</id>
+		<phase>generate-sources</phase>
+		<goals>
+			<goal>copy</goal>
+		</goals>
+		<configuration>
+			<outputDirectory>${project.build.directory}/jar</outputDirectory>
+			<artifactItems>
+				<artifactItem>
+					<groupId>eu.stratuslab.marketplace</groupId>
+					<artifactId>metadata</artifactId>
+					<classifier>jar-with-dependencies</classifier>
+					<type>jar</type>
+				</artifactItem>
+			</artifactItems>
 	    </configuration>
 	  </execution>
 	</executions>

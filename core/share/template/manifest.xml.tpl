@@ -30,22 +30,27 @@
 
         <slreq:endorsement rdf:parseType="Resource"/>
 
-        <dcterms:created>%(created)s</dcterms:created>
-        <dcterms:creator>%(user)s</dcterms:creator>
-
         <dcterms:type>%(type)s</dcterms:type>
-        <dcterms:valid>%(valid)s</dcterms:valid>
-        <dcterms:publisher>%(publisher)s</dcterms:publisher>
-        <dcterms:title>%(filename)s</dcterms:title>
-        <dcterms:description>%(comment)s</dcterms:description>
-        <slterms:version>%(version)s</slterms:version>
-        <slterms:serial-number>%(serialnumber)s</slterms:serial-number>
+        <slterms:kind>%(kind)s</slterms:kind>
+
         <slterms:os>%(os)s</slterms:os>
         <slterms:os-version>%(osversion)s</slterms:os-version>
         <slterms:os-arch>%(arch)s</slterms:os-arch>
-        <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
+        <slterms:version>%(version)s</slterms:version>
         <dcterms:compression>%(compression)s</dcterms:compression>
+
         <dcterms:format>%(format)s</dcterms:format>
+
+        <dcterms:creator>%(user)s</dcterms:creator>
+
+        <dcterms:created>%(created)s</dcterms:created>
+        <dcterms:valid>%(valid)s</dcterms:valid>
+
+        <dcterms:description>%(comment)s</dcterms:description>
+
+        <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
+
+        <dcterms:publisher>%(publisher)s</dcterms:publisher>
 
     </rdf:Description>
 </rdf:RDF>

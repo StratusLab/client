@@ -45,13 +45,13 @@ except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
 class OneConnector(object):
-    
+
     def __init__(self, credentials):
 
         self._sessionString = None
         self._rpc = None
         self._credentials = credentials
-    
+
     def setEndpointFromParts(self, server, port=2634, path='xmlrpc', protocol='https'):
         self.server = '%s://%s:%s/%s' % (protocol, server, port, path)
         self.setEndpoint(self.server)
@@ -65,28 +65,28 @@ class OneConnector(object):
             self.server = address
         self._createRpcConnection()
 
-    def _createRpcConnection(self):        
+    def _createRpcConnection(self):
         self._rpc = self._credentials.createRpcConnection()
         self._sessionString = self._credentials.createSessionString()
 
     def vmStart(self, vmTpl):
         isSuccess, detail = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
-        
+
         self._raiseIfError(isSuccess, detail)
-        
+
         vmId = detail
 
         return vmId
-    
+
     def vmStop(self, vmId):
         self._vmAction(vmId, 'shutdown')
-        
+
     def vmKill(self, vmId):
         self._vmAction(vmId, 'finalize')
-        
+
     def _vmAction(self, vmId, action):
-        
-        res = self._rpc.one.vm.action(self._sessionString, action, vmId)        
+
+        res = self._rpc.one.vm.action(self._sessionString, action, vmId)
 
         isSuccess = res[0]
         detail = ''
@@ -94,13 +94,13 @@ class OneConnector(object):
             detail = res[1]
 
         self._raiseIfError(isSuccess, detail)
-        
+
         return
-        
+
     def _raiseIfError(self, isSuccess, reason):
         if not isSuccess:
-            raise OneException(reason)        
-        
+            raise OneException(reason)
+
     def listVms(self, showVmsFromAllUsers=False):
         fromAllUsers = -2
         currentUserOnly = -1
@@ -110,7 +110,7 @@ class OneConnector(object):
         else:
             visibilitySwitch = currentUserOnly
 
-        ret, info = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch)        
+        ret, info = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch)
 
         if not ret:
             raise Exception(info)
@@ -119,8 +119,8 @@ class OneConnector(object):
         for xml in vmlist.findall('VM'):
             self._addStateSummary(xml)
 
-        return etree.tostring(vmlist) 
-        
+        return etree.tostring(vmlist)
+
     def _getVmInfoAsXml(self, vmId):
         info = self._vmInfo(vmId)
 
@@ -149,41 +149,41 @@ class OneConnector(object):
         return etree.tostring(xml)
 
     def _getOneVmStateFromXml(self, xml):
-        stateElement = self._getStateElement(xml) 
+        stateElement = self._getStateElement(xml)
         state = int(stateElement.text)
 
-        stateElement = self._getLcmStateElement(xml) 
+        stateElement = self._getLcmStateElement(xml)
         lcmState = int(stateElement.text)
 
         return OneVmState(state, lcmState)
-                
+
     def _getVmLcmStateLabel(self, vmId):
         status = self._getVmLcmState(vmId)
         return self.lcmStatusLabel[status]
-    
+
     def _getVmLcmState(self, vmId):
         xml = self._getVmStateAsXml(vmId)
-        status = self._getLcmStateElement(xml) 
+        status = self._getLcmStateElement(xml)
         return int(status.text)
-    
+
     def _getStateElement(self, xml):
         return xml.find('STATE')
-    
+
     def _getLcmStateElement(self, xml):
         return xml.find('LCM_STATE')
-    
+
     def getVmIp(self, vmId):
         xml = self._getVmInfoAsXml(vmId)
-        
+
         nic = xml.find('TEMPLATE/NIC')
         networkName = nic.find('NETWORK').text
         ip = nic.find('IP').text
-        
+
         return networkName, ip
 
     def getVmSshPort(self, *args, **kwargs):
         return 22
-            
+
     def waitUntilVmRunningOrTimeout(self, vmId, timeout, ticks=True):
         start = time.time()
         state = ''
@@ -196,7 +196,7 @@ class OneConnector(object):
                 sys.stdout.flush()
                 sys.stdout.write('.')
             time.sleep(1)
-            
+
             if time.time() - start > timeout:
                 return False
 
@@ -206,30 +206,31 @@ class OneConnector(object):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
         return self._getOneVmStateFromXml(xml)
-    
+
     # -------------------------------------------
     #    Virtual network management
     # -------------------------------------------
-        
+
     def networkCreate(self, vnetTpl):
         ret, id = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
-        
+
         if not ret:
-            raise OneException('Error creating ONE network')
-        
+            error = id
+            raise OneException('Error creating ONE network:\n%s' % error)
+
         return id
-    
+
     def getNetworkPoolInfo(self, filter=-2):
         ret, info = self._rpc.one.vnpool.info(self._sessionString, filter)
-        
+
         if not ret:
             raise Exception(info)
-        
+
         return info
-        
+
     def getNetworkInfo(self, vnetId):
         ret, info = self._rpc.one.vn.info(self._sessionString, vnetId)
-        
+
         if not ret:
             raise Exception(info)
 
@@ -272,7 +273,7 @@ class OneConnector(object):
         return info
 
 class OneVmState(object):
-    
+
     def __init__(self, state, lcmState = None):
         self. state = int(state)
 
@@ -288,7 +289,7 @@ class OneVmState(object):
                                 'suspended',
                                 'done',
                                 'failed']
-        
+
         self.lcmStateDefintion = ['lcm_init',
                                   'prolog',
                                   'boot',
@@ -313,11 +314,11 @@ class OneVmState(object):
         else:
             str = self._stateToString()
         return str.title()
-    
+
     def _useLcmState(self):
         stateForLcmStateLookup = 3
         return self.state == stateForLcmStateLookup
-    
+
     def _stateToString(self):
         if (self.state < 0) and (self.state >= len(self.stateDefinition)):
             return self.invalidState
@@ -325,21 +326,21 @@ class OneVmState(object):
 
     def _lcmStateToString(self):
         lcm = self._lcmStateAsInt()
-        if lcm and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
+        if (lcm != None) and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
             return self.lcmStateDefintion[lcm]
         else:
             printError('Invalid state: %s' % lcm, exit=False)
             return self.invalidState
-    
+
     def _lcmStateAsInt(self):
         lcm = None
         if self.lcmState:
             lcm = int(self.lcmState)
         return lcm
 
-    
+
 class OneHostState(object):
-    
+
     def __init__(self, state):
         self. state = state
         self.invalidState = 'Invalid state'

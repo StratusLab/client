@@ -24,10 +24,10 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
-from stratuslab.Util import printError
 from stratuslab.Util import printStep
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
+from stratuslab.Exceptions import ValidationException
 
 class Runner(object):
 
@@ -148,7 +148,8 @@ class Runner(object):
                 'diskFormat': 'raw',
                 'saveDisk': 'no',
                 'inVmIdsFile': None,
-                'outVmIdsFile': None }
+                'outVmIdsFile': None,
+                'noCheckImageUrl': False }
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)
@@ -232,8 +233,8 @@ class Runner(object):
             contextLine = line.split('=')
 
             if len(contextLine) < 2:
-                printError('Error while parsing contextualization file.\n'
-                           'Syntax error in line `%s`' % line)
+                Util.printError('Error while parsing contextualization file.\n'
+                                'Syntax error in line `%s`' % line)
 
             extraContext[contextLine[0]] = '='.join(contextLine[1:])
 
@@ -259,6 +260,8 @@ class Runner(object):
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
 
     def runInstance(self):
+        self._checkImageUrl()
+
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 
         plurial = { True: 'machines',
@@ -267,13 +270,11 @@ class Runner(object):
         printStep('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
+        self.printDetail('on endpoint: %s' % self.endpoint)
         self.printDetail('with template:\n%s' % vmTpl)
 
         for vmNb in range(self.instanceNumber):
-            try:
-                vmId = self.cloud.vmStart(vmTpl)
-            except Exception, e:
-                printError(e)
+            vmId = self.cloud.vmStart(vmTpl)
             self.vmIds.append(vmId)
             networkName, ip = self.getNetworkDetail(vmId)
             vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
@@ -315,5 +316,15 @@ class Runner(object):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
         return vmStarted
 
-    def checkImageUrl(self):
-        pass
+    def _checkImageUrl(self):
+        self.printDetail('Checking image availability.')
+        if self.noCheckImageUrl:
+            Util.printWarning('Image availability check is disabled.')
+            return
+        try:
+            Util.checkUrlExists(self.vm_image)
+        except Exception, e:
+            raise ValidationException("Unable to access image '%s': %s" %
+                                      (self.vm_image, str(e)))
+        else:
+            self.printDetail('Image available: %s' % self.vm_image)

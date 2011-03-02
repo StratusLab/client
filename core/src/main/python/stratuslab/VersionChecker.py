@@ -17,32 +17,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-class InputException(Exception):
-    pass
 
-class NetworkException(Exception):
-    pass
+import sys
 
-class ImportException(Exception):
-    pass
+from Exceptions import ValidationException
 
-class ConfigurationException(Exception):
-    pass
+class VersionChecker(object):
 
-class OneException(Exception):
-    pass
+    MINIMUM_VERSION = (2, 6)
 
-class ValidationException(Exception):
-    pass
-
-class ExecutionException(Exception):
-    pass
-
-class ClientException(Exception):
-    pass
-
-class ServerException(Exception):
-    pass
-
-
+    def _getPythonVersion(self):
+        return sys.version_info
     
+    def check(self):
+        if self._getPythonVersion() < VersionChecker.MINIMUM_VERSION:
+            raise ValidationException('python version must be %s or greater' % '.'.join(map(str,VersionChecker.MINIMUM_VERSION)))

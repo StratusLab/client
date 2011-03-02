@@ -6,7 +6,6 @@
   <artifactId>stratuslab-cli-user</artifactId>
   <name>StratusLab Command-Line Interface (CLI) for End-Users parent POM</name>
   <packaging>pom</packaging>
-  <url>http://stratuslab.eu</url>
 
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
@@ -16,9 +15,35 @@
 
   <modules>
     <module>src</module>
-    <module>rpm</module>
-    <module>deb</module>
   </modules>
+
+  <profiles>
+
+    <profile>
+      <id>build-rpm</id>
+      <activation>
+        <file>
+          <exists>/usr/bin/rpmbuild</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>rpm</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>build-deb</id>
+      <activation>
+        <file>
+          <exists>/usr/bin/fakeroot</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>deb</module>
+      </modules>
+    </profile>
+    
+  </profiles>
 
   <licenses>
     <license>

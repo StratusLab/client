@@ -20,6 +20,7 @@
 from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.Util import appendOrReplaceMultilineBlockInFile
+from stratuslab.Exceptions import ExecutionException
 
 installCmd = 'apt-get update; apt-get -q -y install'
 updateCmd = 'apt-get update'
@@ -66,11 +67,6 @@ class Ubuntu(BaseSystem):
         cmd = self.installCmd.split(' ')
         cmd.extend(packages)
         self._execute(cmd)
-
-    def installNodePackages(self, packages):
-        if len(packages) > 0:
-            self._nodeShell('%s %s' %
-                (self.installCmd, ' '.join(packages)))
 
     # -------------------------------------------
     #     Hypervisor related methods

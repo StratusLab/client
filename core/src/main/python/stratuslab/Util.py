@@ -23,11 +23,11 @@ import subprocess
 import sys
 import time
 import urllib2
+import random
 from random import sample
 from string import ascii_lowercase
-from Exceptions import ImportException
+from Exceptions import ImportException, ExecutionException
 from Compressor import Compressor
-
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -46,6 +46,10 @@ DETAILED_VERBOSE_LEVEL = 2
 
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
+
+SSH_EXIT_STATUS_ERROR = 255
+SSH_CONNECTION_RETRY_NUMBER = 2
+SSH_CONNECTION_RETRY_SLEEP_MAX = 5
 
 def getShareDir():
     if os.path.exists(shareDir):
@@ -154,6 +158,15 @@ def fileAppendContent(filename, data):
     fd = open(filename, 'a')
     fd.write(data)
     fd.close()
+
+def fileGetExtension(filename):
+    try:
+        ending = filename.rsplit('.', 1)[1]
+    except IndexError:
+        return ''
+    if not ending:
+        return ''
+    return ending
 
 def shaHexDigest(string):
     shaMethod = None
@@ -273,14 +286,36 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
         sshCmd.append('-i')
         sshCmd.append(sshKey)
 
+    if kwargs.get('sshVerb', False):
+        sshCmd.append('-v')
+    try:
+        del kwargs['sshVerb']
+    except: pass
+
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
-    return execute(sshCmd, **kwargs)
+    for i in range(0, SSH_CONNECTION_RETRY_NUMBER + 1):
+        if i > 0:
+            sleepTime = random.randint(0, SSH_CONNECTION_RETRY_SLEEP_MAX)
+            _printDetail('[%i] Retrying ssh command in %i sec.' % (i, sleepTime), kwargs)
+            time.sleep(sleepTime)
+        output = execute(sshCmd, **kwargs)
+        if isinstance(output, int):
+            es = output
+        else:
+            es= output[0]
+        if es != SSH_EXIT_STATUS_ERROR:
+            return output
+    return output
 
 def sshCmdWithOutput(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
                   user=user, timeout=timeout, withOutput=True, **kwargs)
+
+def sshCmdWithOutputVerb(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
+    return sshCmd(cmd, host, sshKey=sshKey, port=port,
+                  user=user, timeout=timeout, withOutput=True, sshVerb=True, **kwargs)
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port), '-r', '-o', 'StrictHostKeyChecking=no']
@@ -418,14 +453,11 @@ def generateSshKeyPair(keyFilename):
     sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
     execute(sshCmd, shell=True)
 
-def pingFile(url, mediaType='text/xml'):
-    try:
-        fd = urllib2.urlopen(url)
-    except urllib2.HTTPError:
-        return False
-    if fd.info().type == mediaType:
-        return True
-    return False
+def checkUrlExists(url, timeout=5):
+    fh = urllib2.urlopen(url, timeout=timeout)
+    if not fh:
+        raise ExecutionException('urllib2.urlopen() did not return url handler.')
+    return True
 
 def printEmphasisStart():
     sys.stdout.write('\033[1;31m')
