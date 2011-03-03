@@ -57,7 +57,7 @@ except ImportError:
 
 class Uploader(object):
 
-    MARKETPLACE_ADDRESS = 'http://appliances.stratuslab.eu/marketplace'
+    MARKETPLACE_ADDRESS = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
 
     @staticmethod
     def availableCompressionFormat(printIt=False):
@@ -96,7 +96,7 @@ class Uploader(object):
                 default=False, action='store_true')
 
         parser.add_option('--marketplace-endpoint', dest='marketPlaceEndpoint',
-                help='Market place endpoint. Default Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT),
+                help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT),
                 action='callback', callback=Uploader.marketPlaceOptionCallback,
                 default=os.getenv(Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT))
 
