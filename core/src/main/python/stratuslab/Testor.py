@@ -131,8 +131,9 @@ class Testor(unittest.TestCase):
 
     def exceedCpuQuotaTest(self):
         '''Start three instances, having a cpu quota of 2, then stop it.'''
-        self.instanceNumber = 3
         try:
+            self._startVm()
+            self._startVm()
             self._startVm()
         except OneException:
             pass
