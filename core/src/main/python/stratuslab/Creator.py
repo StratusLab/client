@@ -326,6 +326,12 @@ class Creator(object):
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
                                                             VM_START_TIMEOUT)
         if not vmStarted:
+            self.printDetail('Failed to start VM!')
+            self.printDetail('Sending request to kill VM: %s' % self.vmId)
+            try:
+                self.runner.killInstances([self.vmId])
+            except:
+                pass
             printError('Failed to start VM!')
 
     def _getPublicAddress(self):
