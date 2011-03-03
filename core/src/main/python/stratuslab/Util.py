@@ -298,7 +298,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     for i in range(0, SSH_CONNECTION_RETRY_NUMBER + 1):
         if i > 0:
             sleepTime = random.randint(0, SSH_CONNECTION_RETRY_SLEEP_MAX)
-            _printDetail('[%i] Retrying ssh command in %i sec.' % (i, sleepTime), kwargs)
+            _printDetail('[%i] Retrying ssh command in %i sec.' % (i, sleepTime), kwargs.copy())
             time.sleep(sleepTime)
         output = execute(sshCmd, **kwargs)
         if isinstance(output, int):
