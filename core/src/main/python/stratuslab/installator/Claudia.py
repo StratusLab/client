@@ -110,4 +110,3 @@ class Claudia(object):
         self.system.execute(['/etc/init.d/tcloudd', 'start'])
         self.system.execute(['/etc/init.d/clothod', 'start'])
         self.system.execute(['/etc/init.d/activemqd', 'start'])
-
