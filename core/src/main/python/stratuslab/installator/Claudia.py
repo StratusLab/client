@@ -31,7 +31,7 @@ class Claudia(object):
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         # add your packages here 
         #self.packages = ['apache2']
-        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq-rpm']
+        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq']
         
         # temp global variables to be included in stratus.cfg
         self.domainName = "grnet"
@@ -107,6 +107,6 @@ class Claudia(object):
             self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
 
     def _startServices(self):
+        self.system.execute(['/usr/share/activemq/bin/activemq', 'start'])
         self.system.execute(['/etc/init.d/tcloudd', 'restart'])
         self.system.execute(['/etc/init.d/clothod', 'restart'])
-        #self.system.execute(['/etc/init.d/activemqd', 'restart'])
