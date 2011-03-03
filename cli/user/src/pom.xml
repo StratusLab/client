@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>eu.stratuslab.marketplace</groupId>
 			<artifactId>metadata</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.5</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
