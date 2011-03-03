@@ -107,6 +107,6 @@ class Claudia(object):
             self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
 
     def _startServices(self):
-        self.system.execute(['/etc/init.d/tcloudd', 'start'])
-        self.system.execute(['/etc/init.d/clothod', 'start'])
-        #self.system.execute(['/etc/init.d/activemqd', 'start'])
+        self.system.execute(['/etc/init.d/tcloudd', 'restart'])
+        self.system.execute(['/etc/init.d/clothod', 'restart'])
+        #self.system.execute(['/etc/init.d/activemqd', 'restart'])
