@@ -31,7 +31,7 @@ class Claudia(object):
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         # add your packages here 
         #self.packages = ['apache2']
-        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm']
+        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq-rpm']
         
         # temp global variables to be included in stratus.cfg
         self.domainName = "grnet"
@@ -109,4 +109,5 @@ class Claudia(object):
     def _startServices(self):
         self.system.execute(['/etc/init.d/tcloudd', 'start'])
         self.system.execute(['/etc/init.d/clothod', 'start'])
+        self.system.execute(['/etc/init.d/activemqd', 'start'])
 
