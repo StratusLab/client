@@ -3,7 +3,7 @@
 # co-funded by the European Commission under the Grant Agreement
 # INFSO-RI-261552."
 #
-# Copyright (c) 2010, SixSq Sarl
+# Copyright (c) 2011, SixSq Sarl
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 # limitations under the License.
 #
 from stratuslab.cloud import one
-from stratuslab.cloud import qemu
 
 class CloudConnectorFactory:
 
@@ -26,7 +25,5 @@ class CloudConnectorFactory:
     def getCloud(credentials, type='one'):
         if type == 'one':
             return one.OneConnector(credentials)
-        elif type == 'qemu':
-            return qemu.QEmuConnector(credentials)
         else:
             raise NotImplementedError('Unknown cloud type: %s' % type)
