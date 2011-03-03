@@ -84,7 +84,7 @@ class Claudia(object):
             print " :: Installing packages: "
             for p in self.packages:
                 print " ::\t"+p
-            print
+            print " ::"
             self.system.installPackages(self.packages)
 
     def _configure(self):
@@ -109,4 +109,4 @@ class Claudia(object):
     def _startServices(self):
         self.system.execute(['/etc/init.d/tcloudd', 'start'])
         self.system.execute(['/etc/init.d/clothod', 'start'])
-        self.system.execute(['/etc/init.d/activemqd', 'start'])
+        #self.system.execute(['/etc/init.d/activemqd', 'start'])
