@@ -168,7 +168,6 @@ class CentOS(BaseSystem):
         self.executeCmd(['chown', 'root:kvm',
                         '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
-        self.executeCmd(['ln', '-fs', '/usr/bin/qemu', '/usr/bin/kvm'])
 
     # -------------------------------------------
     # Network related methods
