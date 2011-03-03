@@ -133,7 +133,7 @@ class Testor(unittest.TestCase):
         '''Start three instances, having a cpu quota of 2, then stop it.'''
         self.instanceNumber = 3
         try:
-            self._startVm(requestedIpAddress=self.requestedIpAddress)
+            self._startVm()
         except OneException:
             pass
         else:
