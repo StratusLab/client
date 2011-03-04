@@ -196,8 +196,14 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
         sleep(1)
 
         if time.time() - start > timeout:
+            if ticks:
+                sys.stdout.flush()
+                sys.stdout.write('\n')
             return False
 
+    if ticks:
+        sys.stdout.flush()
+        sys.stdout.write('\n')
     return hostUp
 
 def sleep(seconds):
