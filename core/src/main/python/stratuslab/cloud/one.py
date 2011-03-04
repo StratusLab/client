@@ -198,8 +198,14 @@ class OneConnector(object):
             time.sleep(1)
 
             if time.time() - start > timeout:
+                if ticks:
+                    sys.stdout.flush()
+                    sys.stdout.write('\n')
                 return False
 
+        if ticks:
+            sys.stdout.flush()
+            sys.stdout.write('\n')
         return True
 
     def _getVmStateSummary(self, vmId):
