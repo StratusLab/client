@@ -332,9 +332,12 @@ class Creator(object):
             printError('Failed to start VM!')
 
     def _stopMachine(self):
-        # TODO: STRATUSLAB-414. This doesn't always work. Kill the machine instead.
-        #self.cloud.vmStop(self.vmId)
-        self.cloud.vmKill(self.vmId)
+        if self.vmId:
+            # TODO: STRATUSLAB-414. This doesn't always work. Kill the machine instead.
+            #self.cloud.vmStop(self.vmId)
+            self.cloud.vmKill(self.vmId)
+        else:
+            Util.printWarning('Undefined VM ID, when trying to stop machine.')
 
     def _getPublicAddress(self):
         return self.vmIp
