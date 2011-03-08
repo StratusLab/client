@@ -34,8 +34,8 @@ class Claudia(object):
         self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq']
         
         # temp global variables to be included in stratus.cfg
-        self.domainName = "grnet"
-        self.claudiaHome = "/opt/claudia/"
+        print self.domainName #= "grnet"
+        print self.claudiaHome #= "/opt/claudia/"
 
 
         # claudia configuration files
