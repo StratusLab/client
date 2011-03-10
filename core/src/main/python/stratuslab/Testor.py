@@ -113,7 +113,8 @@ class Testor(unittest.TestCase):
 
     def runInstanceLocalNetworkTest(self):
         '''Start new instance, ping it via local network and ssh into it, then stop it.'''
-        self._runInstanceTest(True)
+        self._runInstanceTest(withLocalNetwork=True,
+                                cmdToRun='ping -c 2 www.google.com')
 
     def runInstanceRequestedNetworkTest(self):
         '''Start new instance, ping it via requested IP address and ssh into it, then stop it.'''
@@ -155,10 +156,10 @@ class Testor(unittest.TestCase):
                 except ValueError:
                     print "WARNING: Test '%s' not in a list of defined tests." % test
 
-    def _runInstanceTest(self, withLocalNetwork=False):
+    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun='/bin/true'):
         runner = self._startVm(withLocalNetwork)
         self._repeatCall(self._ping, runner)
-        self._repeatCall(self._loginViaSsh, runner)
+        self._repeatCall(self._loginViaSsh, runner, cmdToRun)
         self._stopVm(runner)
 
     def _prepareLog(self, logFile):
@@ -225,13 +226,11 @@ class Testor(unittest.TestCase):
             if not res:
                 raise ExecutionException('Failed to ping %s' % ip)
 
-    def _loginViaSsh(self, runner):
-
-        loginCommand = 'ls /tmp'
+    def _loginViaSsh(self, runner, cmd):
 
         for vmId in self.vmIds:
             _, ip = runner.getNetworkDetail(vmId)
-            res = sshCmd(loginCommand, ip, self.sshKey)
+            res = sshCmd(cmd, ip, self.sshKey)
             if res:
                 raise ExecutionException('Failed to SSH into machine for %s with return code %s' % (ip, res))
 
@@ -353,7 +352,7 @@ class Testor(unittest.TestCase):
         self.image = creator.targetImageUri
         self.oneUsername = self.username
         self.proxyOneadminPassword =  self.password
-        self._runInstanceTest() # TODO: add checking of installed RPMs in the new image.
+        self._runInstanceTest(cmdToRun='python -c "import dirq"')
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
