@@ -36,7 +36,7 @@ one_username = oneadmin
 one_password = oneadmin
 
 [one-advanced]
-one_home = 
+one_home =
 one_share = /usr/share/one
 network_size = 254
 host_monitoring_interval = 60
@@ -51,19 +51,16 @@ one_port = 2633
 #one_public_network_addr = 192.168.1.1 192.168.1.2 192.168.1.3 192.168.1.4
 #one_public_network_mac = 00:16:3e:d9:78:ba 00:16:3e:d9:78:bb 00:16:3e:d9:78:bc 00:16:3e:d9:78:bd
 # This must match the static IP/MAC mapping configuration of the DHCP server.
-one_public_network = 
-one_public_network_addr = 
-one_public_network_size = 
+one_public_network_addr =
+one_public_network_mac =
 
-#one_public_network_mac =
-#one_local_network_addr =
-#one_local_network_mac =
+one_local_network_addr =
+one_local_network_mac =
 
 # Private network configuration, only used for machines that will not be reachable
 # via IP
-one_private_network = 172.16.0.0
-one_private_network_addr = 172.16.0.1
 one_private_network_size = 65536
+one_private_network_addr = 172.16.0.1
 
 [one-deployment]
 frontend_ip = 127.0.0.1
@@ -80,10 +77,46 @@ node_bridge_name = br0
 
 [nat]
 nat = False
-nat_network = 192.168.1.0
+nat_network = 172.17.16.0
+# Can be omitted or left empty - then, gateway will be "nat_network + 1"
+nat_gateway = 172.17.16.x
 nat_netmask = 255.255.255.0
-# Virtual interface will be created
+# Virtual interface will be created on this one
 nat_network_interface = eth0
+
+[dhcp]
+dhcp = False
+
+# Parameters of the interface DHCP will be listening on.
+dhcp_subnet = x.x.x.x
+dhcp_netmask = 255.255.255.0
+
+dhcp_lease_time = 3600
+# Can be omitted
+#dhcp_ntp_servers = x.x.x.x
+
+dhcp_one_public_network = False
+dhcp_one_public_network_subnet = x.x.x.x
+dhcp_one_public_network_broadcast = x.x.x.255
+dhcp_one_public_network_netmask = 255.255.255.0
+# Comma separated list
+dhcp_one_public_network_routers = x.x.x.x
+dhcp_one_public_network_domain_name = example.com
+# Comma separated list
+dhcp_one_public_network_domain_name_servers = x.x.x.x, z.z.z.z
+dhcp_one_public_network_ntp_servers = x.x.x.x
+
+dhcp_one_local_network = False
+# When "nat" is True - network, netmask and router are taken from NAT configuration
+dhcp_one_local_network_subnet = 172.17.16.0
+dhcp_one_local_network_broadcast = 172.17.16.255
+dhcp_one_local_network_netmask = 255.255.255.0
+# Comma separated list
+dhcp_one_local_network_routers = 172.17.16.x
+dhcp_one_local_network_domain_name = example.com
+# Comma separated list
+dhcp_one_local_network_domain_name_servers = x.x.x.x, z.z.z.z
+dhcp_one_local_network_ntp_servers = x.x.x.x
 
 [proxy]
 proxy_port = 2634
@@ -113,20 +146,16 @@ app_repo_ldap_url = ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid'
 app_repo_use_ldap = True
 
 # Certificate to use for authenticating the LDAP server
-app_repo_ldap_cert = 
+app_repo_ldap_cert =
 
 # LDAP Bind DN
 app_repo_ldap_bind = cn=repo,ou=daemons,o=stratuslab
 
 # Password to use when connecting to the LDAP server
-app_repo_ldap_passwd = 
+app_repo_ldap_passwd =
 
 # Location of Apache configuration
 app_repo_apache_home = /etc/httpd
 
 # HTTPD user password file (required if not using LDAP)
 app_repo_httpd_passwd_file =
-
-[claudia]
-domain_name = grnet
-claudia_home = /opt/claudia/

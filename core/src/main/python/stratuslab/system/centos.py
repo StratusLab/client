@@ -21,14 +21,13 @@ import os
 import tarfile
 
 from BaseSystem import BaseSystem
-from stratuslab.Util import wget
 from stratuslab.system.PackageInfo import PackageInfo
-from stratuslab.Util import sleep
-from stratuslab.Util import filePutContent
+import stratuslab.Util as Util
 
 installCmd = 'yum -q -y --nogpgcheck install'
 updateCmd = 'yum update'
 cleanPackageCacheCmd = 'yum clean all'
+queryPackageCmd = 'rpm -q'
 
 class CentOS(BaseSystem):
 
@@ -66,7 +65,10 @@ class CentOS(BaseSystem):
             'ssh': [],
         }
 
-        self.packages = {'apache2': PackageInfo('httpd','/etc/httpd')}
+        self.packages = {'apache2': PackageInfo('httpd','/etc/httpd'),
+                         'dhcp': PackageInfo('dhcp',
+                                             configFile='/etc/dhcpd.conf',
+                                             initdScriptName='dhcpd')}
 
         super(CentOS, self).__init__()
 
@@ -84,14 +86,6 @@ class CentOS(BaseSystem):
 
     def updatePackageManager(self):
         pass
-
-    def installPackages(self, packages):
-        if len(packages) < 1:
-            return
-
-        cmd = self.installCmd.split(' ')
-        cmd.extend(packages)
-        self._execute(cmd)
 
     def installFrontendDependencies(self):
         super(CentOS, self).installFrontendDependencies()
@@ -112,10 +106,14 @@ class CentOS(BaseSystem):
 
         for i in range(len(packages)):
             pkg = packages.pop()
-            wget(pkg, rpmName % i)
+            Util.wget(pkg, rpmName % i)
             pkgList.append(rpmName % i)
 
         self.installPackages(pkgList)
+
+    def getIsPackageInstalledCommand(self, package):
+        cmd = '%s %s' % (queryPackageCmd, package)
+        return cmd
 
     # -------------------------------------------
     #     Source build and installation methods
@@ -135,7 +133,7 @@ class CentOS(BaseSystem):
 
     def buildAndInstall(self, sourceAddr):
         archive = '/tmp/stratus-deps-src.tar.gz'
-        wget(sourceAddr, archive)
+        Util.wget(sourceAddr, archive)
         tar = tarfile.open(archive)
         srcFile = tar.getmembers()
 
@@ -163,7 +161,7 @@ class CentOS(BaseSystem):
         super(CentOS, self)._configureKvm()
         self.executeCmd(['/etc/init.d/libvirtd start'])
         # Sleep to give a chance to libvirt to create the libvirt-sock
-        sleep(5)
+        Util.sleep(5)
         self.executeCmd(['usermod', '-G', 'kvm', '-a', self.oneUsername])
         self.executeCmd(['chown', 'root:kvm',
                         '/var/run/libvirt/libvirt-sock'])
@@ -179,6 +177,6 @@ class CentOS(BaseSystem):
 IPADDR=%s
 NETMASK=%s
 """ % (device, ip, netmask)
-        filePutContent(deviceConf, data)
+        Util.filePutContent(deviceConf, data)
 
 system = CentOS()

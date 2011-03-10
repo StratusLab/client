@@ -340,7 +340,11 @@ class Testor(unittest.TestCase):
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
-        creator.create()
+        try:
+            creator.create()
+        except Exception, e:
+            creator._stopMachine()
+            raise e
 
         assert creator.targetImageUri == newImageUri
         assert Util.checkUrlExists(creator.targetImageUri)

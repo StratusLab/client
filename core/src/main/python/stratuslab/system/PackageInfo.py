@@ -18,10 +18,10 @@
 # limitations under the License.
 #
 class PackageInfo(object):
-    
-    def __init__(self, packageName, installLocation=None):
+
+    def __init__(self, packageName, installLocation=None, configFile='',
+                 initdScriptName=''):
         self.packageName = packageName
         self.installLocation = installLocation
-
-
-        
+        self.configFile = configFile
+        self.initdScriptName = initdScriptName
