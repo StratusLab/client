@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010-11, GRNET, SixSq Sarl.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+import time
+import socket
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Runner import Runner
+from stratuslab.Runnable import Runnable
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Util import printAction
+from stratuslab.Util import printStep
+from stratuslab.Cluster import Cluster
+
+
+class MainProgram(Runnable):
+    '''A command-line program to run a virtual machine.'''
+
+
+    def parse(self):
+        options = Runner.defaultRunOptions()
+        
+        self.parser.add_option('--shared-folder', dest='shared_folder', action='store', 
+                help='folder to share over NFS', 
+                default=None, type='string')
+        
+        self.parser.add_option('--ssh-hostbased', dest='ssh_hostbased', action='store_true', 
+                help='Enable cluster integration through hostbased ssh authentication', 
+                default=False)
+        
+        self.parser.add_option('--cluster-admin', dest='cluster_admin', action='store', 
+                help='Username for cluster administrator (default root)', 
+                default='root', type='string')
+        
+        self.parser.add_option('--cluster-user', dest='cluster_user', action='store', 
+                help='Additional username to be created', 
+                default=None, type='string')
+        
+        self.parser.add_option('--mpi-machine-file', dest='mpi_machine_file', action='store_true',
+                help='Defines that a machinefile should be prepared for MPI ,listing all available' \
+                'Workers and their respective number of cores (slot value)',
+                default=False)
+        
+        self.parser.add_option('--include-master', dest='include_master', action='store_true',
+                help='Defines that the master node should be considered as part of the worker nodes',
+                default=False)
+                
+        self.parser.add_option('--add-packages', dest='add_packages', action='store_true',
+                help='Set true if you want to setup additional packages',
+                default=False)
+        
+        self.parser.add_option('-n', '--number', dest='instanceNumber',
+                help='number of machines to start (default 1) for the cluster', metavar='INT',
+                default=options['instanceNumber'], type='int')
+
+        self.parser.add_option('--local-ip', dest='isLocalIp', action='store_true',
+                help='By default, worker virtual machines are assigned a public IP address. ' \
+                'With this option, a local address is provided, which means that it ' \
+                'not be reachable from the outside, but will be reachable from other ' \
+                'instances in the same data-center. In this case the frontend node will have' \
+                'both a public and a local ip to access the worker nodes',
+                default=False)
+
+        self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
+                help='By default, worker virtual machines are assigned a public IP address. ' \
+                'With this option, a private address is provided, which means that it ' \
+                'not be reachable anywhere. This is useful for instances that initiate '\
+                'the connection to other machinces. In this case the frontend node will have' \
+                'both a private and public ip',
+                default=False)
+
+        self.parser.add_option('--save', dest='saveDisk', action='store_true',
+                help='save image after VM shutdown',
+                default=False)
+
+        self.parser.add_option('-o', '--output', dest='outVmIdsFile',
+                help='save vm-ids to a file', metavar='FILE',
+                default=None)
+
+        self.parser.add_option('--extra-disk', dest='extraDiskSize',
+                help='extra data disk size in GB', metavar='INT',
+                action='callback', callback=self.diskSizeOptionCallback,
+                default=0, type='int')
+
+        self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
+                help='launch instances from an image in qcow2 disk format. This option requires ',
+                action='store_true',
+                default=False)
+
+        self.parser.add_option('--address', dest='specificAddressRequest',
+                help='request a specific ip address for the frontend',
+                metavar='IP', default=None)
+        
+        super(MainProgram, self).parse()
+
+    def diskSizeOptionCallback(self, option, opt_str, value, parser):
+        setattr(parser.values, option.dest, 1024*value)
+    
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        runner = Runner(self.image, configHolder)
+        cluster = Cluster(configHolder, runner)
+        
+        printAction('Starting cluster')
+        runner.runInstance()
+        
+        cluster.deploy()
+            
+        printStep('Done!')
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
