@@ -33,15 +33,13 @@ class Claudia(object):
         #self.packages = ['apache2']
         self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq']
         
-        # temp global variables to be included in stratus.cfg
-        self.domainName = "grnet"
-        self.claudiaHome = "/opt/claudia/"
-
-
         # claudia configuration files
         self.smFile = self.claudiaHome+"/conf/sm.properties"
         self.tcloudFile = self.claudiaHome+"/conf/tcloud.properties"
         self.claudiaClientFile= self.claudiaHome+"/conf/claudiaClient.properties"
+
+        self.network="[ Network:prueba10.95.240.0; IP:10.95.240.6/10.95.240.7/10.95.240.8; Netmask:255.255.240.0; Gateway:10.95.240.1; DNS:10.95.240.1; Public:yes; ],\
+                      [ IP:192.168.0.0; Netmask:255.255.240.0; Gateway:192.168.1.1; DNS:192.168.1.1; Public:no; ]"
 
         # properties translation
         # sm.properties
@@ -50,9 +48,8 @@ class Claudia(object):
                         "SMIHost":self.frontendIp, \
                         "ImagesServerHost":self.frontendIp, \
                         "VEEMHost":self.frontendIp, \
-                        "SiteRoot":self.domainName
-                        # IMPORTANT
-                        # missing network configuration
+                        "SiteRoot":self.domainName, \
+                        "NetworkRanges":self.network
                         }
 
         # tcloud.properties
@@ -105,8 +102,15 @@ class Claudia(object):
         for k in self.ccprops:
             #print k + " |-----> " + self.ccprops[k]
             self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
+        print " ::"
 
     def _startServices(self):
-        self.system.execute(['/usr/share/activemq/bin/activemq', 'start'])
-        self.system.execute(['/etc/init.d/tcloudd', 'restart'])
-        self.system.execute(['/etc/init.d/clothod', 'restart'])
+        print " :: Starting activemq"
+        #self.system.execute(['/usr/share/activemq/bin/activemq', 'start'])
+        
+        print " :: Starting tcloud"
+        #self.system.execute(['/etc/init.d/tcloudd', 'restart'])
+        
+        print " :: Starting clotho"
+        #self.system.execute(['/etc/init.d/clothod', 'restart'])
+        print " ::"
