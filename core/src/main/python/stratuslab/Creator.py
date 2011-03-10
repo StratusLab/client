@@ -52,6 +52,7 @@ from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
 
 VM_START_TIMEOUT = 150
+VM_PING_TIMEPUT = 600
 
 INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
 
@@ -224,8 +225,8 @@ class Creator(object):
 
         self.vmAddress = self._getPublicAddress()
 
-        if not waitUntilPingOrTimeout(self.vmAddress, 600):
-            self.cloud.vmStop(self.vmId)
+        if not waitUntilPingOrTimeout(self.vmAddress, VM_PING_TIMEPUT):
+            self._stopMachine()
             printError('Unable to ping VM')
 
         printStep('Check if we can connect.')
@@ -257,7 +258,7 @@ class Creator(object):
 
         if self.shutdownVm:
             printStep('Shutting down machine')
-            self.cloud.vmStop(self.vmId)
+            self._stopMachine()
         else:
             printStep('Machine ready for your usage')
             print '\n\tMachine IP: %s' % self.vmIp
@@ -326,7 +327,17 @@ class Creator(object):
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
                                                             VM_START_TIMEOUT)
         if not vmStarted:
+            self.printDetail('Failed to start VM!')
+            self._stopMachine()
             printError('Failed to start VM!')
+
+    def _stopMachine(self):
+        if self.vmId:
+            # TODO: STRATUSLAB-414. This doesn't always work. Kill the machine instead.
+            #self.cloud.vmStop(self.vmId)
+            self.cloud.vmKill(self.vmId)
+        else:
+            Util.printWarning('Undefined VM ID, when trying to stop machine.')
 
     def _getPublicAddress(self):
         return self.vmIp

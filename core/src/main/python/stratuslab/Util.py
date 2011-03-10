@@ -196,8 +196,14 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
         sleep(1)
 
         if time.time() - start > timeout:
+            if ticks:
+                sys.stdout.flush()
+                sys.stdout.write('\n')
             return False
 
+    if ticks:
+        sys.stdout.flush()
+        sys.stdout.write('\n')
     return hostUp
 
 def sleep(seconds):
@@ -221,7 +227,11 @@ def execute(cmd, **kwargs):
     if kwargs.has_key('withOutput'):
         del kwargs['withOutput']
 
-    _printDetail('Calling: ' + ' '.join(cmd), kwargs)
+    if isinstance(cmd, list):
+        _cmd = ' '.join(cmd)
+    else:
+        _cmd = cmd
+    _printDetail('Calling: ' + _cmd, kwargs)
 
     process = subprocess.Popen(cmd, **kwargs)
 
@@ -500,3 +510,9 @@ def toTimeInIso8601(_time):
 
 def inflate(filename):
     return Compressor.inflate(filename)
+
+def isTrueConfVal(var):
+    return (str(var).lower() in ['true', 'yes', 'on', '1']) or False
+
+def isFalseConfVal(var):
+    return (str(var).lower() in ['false', 'no', 'off', '0', '']) or False

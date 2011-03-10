@@ -17,25 +17,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import re
-import os
-import shutil
 from datetime import datetime
+from stratuslab.Exceptions import ExecutionException
+from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
+    fileGetContent, filePutContent, scp, sshCmd
+import stratuslab.Util as Util
+import os
+import re
+import shutil
 import time
 
-from stratuslab.Util import appendOrReplaceInFile
-from stratuslab.Util import fileGetContent
-from stratuslab.Util import filePutContent
-from stratuslab.Util import execute
-from stratuslab.Util import fileAppendContent
-from stratuslab.Util import scp
-from stratuslab.Util import sshCmd
-import stratuslab.Util as Util
-from stratuslab.Util import printDetail
-from stratuslab.Util import gatewayIpFromNetAddress
-from stratuslab.Exceptions import ExecutionException
-
 class BaseSystem(object):
+
+    packages = {}
 
     def __init__(self):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -57,7 +51,14 @@ class BaseSystem(object):
         pass
 
     def installPackages(self, packages):
-        pass
+        if len(packages) < 1:
+            return
+
+        cmd = '%s %s' % (self.installCmd, ' '.join(packages))
+        _, output = self._executeWithOutput(cmd, shell=True)
+
+        Util.printDetail(output, verboseLevel=self.verboseLevel,
+                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
@@ -75,13 +76,52 @@ class BaseSystem(object):
     def installHypervisor(self):
         self.installNodePackages(self.hypervisorDeps.get(self.hypervisor))
 
+    def getPackageName(self, package):
+        return self.packages[package].packageName
+
+    def getPackageConfigFileName(self, package):
+        return self.packages[package].configFile
+
+    def getPackageInitdScriptName(self, package):
+        return self.packages[package].initdScriptName
+
+    def getIsPackageInstalledCommand(self, package):
+        pass
+
+    def isPackageInstalled(self, package):
+        cmd = self.getIsPackageInstalledCommand(package)
+
+        rc, output = self._executeWithOutput(cmd, shell=True)
+
+        if rc != 0:
+            Util.printDetail(output)
+            return False
+
+        return True
+
+    def startService(self, service):
+        return self._operationOnService(service, 'start')
+
+    def stopService(self, service):
+        return self._operationOnService(service, 'stop')
+
+    def restartService(self, service):
+        return self._operationOnService(service, 'restart')
+
+    def _operationOnService(self, service, operation):
+        cmd = ['service', service, operation]
+        rc, output = self._executeWithOutput(cmd)
+        if rc != 0:
+            Util.printDetail(output)
+        return rc
+
     def startCloudSystem(self):
         try:
             self._cloudAdminExecute(['one stop'])
         except ExecutionException:
             pass
         self._cloudAdminExecute(['one start'])
-        printDetail('Waiting for ONE to finish starting')
+        Util.printDetail('Waiting for ONE to finish starting')
         time.sleep(10)
 
     # -------------------------------------------
@@ -136,7 +176,7 @@ class BaseSystem(object):
         keyFileName = '%s/.ssh/id_rsa' % self.oneHome
 
         if os.path.exists(keyFileName):
-            printDetail('Key file %s already exists, skipping this step' % keyFileName)
+            Util.printDetail('Key file %s already exists, skipping this step' % keyFileName)
             return
 
         self.createDirsCmd(os.path.dirname(keyFileName))
@@ -475,7 +515,9 @@ class BaseSystem(object):
         enableIpForwarding()
 
         device = self.natNetworkInterface
-        ip = gatewayIpFromNetAddress(self.natNetwork)
+        ip = getattr(self, 'natGateway', '')
+        if not ip:
+            ip = Util.gatewayIpFromNetAddress(self.natNetwork)
 
         self._configureVirtualNetInterface(device, ip,
                                            self.natNetmask)
@@ -483,10 +525,10 @@ class BaseSystem(object):
     def _configureVirtualNetInterface(self, device, ip, netmask):
         device = device + ':privlan'
 
-        printDetail('Configuring network interface %s.' % device)
+        Util.printDetail('Configuring network interface %s.' % device)
         self._configureNetworkInterface(device, ip, netmask)
 
-        printDetail('Starting network interface %s.' % device)
+        Util.printDetail('Starting network interface %s.' % device)
         self.executeCmd(['ifup', device])
 
     def _persistFireWallRules(self):
@@ -506,7 +548,7 @@ class BaseSystem(object):
         self.executeCmd(('cp -fp %s %s.LAST'%((filename,)*2)).split(' '))
 
         _,output = self.executeCmdWithOutput(['iptables-save'])
-        printDetail('Saving firewall rules to %s.' % filename)
+        Util.printDetail('Saving firewall rules to %s.' % filename)
         filePutContent(filename, output)
         os.chmod(filename, 0600)
 
@@ -563,12 +605,199 @@ class BaseSystem(object):
         return ruleSpec['rule'], \
                ruleSpec.get('table', self.DEFAULT_FIREWALL_TABLE)
 
+    # -------------------------------------------
+    # DHCP server
+    # -------------------------------------------
+
+    NET_TYPES_DHCP = ['OnePublicNetwork', 'OneLocalNetwork']
+
+    def configureDhcpServer(self):
+
+        def _dhcpDefined():
+            return Util.isTrueConfVal(getattr(self, 'dhcp', False))
+        def _noDhcpNetTypesDefined():
+            return reduce(lambda x,y: x and y,
+                        [Util.isFalseConfVal(getattr(self, 'dhcp%s'%v, False))
+                                                for v in self.NET_TYPES_DHCP])
+        if not _dhcpDefined():
+            return
+        elif _noDhcpNetTypesDefined():
+            return
+
+        Util.printStep('Configuring DHCP service')
+        self._installDhcp()
+        self._confgureDhcp()
+        self._startDhcp()
+
+    def _installDhcp(self):
+        Util.printDetail('Installing DHCP server.')
+
+        dhcpPackage = self.getPackageName('dhcp')
+        self.installPackages([dhcpPackage])
+
+        if not self.isPackageInstalled(dhcpPackage):
+            Util.printError('Failed to install %s.' % dhcpPackage)
+
+    def _confgureDhcp(self):
+
+        def _isAllDhcpGroupsDefined(_groups):
+            return reduce(lambda x,y: x and y, _groups.values())
+
+        def _getConfGlobals():
+            _globals = """
+ddns-update-style none;
+ignore unknown-clients;
+ignore bootp;
+"""
+            if hasattr(self, 'dhcpNtpServers') and self.dhcpNtpServers:
+                _globals += 'option ntp-servers %s;\n' % self.dhcpNtpServers
+            return _globals
+
+        def _getConfSubnets():
+            subnetTemplate = """
+subnet %(subnet)s netmask %(netmask)s {
+  option routers %(routers)s;
+}
+"""
+            subnet = ''
+            # All net types are defined together with NATing. Assuming NATing for
+            # Local net type. Need to create a shared network.
+            if Util.isTrueConfVal(self.nat) and _isAllDhcpGroupsDefined(dhcpGroups):
+                subnet = """
+shared-network StratusLab-LAN {
+"""
+                for _type in self.NET_TYPES_DHCP:
+                    subnet += subnetTemplate % {
+                               'subnet'  : getattr(self, 'dhcp%sSubnet' % _type),
+                               'netmask' : getattr(self, 'dhcp%sNetmask' % _type),
+                               'routers' : getattr(self, 'dhcp%sRouters' % _type)}
+                subnet += "}\n"
+
+            elif Util.isTrueConfVal(self.nat) and dhcpGroups['OneLocalNetwork']:
+                subnet = """
+shared-network StratusLab-LAN {
+"""
+                # main interface
+                subnet += """
+subnet %(subnet)s netmask %(netmask)s {
+}
+""" % {'subnet'  : self.dhcpSubnet,
+       'netmask' : self.dhcpNetmask}
+                # virtual interface
+                natGateway = getattr(self, 'natGateway', '')
+                if not natGateway:
+                    natGateway = Util.gatewayIpFromNetAddress(self.natNetwork)
+                subnet += subnetTemplate % {'subnet'  : self.natNetwork,
+                                            'netmask' : self.natNetmask,
+                                            'routers' : natGateway}
+                subnet += "}\n"
+
+            elif dhcpGroups['OnePublicNetwork']:
+                # main interface
+                subnet += """
+subnet %(subnet)s netmask %(netmask)s {
+}
+""" % {'subnet'  : self.dhcpSubnet,
+       'netmask' : self.dhcpNetmask}
+
+            elif dhcpGroups['OneLocalNetwork']:
+                # virtual interface
+                subnet = subnetTemplate % {
+                                'subnet'  : self.dhcpOneLocalNetworkSubnet,
+                                'netmask' : self.dhcpOneLocalNetworkNetmask,
+                                'routers' : self.dhcpOneLocalNetworkRouters}
+            else:
+                Util.printWarning('Invalid parameters combination to configure DHCP.')
+
+            return subnet
+
+        def _getConfGroups():
+            groupHeadTemplate = """
+group {
+  option broadcast-address %(broadcast)s;
+  option subnet-mask %(netmask)s;
+  option routers %(routers)s;
+  option domain-name "%(domainName)s";
+  option domain-name-servers %(nameservers)s;
+"""
+            hostTemplate = """
+  host %(type)s-vm%(id)s {
+    hardware ethernet %(mac)s;
+    fixed-address %(ip)s;
+    max-lease-time %(leaseTime)s;
+  }
+"""
+            groups = ''
+            for _type,ipsMacs in dhcpGroups.items():
+                if not ipsMacs:
+                    continue
+                groups += groupHeadTemplate % \
+                    {'broadcast'   : getattr(self, 'dhcp%sBroadcast' % _type),
+                     'netmask'     : getattr(self, 'dhcp%sNetmask' % _type),
+                     'routers'     : getattr(self, 'dhcp%sRouters' % _type),
+                     'domainName'  : getattr(self, 'dhcp%sDomainName' % _type),
+                     'nameservers' : getattr(self, 'dhcp%sDomainNameServers' % _type)}
+
+                hosts = ''
+                for i,ipMac in enumerate(ipsMacs):
+                    hosts += hostTemplate % {'type' : _type.lower(),
+                                             'id'  : str(i),
+                                             'mac' : ipMac[1],
+                                             'ip' : ipMac[0],
+                                             'leaseTime' : self.dhcpLeaseTime}
+                groups += hosts
+                groups += '}\n'
+
+            return groups
+
+        Util.printDetail('Configuring DHCP server.')
+
+        _NOTHING = []
+        dhcpGroups = dict.fromkeys(self.NET_TYPES_DHCP, _NOTHING)
+
+        for netType in self.NET_TYPES_DHCP:
+            if Util.isTrueConfVal(getattr(self, 'dhcp%s'%netType, False)):
+                dhcpGroups[netType] = self.__getIpMacTuplesForNetworkType(netType)
+
+        if _NOTHING == reduce(lambda x,y: x or y, dhcpGroups.values()):
+            Util.printError('When configuring DHCP %s networks IP/MAC pairs should be given.' %
+                                ','.join(self.NET_TYPES_DHCP))
+
+        content = _getConfGlobals() + \
+                    _getConfSubnets() + \
+                    _getConfGroups()
+
+        confFile = self.getPackageConfigFileName('dhcp')
+
+        Util.filePutContent(confFile, content)
+
+    def __getIpMacTuplesForNetworkType(self, _type):
+        if _type not in self.NET_TYPES_DHCP:
+            Util.printError('Expected one of: %s. Got %s'%(','.join(self.NET_TYPES_DHCP),_type))
+
+        _type = _type.replace(_type[0], _type[0].lower(), 1)
+
+        ips = [x for x in getattr(self, '%sAddr'%_type).split()]
+        macs = [x for x in getattr(self, '%sMac'%_type).split()]
+        if len(ips) != len(macs):
+            Util.printError('%s network: number of IPs should match number of MACs.'%_type)
+        return zip(ips, macs)
+
+    def _startDhcp(self):
+        Util.printDetail('(Re)Starting DHCP server.')
+
+        serviceName = self.packages['dhcp'].initdScriptName
+        rc = self.restartService(serviceName)
+
+        if rc != 0:
+            Util.printError('Filed to (re)start DHCP service.')
+
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
 FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
 
 def enableIpForwarding():
-    printDetail('Enabling packets forwarding.')
+    Util.printDetail('Enabling packets forwarding.')
     file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
     appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
                           'net.ipv4.ip_forward',

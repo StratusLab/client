@@ -19,11 +19,12 @@
 #
 from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
-from stratuslab.Util import appendOrReplaceMultilineBlockInFile
+import stratuslab.Util as Util
 
 installCmd = 'apt-get update; apt-get -q -y install'
 updateCmd = 'apt-get update'
 cleanPackageCacheCmd = 'apt-get clean'
+queryPackageCmd = 'dpkg -s'
 
 class Ubuntu(BaseSystem):
 
@@ -48,7 +49,10 @@ class Ubuntu(BaseSystem):
             'ssh': [],
         }
 
-        self.packages = {'apache2': PackageInfo('apache2','/etc/apache2')}
+        self.packages = {'apache2': PackageInfo('apache2','/etc/apache2'),
+                         'dhcp': PackageInfo('dhcp3-server',
+                                             configFile='/etc/dhcp3/dhcpd.conf',
+                                             initdScriptName='dhcp3-server')}
 
         super(Ubuntu, self).__init__()
 
@@ -59,13 +63,10 @@ class Ubuntu(BaseSystem):
     def updatePackageManager(self):
         self._execute(['apt-get', 'update'])
 
-    def installPackages(self, packages):
-        if len(packages) < 1:
-            return
-
-        cmd = self.installCmd.split(' ')
-        cmd.extend(packages)
-        self._execute(cmd)
+    def getIsPackageInstalledCommand(self, package):
+        cmd = "%s %s | grep Status | grep -q 'ok installed'" % (queryPackageCmd,
+                                                                package)
+        return cmd
 
     # -------------------------------------------
     #     Hypervisor related methods
@@ -92,6 +93,6 @@ iface %s inet static
   pre-up iptables-restore < %s""" % (device, device, ip, netmask,
                                      self.FILE_FIREWALL_RULES)
 
-        appendOrReplaceMultilineBlockInFile(self.FILE_INTERFACES, data)
+        Util.appendOrReplaceMultilineBlockInFile(self.FILE_INTERFACES, data)
 
 system = Ubuntu()
