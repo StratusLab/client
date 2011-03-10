@@ -32,11 +32,11 @@ from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
 
 class BaseInstallator(object):
-    
+
     def __init__(self):
         self.defaultStaticNetworks = ['public', 'local']
         self.defaultRangedNetworks = ['private']
-        
+
         self.configHolder = None
         self.config = None
         self.options = {}
@@ -56,7 +56,7 @@ class BaseInstallator(object):
 
         self.options = configHolder.options
         self.config = configHolder.config
-        
+
         if self.nodeAddr:
             printAction('Node(s) installation')
             self._runInstallNodes()
@@ -83,7 +83,7 @@ class BaseInstallator(object):
         self.infoDriver = (True and self.infoDriver) or ('im_%s' % self.hypervisor)
         self.virtDriver = (True and self.virtDriver) or ('vmm_%s' % self.hypervisor)
         self.transfertDriver = (True and self.transfertDriver) or ('tm_%s' % self.shareType)
-          
+
     def _runInstallNodes(self):
 
         self._setFrontend()
@@ -101,19 +101,19 @@ class BaseInstallator(object):
 
         printStep('Creating cloud admin account')
         self._createCloudAdmin(self.node)
-        
+
         printStep('Configuring cloud admin account')
         self._configureCloudAdminNode()
-        
+
         printStep('Installing dependencies')
         self._installNodeDependencies()
-        
+
         printStep('Configuring file sharing')
         self._setupFileSharingClient()
-        
+
         printStep('Adding node to cloud')
         self._addCloudNode()
-        
+
         if self.hypervisor == 'xen':
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
 
@@ -132,7 +132,7 @@ class BaseInstallator(object):
         self.node.setNodeHypervisor(self.hypervisor)
         self.node.workOnNode()
         self.frontend.setCloudAdminName(self.oneUsername)
-        
+
     def _runInstallAppRepo(self):
         appRepo = AppRepo(self.configHolder)
         appRepo.run()
@@ -143,36 +143,37 @@ class BaseInstallator(object):
         self._printInstalCompleted(claudiaInstaller.system.stdout.name, claudiaInstaller.system.stderr.name)
 
     def _runInstallFrontend(self):
-        printStep('Configuring file sharing')
 
-#        self.frontendIp = 'localhost'
         self._setCloud()
 
         self._setFrontend()
 
+        printStep('Configuring file sharing')
         self._setupFileSharingServer()
 
         printStep('Configuring cloud proxy service')
         self._configureCloudProxyService()
-        
+
         printStep('Configuring firewall')
         self._configureFireWall()
-        
+
+        self._configureDhcpServer()
+
         printStep('Configuring cloud admin account')
         self._configureCloudAdminFrontend()
-        
+
         printStep('Configuring cloud system')
         self._configureCloudSystem()
-        
+
         printStep('Applying local policies')
         self._configurePolicies()
-        
+
         printStep('Starting cloud')
         self._startCloudSystem()
 
         printStep('Adding default ONE vnet')
         self._addDefaultNetworks()
-        
+
     def _setFrontend(self):
         if not self.frontendIp or self.frontendIp == '127.0.0.1':
             printWarning('frontend_ip configuration parameter is %s, this is very likely not to work' % self.frontendIp)
@@ -180,7 +181,7 @@ class BaseInstallator(object):
 
     def _nodeAlive(self):
         return self.node._nodeShell('exit 42') == 42
-    
+
     def _startCloudSystem(self):
         self.frontend.startCloudSystem()
 
@@ -196,13 +197,13 @@ class BaseInstallator(object):
 
     def _installCloudSystem(self):
         pass
-    
+
     def _setupFileSharingClient(self):
         pass
-    
+
     def _addCloudNode(self):
         pass
-    
+
     def _configureCloudAdminNode(self):
         self.node.configureCloudAdminSshKeysNode()
 
@@ -212,10 +213,13 @@ class BaseInstallator(object):
     def _configureFireWall(self):
         self.frontend.configureFireWall()
 
+    def _configureDhcpServer(self):
+        self.frontend.configureDhcpServer()
+
     def _configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
-        
+
     def _configureCloudSystem(self):
         if not os.path.isfile(self.onedTpl):
             printError('ONe daemon configuration template '
