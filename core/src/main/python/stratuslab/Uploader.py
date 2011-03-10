@@ -71,7 +71,7 @@ class Uploader(object):
 
     @staticmethod
     def buildUploadParser(parser):
-        parser.usage = '''usage: %prog [options] manifest'''
+        parser.usage = '''usage: %prog [options] <metadata-file>'''
 
         parser.add_option('-r', '--repository', dest='appRepoUrl',
                 help='appliance repository address. Default STRATUSLAB_REPO_ADDRESS',
@@ -84,11 +84,11 @@ class Uploader(object):
                 help='compression format',
                 default='gz', metavar='FORMAT')
         parser.add_option('-f', '--force', dest='forceUpload',
-                help='force upload of the appliance even if already exist.',
+                help='force upload of the appliance even if already exists',
                 default=False, action='store_true')
 
         parser.add_option('--list-compression', dest='listCompressionFormat',
-                help='list available compression format',
+                help='list available compression formats',
                 default=False, action='store_true')
 
         parser.add_option('--with-marketplace', dest='withMarketPlace',

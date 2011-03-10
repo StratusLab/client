@@ -39,7 +39,6 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = 'usage: %prog [options] manifest'
         Uploader.buildUploadParser(self.parser)
         AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
 

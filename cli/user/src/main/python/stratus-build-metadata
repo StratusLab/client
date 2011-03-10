@@ -43,11 +43,11 @@ class MainProgram(CommandBase):
                 default='', metavar='NAME')
 
         self.parser.add_option('--type', dest='type',
-                help='Image type. (E.g. %s). Default: base' % ', '.join(imageTypes),
+                help='Image type (e.g. %s). Default: base' % ', '.join(imageTypes),
                 default='base', metavar='NAME')
 
         self.parser.add_option('--kind', dest='kind',
-                help='Image kind. (%s). Default: machine' % ', '.join(imageKinds),
+                help='Image kind (e.g. %s). Default: machine' % ', '.join(imageKinds),
                 default='machine', metavar='NAME')
 
         self.parser.add_option('--os', dest='os',
@@ -67,11 +67,11 @@ class MainProgram(CommandBase):
                 default='')
 
         self.parser.add_option('--format', dest='format',
-                help='Image format. (E.g. %s). Default: raw' % ', '.join(imageFormats),
+                help='Image format (e.g. %s). Default: raw' % ', '.join(imageFormats),
                 default='raw')
 
         self.parser.add_option('--hypervisor', dest='hypervisor',
-                help='Hypervisor. (E.g. kvm, xen). Default: kvm',
+                help='Hypervisor (e.g. kvm, xen). Default: kvm',
                 default='kvm', metavar='NAME')
 
         self.parser.add_option('--comment', dest='comment',
@@ -79,26 +79,26 @@ class MainProgram(CommandBase):
                 default='', metavar='TEXT')
 
         self.parser.add_option('--md5', dest='md5',
-                help='md5 checksum.',
+                help='md5 checksum',
                 default='', metavar='HEX')
         self.parser.add_option('--sha1', dest='sha1',
-                help='sha1 checksum.',
+                help='sha1 checksum',
                 default='', metavar='HEX')
         self.parser.add_option('--sha256', dest='sha256',
-                help='sha256 checksum.',
+                help='sha256 checksum',
                 default='', metavar='HEX')
         self.parser.add_option('--sha512', dest='sha512',
-                help='sha512 checksum.',
+                help='sha512 checksum',
                 default='', metavar='HEX')
 
         self.parser.add_option('--no-md5', dest='noMd5',
-                help='do not do md5 checksum.',
+                help='do not calculate md5 checksum',
                 default=False, action='store_true')
         self.parser.add_option('--no-sha256', dest='noSha256',
-                help='do not do sha256 checksum.',
+                help='do not calculate sha256 checksum',
                 default=False, action='store_true')
         self.parser.add_option('--no-sha512', dest='noSha512',
-                help='do not do sha512 checksum.',
+                help='do not calculate sha512 checksum',
                 default=False, action='store_true')
 
         self.options, self.args = self.parser.parse_args()
