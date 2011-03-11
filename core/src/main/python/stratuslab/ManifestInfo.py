@@ -51,7 +51,7 @@ except ImportError:
 
 NS_RDF     = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 NS_DCTERMS = 'http://purl.org/dc/terms/'
-NS_SLTERMS = 'http://stratuslab.eu/terms#'
+NS_SLTERMS = 'http://mp.stratuslab.eu/slterms#'
 NS_SLREQ   = 'http://mp.stratuslab.eu/slreq#'
 
 imageTypes = ['base', 'grid']
