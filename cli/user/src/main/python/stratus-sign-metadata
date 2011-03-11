@@ -45,7 +45,7 @@ class MainProgram(AuthnCommand):
     def parse(self):
         AuthnCommand.addP12CertOptions(self.parser)
 
-        self.parser.usage='''usage: %prog [options] <manifest-file>'''
+        self.parser.usage='''%prog [options] <manifest-file>'''
 
         self.parser.add_option('--output', dest='outputManifestFile',
                 help='newly signed manifest file (default <manifest-file>.sign)',

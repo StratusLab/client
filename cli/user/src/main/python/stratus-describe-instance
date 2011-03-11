@@ -39,7 +39,7 @@ class MainProgram(AuthnCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] [vm-id]
+        usage = '''%prog [options] [vm-id]
 Without the parameter [vm-id] the command lists the available vms'''
 
         self.parser.usage=usage

@@ -51,13 +51,11 @@ one_port = 2633
 #one_public_network_addr = 192.168.1.1 192.168.1.2 192.168.1.3 192.168.1.4
 #one_public_network_mac = 00:16:3e:d9:78:ba 00:16:3e:d9:78:bb 00:16:3e:d9:78:bc 00:16:3e:d9:78:bd
 # This must match the static IP/MAC mapping configuration of the DHCP server.
-one_public_network = 
-one_public_network_addr = 
-one_public_network_size = 
+one_public_network_addr =
+one_public_network_mac =
 
-#one_public_network_mac =
-#one_local_network_addr =
-#one_local_network_mac =
+one_local_network_addr =
+one_local_network_mac =
 
 # Private network configuration, only used for machines that will not be reachable
 # via IP
