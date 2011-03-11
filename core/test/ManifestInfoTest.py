@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import unittest
 
 from stratuslab.ManifestInfo import ManifestInfo, ManifestIdentifier
@@ -146,6 +147,13 @@ Only logins via ssh keys are allowed.
     </rdf:Description>
 </rdf:RDF>
 """
+    def setUp(self):
+        self.template = os.path.join(os.path.dirname(__file__),
+                                       '../share/template/manifest.xml.tpl')
+
+    def tearDown(self):
+        self.template = ''
+
     def testGetInfo(self):
         infoSL = ManifestInfo()
         infoSL.parseManifest(AppRepoInfoTest.manifestSL)
@@ -161,9 +169,8 @@ Only logins via ssh keys are allowed.
 
     def testUpdateManifest(self):
 
-        ManifestInfo.template = '../../share/template/manifest.xml.tpl'
-
         info = ManifestInfo()
+        info.template = self.template
         info.parseManifest(AppRepoInfoTest.manifestDcFull)
 
         self.assertEquals('machine', info.type)
@@ -171,17 +178,19 @@ Only logins via ssh keys are allowed.
 
         xml = info.tostring()
         info = ManifestInfo()
+        info.template = self.template
         info.parseManifest(xml)
 
         self.assertEquals('disk', info.type)
 
     def testMissingElements(self):
-        ManifestInfo.template = '../../share/template/manifest.xml.tpl'
 
         info = ManifestInfo()
+        info.template = self.template
         self.failUnlessRaises(ExecutionException, info.parseManifest, AppRepoInfoTest.manifestDcMissingElemsMandatory)
 
         info = ManifestInfo()
+        info.template = self.template
         self.failUnlessRaises(ExecutionException, info.parseManifest, AppRepoInfoTest.manifestDcMissingElems)
 
 class ManifestIdentifierTest(unittest.TestCase):
