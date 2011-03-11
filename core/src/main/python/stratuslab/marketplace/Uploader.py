@@ -23,6 +23,7 @@ from stratuslab.HttpClient import HttpClient
 from stratuslab.Exceptions import InputException
 import os
 from stratuslab.ManifestInfo import ManifestInfo
+from stratuslab import Util
 
 class Uploader(object):
 
@@ -31,6 +32,7 @@ class Uploader(object):
         configHolder.assign(self)
 
     def upload(self, manifestFilename):
+        Util.printStep('Uploading metadata')
         client = HttpClient()
         if not os.path.exists(manifestFilename):
             raise InputException('Can\'t find metadata file: %s' % manifestFilename)
