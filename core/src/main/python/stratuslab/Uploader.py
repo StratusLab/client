@@ -118,6 +118,10 @@ class Uploader(object):
 
     @staticmethod
     def checkUploadOptions(options, parser):
+        if options.withMarketPlaceOnly:
+            options.withMarketPlace = True
+            return
+
         if options.compressionFormat not in Uploader.availableCompressionFormat():
             parser.error('Unknown compression format')
         if not options.appRepoUrl:
@@ -127,9 +131,6 @@ class Uploader(object):
         if not options.repoPassword:
             parser.error('Unspecified repository password')
  
-        if options.withMarketPlaceOnly:
-            options.withMarketPlace = True
-
     @staticmethod
     def buildRepoNameStructure(structure, info):
         varPattern = '#%s#'
