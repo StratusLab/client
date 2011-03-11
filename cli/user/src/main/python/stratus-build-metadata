@@ -36,7 +36,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = 'usage: %prog [options] image'
+        self.parser.usage = '%prog [options] image'
 
         self.parser.add_option('--author', dest='creator',
                 help='Author of the new image',
