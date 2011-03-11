@@ -97,8 +97,7 @@ class Uploader(object):
 
         parser.add_option('--marketplace-endpoint', dest='marketPlaceEndpoint',
                 help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT),
-                action='callback', callback=Uploader.marketPlaceOptionCallback,
-                default=os.getenv(Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT))
+                default=None)
 
         parser.add_option('--marketplace-only', dest='withMarketPlaceOnly',
                 help='Only upload the metadata file to the marketplace, don\'t upload the image to the appliances repository',
@@ -113,11 +112,13 @@ class Uploader(object):
                 default=os.getenv('STRATUSLAB_REPO_PASSWORD'))
 
     @staticmethod
-    def marketPlaceOptionCallback(option, opt_str, value, parser):
-        setattr(parser, 'withMarketPlace', True)
-
-    @staticmethod
     def checkUploadOptions(options, parser):
+
+        if options.marketPlaceEndpoint:
+            options.withMarketPlace = True
+        if not options.marketPlaceEndpoint:
+            options.marketPlaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT)                    
+
         if options.withMarketPlaceOnly:
             options.withMarketPlace = True
             return

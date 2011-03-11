@@ -22,8 +22,9 @@ import httplib2
 from httplib2 import httplib
 from stratuslab import Util
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Exceptions import ServerException, ClientException,\
-    NetworkException
+from stratuslab.Exceptions import ServerException
+from stratuslab.Exceptions import ClientException
+from stratuslab.Exceptions import NetworkException
 
 class HttpClient(object):
 
