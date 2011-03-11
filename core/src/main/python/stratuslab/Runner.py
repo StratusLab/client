@@ -74,7 +74,10 @@ class Runner(object):
 
     def _setUserKeyIfDefined(self):
         if getattr(self, 'userPublicKeyFile', None):
-            self.public_key = fileGetContent(self.userPublicKeyFile)
+            self.public_key = ''
+            for line in file(self.userPublicKeyFile):
+                if not line.startswith('Comment:'):
+                    self.public_key += line
 
     def _setSaveDisk(self):
         saveDisk = getattr(self, 'saveDisk', False)
