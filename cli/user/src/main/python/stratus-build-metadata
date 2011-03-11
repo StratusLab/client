@@ -21,6 +21,7 @@
 
 import os
 import sys
+from stratuslab.ConfigHolder import ConfigHolder
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -118,7 +119,8 @@ class MainProgram(CommandBase):
         bytes = str(statinfo.st_size)
         self.options.__dict__.update({'bytes':bytes})
 
-        manifest = ManifestInfo(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__)
+        manifest = ManifestInfo(configHolder)
         manifest.buildAndSave()
 
     def _calculateCheckSums(self):
