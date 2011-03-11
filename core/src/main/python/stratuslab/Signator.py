@@ -27,10 +27,13 @@ from Exceptions import ConfigurationException
 class Signator(Configurable):
     
     def __init__(self, manifestFile, configHolder):
+        self.outputManifestFile = None
+        self.renamedInputManifestFile = manifestFile
         super(Signator, self).__init__(configHolder)
         self.manifestFile = manifestFile
         if 'outputManifestFile' not in self.__dict__ or not self.outputManifestFile:
-            self.outputManifestFile = self.manifestFile + '.sign'
+            self.outputManifestFile = self.manifestFile
+            self.renamedInputManifestFile = self.manifestFile + '.orig'
 
     def sign(self):
         jarLocation = self._findJar()
@@ -43,14 +46,18 @@ class Signator(Configurable):
 
     def _findJar(self):
         dirs = []
+        devRelativePath = '../../../../../../stratuslab-marketplace/metadata/target'
+        dirs.append(os.path.join(self._moduleDirname(), devRelativePath))
         tarballRelativePath = '../../../../java/'
         dirs.append(os.path.join(self._moduleDirname(), tarballRelativePath))
         dirs.append('/var/lib/stratuslab/java')
         
         for dir in dirs:
             try:
-                return self._findFile(dir, 'metadata', '.jar')
-            except:
+                jarFile = self._findFile(dir, 'metadata', '.jar')
+                self.printDetail('Loading signature jar file: %s' % jarFile)
+                return jarFile
+            except ValueError:
                 pass
 
         raise ConfigurationException('Failed to find metadata jar file')
