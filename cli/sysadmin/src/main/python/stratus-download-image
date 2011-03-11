@@ -40,7 +40,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] <uri>
+        usage = '''%prog [options] <uri>
         
 <uri>    URI of the metadata entry corresponding to the image to download
 '''

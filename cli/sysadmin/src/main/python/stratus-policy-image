@@ -41,7 +41,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] <identifier-uri> <policy-config>
+        usage = '''%prog [options] <identifier-uri> <policy-config>
         
 <identifier-uri>       Image identifier, corresponding to a unique entry (i.e. checksum/email/date)
 <policy-config>    Policy configuration file'''

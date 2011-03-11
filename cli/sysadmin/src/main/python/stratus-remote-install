@@ -44,7 +44,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = 'usage: %prog [options]'
+        usage = '%prog [options]'
         self.parser.usage = usage
 
         self.parser.add_option('-n', '--nodes', dest='nodes',

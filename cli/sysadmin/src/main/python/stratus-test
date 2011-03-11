@@ -39,7 +39,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] [test] ...\n\n
+        usage = '''%prog [options] [test] ...\n\n
 where test is a comma separated list of tests, according to the name provided by -l/--list.'''
 
         self.parser.usage = usage

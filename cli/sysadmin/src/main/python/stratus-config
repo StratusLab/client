@@ -38,7 +38,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''usage: %prog [options] [key [value]]
+        usage = '''%prog [options] [key [value]]
 If the [value] is not provided, the command returns the current value of the key.'''
         self.parser.usage = usage
 
