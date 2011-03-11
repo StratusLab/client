@@ -31,18 +31,25 @@ class Signator(Configurable):
         self.renamedInputManifestFile = manifestFile
         super(Signator, self).__init__(configHolder)
         self.manifestFile = manifestFile
-        if 'outputManifestFile' not in self.__dict__ or not self.outputManifestFile:
+        if not self.outputManifestFile:
             self.outputManifestFile = self.manifestFile
             self.renamedInputManifestFile = self.manifestFile + '.orig'
+        self.tempManifestFile = self.manifestFile + '.new'
 
     def sign(self):
+        res, output = self._sign()
+        if res:
+            Util.printError(output, exit=False)
+        self._renameFiles()
+
+    def _sign(self):
         jarLocation = self._findJar()
-        javaMainArgs = ' ' + self.manifestFile + ' ' + self.outputManifestFile + \
+        javaMainArgs = ' ' + self.manifestFile + ' ' + self.tempManifestFile + \
                        ' ' + self.p12Cert + ' ' + self.p12Password
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.SignMetadata'))
         cmd += javaMainArgs
         self._printCalling(cmd)
-        return Util.execute(cmd.split(' '))
+        return Util.execute(cmd.split(' '), withOutput=True)
 
     def _findJar(self):
         dirs = []
@@ -62,15 +69,21 @@ class Signator(Configurable):
 
         raise ConfigurationException('Failed to find metadata jar file')
 
+    def _moduleDirname(self):
+        return os.path.dirname(__file__)
+        
     def _findFile(self, dir, start='', end=''):
         for file in os.listdir(dir):
             if file.startswith(start) and file.endswith(end):
                 return os.path.join(dir, file)
         raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
 
-    def _moduleDirname(self):
-        return os.path.dirname(__file__)
-        
+    def _renameFiles(self):
+        self.printDetail('Renaming input file from %s to %s' % (self.manifestFile, self.renamedInputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        os.rename(self.manifestFile, self.renamedInputManifestFile)
+        self.printDetail('Renaming output file from %s to %s' % (self.tempManifestFile, self.outputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        os.rename(self.tempManifestFile, self.outputManifestFile)
+
     def validate(self):
         jarLocation = self._findJar()
         javaMainArgs = ' ' + self.manifestFile
