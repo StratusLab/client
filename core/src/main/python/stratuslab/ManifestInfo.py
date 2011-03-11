@@ -25,6 +25,7 @@ import time
 
 import Util
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Exceptions import ExecutionException
 
 try:
     from lxml import etree
@@ -50,7 +51,7 @@ except ImportError:
 
 NS_RDF     = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 NS_DCTERMS = 'http://purl.org/dc/terms/'
-NS_SLTERMS = 'http://stratuslab.eu/terms#'
+NS_SLTERMS = 'http://mp.stratuslab.eu/slterms#'
 NS_SLREQ   = 'http://mp.stratuslab.eu/slreq#'
 
 imageTypes = ['base', 'grid']
@@ -110,6 +111,15 @@ class ManifestInfo(object):
 
         self.template = os.path.join(Util.getShareDir(),'template/manifest.xml.tpl')
 
+        self.attrsAndNamespaces = \
+                            (('type','type',NS_DCTERMS,None),
+                             ('created','created',NS_DCTERMS,None),
+                             ('valid','valid',NS_DCTERMS,None),
+                             ('os','os',NS_SLTERMS,None),
+                             ('osversion','os-version',NS_SLTERMS,None),
+                             ('compression','compression',NS_DCTERMS,self.compression),
+                             ('comment','description',NS_DCTERMS,None))
+
     def parseManifest(self, manifest):
         xml = etree.fromstring(manifest)
         if xml.tag == 'manifest':
@@ -129,9 +139,16 @@ class ManifestInfo(object):
             # skip endorsement element
 
             # required by Schema attributes
-            self.identifier = xml.find('.//{%s}identifier' % NS_DCTERMS).text
+            for elem,ns in [('identifier',NS_DCTERMS), ('bytes',NS_SLREQ)]:
+                try:
+                    val = getattr(xml.find('.//{%s}%s' % (ns, elem)), 'text')
+                except AttributeError:
+                    raise ExecutionException("Missing mandatory element '%s' in namespace '%s'" %
+                                             (elem, ns))
+                else:
+                    attr = elem
+                    setattr(self, attr, val)
 
-            self.bytes = xml.find('.//{%s}bytes' % NS_SLREQ).text
             checksums = xml.findall('.//{%s}checksum' % NS_SLREQ)
             for checksum in checksums:
                 checkSumType = checksum.find('.//{%s}algorithm' % NS_SLREQ).text
@@ -140,16 +157,16 @@ class ManifestInfo(object):
                 setattr(self, checkSumType, checkSumValue)
 
             # attributes from integration XML template
-            self.type = xml.find('.//{%s}type' % NS_DCTERMS).text
-            self.created = xml.find('.//{%s}created' % NS_DCTERMS).text
-            self.valid = xml.find('.//{%s}valid' % NS_DCTERMS).text
-            self.os = xml.find('.//{%s}os' % NS_SLTERMS).text
-            self.osversion = xml.find('.//{%s}os-version' % NS_SLTERMS).text
-            self.arch = xml.find('.//{%s}os-arch' % NS_SLTERMS).text
-            self.version = xml.find('.//{%s}version' % NS_SLTERMS).text
-            self.compression = getattr(xml.find('.//{%s}compression' % NS_DCTERMS), 'text',
-                                       self.compression)
-            self.comment = xml.find('.//{%s}description' % NS_DCTERMS).text
+            for attrObj,elemXml,ns,default in self.attrsAndNamespaces:
+                try:
+                    attrVal = getattr(xml.find('.//{%s}%s' % (ns, elemXml)), 'text')
+                except AttributeError:
+                    if default != None:
+                        attrVal = default
+                    else:
+                        raise ExecutionException("Missing element '%s' in namespace '%s'" % (elemXml, ns))
+                else:
+                    setattr(self, attrObj, attrVal)
 
             # extra elements with defaults
             self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
@@ -160,7 +177,7 @@ class ManifestInfo(object):
             self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
                                        self.format)
             self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
-                                      self.hypervisor)            
+                                      self.hypervisor)
             self.location = getattr(xml.find('.//{%s}location' % NS_SLTERMS), 'text',
                                     self.location)
             self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',

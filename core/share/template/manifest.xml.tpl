@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:dcterms="http://purl.org/dc/terms/"
-    xmlns:slterms="http://stratuslab.eu/terms#"
+    xmlns:slterms="http://mp.stratuslab.eu/slterms#"
     xmlns:slreq="http://mp.stratuslab.eu/slreq#"
     xml:base="http://mp.stratuslab.eu/">
 
