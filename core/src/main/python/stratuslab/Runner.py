@@ -56,6 +56,7 @@ class Runner(object):
         self.vm_ram = 0
         self.vm_swap = 0
         self.vm_nic = ''
+        self.vm_name = ''
         self.os_options = ''
         self.raw_data = ''
         self.extra_context = ''
@@ -141,6 +142,7 @@ class Runner(object):
                 'rawData': '',
                 'vmKernel': '',
                 'vmRamdisk': '',
+                'vmName': '',
                 'isLocalIp': False,
                 'isPrivateIp': False,
                 'extraContextFile': '',
@@ -157,6 +159,11 @@ class Runner(object):
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)
         self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
+
+        if self.vmName:
+            self.vm_name = 'NAME = "%s"' % self.vmName
+        else:
+            self.vm_name = ''
 
         self._manageOsOptions()
         self._manageNetwork()
