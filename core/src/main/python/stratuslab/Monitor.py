@@ -57,8 +57,8 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16])
-        self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16])
+        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16], ['name', 16])
+        self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16], ['name', 16])
 
         self.labelDecorator = {'state_summary': 'state'}
 
@@ -146,9 +146,13 @@ class Monitor(Configurable):
     def _printInfoHeader(self, headerAttributes):
         Util.printEmphasisStart()
         try:
-            for attrib in headerAttributes:
+            for attrib in headerAttributes[:-1]:
                 label = self._decorateLabel(attrib[0])
                 sys.stdout.write(label.ljust(int(attrib[1])))
+            # adjust last element to its own length
+            attrib = headerAttributes[-1]
+            label = self._decorateLabel(attrib[0])
+            sys.stdout.write(label.ljust(len(attrib[0])))
         finally:
             Util.printEmphasisStop()
         sys.stdout.write('\n')
@@ -157,8 +161,11 @@ class Monitor(Configurable):
         return self.labelDecorator.get(label,label)
 
     def _printInfo(self, info, headerAttributes):
-        for attrib in headerAttributes:
+        for attrib in headerAttributes[:-1]:
             sys.stdout.write(getattr(info, attrib[0]).ljust(int(attrib[1])))
+        # adjust last element to its own length
+        attrib = headerAttributes[-1]
+        sys.stdout.write(getattr(info,attrib[0]).ljust(len(attrib[0])))
         sys.stdout.write('\n')
 
     def _adjustVmAttributeFields(self, _list):

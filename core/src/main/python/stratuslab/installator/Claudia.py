@@ -38,8 +38,25 @@ class Claudia(object):
         self.tcloudFile = self.claudiaHome+"/conf/tcloud.properties"
         self.claudiaClientFile= self.claudiaHome+"/conf/claudiaClient.properties"
 
-        self.network="[ Network:prueba10.95.240.0; IP:10.95.240.6/10.95.240.7/10.95.240.8; Netmask:255.255.240.0; Gateway:10.95.240.1; DNS:10.95.240.1; Public:yes; ],\
-                      [ IP:192.168.0.0; Netmask:255.255.240.0; Gateway:192.168.1.1; DNS:192.168.1.1; Public:no; ]"
+        # Network configuration 
+        self.publicNet = "IP:"+self.claudiaPublicIp+";"+    \
+                         " Netmask:"+self.claudiaPublicNetmask+";"+  \
+                         " Gateway:"+self.claudiaPublicGateway+\
+                         "; DNS:"+self.claudiaPublicDns+";"+  \
+                         " Public:yes;"
+        if self.claudiaPublicNetwork:
+            self.publicNet = "Network:"+self.claudiaPublicNetwork+"; "+self.publicNet
+
+
+        self.privateNet = "IP:"+self.claudiaPrivateIp+";"+               \
+                          " Netmask:"+self.claudiaPrivateNetmask+";"+     \
+                          " Gateway:"+self.claudiaPrivateGateway+";"+     \
+                          " DNS:"+self.claudiaPrivateDns+";"+             \
+                          " Public:no;"
+        if self.claudiaPrivateNetwork:
+            self.privateNet = "Network:"+self.claudiaPrivateNetwork+"; "+self.privateNet
+
+        self.network="[ "+self.publicNet+" ],\\ \n[ "+self.privateNet+" ]"
 
         # properties translation
         # sm.properties

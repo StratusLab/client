@@ -82,6 +82,10 @@ class MainProgram(Runnable):
                 action='store_true',
                 default=False)
 
+        self.parser.add_option('--vm-name', dest='vmName',
+                help='name of VM. If not given, a default name will be assigned by cloud layer.',
+                metavar='NAME', default=options['vmName'])
+
         super(MainProgram, self).parse()
 
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
