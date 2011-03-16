@@ -27,7 +27,7 @@ from stratuslab.Util import modulePath
 from stratuslab.Util import printStep
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
-from stratuslab.Exceptions import ValidationException
+from stratuslab.Exceptions import ValidationException, ExecutionException
 
 class Runner(object):
 
@@ -326,8 +326,8 @@ class Runner(object):
             return
         try:
             Util.checkUrlExists(self.vm_image)
-        except Exception, e:
+        except (ValidationException, ExecutionException), ex:
             raise ValidationException("Unable to access image '%s': %s" %
-                                      (self.vm_image, str(e)))
+                                      (self.vm_image, str(ex)))
         else:
             self.printDetail('Image available: %s' % self.vm_image)

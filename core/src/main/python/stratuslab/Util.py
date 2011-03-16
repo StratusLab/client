@@ -28,6 +28,7 @@ from random import sample
 from string import ascii_lowercase
 from Exceptions import ImportException, ExecutionException
 from Compressor import Compressor
+from stratuslab.Exceptions import ValidationException
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -464,9 +465,14 @@ def generateSshKeyPair(keyFilename):
     execute(sshCmd, shell=True)
 
 def checkUrlExists(url, timeout=5):
-    fh = urllib2.urlopen(url, timeout=timeout)
-    if not fh:
-        raise ExecutionException('urllib2.urlopen() did not return url handler.')
+    fh = None
+    try:
+        fh = urllib2.urlopen(url, timeout=timeout)
+    except urllib2.URLError, ex:
+        raise ValidationException(str(ex))
+    else:
+        if not fh:
+            raise ExecutionException('urllib2.urlopen() did not return url handler.')
     return True
 
 def printEmphasisStart():
