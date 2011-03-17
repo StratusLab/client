@@ -56,7 +56,7 @@ class Claudia(object):
         if self.claudiaPrivateNetwork:
             self.privateNet = "Network:"+self.claudiaPrivateNetwork+"; "+self.privateNet
 
-        self.network="[ "+self.publicNet+" ],\\ \n[ "+self.privateNet+" ]"
+        self.network="[ "+self.publicNet+" ], [ "+self.privateNet+" ]"
 
         # properties translation
         # sm.properties
@@ -78,7 +78,7 @@ class Claudia(object):
 
         # claudiaClient.properties
         self.ccprops = {"domain.root":self.domainName, \
-                        "smi.host":self.frontendIp, \
+                        "smi.host":"http://"+self.frontendIp+":", \
                         "rest.host":self.frontendIp
                         }
 
