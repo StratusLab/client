@@ -123,11 +123,11 @@ class Claudia(object):
 
     def _startServices(self):
         print " :: Starting activemq"
-        #self.system.execute(['/usr/share/activemq/bin/activemq', 'start'])
+        self.system.execute(['/etc/init.d/activemq', 'restart'])
         
         print " :: Starting tcloud"
-        #self.system.execute(['/etc/init.d/tcloudd', 'restart'])
+        self.system.execute(['/etc/init.d/tcloudd', 'restart'])
         
         print " :: Starting clotho"
-        #self.system.execute(['/etc/init.d/clothod', 'restart'])
+        self.system.execute(['/etc/init.d/clothod', 'restart'])
         print " ::"
