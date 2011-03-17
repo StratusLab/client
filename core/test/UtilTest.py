@@ -20,7 +20,7 @@
 import unittest
 
 import stratuslab.Util as Util
-import urllib2
+import stratuslab.Exceptions as Exceptions
 
 class UtilTest(unittest.TestCase):
 
@@ -122,9 +122,9 @@ start block
 
     def testCheckUrlExists(self):
         self.assertRaises(ValueError, Util.checkUrlExists, (''))
-        self.assertRaises(urllib2.URLError, Util.checkUrlExists,
+        self.assertRaises(Exceptions.ValidationException, Util.checkUrlExists,
                           ('file:///nosuchfile.txt'))
-        self.assertRaises(urllib2.URLError, Util.checkUrlExists,
+        self.assertRaises(Exceptions.ValidationException, Util.checkUrlExists,
                           ('http://www.google.com/nosuchfile.txt'))
 
 if __name__ == "__main__":
