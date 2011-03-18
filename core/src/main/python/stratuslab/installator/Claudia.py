@@ -73,7 +73,8 @@ class Claudia(object):
         self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
                             "oneUser":self.oneUsername, \
                             "onePassword":self.onePassword, \
-                            "oneEnvironmentPath":self.claudiaHome+"repository/"
+                            "oneEnvironmentPath":self.claudiaHome+"repository/", \
+                            "oneNetworkBridge":self.nodeBridgeName
                             }
 
         # claudiaClient.properties
