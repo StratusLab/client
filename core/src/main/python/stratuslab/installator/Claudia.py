@@ -20,8 +20,8 @@
 
 import stratuslab.Util as Util
 import stratuslab.system.SystemFactory as SystemFactory
-from hashlib import sha1
-from time import sleep
+import hashlib
+import time
 
 class Claudia(object):
 
