@@ -20,6 +20,7 @@
 
 import stratuslab.Util as Util
 import stratuslab.system.SystemFactory as SystemFactory
+import hashlib
 
 class Claudia(object):
 
@@ -69,10 +70,17 @@ class Claudia(object):
                         "NetworkRanges":self.network
                         }
 
+        #pass the password to the sha1 constructor 
+        self.createSha1 = hashlib.sha1(self.onePassword)
+ 
+        #dump the password out in text 
+        self.sha1Password = createSha1.hexdigest()
+        #print "Password en sha1: "+sha1Password
+
         # tcloud.properties
         self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
                             "oneUser":self.oneUsername, \
-                            "onePassword":self.onePassword, \
+                            "onePassword":self.sha1Password, \
                             "oneEnvironmentPath":self.claudiaHome+"repository/", \
                             "oneNetworkBridge":self.nodeBridgeName
                             }
@@ -131,4 +139,4 @@ class Claudia(object):
         
         print " :: Starting clotho"
         self.system.execute(['/etc/init.d/clothod', 'restart'])
-        print " ::" 
+        print " ::"
