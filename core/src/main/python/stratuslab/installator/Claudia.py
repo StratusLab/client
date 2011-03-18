@@ -74,8 +74,8 @@ class Claudia(object):
         self.createSha1 = hashlib.sha1(self.onePassword)
  
         #dump the password out in text 
-        self.sha1Password = createSha1.hexdigest()
-        #print "Password en sha1: "+sha1Password
+        self.sha1Password = self.createSha1.hexdigest()
+        #print "Password en sha1: "+self.sha1Password
 
         # tcloud.properties
         self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
