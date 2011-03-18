@@ -20,7 +20,8 @@
 
 import stratuslab.Util as Util
 import stratuslab.system.SystemFactory as SystemFactory
-import hashlib
+from hashlib import sha1
+from time import sleep
 
 class Claudia(object):
 
@@ -133,6 +134,8 @@ class Claudia(object):
     def _startServices(self):
         print " :: Starting activemq"
         self.system.execute(['/etc/init.d/activemq', 'restart'])
+        # Wait 10 seconds for giving time to activemq to completely start
+        time.sleep(10)
         
         print " :: Starting tcloud"
         self.system.execute(['/etc/init.d/tcloudd', 'restart'])
