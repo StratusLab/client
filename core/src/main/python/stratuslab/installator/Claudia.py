@@ -20,6 +20,8 @@
 
 import stratuslab.Util as Util
 import stratuslab.system.SystemFactory as SystemFactory
+import hashlib
+import time
 
 class Claudia(object):
 
@@ -56,7 +58,7 @@ class Claudia(object):
         if self.claudiaPrivateNetwork:
             self.privateNet = "Network:"+self.claudiaPrivateNetwork+"; "+self.privateNet
 
-        self.network="[ "+self.publicNet+" ],\\ \n[ "+self.privateNet+" ]"
+        self.network="[ "+self.publicNet+" ], [ "+self.privateNet+" ]"
 
         # properties translation
         # sm.properties
@@ -69,16 +71,24 @@ class Claudia(object):
                         "NetworkRanges":self.network
                         }
 
+        #pass the password to the sha1 constructor 
+        self.createSha1 = hashlib.sha1(self.onePassword)
+ 
+        #dump the password out in text 
+        self.sha1Password = self.createSha1.hexdigest()
+        #print "Password en sha1: "+self.sha1Password
+
         # tcloud.properties
         self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
                             "oneUser":self.oneUsername, \
-                            "onePassword":self.onePassword, \
-                            "oneEnvironmentPath":self.claudiaHome+"repository/"
+                            "onePassword":self.sha1Password, \
+                            "oneEnvironmentPath":self.claudiaHome+"repository/", \
+                            "oneNetworkBridge":self.nodeBridgeName
                             }
 
         # claudiaClient.properties
         self.ccprops = {"domain.root":self.domainName, \
-                        "smi.host":self.frontendIp, \
+                        "smi.host":"http://"+self.frontendIp+":", \
                         "rest.host":self.frontendIp
                         }
 
@@ -124,6 +134,8 @@ class Claudia(object):
     def _startServices(self):
         print " :: Starting activemq"
         self.system.execute(['/etc/init.d/activemq', 'restart'])
+        # Wait 10 seconds for giving time to activemq to completely start
+        time.sleep(10)
         
         print " :: Starting tcloud"
         self.system.execute(['/etc/init.d/tcloudd', 'restart'])
