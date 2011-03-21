@@ -122,66 +122,53 @@ class ManifestInfo(object):
 
     def parseManifest(self, manifest):
         xml = etree.fromstring(manifest)
-        if xml.tag == 'manifest':
-            self.os = xml.find('os').text
-            self.osversion = xml.find('osversion').text
-            self.arch = xml.find('arch').text
-            self.type = xml.find('type').text
-            self.version = xml.find('version').text
-            self.compression = xml.find('compression').text
-            self.user = xml.find('user').text
-            self.created = xml.find('created').text
-            self.filename = xml.find('filename').text
-            checksums = xml.findall('checksum')
-            for checksum in checksums:
-                setattr(self, checksum.attrib['type'], checksum.text)
-        else:
-            # skip endorsement element
 
-            # required by Schema attributes
-            for elem,ns in [('identifier',NS_DCTERMS), ('bytes',NS_SLREQ)]:
-                try:
-                    val = getattr(xml.find('.//{%s}%s' % (ns, elem)), 'text')
-                except AttributeError:
-                    raise ExecutionException("Missing mandatory element '%s' in namespace '%s'" %
-                                             (elem, ns))
+        # skip endorsement element
+
+        # required by Schema attributes
+        for elem,ns in [('identifier',NS_DCTERMS), ('bytes',NS_SLREQ)]:
+            try:
+                val = getattr(xml.find('.//{%s}%s' % (ns, elem)), 'text')
+            except AttributeError:
+                raise ExecutionException("Missing mandatory element '%s' in namespace '%s'" %
+                                         (elem, ns))
+            else:
+                attr = elem
+                setattr(self, attr, val)
+
+        checksums = xml.findall('.//{%s}checksum' % NS_SLREQ)
+        for checksum in checksums:
+            checkSumType = checksum.find('.//{%s}algorithm' % NS_SLREQ).text
+            checkSumType = _normalizeForInstanceAttribute(checkSumType)
+            checkSumValue = checksum.find('.//{%s}value' % NS_SLREQ).text
+            setattr(self, checkSumType, checkSumValue)
+
+        # attributes from integration XML template
+        for attrObj,elemXml,ns,default in self.attrsAndNamespaces:
+            try:
+                attrVal = getattr(xml.find('.//{%s}%s' % (ns, elemXml)), 'text')
+            except AttributeError:
+                if default != None:
+                    attrVal = default
                 else:
-                    attr = elem
-                    setattr(self, attr, val)
+                    raise ExecutionException("Missing element '%s' in namespace '%s'" % (elemXml, ns))
+            else:
+                setattr(self, attrObj, attrVal)
 
-            checksums = xml.findall('.//{%s}checksum' % NS_SLREQ)
-            for checksum in checksums:
-                checkSumType = checksum.find('.//{%s}algorithm' % NS_SLREQ).text
-                checkSumType = _normalizeForInstanceAttribute(checkSumType)
-                checkSumValue = checksum.find('.//{%s}value' % NS_SLREQ).text
-                setattr(self, checkSumType, checkSumValue)
-
-            # attributes from integration XML template
-            for attrObj,elemXml,ns,default in self.attrsAndNamespaces:
-                try:
-                    attrVal = getattr(xml.find('.//{%s}%s' % (ns, elemXml)), 'text')
-                except AttributeError:
-                    if default != None:
-                        attrVal = default
-                    else:
-                        raise ExecutionException("Missing element '%s' in namespace '%s'" % (elemXml, ns))
-                else:
-                    setattr(self, attrObj, attrVal)
-
-            # extra elements with defaults
-            self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
-                                self.creator)
-            self.creator = self.user
-            self.kind = getattr(xml.find('.//{%s}kind' % NS_SLTERMS), 'text',
-                                self.kind)
-            self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
-                                       self.format)
-            self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
-                                      self.hypervisor)
-            self.location = getattr(xml.find('.//{%s}location' % NS_SLTERMS), 'text',
-                                    self.location)
-            self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
-                                     self.publisher)
+        # extra elements with defaults
+        self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
+                            self.creator)
+        self.creator = self.user
+        self.kind = getattr(xml.find('.//{%s}kind' % NS_SLTERMS), 'text',
+                            self.kind)
+        self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
+                                   self.format)
+        self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
+                                  self.hypervisor)
+        self.location = getattr(xml.find('.//{%s}location' % NS_SLTERMS), 'text',
+                                self.location)
+        self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
+                                 self.publisher)
 
     def parseManifestFromFile(self, filename):
         manifest = file(filename).read()
