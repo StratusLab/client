@@ -9,7 +9,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.orgtex/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,6 @@
 import os
 import time
 import socket
-
 
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
@@ -84,11 +83,15 @@ class SSHUtil(object):
 class Cluster(object):
 
     hosts = []
-    
-    def __init__(self, configHolder, runner):
+    _is_heterogeneous = False
+
+    def __init__(self, configHolder, runner, master_vmid):
         configHolder.assign(self)
-        self._runner = runner    
-    
+        self._runner = runner
+        if master_vmid:
+            self._master_vmid=master_vmid
+            self._is_heterogeneous=True
+
     def create_machine_file(self, hostlist, filename):
         mf = open(filename, "w")
         for host in hostlist:
@@ -97,18 +100,15 @@ class Cluster(object):
         
 
     def doAddPackages(self, ssh):
-        printStep('Installing required software packages')
-        ssh.run_remote_command(self.hosts, "yum -y install gcc")
-        ssh.run_remote_command(self.hosts, "yum -y install openmpi")
-        ssh.run_remote_command(self.hosts, "yum -y install openmpi-devel")
-        ssh.run_remote_command(self.hosts, "yum -y install nfs-utils")
-        ssh.run_remote_command(self.hosts, "service iptables stop")
-        ssh.run_remote_command(self.hosts, "service portmap start")
-        ssh.run_remote_command(self.hosts, "service nfs start")
-        ssh.run_remote_command(self.hosts, "mpi-selector -y --system --set openmpi-1.4-gcc-x86_64")
+        # TODO: Add support for apt. Selection of package management system should be defined in the command line
+        printStep('Installing additional software packages')
+        packages = self.add_packages.replace(","," ")
+
+        ssh.run_remote_command(self.hosts, "yum -y install " + packages )
 
 
     def doPrepareMPImachineFile(self, ssh, worker_nodes):
+        # TODO: Let user choose where to place the machine file
         printStep('Preparing MPI machine file')
         target = []
         if self.include_master:
@@ -145,6 +145,7 @@ class Cluster(object):
         printStep('Creating additional user')
         master_only = []
         master_only.append(master_node)
+        # TODO: useradd will work correctly only in RH based Linuxes
         ssh.run_remote_command(self.hosts, "useradd " + self.cluster_user)
         ssh.run_remote_command(master_only, "mkdir /home/" + self.cluster_user + "/.ssh")
         ssh.run_remote_command(master_only, " \"ssh-keygen -q -t rsa -N '' -f /home/" + self.cluster_user + "/.ssh/id_rsa \"")
@@ -181,6 +182,11 @@ class Cluster(object):
         
         # wait until the each machine is up or timeout after 15 minutes
         print "Waiting for all instances to start running"
+        if self._is_heterogeneous:
+            print "Waiting for master"
+            self._runner.waitUntilVmRunningOrTimeout(self._master_vmid, vmStartTimeout)
+            vmNetworkDetails.append(self._runner.getNetworkDetail(self._master_vmid))
+
         for vmId in self._runner.vmIds:
             #print "Waiting for instance to start running " + str(vmId)
             self._runner.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
