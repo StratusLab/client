@@ -25,25 +25,6 @@ from stratuslab.Exceptions import ExecutionException
 
 class AppRepoInfoTest(unittest.TestCase):
 
-    manifestSL = '''<manifest>
-  <created>2010-10-22 11:09:00</created>
-  <type>base</type>
-  <version>1.0</version>
-  <arch>i486</arch>
-  <user>Charles LOOMIS</user>
-  <os>ttylinux</os>
-  <osversion>9.5</osversion>
-  <compression>gz</compression>
-  <filename>ttylinux-9.5-i486-base-1.0.img.gz</filename>
-  <checksum type="md5">d231b143be66fe065c2b8c665f25d7fd</checksum>
-  <checksum type="sha1">fbe6fe809f6d81f1f7a5a7f2ac31b925b92372dd</checksum>
-  <comment>
-Uses standard StratusLab contextualization.
-Image only has 'root' account configured.
-Only logins via ssh keys are allowed.
-</comment>
-</manifest>'''
-
     manifestDcFull = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:dcterms="http://purl.org/dc/terms/"
@@ -155,17 +136,10 @@ Only logins via ssh keys are allowed.
         self.template = ''
 
     def testGetInfo(self):
-        infoSL = ManifestInfo()
-        infoSL.parseManifest(AppRepoInfoTest.manifestSL)
-
-        self.assertEquals('2010-10-22 11:09:00', infoSL.created)
-
         infoDC = ManifestInfo()
         infoDC.parseManifest(AppRepoInfoTest.manifestDcFull)
 
         self.assertEquals('2011-01-24T09:59:42Z', infoDC.created)
-
-        self.assertEquals(infoSL.user, infoDC.user)
 
     def testUpdateManifest(self):
 

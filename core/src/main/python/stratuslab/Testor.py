@@ -341,9 +341,8 @@ class Testor(unittest.TestCase):
 
         try:
             creator.create()
-        except Exception, e:
+        finally:
             creator._stopMachine()
-            raise e
 
         assert creator.targetImageUri == newImageUri
         assert Util.checkUrlExists(creator.targetImageUri)
