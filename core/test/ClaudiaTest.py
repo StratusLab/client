@@ -37,8 +37,15 @@ class ClaudiaTest(unittest.TestCase):
         xml = parseString(data)    
         status = xml.getElementsByTagName('Task').item(0).getAttribute('status')
         #print status + "\n"
+        
+        if(status == "success" or status == "running"):
+            check = "OK"
+        else:
+            check = status
+    
+        #print check
 
-        self.assertEquals(status, "success")
+        self.assertEquals(check, "OK")
 
 if __name__ == "__main__":
     unittest.main()
