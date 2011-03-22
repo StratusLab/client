@@ -17,8 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest
-import commands
+import unittest, commands, urllib2
+from xml.dom.minidom import parse
 
 class ClaudiaTest(unittest.TestCase):
 
@@ -28,9 +28,14 @@ class ClaudiaTest(unittest.TestCase):
         
         output = commands.getstatusoutput(deploy)
         stat = output[0]
-        result = output[1]
+        url = output[1]
         print stat
-        print result
+        print url
+        
+        req = urllib2.Request(url)
+        urllib2.urlopen(req)
+        
+        print req
         
         if(stat == 0):
             status = "SUCCESS"
