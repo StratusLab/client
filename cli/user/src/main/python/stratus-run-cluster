@@ -66,9 +66,13 @@ class MainProgram(Runnable):
                 help='Defines that the master node should be considered as part of the worker nodes',
                 default=False)
                 
-        self.parser.add_option('--add-packages', dest='add_packages', action='store_true',
-                help='Set true if you want to setup additional packages',
-                default=False)
+        self.parser.add_option('--add-packages', dest='add_packages', action='store',
+                help='Provide comma separated list of additional packages that you wish to install',
+                default=None, type='string')
+
+        self.parser.add_option('--master-vmid', dest='master_vmid', action='store',
+                help='VMID of master node if this has been instantiated separately',
+                default=None, type='int')
         
         self.parser.add_option('-n', '--number', dest='instanceNumber',
                 help='number of machines to start (default 1) for the cluster', metavar='INT',
@@ -120,7 +124,7 @@ class MainProgram(Runnable):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(self.image, configHolder)
-        cluster = Cluster(configHolder, runner)
+        cluster = Cluster(configHolder, runner, self.options.master_vmid)
         
         printAction('Starting cluster')
         runner.runInstance()
