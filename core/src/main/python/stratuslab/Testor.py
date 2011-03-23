@@ -127,7 +127,7 @@ class Testor(unittest.TestCase):
         self.assertEqual(self.requestedIpAddress, allocatedIp)
 
         self._repeatCall(self._ping, runner)
-        self._repeatCall(self._loginViaSsh, runner)
+        self._repeatCall(self._loginViaSsh, runner, '/bin/true')
         self._stopVm(runner)
 
     def exceedCpuQuotaTest(self):
