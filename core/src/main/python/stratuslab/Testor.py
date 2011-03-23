@@ -38,6 +38,7 @@ from stratuslab.Util import ping
 from stratuslab.Util import printError
 from stratuslab.Util import sshCmd
 import Util
+from stratuslab.ClaudiaTest import ClaudiaTest
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -322,6 +323,7 @@ class Testor(unittest.TestCase):
         for attrib in self.__class__.__dict__:
             if self._isTestMethod(attrib):
                 methods.append(attrib)
+        methods.append('ClaudiaTest.testDeploy')
         return methods
 
     def _isTestMethod(self, attrib):
@@ -408,4 +410,15 @@ class Testor(unittest.TestCase):
         return Creator(image, configHolder)
 
     def marketPlaceTest(self):
+        '''Place holder for marketplace test'''
         pass
+    
+    def claudiaTest(self):
+        '''Cloudia test'''
+        if self.claudiaOvfEndpoint:
+            ClaudiaTest.OVF = self.claudiaOvfEndpoint
+        suite = unittest.TestSuite()
+        suite.addTest(ClaudiaTest('testDeploy'))
+        testResult = unittest.TextTestRunner(verbosity=2).run(suite)
+        self.assertTrue(testResult.wasSuccessful())
+

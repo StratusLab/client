@@ -21,33 +21,33 @@ import unittest, commands, urllib2, time
 from xml.dom.minidom import parseString
 
 class ClaudiaTest(unittest.TestCase):
+
+    OVF = 'http://84.21.173.141:8080/telefonica.xml'
+    CLAUDIA_EXEC = '/opt/claudia/bin/ClaudiaC'
+    CLAUDIA_SERVICENAME = 'stid1'
+    CLAUDIA_CUSTOMER = 'tid'
     
-    def getStatus(self, url):
+    def _getStatus(self, url):
         response = urllib2.urlopen(url)
         data = response.read()
-        #print data + "\n"
+
         xml = parseString(data)    
         status = xml.getElementsByTagName('Task').item(0).getAttribute('status')
         return status
     
     def testDeploy(self):
-        deploy = '/opt/claudia/bin/ClaudiaC "deploy(tid,stid1,http://84.21.173.141:8080/telefonica.xml)" 2> /dev/null'
-        #print deploy + "\n"
-    
+        deploy = '%s "deploy(%s,%s,%s)" 2> /dev/null' % (ClaudiaTest.CLAUDIA_EXEC, ClaudiaTest.CLAUDIA_CUSTOMER, ClaudiaTest.CLAUDIA_SERVICENAME, ClaudiaTest.OVF)
+
         output = commands.getstatusoutput(deploy)
         url = output[1]
-        #print url
     
-        status = self.getStatus(url)
-        #print status
+        status = self._getStatus(url)
     
         while(status == "running"):
             time.sleep(1)
-            status = self.getStatus(url)
-            #print status
+            status = self._getStatus(url)
     
         self.assertEquals(status, "success")
 
 if __name__ == "__main__":
     unittest.main()
-
