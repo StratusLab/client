@@ -20,6 +20,14 @@
 		</fileSet>
 
 		<fileSet>
+			<directory>${project.build.directory}/windows</directory>
+			<outputDirectory>windows</outputDirectory>
+			<includes>
+				<include>stratus-*.bat</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
 			<directory>${project.build.directory}/zip-sources/python</directory>
 			<outputDirectory>lib/stratuslab/python</outputDirectory>
 			<fileMode>0644</fileMode>
