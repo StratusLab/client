@@ -323,7 +323,6 @@ class Testor(unittest.TestCase):
         for attrib in self.__class__.__dict__:
             if self._isTestMethod(attrib):
                 methods.append(attrib)
-        methods.append('ClaudiaTest.testDeploy')
         return methods
 
     def _isTestMethod(self, attrib):
