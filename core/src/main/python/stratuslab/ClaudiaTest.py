@@ -17,35 +17,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest, commands, urllib
+import unittest, commands, urllib2, time
 from xml.dom.minidom import parseString
 
 class ClaudiaTest(unittest.TestCase):
-
+    
+    def getStatus(self, url):
+        response = urllib2.urlopen(url)
+        data = response.read()
+        #print data + "\n"
+        xml = parseString(data)    
+        status = xml.getElementsByTagName('Task').item(0).getAttribute('status')
+        return status
+    
     def testDeploy(self):
         deploy = '/opt/claudia/bin/ClaudiaC "deploy(tid,stid1,http://84.21.173.141:8080/telefonica.xml)" 2> /dev/null'
         #print deploy + "\n"
     
         output = commands.getstatusoutput(deploy)
         url = output[1]
-        #print url + "\n"
+        #print url
     
-        req = urllib.urlopen(url)
-        data = req.read()
-        #print data + "\n"
-
-        xml = parseString(data)    
-        status = xml.getElementsByTagName('Task').item(0).getAttribute('status')
-        #print status + "\n"
-        
-        if(status == "success" or status == "running"):
-            check = "OK"
-        else:
-            check = status
+        status = self.getStatus(url)
+        #print status
     
-        #print check
-
-        self.assertEquals(check, "OK")
+        while(status == "running"):
+            time.sleep(1)
+            status = self.getStatus(url)
+            #print status
+    
+        self.assertEquals(status, "success")
 
 if __name__ == "__main__":
     unittest.main()
+
