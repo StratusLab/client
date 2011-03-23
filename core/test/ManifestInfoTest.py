@@ -171,6 +171,7 @@ class ManifestIdentifierTest(unittest.TestCase):
 
     def testConversion(self):
         sha1 = 'c319bbd5afc0a22ba3eaed0507c39383ec28eeff'
+        sha1 = ''
         id = ManifestIdentifier()
         self.assertEquals(int(sha1, 16),
                           int(id.identifierToSha1(id.sha1ToIdentifier(sha1)), 16))
