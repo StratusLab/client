@@ -93,9 +93,9 @@ class ConfigHolder(object):
         self.options[key] = value
 
     def __str__(self):
-        output = ''
+        output = '* %s:\n' % self.__class__.__name__
         for p in ['options', 'config']:
             if getattr(self, p):
-                output += '%s:\n' % p.upper()
+                output += '** %s:\n' % p.upper()
                 output += '\n'.join(['  %s = %s'%(k,v) for k,v in getattr(self, p).items()]) + '\n'
         return output
