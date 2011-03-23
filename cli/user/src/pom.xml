@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>eu.stratuslab.marketplace</groupId>
 			<artifactId>metadata</artifactId>
-			<version>0.0.5</version>
+			<version>0.0.6-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -49,7 +49,7 @@
 
 				<executions>
 					<execution>
-						<id>insert-metadata</id>
+						<id>insert-python-scripts</id>
 						<phase>process-sources</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -63,6 +63,27 @@
 							<resources>
 								<resource>
 									<directory>main/python</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+
+					</execution>
+					<execution>
+						<id>insert-windows-scripts</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+
+						<configuration>
+							<delimiters>
+								<delimiter>${*}</delimiter>
+							</delimiters>
+							<outputDirectory>${project.build.directory}/windows</outputDirectory>
+							<resources>
+								<resource>
+									<directory>main/windows</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
