@@ -50,7 +50,10 @@ class SSHUtil(object):
             error = os.system(cmd + " " + file + " " + self._username + "@" + host.public_ip + ":" + remotepath)
             if error > 0 :
                 print "Error while executing command"
-            
+                return error
+
+        return 0
+        
     def run_remote_command(self, hostlist, command):
         for host in hostlist:
             cmd = "ssh" + self._options + " -i " + self._private_key + " " + self._username + "@" + host.public_ip + " " + command
@@ -59,6 +62,9 @@ class SSHUtil(object):
             error = os.system(cmd)
             if error > 0 :
                 print "Error while executing command"
+                return error
+
+        return 0
                 
     def waitForConnectivity(self, host, timeout, attempts):
         additional_options = "-o ConnectTimeout=" + str(timeout) + " -o ConnectionAttempts=" + str(attempts)
@@ -104,8 +110,10 @@ class Cluster(object):
         printStep('Installing additional software packages')
         packages = self.add_packages.replace(","," ")
 
-        ssh.run_remote_command(self.hosts, "yum -y install " + packages )
-
+        print "Trying to configure new apps with yum..."
+        if ssh.run_remote_command(self.hosts, "yum -y install " + packages ):
+            print "Trying to configure new apps with apt-get..."
+            ssh.run_remote_command(self.hosts, "apt-get -q -y install " + packages )
 
     def doPrepareMPImachineFile(self, ssh, worker_nodes):
         # TODO: Let user choose where to place the machine file
@@ -126,7 +134,12 @@ class Cluster(object):
         master_only.append(master_node)
         ssh.run_remote_command(self.hosts, "mkdir -p " + self.shared_folder)
         ssh.run_remote_command(master_only, "'echo " + self.shared_folder + " \"*(rw,no_root_squash)\" >> /etc/exports'")
-        ssh.run_remote_command(master_only, "service nfs restart")
+
+        print "Trying RedHat configuration..."
+        if ssh.run_remote_command(master_only, "service nfs restart"):
+            print "Trying debian configuration..."
+            ssh.run_remote_command(master_only, "service nfs-kernel-server restart")
+
         ssh.run_remote_command(worker_nodes, "mount " + master_node.public_ip + ":" + self.shared_folder + " " + self.shared_folder)
 
 
@@ -145,8 +158,7 @@ class Cluster(object):
         printStep('Creating additional user')
         master_only = []
         master_only.append(master_node)
-        # TODO: useradd will work correctly only in RH based Linuxes
-        ssh.run_remote_command(self.hosts, "useradd " + self.cluster_user)
+        ssh.run_remote_command(self.hosts, "useradd -m " + self.cluster_user)
         ssh.run_remote_command(master_only, "mkdir /home/" + self.cluster_user + "/.ssh")
         ssh.run_remote_command(master_only, " \"ssh-keygen -q -t rsa -N '' -f /home/" + self.cluster_user + "/.ssh/id_rsa \"")
         ssh.run_remote_command(master_only, "cp /home/" + self.cluster_user + "/.ssh/id_rsa.pub /home/" + self.cluster_user + "/.ssh/authorized_keys")
@@ -181,7 +193,7 @@ class Cluster(object):
         vmStartTimeout = 600
         
         # wait until the each machine is up or timeout after 15 minutes
-        print "Waiting for all instances to start running"
+        print "Waiting for all cluster VMs to be instantiated"
         if self._is_heterogeneous:
             print "Waiting for master"
             self._runner.waitUntilVmRunningOrTimeout(self._master_vmid, vmStartTimeout)
@@ -215,7 +227,7 @@ class Cluster(object):
         for node in worker_nodes:
             print "Worker:" + node.public_dns
             
-        print "Waiting for all instances to boot"
+        print "Waiting for all instances to become accessible..."
         
         for host in self.hosts:
             hostready = False
