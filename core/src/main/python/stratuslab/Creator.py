@@ -48,7 +48,7 @@ from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCach
 from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
 
-VM_START_TIMEOUT = 150
+VM_START_TIMEOUT = 150 * 2
 VM_PING_TIMEPUT = 600
 
 INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
@@ -80,6 +80,7 @@ class Creator(object):
         self.packages = ''
 
         self.scripts = ''
+        self.recipe = ''
 
         self.verboseLevel = ''
 
@@ -129,11 +130,7 @@ class Creator(object):
                                   ] + \
                                   self.options.get('excludeFromBundle','').split(',')
 
-        installers = ('yum', 'apt')
         self.installer = self.options.get('installer')
-        if self.installer not in installers:
-            raise ValidationException('Installer should be one of %s. Given %s.' %
-                                      (', '.join(installers), self.installer))
 
         self.targetImageUri = ''
         self.targetManifestUri = ''
@@ -249,6 +246,7 @@ class Creator(object):
 
         self._installPackages()
         self._executeScripts()
+        self._executeRecipe()
 
         self._createImage()
 
@@ -343,7 +341,9 @@ class Creator(object):
                                       (manifestUrl, str(e)))
 
     def __createRunner(self):
-        self.configHolder.options['vmName'] = '%s: %s' % (self.vmName, Util.getTimeInIso8601())
+        self.configHolder.set('vmName', 
+                              '%s: %s' % (self.vmName, Util.getTimeInIso8601()))
+        self.configHolder.set('extraDiskSize', self._getExtraDiskSizeBasedOnManifest())
 
         self.runner = Runner(self.image, self.configHolder)
 
@@ -412,6 +412,12 @@ class Creator(object):
         if not self.os:
             self.os = self._getAttrFromManifest('os').lower()
 
+    def _getExtraDiskSizeBasedOnManifest(self):
+        size = self._getAttrFromManifest('bytes')
+        extra = 500 * ( 1024 ** 2 ) # extra 500 MB
+        newSize = str( int(size) + extra )
+        return newSize
+
     def _getAttrFromManifest(self, attr):
         info = ManifestInfo()
         info.parseManifest(self.manifest)
@@ -465,6 +471,8 @@ class Creator(object):
             self.printDetail('No packages to install')
             return
 
+        self._setInstallerBasedOnOs()
+
         self._setUpExtraRepositories()
 
         self.printDetail('Installing packages: %s' % self.packages)
@@ -473,6 +481,12 @@ class Creator(object):
 
         if ret != 0:
             self._printError('An error occurred while installing packages')
+
+    def _setInstallerBasedOnOs(self):
+        if self.os == 'centos':
+            self.installer = 'yum'
+        elif self.os == 'ubuntu':
+            self.installer = 'apt'
 
     def _setUpExtraRepositories(self):
         if not self.extraOsReposUrls:
@@ -543,10 +557,34 @@ deb %(name)s
             scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
                 self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
 
-            ret = self._sshCmd('%s' % scriptPath, stderr=self.stderr, stdout=self.stdout)
+            rc, output = self._sshCmdWithOutput(scriptPath, throwOnError=False)
+            if rc != 0:
+                self._printError('An error occurred while executing script %s:\n%s' % (script, output))
 
-            if ret != 0:
-                self._printError('An error occurred while executing script %s' % script)
+    def _executeRecipe(self):
+        self._printStep('Executing user recipe')
+
+        if len(self.recipe) == 0:
+            self.printDetail('No scripts to execute')
+            return
+
+        fd, recipeFile = tempfile.mkstemp()
+        try:
+            os.write(fd, self.recipe)
+            os.close(fd)
+            os.chmod(recipeFile, 0755)
+            scriptPath = '/tmp/%s' % os.path.basename(recipeFile)
+            scp(recipeFile, 'root@%s:%s' % (self.vmAddress, scriptPath),
+                self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
+    
+            rc, output = self._sshCmdWithOutput(scriptPath, throwOnError=False)
+            if rc != 0:
+                self._printError('An error occurred while executing user recipe:\n%s' % output)
+        finally:
+            try:
+                os.unlink(recipeFile)
+            except:
+                pass
 
     def _createImage(self):
         self._printStep('Creating image')
@@ -554,6 +592,7 @@ deb %(name)s
         self._setDiskNamesOfRemoteNode()
 
         extraDiskFirstPart = '%s1' % self.extraDisk
+        #extraDiskFirstPart = '%s1' % self.extraDisk
         extraDiskFirstPartMntPoint = '%s/%s' % (self.mountPointExtraDisk,
                                                 extraDiskFirstPart)
 
