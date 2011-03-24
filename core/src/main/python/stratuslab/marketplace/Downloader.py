@@ -58,25 +58,44 @@ class Downloader(object):
     ENDPOINT = 'http://appliances.stratuslab.eu/marketplace/metadata'
     LOCAL_IMAGE_FILENAME = '/tmp/image.img'
 
-    def __init__(self, configHolder = ConfigHolder()):
-        self.localImageFilename = None
+    def __init__(self, configHolder=ConfigHolder()):
+        self.localImageFilename = ''
         self.configHolder = configHolder
         self.imageUrl = None
         configHolder.assign(self)
         self.compression = None
         self.localImageFilename = os.path.abspath(self.localImageFilename)
-    
-    def download(self, uri):
 
-        endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
-        url = endpoint + '/' + uri
-        tempMetadataFilename = tempfile.mktemp()
+    def _getManifest(self, imageId, tempMetadataFilename):
+        url = self.constructManifestUrl(imageId)
+        return self.__getManifest(url, tempMetadataFilename)
+
+    def __getManifest(self, url, tempMetadataFilename):
         try:
             self._download(url, tempMetadataFilename)
         except urllib2.HTTPError:
             raise InputException('Failed to find metadata entry: %s' % url)
+        manifestInfo = ManifestInfo(self.configHolder)
+        manifestInfo.parseManifestFromFile(tempMetadataFilename)
+        return manifestInfo
 
-        manifestInfo = ManifestInfo(tempMetadataFilename)
+    def getImageLocations(self, imageId):
+        tempMetadataFilename = tempfile.mktemp()
+        try:
+            locations = [self._getManifest(imageId, tempMetadataFilename).location]
+            return locations
+        finally:
+            try:
+                os.unlink(tempMetadataFilename)
+            except:
+                pass
+
+    def download(self, uri):
+        url = self.constructManifestUrl(uri)
+
+        tempMetadataFilename = tempfile.mktemp()
+
+        manifestInfo = self._getManifest(url, tempMetadataFilename)
 
         locations = [manifestInfo.location]
 
@@ -102,8 +121,13 @@ class Downloader(object):
 
         os.remove(tempImageFilename)
         os.remove(tempMetadataFilename)
-        
+
         return self.localImageFilename
+
+    def constructManifestUrl(self, uri):
+        endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
+        url = endpoint + '/' + uri
+        return url
 
     def _loadDom(self, filename):
         file = open(filename).read()
@@ -112,17 +136,17 @@ class Downloader(object):
 
     def _downloadImage(self, url):
         compressionExtension = self._extractCompressionExtension(url)
-        
+
         localFilename = tempfile.mktemp()
         localImageName = localFilename + compressionExtension
-        
+
         Util.wget(url, localImageName)
-        
+
         return localImageName
 
     def _extractCompressionExtension(self, url):
         compression = url.split('.')[-1]
-        
+
         if compression in ('gz', 'bz2'):
             return '.' + compression
         else:
@@ -147,20 +171,20 @@ class Downloader(object):
             self._printDetail('Inflating image %s' % imageFilename)
             Compressor.inflate(imageFilename)
             inflatedFilename = imageFilename[: - len(extension)]
-        
+
         return inflatedFilename
-    
+
     def _verifyHash(self, imageFilename, hashFromManifest):
 
         data = open(imageFilename).read()
         sha1 = hashlib.sha1()
         sha1.update(data)
-        
+
         imageHash = sha1.hexdigest()
-        
+
         if imageHash != hashFromManifest:
             raise ValidationException('Manifest hash code different from downloaded image: image=%s, matadata=%s' % (imageHash, hashFromManifest))
 
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, 1)
-        
+
