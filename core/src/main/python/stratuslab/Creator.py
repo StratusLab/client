@@ -85,6 +85,8 @@ class Creator(object):
 
         self.shutdownVm = True
 
+        self.signManifest = True
+
         self.options = Runner.defaultRunOptions()
         self.options.update(configHolder.options)
         self.configHolder.options.update(self.options)
@@ -140,7 +142,7 @@ class Creator(object):
         self.manifestObject = None
         self.newManifestFileName = None
 
-        self.__listener = BaseListener()
+        self.__listener = CreatorBaseListener()
 
     @staticmethod
     def checksumImageLocal(filename, chksums=ManifestInfo.MANDATORY_CHECKSUMS):
@@ -448,6 +450,8 @@ class Creator(object):
         os.close(fd)
 
     def _signManifest(self):
+        if not self.signManifest:
+            return
         self._printStep('Signing image manifest')
 
         signator = Signator(self.manifestLocalFileName, self.configHolder)
@@ -752,13 +756,23 @@ EOF
         execute(['rm', '-rf', self.manifestLocalFileName])
 
 
-class BaseListener(object):
+class CreatorBaseListener(object):
+
+    def __init__(self, verbose=False):
+        if verbose:
+            self.write = self.__beVerbose
+
+    def write(self, msg):
+        pass
+
+    def __beVerbose(self, msg):
+        print msg
 
     def onAction(self, msg):
-        pass
+        self.write('action: %s' % msg)
 
     def onStep(self, msg):
-        pass
+        self.write('step: %s' % msg)
 
     def onError(self, msg):
-        pass
+        self.write('error: %s' % msg)
