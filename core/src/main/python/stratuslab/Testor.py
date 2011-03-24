@@ -414,6 +414,10 @@ class Testor(unittest.TestCase):
     
     def claudiaTest(self):
         '''Cloudia test'''
+        if self.claudiaCustomer:
+            ClaudiaTest.CLAUDIA_CUSTOMER = self.claudiaCustomer
+        if self.claudiaServiceName:
+            ClaudiaTest.CLAUDIA_SERVICENAME = self.claudiaServiceName
         if self.claudiaOvfEndpoint:
             ClaudiaTest.OVF = self.claudiaOvfEndpoint
         suite = unittest.TestSuite()
