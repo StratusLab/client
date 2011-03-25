@@ -406,6 +406,7 @@ class Creator(object):
 
     def __setAttributesFromManifest(self):
         self._setOsFromManifest()
+        self._setInstallerBasedOnOs()
 
     def _setOsFromManifest(self):
         # could have been set via command line parameter
@@ -470,8 +471,6 @@ class Creator(object):
         if len(self.packages) == 0:
             self.printDetail('No packages to install')
             return
-
-        self._setInstallerBasedOnOs()
 
         self._setUpExtraRepositories()
 
@@ -592,7 +591,6 @@ deb %(name)s
         self._setDiskNamesOfRemoteNode()
 
         extraDiskFirstPart = '%s1' % self.extraDisk
-        #extraDiskFirstPart = '%s1' % self.extraDisk
         extraDiskFirstPartMntPoint = '%s/%s' % (self.mountPointExtraDisk,
                                                 extraDiskFirstPart)
 
@@ -794,6 +792,10 @@ EOF
     def _localCleanUp(self):
         execute(['rm', '-rf', self.manifestLocalFileName])
 
+    def getNewImageId(self):
+        # FIXME: return ID when manifest gets uploaded to Marketplace
+        return self.targetManifestUri
+        #return self.manifestObject.identifier
 
 class CreatorBaseListener(object):
 
@@ -815,3 +817,4 @@ class CreatorBaseListener(object):
 
     def onError(self, msg):
         self.write('error: %s' % msg)
+
