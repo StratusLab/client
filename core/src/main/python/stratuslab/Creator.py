@@ -415,7 +415,7 @@ class Creator(object):
 
     def _getExtraDiskSizeBasedOnManifest(self):
         size = self._getAttrFromManifest('bytes')
-        extra = 500 * ( 1024 ** 2 ) # extra 500 MB in bytes
+        extra = 1024 ** 3 # extra 1 GB in bytes
         # NB! should be in MB
         newSize = str( (int(size) + extra) / (1024 * 1024) )
         return newSize
