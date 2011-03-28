@@ -48,8 +48,8 @@ from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCach
 from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
 
-VM_START_TIMEOUT = 150 * 2
-VM_PING_TIMEPUT = 600
+VM_START_TIMEOUT = 60 * 10
+VM_PING_TIMEPUT = 60 * 5
 
 INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
 
@@ -415,8 +415,9 @@ class Creator(object):
 
     def _getExtraDiskSizeBasedOnManifest(self):
         size = self._getAttrFromManifest('bytes')
-        extra = 500 * ( 1024 ** 2 ) # extra 500 MB
-        newSize = str( int(size) + extra )
+        extra = 500 * ( 1024 ** 2 ) # extra 500 MB in bytes
+        # NB! should be in MB
+        newSize = str( (int(size) + extra) / (1024 * 1024) )
         return newSize
 
     def _getAttrFromManifest(self, attr):
