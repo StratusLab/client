@@ -24,7 +24,7 @@ class ClaudiaTest(unittest.TestCase):
 
     OVF = 'http://84.21.173.141:8080/telefonica.xml'
     CLAUDIA_EXEC = '/opt/claudia/bin/ClaudiaC'
-    CLAUDIA_SERVICENAME = 'stid1'
+    CLAUDIA_SERVICENAME = 's1'
     CLAUDIA_CUSTOMER = 'tid'
     
     def _getStatus(self, url):

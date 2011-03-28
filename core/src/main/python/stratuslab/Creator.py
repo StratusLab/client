@@ -27,9 +27,6 @@ import shutil
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Runner import Runner
-from stratuslab.Util import printAction
-from stratuslab.Util import printError
-from stratuslab.Util import printStep
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
 from stratuslab.Util import sshCmdWithOutput
@@ -51,8 +48,8 @@ from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCach
 from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
 
-VM_START_TIMEOUT = 150
-VM_PING_TIMEPUT = 600
+VM_START_TIMEOUT = 60 * 10
+VM_PING_TIMEPUT = 60 * 5
 
 INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
 
@@ -83,10 +80,13 @@ class Creator(object):
         self.packages = ''
 
         self.scripts = ''
+        self.recipe = ''
 
         self.verboseLevel = ''
 
-        self.shutdownVm = False
+        self.shutdownVm = True
+
+        self.signManifest = True
 
         self.options = Runner.defaultRunOptions()
         self.options.update(configHolder.options)
@@ -106,6 +106,7 @@ class Creator(object):
         self.vmAddress = None
         self.vmId = None
         self.vmIp = None
+        self.vmName = 'creator'
 
         # Structure of the repository
         self.appRepoStructure = 'images/#type_#/#os#-#osversion#-#arch#-#type#/#version#'
@@ -129,11 +130,7 @@ class Creator(object):
                                   ] + \
                                   self.options.get('excludeFromBundle','').split(',')
 
-        installers = ('yum', 'apt')
         self.installer = self.options.get('installer')
-        if self.installer not in installers:
-            raise ValidationException('Installer should be one of %s. Given %s.' %
-                                      (', '.join(installers), self.installer))
 
         self.targetImageUri = ''
         self.targetManifestUri = ''
@@ -141,6 +138,8 @@ class Creator(object):
         self.manifest = ''
         self.manifestObject = None
         self.newManifestFileName = None
+
+        self.__listener = CreatorBaseListener()
 
     @staticmethod
     def checksumImageLocal(filename, chksums=ManifestInfo.MANDATORY_CHECKSUMS):
@@ -190,7 +189,7 @@ class Creator(object):
         try:
             config = Util.wread(os.path.join(url, '.stratuslab/stratuslab.repo.cfg'))
         except urllib2.HTTPError:
-            printError('Failed to reach url %s' % url)
+            self._printError('Failed to reach url %s' % url)
         parser = SafeConfigParser()
         parser.readfp(config)
         self.appRepoStructure = parser.get('stratuslab_repo', 'repo_structure')
@@ -209,69 +208,99 @@ class Creator(object):
         return Uploader.buildRepoNameStructure(structure, info)
 
     def create(self):
-        printAction('Starting image creation')
 
-        printStep('Checking that base image exists')
-        self._imageExists()
+        self._printAction('Starting image creation')
 
-        printStep('Retrieving image manifest')
-        self._retrieveManifest()
-        self._setAttributesFromManifest()
+        try:
+            self.buildAndStoreNodeIncrement()
 
-        self._createRunner()
-
-        printStep('Starting base image')
-        self._startMachine()
-
-        self.vmAddress = self._getPublicAddress()
-
-        if not waitUntilPingOrTimeout(self.vmAddress, VM_PING_TIMEPUT):
-            self._stopMachine()
-            printError('Unable to ping VM')
-
-        printStep('Check if we can connect.')
-        self._checkIfCanConnectToMachine()
-
-        printStep('Installing user packages')
-        self._installPackages()
-
-        printStep('Executing user scripts')
-        self._executeScripts()
-
-        printStep('Creating image')
-        self._createImage()
-
-        printStep('Checksumming image')
-        self._checksumImage()
-
-        printStep('Updating image manifest')
-        self._updateAndSaveManifest()
-
-        printStep('Signing image manifest')
-        self._signManifest()
-
-        printStep('Bundling image')
-        self._bundleImage()
-
-        printStep('Uploading image and manifest to appliance repository')
-        self._uploadImageAndManifest()
-
-        if self.shutdownVm:
-            printStep('Shutting down machine')
-            self._stopMachine()
-        else:
-            printStep('Machine ready for your usage')
-            print '\n\tMachine IP: %s' % self.vmIp
-            print '\tRemember to stop the machine when finished',
-
-        printAction('Image creation finished')
-        print ' Image: %s' % self.targetImageUri
-        print ' Manifest: %s' % self.targetManifestUri
-        print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
-                                                                        self.stderr.name)
+            self._printAction('Image creation finished')
+            print ' Image: %s' % self.targetImageUri
+            print ' Manifest: %s' % self.targetManifestUri
+            print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
+                                                                            self.stderr.name)
+        finally:
+            self._shutdownNode()
         self._localCleanUp()
 
+    def buildAndStoreNodeIncrement(self):
+        self.startNode()
+        self.buildNodeIncrement()
+        self.storeNodeIncrement()
+
+    def startNode(self):
+        self._imageExists()
+
+        self._retrieveManifest()
+        self.__setAttributesFromManifest()
+
+        self.__createRunner()
+
+        self._startMachine()
+
+        self._waitMachineNetworkUpOrAbort()
+
+        self._checkIfCanConnectToMachine()
+
+    def buildNodeIncrement(self):
+
+        self._installPackages()
+        self._executeScripts()
+        self._executeRecipe()
+
+        self._createImage()
+
+        self._checksumImage()
+
+        self._updateAndSaveManifest()
+        self._signManifest()
+
+        self._bundleImage()
+
+    def storeNodeIncrement(self):
+        self._uploadImageAndManifest()
+
+    def _printAction(self, msg):
+        Util.printAction(msg)
+        self._notifyOnAction(msg)
+
+    def _printStep(self, msg):
+        Util.printStep(msg)
+        self._notifyOnStep(msg)
+
+    def _printError(self, msg):
+        self._notifyOnError(msg)
+        Util.printError(msg)
+
+    def setListener(self, listener):
+        if listener:
+            self.__listener = listener
+
+    def _notifyOnAction(self, note):
+        self._notify('Action', note)
+
+    def _notifyOnStep(self, note):
+        self._notify('Step', note)
+
+    def _notifyOnError(self, note):
+        self._notify('Error', note)
+
+    def _notify(self, operation, note):
+        def callListener():
+            notifyFunction = getattr(self.__listener, onOperation)
+            notifyFunction(note)
+
+        onOperation = 'on%s' % operation
+
+        if hasattr(self.__listener, onOperation):
+            pass
+        elif hasattr(self.__listener, 'onAny'):
+            onOperation = 'onAny'
+        callListener()
+
     def _checkIfCanConnectToMachine(self):
+        self._printStep('Check if we can connect to machine')
+
         cmd = 'true'
         try:
             self._sshCmdWithOutputVerb(cmd)
@@ -292,6 +321,7 @@ class Creator(object):
                     counter += 1
 
     def _imageExists(self):
+        self._printStep('Checking that base image exists')
         self._checkImageExists()
         self._checkManifestExists()
 
@@ -310,28 +340,39 @@ class Creator(object):
             raise ValidationException("Unable to access manifest '%s': %s" %
                                       (manifestUrl, str(e)))
 
-    def _createRunner(self):
+    def __createRunner(self):
+        self.configHolder.set('vmName', 
+                              '%s: %s' % (self.vmName, Util.getTimeInIso8601()))
+        self.configHolder.set('extraDiskSize', self._getExtraDiskSizeBasedOnManifest())
+
         self.runner = Runner(self.image, self.configHolder)
 
     def _startMachine(self):
+        self._printStep('Starting base image')
+
         try:
             self.vmId = self.runner.runInstance()[0]
         except Exception, msg:
-            printError('An error occurred while starting machine: \n\t%s' % msg)
+            self._printError('An error occurred while starting machine: \n\t%s' % msg)
         try:
             _, self.vmIp = self.runner.getNetworkDetail(self.vmId)
+            self.vmAddress = self.vmIp
         except Exception, e:
-            printError('An error occurred while getting machine network details: \n\t%s' % str(e))
+            self._printError('An error occurred while getting machine network details: \n\t%s' % str(e))
 
-        printStep('Waiting for machine to boot')
+        self._printStep('Waiting for machine to boot')
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
                                                             VM_START_TIMEOUT)
         if not vmStarted:
-            self.printDetail('Failed to start VM!')
+            msg = 'Failed to start VM within %i seconds (id=%s, ip=%s)' % \
+                                (VM_START_TIMEOUT, self.vmId, self.vmAddress)
+            self.printDetail(msg)
             self._stopMachine()
-            printError('Failed to start VM!')
+            self._printError(msg)
 
     def _stopMachine(self):
+        self._printStep('Shutting down machine')
+
         if self.vmId:
             # TODO: STRATUSLAB-414. This doesn't always work. Kill the machine instead.
             #self.cloud.vmStop(self.vmId)
@@ -339,21 +380,45 @@ class Creator(object):
         else:
             Util.printWarning('Undefined VM ID, when trying to stop machine.')
 
+    def _shutdownNode(self):
+        if self.shutdownVm:
+            self._stopMachine()
+        else:
+            self._printStep('Machine ready for your usage')
+            print '\n\tMachine IP: %s' % self.vmIp
+            print '\tRemember to stop the machine when finished'
+
+    def _waitMachineNetworkUpOrAbort(self):
+        self._printStep('Waiting for machine network to start')
+        if not waitUntilPingOrTimeout(self.vmAddress, VM_PING_TIMEPUT):
+            msg = 'Unable to ping VM in %i seconds (id=%s, ip=%s)' % \
+                                    (VM_PING_TIMEPUT, self.vmId, self.vmAddress)
+            self._printError(msg)
+            self._stopMachine()
+
     def _getPublicAddress(self):
         return self.vmIp
 
     def _retrieveManifest(self):
-        self.printDetail('Retrieving Manifest')
+        self._printStep('Retrieving image manifest')
         manifestFileName = self.image[:-6] + 'xml'
         self.manifest = Util.wstring(manifestFileName)
 
-    def _setAttributesFromManifest(self):
+    def __setAttributesFromManifest(self):
         self._setOsFromManifest()
+        self._setInstallerBasedOnOs()
 
     def _setOsFromManifest(self):
         # could have been set via command line parameter
         if not self.os:
             self.os = self._getAttrFromManifest('os').lower()
+
+    def _getExtraDiskSizeBasedOnManifest(self):
+        size = self._getAttrFromManifest('bytes')
+        extra = 500 * ( 1024 ** 2 ) # extra 500 MB in bytes
+        # NB! should be in MB
+        newSize = str( (int(size) + extra) / (1024 * 1024) )
+        return newSize
 
     def _getAttrFromManifest(self, attr):
         info = ManifestInfo()
@@ -361,6 +426,8 @@ class Creator(object):
         return getattr(info, attr)
 
     def _updateAndSaveManifest(self):
+        self._printStep('Updating image manifest')
+
         self.manifestObject = self._updateManifest()
 
         self.manifest = self.manifestObject.tostring()
@@ -391,11 +458,17 @@ class Creator(object):
         os.close(fd)
 
     def _signManifest(self):
+        if not self.signManifest:
+            return
+        self._printStep('Signing image manifest')
+
         signator = Signator(self.manifestLocalFileName, self.configHolder)
         signator.sign()
         shutil.move(signator.outputManifestFile, self.manifestLocalFileName)
 
     def _installPackages(self):
+        self._printStep('Installing user packages')
+
         if len(self.packages) == 0:
             self.printDetail('No packages to install')
             return
@@ -407,7 +480,13 @@ class Creator(object):
         ret = self._doInstallPackages(self.packages)
 
         if ret != 0:
-            printError('An error occurred while installing packages')
+            self._printError('An error occurred while installing packages')
+
+    def _setInstallerBasedOnOs(self):
+        if self.os == 'centos':
+            self.installer = 'yum'
+        elif self.os == 'ubuntu':
+            self.installer = 'apt'
 
     def _setUpExtraRepositories(self):
         if not self.extraOsReposUrls:
@@ -465,23 +544,50 @@ deb %(name)s
             return aptCleanPackageCacheCmd
 
     def _executeScripts(self):
+        self._printStep('Executing user scripts')
+
         if len(self.scripts) == 0:
             self.printDetail('No scripts to execute')
             return
 
-        printStep('Executing scripts: ' % self.scripts)
+        self._printStep('Executing scripts: ' % self.scripts)
 
         for script in self.scripts.split(','):
             scriptPath = '/tmp/%s' % os.path.basename(script)
             scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
                 self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
 
-            ret = self._sshCmd('%s' % scriptPath, stderr=self.stderr, stdout=self.stdout)
+            rc, output = self._sshCmdWithOutput(scriptPath, throwOnError=False)
+            if rc != 0:
+                self._printError('An error occurred while executing script %s:\n%s' % (script, output))
 
-            if ret != 0:
-                printError('An error occurred while executing script %s' % script)
+    def _executeRecipe(self):
+        self._printStep('Executing user recipe')
+
+        if len(self.recipe) == 0:
+            self.printDetail('No scripts to execute')
+            return
+
+        fd, recipeFile = tempfile.mkstemp()
+        try:
+            os.write(fd, self.recipe)
+            os.close(fd)
+            os.chmod(recipeFile, 0755)
+            scriptPath = '/tmp/%s' % os.path.basename(recipeFile)
+            scp(recipeFile, 'root@%s:%s' % (self.vmAddress, scriptPath),
+                self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
+    
+            rc, output = self._sshCmdWithOutput(scriptPath, throwOnError=False)
+            if rc != 0:
+                self._printError('An error occurred while executing user recipe:\n%s' % output)
+        finally:
+            try:
+                os.unlink(recipeFile)
+            except:
+                pass
 
     def _createImage(self):
+        self._printStep('Creating image')
 
         self._setDiskNamesOfRemoteNode()
 
@@ -541,7 +647,7 @@ EOF
             self.imageFileBundled = '%s.gz' % self.imageFile
 
         def _removeFilesForExclusion(base=''):
-            printStep('Removing files/directories to be excluded')
+            self._printStep('Removing files/directories to be excluded')
 
             filesOnBase = ['%s/%s' % (base, x) for x in self.excludeFromBundle if x]
             cmd = 'rm -rf %s' % ' '.join(filesOnBase).strip()
@@ -573,6 +679,8 @@ EOF
             self.extraDisk = 'sdd'
 
     def _bundleImage(self):
+        self._printStep('Bundling image')
+
         cmd = 'gzip -c %s > %s' % (self.imageFile, self.imageFileBundled)
         self._sshCmd(cmd)
 
@@ -607,6 +715,8 @@ EOF
             self._sshCmdWithOutput(cmd)
 
     def _checksumImage(self):
+        self._printStep('Checksumming image')
+
         self._checksumFile(self.imageFile)
 
     def _checksumFile(self, filename):
@@ -642,8 +752,10 @@ EOF
         return self._sshCmdWithOutput(cmd, sshVerb=True, **kwargs)
 
     def _uploadImageAndManifest(self):
+        self._printStep('Uploading image and manifest to appliance repository')
+
         if self.options.get('noUpload', False):
-            printStep('Asked not to upload image to appliance repository')
+            self._printStep('Asked not to upload image to appliance repository')
             return
 
         self._doInstallPackages('curl')
@@ -656,10 +768,10 @@ EOF
         self.targetImageUri, self.targetManifestUri = \
             self._constructRemoteImageAndManifestUris()
 
-        printStep('Uploading appliance\n')
+        self._printStep('Uploading appliance\n')
         uploader.uploadFileFromRemoteServer(self.imageFileBundled, self.targetImageUri)
 
-        printStep('Uploading manifest')
+        self._printStep('Uploading manifest')
         uploader.uploadFile(self.manifestLocalFileName, self.targetManifestUri)
 
     def _constructRemoteImageAndManifestUris(self):
@@ -680,3 +792,30 @@ EOF
 
     def _localCleanUp(self):
         execute(['rm', '-rf', self.manifestLocalFileName])
+
+    def getNewImageId(self):
+        # FIXME: return ID when manifest gets uploaded to Marketplace
+        return self.targetManifestUri
+        #return self.manifestObject.identifier
+
+class CreatorBaseListener(object):
+
+    def __init__(self, verbose=False):
+        if verbose:
+            self.write = self.__beVerbose
+
+    def write(self, msg):
+        pass
+
+    def __beVerbose(self, msg):
+        print msg
+
+    def onAction(self, msg):
+        self.write('action: %s' % msg)
+
+    def onStep(self, msg):
+        self.write('step: %s' % msg)
+
+    def onError(self, msg):
+        self.write('error: %s' % msg)
+
