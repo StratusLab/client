@@ -24,7 +24,6 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import cliLineSplitChar
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import modulePath
-from stratuslab.Util import printStep
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Exceptions import ValidationException, ExecutionException
@@ -40,6 +39,7 @@ class Runner(object):
   TYPE=fs ]'''
 
     def __init__(self, image, configHolder):
+        self.quiet = False
         configHolder.assign(self)
 
         credentials = AuthnFactory.getCredentials(self)
@@ -272,12 +272,14 @@ class Runner(object):
     def runInstance(self):
         self._checkImageUrl()
 
+        self.printAction('Starting machines')
+
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 
         plurial = { True: 'machines',
                     False: 'machine' }
 
-        printStep('Starting %s %s' % (self.instanceNumber,
+        self.printStep('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
         self.printDetail('on endpoint: %s' % self.endpoint)
@@ -288,9 +290,14 @@ class Runner(object):
             self.vmIds.append(vmId)
             networkName, ip = self.getNetworkDetail(vmId)
             vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
-            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
+            if self.quiet:
+                print '%s, %s' % (vmId, ip)
+            else:
+                self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
 
         self._saveVmIds()
+
+        self.printStep('Done!')
 
         return self.vmIds
 
@@ -320,7 +327,19 @@ class Runner(object):
         self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
 
     def printDetail(self, msg):
+        if self.quiet:
+            return
         return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)
+
+    def printStep(self, msg):
+        if self.quiet:
+            return
+        return Util.printStep(msg)
+
+    def printAction(self, msg):
+        if self.quiet:
+            return
+        return Util.printAction(msg)
 
     def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
