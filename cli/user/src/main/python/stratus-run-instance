@@ -37,6 +37,10 @@ class MainProgram(Runnable):
     def parse(self):
         options = Runner.defaultRunOptions()
 
+        self.parser.add_option('--quiet', dest='quiet',
+                help='quiet output. Only returns <VM-ID>, <IP>',
+                action='store_true', default=False)
+
         self.parser.add_option('-n', '--number', dest='instanceNumber',
                 help='number of machines to start (default 1)', metavar='INT',
                 default=options['instanceNumber'], type='int')
@@ -94,9 +98,7 @@ class MainProgram(Runnable):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(self.image, configHolder)
-        printAction('Starting machines')
         runner.runInstance()
-        printStep('Done!')
 
 if __name__ == '__main__':
     try:
