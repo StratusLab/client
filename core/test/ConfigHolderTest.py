@@ -50,9 +50,10 @@ class ConfigHolderTest(unittest.TestCase):
 
     def testToString(self):
         configHolder = ConfigHolder({'a':'A'},{'b':'B'})
-        result = """OPTIONS:
+        result = """* ConfigHolder:
+** OPTIONS:
   a = A
-CONFIG:
+** CONFIG:
   b = B
 """
         self.assertEquals(str(configHolder), result)
