@@ -26,6 +26,7 @@ import Util
 from ManifestInfo import ManifestInfo
 from Exceptions import InputException
 from Exceptions import NetworkException
+import Exceptions as Exceptions
 from Signator import Signator
 from ConfigHolder import ConfigHolder
 
@@ -228,7 +229,10 @@ class Uploader(object):
         curlUploadCmd = self.curlCmd + ['-T', filename]
 
         self._checkFileAlreadyExists(remoteName)
-        self._createRemoteDirectoryStructure(os.path.dirname(uploadUrl))
+        if remoteServer:
+            self._createRemoteDirectoryStructureFromRemoteMachine(os.path.dirname(uploadUrl))
+        else:
+            self._createRemoteDirectoryStructure(os.path.dirname(uploadUrl))
 
         if self.uploadOption:
             curlUploadCmd.append(self.uploadOption)
@@ -291,6 +295,24 @@ class Uploader(object):
                 continue
             curlCreateDirCmd.append('%s/%s' % (repoAddress, dir))
             self._execute(curlCreateDirCmd)
+            curlCreateDirCmd.pop()
+
+    def _createRemoteDirectoryStructureFromRemoteMachine(self, url):
+        curlCreateDirCmd = self.curlCmd + ['-X', 'MKCOL']
+        urlDirs = self._getDirectoriesOfUrl(url)
+        repoAddress = '/'.join(url.split('/')[0:3])
+
+        for dir in urlDirs:
+            if dir == '':
+                continue
+            curlCreateDirCmd.append('%s/%s' % (repoAddress, dir))
+            rc, output = Util.sshCmdWithOutput(curlCreateDirCmd, self.remoteServerAddress,
+                                        sshKey=self.userPrivateKeyFile,
+                                        verboseLevel=self.verboseLevel,
+                                        verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+            if rc != 0:
+                raise Exceptions.ExecutionException('An error occurred while creating remote directory structure %s:\n%s' % 
+                                                    (str(urlDirs), output))
             curlCreateDirCmd.pop()
 
     def _checkFileAlreadyExists(self, filename):

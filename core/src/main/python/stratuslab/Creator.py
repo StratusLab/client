@@ -534,17 +534,6 @@ deb %(name)s
         cmd += ' '.join(packages.split(','))
         return self._sshCmd(cmd, stderr=self.stderr, stdout=self.stdout)
 
-    def _doInstallPackagesLocally(self, packages):
-        cmd = self._buildInstallerCommand() + ' '
-        cmd += ' '.join(packages.split(','))
-        rc, output = Util.execute(cmd, verboseLevel=self.verboseLevel,
-                                  verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
-                                  withOutput=True)
-        if rc != 0:
-            raise ExecutionException('Failed to run %s:\n%s' % (cmd, output))
-        return rc
-        
-
     def _buildInstallerCommand(self):
         if self.installer == 'yum':
             return yumInstallCmd
@@ -777,9 +766,6 @@ EOF
         if self.options.get('noUpload', False):
             self._printStep('Asked not to upload image to appliance repository')
             return
-
-        # we need curl locally for Uploader
-        self._doInstallPackagesLocally('curl')
 
         self._doInstallPackagesRemotly('curl')
 
