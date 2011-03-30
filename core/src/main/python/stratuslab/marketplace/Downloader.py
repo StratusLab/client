@@ -65,12 +65,17 @@ class Downloader(object):
         configHolder.assign(self)
         self.compression = None
         self.localImageFilename = os.path.abspath(self.localImageFilename)
+        self.manifestObject = None
 
     def _getManifest(self, imageId, tempMetadataFilename):
+        """Return manifest as ManifestInfo object.
+        """
         url = self.constructManifestUrl(imageId)
         return self.__getManifest(url, tempMetadataFilename)
 
     def __getManifest(self, url, tempMetadataFilename):
+        """Return manifest as ManifestInfo object.
+        """
         try:
             self._download(url, tempMetadataFilename)
         except urllib2.HTTPError:
@@ -79,11 +84,27 @@ class Downloader(object):
         manifestInfo.parseManifestFromFile(tempMetadataFilename)
         return manifestInfo
 
-    def getImageLocations(self, imageId):
+    def getImageLocations(self, imageId=''):
+        if imageId:
+            self._checkManifestAndImageId(imageId)
+        return [self.manifestObject.location]
+
+    def getImageVersion(self, imageId=''):
+        if imageId:
+            self._checkManifestAndImageId(imageId)
+        return self.manifestObject.version
+
+    def _checkManifestAndImageId(self, imageId):
+        if not self.manifestObject:
+            self.downloadManifestByImageId(imageId)
+        if imageId != self.manifestObject.identifier:
+            raise InputException('Given image ID [%s] does not match to downloaded [%s]' % 
+                                    (imageId, self.manifestObject.identifier))
+
+    def downloadManifestByImageId(self, imageId):
         tempMetadataFilename = tempfile.mktemp()
         try:
-            locations = [self._getManifest(imageId, tempMetadataFilename).location]
-            return locations
+            self.manifestObject = self._getManifest(imageId, tempMetadataFilename)
         finally:
             try:
                 os.unlink(tempMetadataFilename)
