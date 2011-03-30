@@ -306,10 +306,10 @@ class Uploader(object):
             if dir == '':
                 continue
             curlCreateDirCmd.append('%s/%s' % (repoAddress, dir))
-            rc, output = Util.sshCmdWithOutput(curlCreateDirCmd, self.remoteServerAddress,
-                                        sshKey=self.userPrivateKeyFile,
-                                        verboseLevel=self.verboseLevel,
-                                        verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+            rc, output = Util.sshCmdWithOutput(' '.join(curlCreateDirCmd), self.remoteServerAddress,
+                                                sshKey=self.userPrivateKeyFile,
+                                                verboseLevel=self.verboseLevel,
+                                                verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
             if rc != 0:
                 raise Exceptions.ExecutionException('An error occurred while creating remote directory structure %s:\n%s' % 
                                                     (str(urlDirs), output))
