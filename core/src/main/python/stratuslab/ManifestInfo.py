@@ -119,7 +119,8 @@ class ManifestInfo(object):
                              ('arch','os-arch',NS_SLTERMS,None),
                              ('osversion','os-version',NS_SLTERMS,None),
                              ('compression','compression',NS_DCTERMS,self.compression),
-                             ('comment','description',NS_DCTERMS,None))
+                             ('comment','description',NS_DCTERMS,None),
+                             ('version','version',NS_SLTERMS,None))
 
     def parseManifest(self, manifest):
         xml = etree.fromstring(manifest)
@@ -194,6 +195,13 @@ class ManifestInfo(object):
     def tostring(self):
         template = open(self.template).read()
         return template % self.__dict__
+
+    def __str__(self):
+        output = '* %s:\n' % self.__class__.__name__
+        for k in self.__dict__:
+            if not k.startswith('_') and not callable(k):
+                output += '  %s = %s\n' % (k, self.__dict__[k])
+        return output
 
 class ManifestIdentifier(object):
     encoding = string.ascii_uppercase + string.ascii_lowercase + string.digits + '-_'
