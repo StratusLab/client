@@ -311,8 +311,9 @@ class Uploader(object):
                                                 verboseLevel=self.verboseLevel,
                                                 verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
             if rc != 0:
-                raise Exceptions.ExecutionException('An error occurred while creating remote directory structure %s:\n%s' % 
-                                                    (str(urlDirs), output))
+                Util.printDetail('Error while creating remote directory structure %s:\n%s' % (str(urlDirs), output),
+                                 verboseLevel=self.verboseLevel,
+                                 verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
             curlCreateDirCmd.pop()
 
     def _checkFileAlreadyExists(self, filename):
