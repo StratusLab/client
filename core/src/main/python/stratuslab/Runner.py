@@ -38,6 +38,11 @@ class Runner(object):
   TARGET=hdd,
   TYPE=fs ]'''
 
+    PERSISTENT_DISK = '''DISK=[
+  SOURCE=pdisk:%(persistentDiskUUID)s,
+  TARGET=hdd,
+  TYPE=block ]'''
+
     def __init__(self, image, configHolder):
         self.quiet = False
         configHolder.assign(self)
@@ -67,6 +72,7 @@ class Runner(object):
         self._setUserKeyIfDefined()
         self._setSaveDisk()
         self._setExtraDiskOptional()
+        self._setPersistentDiskOptional()
         self._setDiskImageFormat()
 
     def _setDiskImageFormat(self):
@@ -87,6 +93,12 @@ class Runner(object):
     def _setExtraDiskOptional(self):
         try:
             self.extra_disk = (self.extraDiskSize and Runner.EXTRA_DISK % self.__dict__) or ''
+        except AttributeError:
+            pass
+
+    def _setPersistentDiskOptional(self):
+        try:
+            self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
         except AttributeError:
             pass
 
