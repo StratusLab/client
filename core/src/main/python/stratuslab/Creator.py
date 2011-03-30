@@ -47,6 +47,7 @@ from stratuslab.system.centos import updateCmd as yumUpdateCmd
 from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCacheCmd
 from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
+from stratuslab.ManifestInfo import ManifestIdentifier
 
 VM_START_TIMEOUT = 60 * 10
 VM_PING_TIMEPUT = 60 * 5
@@ -69,6 +70,7 @@ class Creator(object):
         self.newInstalledSoftwareName = ''
         self.newInstalledSoftwareVersion = ''
         self.newImageGroupVersion = ''
+        self.newImageGroupVersionWithManifestId = False
         self.author = ''
         self.comment = ''
         self.os = ''
@@ -439,12 +441,19 @@ class Creator(object):
         info = ManifestInfo()
 
         info.parseManifest(self.manifest)
+        info.identifier = ManifestIdentifier().sha1ToIdentifier(info.sha1)
         info.created = Util.getTimeInIso8601()
+        info.valid = Util.toTimeInIso8601(time.time() + ManifestInfo.IMAGE_VALIDITY)
         info.type = self.newImageGroupName or info.type
         info.os = self.newInstalledSoftwareName or info.os
         info.osversion = self.newInstalledSoftwareVersion or info.osversion
         info.user = self.author or info.user
-        info.version = self.newImageGroupVersion or info.version
+        if self.newImageGroupVersionWithManifestId:
+            # mangle version number for uniqueness
+            if self.newImageGroupVersion:
+                info.version = '%s.%s' % (self.newImageGroupVersion, info.identifier[:3])
+        else:
+            info.version = self.newImageGroupVersion or info.version
         info.comment = self.comment or info.comment
         for name, checksum in self.checksums.items():
             setattr(info, name, checksum['sum'])
@@ -477,7 +486,7 @@ class Creator(object):
 
         self.printDetail('Installing packages: %s' % self.packages)
 
-        ret = self._doInstallPackages(self.packages)
+        ret = self._doInstallPackagesRemotly(self.packages)
 
         if ret != 0:
             self._printError('An error occurred while installing packages')
@@ -520,10 +529,21 @@ deb %(name)s
 
         self._sshCmdWithOutput(cmd)
 
-    def _doInstallPackages(self, packages):
+    def _doInstallPackagesRemotly(self, packages):
         cmd = self._buildInstallerCommand() + ' '
         cmd += ' '.join(packages.split(','))
         return self._sshCmd(cmd, stderr=self.stderr, stdout=self.stdout)
+
+    def _doInstallPackagesLocally(self, packages):
+        cmd = self._buildInstallerCommand() + ' '
+        cmd += ' '.join(packages.split(','))
+        rc, output = Util.execute(cmd, verboseLevel=self.verboseLevel,
+                                  verboseThreshold=Util.DETAILED_VERBOSE_LEVEL, 
+                                  withOutput=True)
+        if rc != 0:
+            raise ExecutionException('Failed to run %s:\n%s' % (cmd, output))
+        return rc
+        
 
     def _buildInstallerCommand(self):
         if self.installer == 'yum':
@@ -758,7 +778,10 @@ EOF
             self._printStep('Asked not to upload image to appliance repository')
             return
 
-        self._doInstallPackages('curl')
+        # we need curl locally for Uploader
+        self._doInstallPackagesLocally('curl')
+
+        self._doInstallPackagesRemotly('curl')
 
         self.configHolder.options['remoteImage'] = True
         self.configHolder.options['uploadOption'] = ''
