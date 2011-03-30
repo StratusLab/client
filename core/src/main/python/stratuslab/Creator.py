@@ -441,6 +441,8 @@ class Creator(object):
         info = ManifestInfo()
 
         info.parseManifest(self.manifest)
+        for name, checksum in self.checksums.items():
+            setattr(info, name, checksum['sum'])
         info.identifier = ManifestIdentifier().sha1ToIdentifier(info.sha1)
         info.created = Util.getTimeInIso8601()
         info.valid = Util.toTimeInIso8601(time.time() + ManifestInfo.IMAGE_VALIDITY)
@@ -451,12 +453,10 @@ class Creator(object):
         if self.newImageGroupVersionWithManifestId:
             # mangle version number for uniqueness
             if self.newImageGroupVersion:
-                info.version = '%s.%s' % (self.newImageGroupVersion, info.identifier[:3])
+                info.version = '%s.%s' % (self.newImageGroupVersion, info.identifier)
         else:
             info.version = self.newImageGroupVersion or info.version
         info.comment = self.comment or info.comment
-        for name, checksum in self.checksums.items():
-            setattr(info, name, checksum['sum'])
 
         return info
 
