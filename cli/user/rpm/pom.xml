@@ -118,7 +118,7 @@
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/scripts</location>
+		  <location>${project.build.directory}/zip-sources/bin</location>
 		  <includes>
 		    <include>stratus-*</include>
 		  </includes>
@@ -126,14 +126,14 @@
 	      </sources>
 	    </mapping>
 	    <mapping>
-	      <directory>/var/lib/stratuslab/python/</directory>
+	      <directory>/var/lib/</directory>
 	      <directoryIncluded>false</directoryIncluded>
 	      <filemode>755</filemode>
 	      <username>root</username>
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/python</location>
+		  <location>${project.build.directory}/zip-sources/lib</location>
 		  <includes>
 		    <include>**/*.py</include>
 		  </includes>
