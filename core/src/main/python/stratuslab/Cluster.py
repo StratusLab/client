@@ -106,7 +106,6 @@ class Cluster(object):
         
 
     def doAddPackages(self, ssh):
-        # TODO: Add support for apt. Selection of package management system should be defined in the command line
         printStep('Installing additional software packages')
         packages = self.add_packages.replace(","," ")
 
