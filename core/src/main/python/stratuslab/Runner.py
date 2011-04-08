@@ -114,7 +114,7 @@ class Runner(object):
             pass
 
     def _setReadonlyDiskOptional(self):
-        if hasattr(self, 'readonlyDiskId'):
+        if hasattr(self, 'readonlyDiskId') and self.readonlyDiskId:
             self._checkImageExists(self.readonlyDiskId)
             self.readonlyDiskId = self._prependMarketplaceUrlIfImageId(self.readonlyDiskId)
             self.readonly_disk = (self.readonlyDiskId and Runner.READONLY_DISK % self.__dict__) or ''
