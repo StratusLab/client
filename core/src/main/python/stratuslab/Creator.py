@@ -48,6 +48,8 @@ from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCach
 from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
 from stratuslab.ManifestInfo import ManifestIdentifier
+from stratuslab.Image import Image
+from stratuslab.marketplace.Downloader import Downloader
 
 VM_START_TIMEOUT = 60 * 10
 VM_PING_TIMEPUT = 60 * 5
@@ -325,27 +327,16 @@ class Creator(object):
     def _imageExists(self):
         self._printStep('Checking that base image exists')
         self._checkImageExists()
-        self._checkManifestExists()
 
     def _checkImageExists(self):
-        try:
-            Util.checkUrlExists(self.image)
-        except Exception, e:
-            raise ValidationException("Unable to access image '%s': %s" %
-                                      (self.image, str(e)))
-
-    def _checkManifestExists(self):
-        manifestUrl = self.image.rsplit('.',2)[0] + '.xml'
-        try:
-            Util.checkUrlExists(manifestUrl)
-        except Exception, e:
-            raise ValidationException("Unable to access manifest '%s': %s" %
-                                      (manifestUrl, str(e)))
+        imageObject = Image(self.configHolder)
+        imageObject.checkImageExists(self.image)
 
     def __createRunner(self):
         self.configHolder.set('vmName', 
                               '%s: %s' % (self.vmName, Util.getTimeInIso8601()))
         self.configHolder.set('extraDiskSize', self._getExtraDiskSizeBasedOnManifest())
+        self.configHolder.set('noCheckImageUrl', True)
 
         self.runner = Runner(self.image, self.configHolder)
 
@@ -402,9 +393,16 @@ class Creator(object):
         return self.vmIp
 
     def _retrieveManifest(self):
+        """Retrieve from marketplace as manifest object."""
+
         self._printStep('Retrieving image manifest')
-        manifestFileName = self.image[:-6] + 'xml'
-        self.manifest = Util.wstring(manifestFileName)
+        
+        configHolder = self.configHolder.copy()
+        configHolder.set('endpoint', self.marketPlaceEndpoint)
+        
+        downloader = Downloader(configHolder)
+        downloader.downloadManifestByImageId(self.image)
+        self.manifestObject = downloader.manifestObject
 
     def __setAttributesFromManifest(self):
         self._setOsFromManifest()
@@ -423,9 +421,10 @@ class Creator(object):
         return newSize
 
     def _getAttrFromManifest(self, attr):
-        info = ManifestInfo()
-        info.parseManifest(self.manifest)
-        return getattr(info, attr)
+#        info = ManifestInfo()
+#        info.parseManifest(self.manifest)
+        
+        return getattr(self.manifestObject, attr)
 
     def _updateAndSaveManifest(self):
         self._printStep('Updating image manifest')

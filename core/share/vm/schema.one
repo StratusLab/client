@@ -27,6 +27,8 @@ readonly = "no"
 
 %(persistent_disk)s
 
+%(readonly_disk)s
+
 %(vm_nic)s
 %(graphics)s
 %(raw_data)s
@@ -34,5 +36,5 @@ readonly = "no"
 CONTEXT = [
 public_key = "%(public_key)s",
 %(extra_context)s
-target = "hdc"
+target = "hdd"
 ]

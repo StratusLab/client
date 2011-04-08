@@ -27,6 +27,8 @@ from stratuslab.Util import modulePath
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Exceptions import ValidationException, ExecutionException
+from stratuslab.marketplace.Downloader import Downloader
+from stratuslab.Image import Image
 
 class Runner(object):
 
@@ -35,17 +37,25 @@ class Runner(object):
   READONLY=no,
   SAVE=no,
   SIZE=%(extraDiskSize)s,
-  TARGET=hdd,
+  TARGET=hdc,
   TYPE=fs ]'''
 
     PERSISTENT_DISK = '''DISK=[
   SOURCE=pdisk:%(persistentDiskUUID)s,
-  TARGET=hdd,
+  TARGET=hdc,
   TYPE=block ]'''
+
+    READONLY_DISK = '''DISK=[
+  SOURCE="%(readonlyDiskId)s",
+  READONLY=yes,
+  SAVE=no,
+  TARGET=hdc,
+  DRIVER="raw" ]'''
 
     def __init__(self, image, configHolder):
         self.quiet = False
         configHolder.assign(self)
+        self.configHolder = configHolder
 
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
@@ -73,6 +83,7 @@ class Runner(object):
         self._setSaveDisk()
         self._setExtraDiskOptional()
         self._setPersistentDiskOptional()
+        self._setReadonlyDiskOptional()
         self._setDiskImageFormat()
 
     def _setDiskImageFormat(self):
@@ -101,6 +112,12 @@ class Runner(object):
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
         except AttributeError:
             pass
+
+    def _setReadonlyDiskOptional(self):
+        if hasattr(self, 'readonlyDiskId'):
+            self._checkImageExists(self.readonlyDiskId)
+            self.readonlyDiskId = self._prependMarketplaceUrlIfImageId(self.readonlyDiskId)
+            self.readonly_disk = (self.readonlyDiskId and Runner.READONLY_DISK % self.__dict__) or ''
 
     @staticmethod
     def getInstanceType():
@@ -282,7 +299,8 @@ class Runner(object):
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
 
     def runInstance(self):
-        self._checkImageUrl()
+        self._checkImageExists(self.vm_image)
+        self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
 
         self.printAction('Starting machines')
 
@@ -357,15 +375,18 @@ class Runner(object):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
         return vmStarted
 
-    def _checkImageUrl(self):
+    def _checkImageExists(self, image):
+        """image - URL or image ID"""
         self.printDetail('Checking image availability.')
         if self.noCheckImageUrl:
             Util.printWarning('Image availability check is disabled.')
             return
-        try:
-            Util.checkUrlExists(self.vm_image)
-        except (ValidationException, ExecutionException), ex:
-            raise ValidationException("Unable to access image '%s': %s" %
-                                      (self.vm_image, str(ex)))
-        else:
-            self.printDetail('Image available: %s' % self.vm_image)
+        imageObject = Image(self.configHolder)
+        imageObject.checkImageExists(image)
+
+    def _prependMarketplaceUrlIfImageId(self, image):
+        if Image.re_compressedImageUrl.match(image):
+            return image
+
+        imageId = image
+        return '%s/%s' % (self.marketPlaceEndpoint, imageId)

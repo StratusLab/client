@@ -21,10 +21,10 @@ import os
 import sys
 
 from stratuslab.Runner import Runner
-from stratuslab.Util import cliLineSplitChar
-from stratuslab.Util import validateIp
-import Util
-from AuthnCommand import AuthnCommand
+from stratuslab.Uploader import Uploader
+from stratuslab.marketplace.Downloader import Downloader
+from stratuslab.AuthnCommand import AuthnCommand
+import stratuslab.Util as Util
 
 class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
@@ -58,7 +58,7 @@ class Runnable(AuthnCommand):
                 help='extra context file with one key=value per line',
                 default=defaultOptions['extraContextFile'])
         self.parser.add_option('--context', dest='extraContextData', metavar='CONTEXT',
-                help='extra context string (separate by %s)' % cliLineSplitChar,
+                help='extra context string (separate by %s)' % Util.cliLineSplitChar,
                 default=defaultOptions['extraContextData'])
 
         self.parser.add_option('--endpoint', dest='endpoint',
@@ -89,6 +89,10 @@ class Runnable(AuthnCommand):
                 ', '.join(Runner.getVmTemplatesParameters())),
                 default=defaultOptions['vmTemplatePath'])
 
+        self.parser.add_option('--marketplace-endpoint', dest='marketPlaceEndpoint',
+                help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT),
+                default=None)
+
         super(Runnable, self).parse()
 
         options, self.args = self.parser.parse_args()
@@ -116,9 +120,12 @@ class Runnable(AuthnCommand):
             self.parser.error('Specified instance type not available')
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
-        if self.options.vncListen and not validateIp(self.options.vncListen):
+        if self.options.vncListen and not Util.validateIp(self.options.vncListen):
             self.parser.error('VNC listen IP is not valid')
             self.parser.error('Unspecified cloud endpoint')
+
+        if not self.options.marketPlaceEndpoint:
+            self.options.marketPlaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT) 
 
         super(Runnable, self).checkOptions()
 

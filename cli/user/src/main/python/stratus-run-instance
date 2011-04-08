@@ -30,7 +30,6 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 
-
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
 
@@ -93,6 +92,10 @@ class MainProgram(Runnable):
         self.parser.add_option('--vm-name', dest='vmName',
                 help='name of VM. If not given, a default name will be assigned by cloud layer.',
                 metavar='NAME', default=options['vmName'])
+
+        self.parser.add_option('--readonly-disk', dest='readonlyDiskId',
+                help='marketplace ID of readonly disk.',
+                default=None)
 
         super(MainProgram, self).parse()
 
