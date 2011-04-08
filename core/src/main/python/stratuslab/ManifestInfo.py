@@ -123,7 +123,11 @@ class ManifestInfo(object):
                              ('version','version',NS_SLTERMS,None))
 
     def parseManifest(self, manifest):
-        xml = etree.fromstring(manifest)
+        try:
+            xml = etree.fromstring(manifest)
+        except SyntaxError, ex:
+            raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' % 
+                                     (str(ex), manifest))
 
         # skip endorsement element
 
