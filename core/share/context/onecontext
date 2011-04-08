@@ -1,13 +1,13 @@
 #!/bin/sh -e
 
-[ -e /dev/hdc ] && DEVICE=hdc || DEVICE=sr0
+[ -e /dev/hdd ] && DEVICE=hdd || DEVICE=sr0
 
-mount -t iso9660 /dev/$DEVICE /mnt
+CONTEXT_DIR=/mnt/stratuslab
+mkdir -p $CONTEXT_DIR
 
-if [ -f /mnt/context.sh ]; then
-  . /mnt/init.sh
+mount -t iso9660 /dev/$DEVICE $CONTEXT_DIR
+
+if [ -f $CONTEXT_DIR/context.sh ]; then
+  $CONTEXT_DIR/init.sh
 fi
 
-umount /mnt
-
-exit 0
