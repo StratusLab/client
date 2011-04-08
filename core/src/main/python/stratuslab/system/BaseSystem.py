@@ -616,8 +616,7 @@ class BaseSystem(object):
         def _dhcpDefined():
             return Util.isTrueConfVal(getattr(self, 'dhcp', False))
         def _noDhcpNetTypesDefined():
-            return reduce(lambda x,y: x and y,
-                        [Util.isFalseConfVal(getattr(self, 'dhcp%s'%v, False))
+            return not any([Util.isFalseConfVal(getattr(self, 'dhcp%s'%v, False))
                                                 for v in self.NET_TYPES_DHCP])
         if not _dhcpDefined():
             return
@@ -641,7 +640,7 @@ class BaseSystem(object):
     def _confgureDhcp(self):
 
         def _isAllDhcpGroupsDefined(_groups):
-            return reduce(lambda x,y: x and y, _groups.values())
+            return all(_groups.values())
 
         def _getConfGlobals():
             _globals = """
@@ -759,7 +758,7 @@ group {
             if Util.isTrueConfVal(getattr(self, 'dhcp%s'%netType, False)):
                 dhcpGroups[netType] = self.__getIpMacTuplesForNetworkType(netType)
 
-        if _NOTHING == reduce(lambda x,y: x or y, dhcpGroups.values()):
+        if not all(dhcpGroups.values()):
             Util.printError('When configuring DHCP %s networks IP/MAC pairs should be given.' %
                                 ','.join(self.NET_TYPES_DHCP))
 
