@@ -73,9 +73,13 @@ class Signator(Configurable):
         return os.path.dirname(__file__)
         
     def _findFile(self, dir, start='', end=''):
-        for file in os.listdir(dir):
-            if file.startswith(start) and file.endswith(end):
-                return os.path.join(dir, file)
+        try:
+            for file in os.listdir(dir):
+                if file.startswith(start) and file.endswith(end):
+                    return os.path.join(dir, file)
+        except OSError:
+            pass
+
         raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
 
     def _renameFiles(self):

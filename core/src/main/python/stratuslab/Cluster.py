@@ -88,12 +88,14 @@ class SSHUtil(object):
     
 class Cluster(object):
 
-    hosts = []
-    _is_heterogeneous = False
+    #hosts = []
+    #_is_heterogeneous = False
 
     def __init__(self, configHolder, runner, master_vmid):
         configHolder.assign(self)
         self._runner = runner
+        self.hosts = []
+        self._is_heterogeneous = False
         if master_vmid:
             self._master_vmid=master_vmid
             self._is_heterogeneous=True
@@ -106,7 +108,6 @@ class Cluster(object):
         
 
     def doAddPackages(self, ssh):
-        # TODO: Add support for apt. Selection of package management system should be defined in the command line
         printStep('Installing additional software packages')
         packages = self.add_packages.replace(","," ")
 
@@ -269,6 +270,8 @@ class Cluster(object):
         
         # Update the /etc/hosts file for all hosts
         self.doUpdateHostsFile(ssh)
+
+        return 0
             
 
 
