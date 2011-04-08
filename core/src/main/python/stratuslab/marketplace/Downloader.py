@@ -23,7 +23,8 @@ import tempfile
 import urllib2
 import hashlib
 from stratuslab.Exceptions import ExecutionException
-from stratuslab.ManifestInfo import ManifestInfo
+from stratuslab.ManifestInfo import ManifestInfo, _normalizeForInstanceAttribute
+from stratuslab.ManifestInfo import _normalizeForInstanceAttribute as normalizeManifestElementForClassAttr
 
 try:
     from lxml import etree
@@ -71,7 +72,11 @@ class Downloader(object):
         """Return manifest as ManifestInfo object.
         """
         url = self.constructManifestUrl(imageId)
-        return self.__getManifest(url, tempMetadataFilename)
+        try:
+            return self.__getManifest(url, tempMetadataFilename)
+        except:
+            print "Failed to get manifest for image: %s" % imageId
+            raise
 
     def __getManifest(self, url, tempMetadataFilename):
         """Return manifest as ManifestInfo object.
@@ -85,14 +90,20 @@ class Downloader(object):
         return manifestInfo
 
     def getImageLocations(self, imageId=''):
-        if imageId:
-            self._checkManifestAndImageId(imageId)
-        return [self.manifestObject.location]
+        return [self.getImageElementValue('location', imageId)]
 
     def getImageVersion(self, imageId=''):
+        return self.getImageElementValue('version', imageId)
+
+    def getImageElementValue(self, element, imageId=''):
         if imageId:
             self._checkManifestAndImageId(imageId)
-        return self.manifestObject.version
+        elementNorm = normalizeManifestElementForClassAttr(element)
+        try:
+            return getattr(self.manifestObject, elementNorm)
+        except AttributeError, ex:
+            raise ExecutionException("Couldn't get '%s' element (normalized to '%s') from manifest. %s" % 
+                                     (element, elementNorm, str(ex)))
 
     def _checkManifestAndImageId(self, imageId):
         if not self.manifestObject:
