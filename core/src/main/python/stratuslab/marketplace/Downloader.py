@@ -22,8 +22,6 @@ import shutil
 import tempfile
 import urllib2
 import hashlib
-from stratuslab.Exceptions import ExecutionException
-from stratuslab.ManifestInfo import ManifestInfo, _normalizeForInstanceAttribute
 from stratuslab.ManifestInfo import _normalizeForInstanceAttribute as normalizeManifestElementForClassAttr
 
 try:
@@ -48,6 +46,8 @@ except ImportError:
                     raise Exception("Failed to import ElementTree from any known place")
 
 from stratuslab import Util
+from stratuslab.Exceptions import ExecutionException
+from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.Signator import Signator
 from stratuslab.Compressor import Compressor
 from stratuslab.ConfigHolder import ConfigHolder
@@ -81,12 +81,21 @@ class Downloader(object):
     def __getManifest(self, url, tempMetadataFilename):
         """Return manifest as ManifestInfo object.
         """
+        errorMessage = 'Failed to find metadata entry: %s' % url
         try:
             self._download(url, tempMetadataFilename)
         except urllib2.HTTPError:
-            raise InputException('Failed to find metadata entry: %s' % url)
+            raise InputException(errorMessage)
+        
+        if not os.path.exists(tempMetadataFilename):
+            raise InputException(errorMessage)
+
         manifestInfo = ManifestInfo(self.configHolder)
-        manifestInfo.parseManifestFromFile(tempMetadataFilename)
+        
+        try:
+            manifestInfo.parseManifestFromFile(tempMetadataFilename)
+        except SyntaxError, ex:
+            raise InputException('Error parsing the metadata corresponding to url %s, with detail %s' % (url, ex))
         return manifestInfo
 
     def getImageLocations(self, imageId=''):
@@ -123,11 +132,9 @@ class Downloader(object):
                 pass
 
     def download(self, uri):
-        url = self.constructManifestUrl(uri)
-
         tempMetadataFilename = tempfile.mktemp()
 
-        manifestInfo = self._getManifest(url, tempMetadataFilename)
+        manifestInfo = self._getManifest(uri, tempMetadataFilename)
 
         locations = [manifestInfo.location]
 
@@ -137,11 +144,13 @@ class Downloader(object):
             try:
                 tempImageFilename = self._downloadImage(location)
                 break
+            except KeyboardInterrupt:
+                raise
             except:
                 pass
 
         if not os.path.exists(tempImageFilename):
-            raise InputException('Failed to find image matching metadata: %s' % url)
+            raise InputException('Failed to find image matching metadata: %s' % uri)
 
         self._verifySignature(tempImageFilename, tempMetadataFilename)
 
@@ -202,7 +211,7 @@ class Downloader(object):
         if extension:
             self._printDetail('Inflating image %s' % imageFilename)
             Compressor.inflate(imageFilename)
-            inflatedFilename = imageFilename[: - len(extension)]
+            inflatedFilename = imageFilename[:-len(extension)]
 
         return inflatedFilename
 
