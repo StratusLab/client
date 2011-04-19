@@ -1,5 +1,6 @@
 NAME = "%(network_name)s"
 TYPE = FIXED
+PUBLIC = YES
 
 BRIDGE = %(bridge)s
 
