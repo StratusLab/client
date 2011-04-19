@@ -95,7 +95,7 @@ class MainProgram(Runnable):
 
         self.parser.add_option('--readonly-disk', dest='readonlyDiskId',
                 help='marketplace ID of readonly disk.',
-                default=None)
+                default=None, metavar='MARKETPLACEID')
 
         super(MainProgram, self).parse()
 
