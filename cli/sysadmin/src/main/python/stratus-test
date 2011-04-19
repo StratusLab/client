@@ -39,7 +39,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] [test] ...\n\n
+        usage = '''%prog [options] [test] ...\n
 where test is a comma separated list of tests, according to the name provided by -l/--list.'''
 
         self.parser.usage = usage
@@ -61,6 +61,14 @@ where test is a comma separated list of tests, according to the name provided by
 
         self.parser.add_option('--requested-ip-address', dest='requestedIpAddress',
                                help='IP address for requested IP address assignment', metavar='IP',
+                               default=None)
+
+        self.parser.add_option('--test-username', dest='testUsername',
+                               help='Test username to use when communicating with ONE', metavar='USER',
+                               default=None)
+
+        self.parser.add_option('--test-password', dest='testPassword',
+                               help='Test password to use when communicating with ONE', metavar='PASSWORD',
                                default=None)
 
         self.parser.add_option('--exclude', dest='testsToExclude',
