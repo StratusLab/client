@@ -32,6 +32,7 @@ from stratuslab.Creator import Creator
 from stratuslab.Exceptions import NetworkException, OneException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
+from stratuslab.Exceptions import InputException
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import execute
 from stratuslab.Util import ping
@@ -120,9 +121,10 @@ class Testor(unittest.TestCase):
     def runInstanceRequestedNetworkTest(self):
         '''Start new instance, ping it via requested IP address and ssh into it, then stop it.'''
         self._checkAttributePresent(['requestedIpAddress'])
+        if not self.requestedIpAddress:
+            raise InputException('Missing definition for requested IP. Are you not missing --requested-ip-address?')
         runner = self._startVm(requestedIpAddress=self.requestedIpAddress)
 
-        print 'id=', runner.vmIds[0]
         _, allocatedIp = runner.getNetworkDetail(runner.vmIds[0])
 
         self.assertEqual(self.requestedIpAddress, allocatedIp)
