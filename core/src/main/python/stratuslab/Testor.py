@@ -77,8 +77,8 @@ class Testor(unittest.TestCase):
         if env in os.environ:
             setattr(self, field, os.environ[env])
 
-    def _setOption(self, key, value):
-        Testor.configHolder.options[key] = value
+    def setupUp(self):
+        self.vmIds = []
 
     def _exportEndpointIfNotInEnv(self):
         if Util.envEndpoint in os.environ:
@@ -120,6 +120,7 @@ class Testor(unittest.TestCase):
 
     def runInstanceRequestedNetworkTest(self):
         '''Start new instance, ping it via requested IP address and ssh into it, then stop it.'''
+
         self._checkAttributePresent(['requestedIpAddress'])
         if not self.requestedIpAddress:
             raise InputException('Missing definition for requested IP. Are you not missing --requested-ip-address?')
@@ -135,21 +136,18 @@ class Testor(unittest.TestCase):
 
     def exceedCpuQuotaTest(self):
         '''Start three instances, having a cpu quota of 2, then stop it.'''
+
         try:
             self._startVm()
             self._startVm()
             self._startVm()
-        except OneException:
+        except OneException, ex:
+            print ex
             pass
         else:
             self.fail('Quota not enforced')
 
-        runner = self._createRunner()
-        for i in range(8):
-            try:
-                runner.killInstances([i])
-            except:
-                pass
+        self._createRunner().killInstances(self.vmIds)
 
     def _excludeTests(self, tests):
         if self.testsToExclude:
@@ -175,9 +173,10 @@ class Testor(unittest.TestCase):
     def _startVm(self, withLocalNetwork=False, requestedIpAddress=None):
         runner = self._createRunner(withLocalNetwork, requestedIpAddress)
 
-        self.vmIds = runner.runInstance()
+        vmIds = runner.runInstance()
+        self.vmIds.extend(vmIds)
 
-        for id in self.vmIds:
+        for id in vmIds:
             vmStarted = runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
@@ -190,8 +189,8 @@ class Testor(unittest.TestCase):
         Util.generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
-        options['username'] = self.oneUsername
-        options['password'] = self.proxyOneadminPassword
+        options['username'] = self.testUsername
+        options['password'] = self.testPassword
         options['userPublicKeyFile'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
         options['specificAddressRequest'] = requestedIpAddress
