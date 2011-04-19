@@ -20,7 +20,7 @@
 import sys
 import time
 
-from stratuslab.Exceptions import OneException
+from stratuslab.Exceptions import OneException, InputException
 from stratuslab.Util import printError
 
 try:
@@ -113,7 +113,7 @@ class OneConnector(object):
         ret, info = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch)
 
         if not ret:
-            raise Exception(info)
+            raise OneException(info)
 
         vmlist = etree.fromstring(info)
         for xml in vmlist.findall('VM'):
@@ -230,7 +230,7 @@ class OneConnector(object):
         ret, info = self._rpc.one.vnpool.info(self._sessionString, filter)
 
         if not ret:
-            raise Exception(info)
+            raise OneException(info)
 
         return info
 
@@ -238,7 +238,7 @@ class OneConnector(object):
         ret, info = self._rpc.one.vn.info(self._sessionString, vnetId)
 
         if not ret:
-            raise Exception(info)
+            raise OneException(info)
 
         return info
 
@@ -250,7 +250,7 @@ class OneConnector(object):
         ret, id = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, tm, inDomain)
 
         if not ret:
-            raise Exception(id)
+            raise OneException(id)
 
         return id
 
@@ -258,7 +258,7 @@ class OneConnector(object):
         ret = self._rpc.one.host.delete(self._sessionString, id)
 
         if not ret:
-            raise Exception(id)
+            raise OneException(id)
 
         return id
 
@@ -266,7 +266,7 @@ class OneConnector(object):
         ret, info = self._rpc.one.host.info(self._sessionString, id)
 
         if not ret:
-            raise Exception(info)
+            raise OneException(info)
 
         return info
 
@@ -274,7 +274,7 @@ class OneConnector(object):
         ret, info = self._rpc.one.hostpool.info(self._sessionString)
 
         if not ret:
-            raise Exception(info)
+            raise OneException(info)
 
         return info
 
