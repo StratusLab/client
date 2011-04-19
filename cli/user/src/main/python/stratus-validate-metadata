@@ -58,7 +58,9 @@ class MainProgram(CommandBase):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         signator = Signator(self.manifestFile, configHolder)
-        signator.validate()
+        rc = signator.validate()
+        if rc != 0:
+            sys.exit(rc)
 
 if __name__ == '__main__':
     try:
