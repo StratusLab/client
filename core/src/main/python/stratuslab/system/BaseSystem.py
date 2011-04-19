@@ -616,7 +616,7 @@ class BaseSystem(object):
         def _dhcpDefined():
             return Util.isTrueConfVal(getattr(self, 'dhcp', False))
         def _noDhcpNetTypesDefined():
-            return not any([Util.isFalseConfVal(getattr(self, 'dhcp%s'%v, False))
+            return not any([Util.isFalseConfVal(getattr(self, self._assembleDhcpAttributeName(v), False))
                                                 for v in self.NET_TYPES_DHCP])
         if not _dhcpDefined():
             return
@@ -627,6 +627,10 @@ class BaseSystem(object):
         self._installDhcp()
         self._confgureDhcp()
         self._startDhcp()
+
+    def _assembleDhcpAttributeName(self, postfix):
+        DHCP_PARAMETER_PREFIX = 'dhcp'
+        return '%s%s' % (DHCP_PARAMETER_PREFIX, postfix)
 
     def _installDhcp(self):
         Util.printDetail('Installing DHCP server.')
@@ -667,9 +671,9 @@ shared-network StratusLab-LAN {
 """
                 for _type in self.NET_TYPES_DHCP:
                     subnet += subnetTemplate % {
-                               'subnet'  : getattr(self, 'dhcp%sSubnet' % _type),
-                               'netmask' : getattr(self, 'dhcp%sNetmask' % _type),
-                               'routers' : getattr(self, 'dhcp%sRouters' % _type)}
+                               'subnet'  : getattr(self, self._assembleDhcpAttributeName('%sSubnet' % _type)),
+                               'netmask' : getattr(self, self._assembleDhcpAttributeName('%sNetmask' % _type)),
+                               'routers' : getattr(self, self._assembleDhcpAttributeName('%sRouters' % _type))}
                 subnet += "}\n"
 
             elif Util.isTrueConfVal(self.nat) and dhcpGroups['OneLocalNetwork']:
@@ -731,11 +735,11 @@ group {
                 if not ipsMacs:
                     continue
                 groups += groupHeadTemplate % \
-                    {'broadcast'   : getattr(self, 'dhcp%sBroadcast' % _type),
-                     'netmask'     : getattr(self, 'dhcp%sNetmask' % _type),
-                     'routers'     : getattr(self, 'dhcp%sRouters' % _type),
-                     'domainName'  : getattr(self, 'dhcp%sDomainName' % _type),
-                     'nameservers' : getattr(self, 'dhcp%sDomainNameServers' % _type)}
+                    {'broadcast'   : getattr(self, self._assembleDhcpAttributeName('%sBroadcast' % _type)),
+                     'netmask'     : getattr(self, self._assembleDhcpAttributeName('%sNetmask' % _type)),
+                     'routers'     : getattr(self, self._assembleDhcpAttributeName('%sRouters' % _type)),
+                     'domainName'  : getattr(self, self._assembleDhcpAttributeName('%sDomainName' % _type)),
+                     'nameservers' : getattr(self, self._assembleDhcpAttributeName('%sDomainNameServers' % _type))}
 
                 hosts = ''
                 for i,ipMac in enumerate(ipsMacs):
@@ -755,10 +759,10 @@ group {
         dhcpGroups = dict.fromkeys(self.NET_TYPES_DHCP, _NOTHING)
 
         for netType in self.NET_TYPES_DHCP:
-            if Util.isTrueConfVal(getattr(self, 'dhcp%s'%netType, False)):
+            if Util.isTrueConfVal(getattr(self, self._assembleDhcpAttributeName(netType), False)):
                 dhcpGroups[netType] = self.__getIpMacTuplesForNetworkType(netType)
 
-        if not all(dhcpGroups.values()):
+        if not any(dhcpGroups.values()):
             Util.printError('When configuring DHCP %s networks IP/MAC pairs should be given.' %
                                 ','.join(self.NET_TYPES_DHCP))
 
