@@ -23,8 +23,7 @@
     </dependency>
 	<dependency>
 		<groupId>eu.stratuslab.marketplace</groupId>
-		<artifactId>metadata</artifactId>
-		<version>0.0.6-SNAPSHOT</version>
+		<artifactId>marketplace-metadata</artifactId>
 		<type>jar</type>
 		<scope>compile</scope>
 	</dependency>
@@ -129,7 +128,7 @@
 			<artifactItems>
 				<artifactItem>
 					<groupId>eu.stratuslab.marketplace</groupId>
-					<artifactId>metadata</artifactId>
+					<artifactId>marketplace-metadata</artifactId>
 					<classifier>jar-with-dependencies</classifier>
 					<type>jar</type>
 				</artifactItem>

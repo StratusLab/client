@@ -80,6 +80,16 @@ with minimal dependencies for maximum portability.
     </site>
   </distributionManagement>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>eu.stratuslab.marketplace</groupId>
+        <artifactId>marketplace-metadata</artifactId>
+        <version>0.0.6-SNAPSHOT</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  
   <build>
 
     <pluginManagement>
