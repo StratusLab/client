@@ -334,7 +334,7 @@ class Testor(unittest.TestCase):
 
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
-        image = 'OpX5FrzHTbdwhHxmZosLMBXm7bo'
+        image = 'OMd8M7ixG3toGqm8C1MhUphMJWF'
         creator = self._createCreator(image)
 
         newImage = creator.showName()
