@@ -39,14 +39,14 @@ PORT=%(one_port)s
 
 SCRIPTS_REMOTE_DIR=/var/tmp/one
 
-DB = [ backend = "sqlite" ]
+# DB = [ backend = "sqlite" ]
 
 # Sample configuration for MySQL
-# DB = [ backend = "mysql",
-#        server  = "localhost",
-#        user    = "oneadmin",
-#        passwd  = "oneadmin",
-#        db_name = "opennebula" ]
+ DB = [ backend = "mysql",
+        server  = "localhost",
+        user    = "%(one_db_username)s",
+        passwd  = "%(one_db_password)s",
+        db_name = "opennebula" ]
 
 VNC_BASE_PORT = %(vnc_base_port)s
 

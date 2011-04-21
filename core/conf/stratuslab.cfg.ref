@@ -34,6 +34,9 @@ one_gid = 9000
 one_uid = 9000
 one_username = oneadmin
 one_password = oneadmin
+# MySQL account
+one_db_username = oneadmin
+one_db_password = oneadmin
 
 [one-advanced]
 one_home =
