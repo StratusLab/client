@@ -21,6 +21,7 @@ import os
 import xmlrpclib
 
 import Util
+from stratuslab.Exceptions import ValidationException
 
 
 class AuthnFactory(object):
@@ -72,13 +73,28 @@ class CredentialsConnector(object):
         parts = url.split('/')
         return '/'.join(parts[0:-1]) + self.pathPrefix + parts[-1]
 
+    def _insertUsernamePassword(self, url):
+        protocolSeparator = '://'
+        parts = url.split(protocolSeparator)
+        return parts[0] + protocolSeparator + self.username + ':' + self.password + "@" + ''.join(parts[1:])
+    
+    def _validateUsernamePassword(self):
+        if not self.username:
+            raise ValidationException('Missing username')
+        if not self.password:
+            raise ValidationException('Missing password')
+
 class UsernamePasswordCredentialsConnector(CredentialsConnector):
     
     def __init__(self, runnable):
         super(UsernamePasswordCredentialsConnector, self).__init__(runnable)
         self.username = runnable.username
         self.password = runnable.password
-        self.pathPrefix = '/pswd/'        
+        self.pathPrefix = '/pswd/'
+        self._validate()
+
+    def _validate(self):
+        return self._validateUsernamePassword()
     
     def createRpcConnection(self):
         url = self._insertUsernamePassword(self.runnable.cloud.server)
@@ -138,7 +154,11 @@ class LocalhostCredentialsConnector(CredentialsConnector):
     def __init__(self, runnable):
         super(LocalhostCredentialsConnector, self).__init__(runnable)
         self._setUsernamePassword(runnable)
+        self._validate()
         
+    def _validate(self):
+        return self._validateUsernamePassword()
+            
     def _setUsernamePassword(self, runnable):
         oneUsername = getattr(runnable, 'oneUsername', None)
         onePassword = getattr(runnable, 'onePassword', None)
@@ -150,11 +170,6 @@ class LocalhostCredentialsConnector(CredentialsConnector):
     def createRpcConnection(self):
         url = self._insertUsernamePassword('http://localhost:2633/RPC2')
         return xmlrpclib.ServerProxy(url)
-
-    def _insertUsernamePassword(self, url):
-        protocolSeparator = '://'
-        parts = url.split(protocolSeparator)
-        return parts[0] + protocolSeparator + self.username + ':' + self.password + "@" + ''.join(parts[1:])
 
     def createSessionString(self):
         return '%s:%s' % (self.username, Util.shaHexDigest(self.password))

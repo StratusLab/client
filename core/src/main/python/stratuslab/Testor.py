@@ -60,7 +60,7 @@ class Testor(unittest.TestCase):
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
 
-        self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.0/ttylinux-9.7-i486-base-1.0.img.gz'
+        self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz'
 
     def _setFieldsFromEnvVars(self):
         self._setSingleFieldFromEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
