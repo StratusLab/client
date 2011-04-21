@@ -40,6 +40,7 @@ from stratuslab.Util import printError
 from stratuslab.Util import sshCmd
 import Util
 from stratuslab.ClaudiaTest import ClaudiaTest
+from stratuslab.marketplace.Downloader import Downloader
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -333,7 +334,7 @@ class Testor(unittest.TestCase):
 
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
-        image = 'http://appliances.stratuslab.org/images/base/centos-5.5-x86_64-base/1.0/centos-5.5-x86_64-base-1.0.img.gz'
+        image = 'OpX5FrzHTbdwhHxmZosLMBXm7bo'
         creator = self._createCreator(image)
 
         newImage = creator.showName()
@@ -405,6 +406,8 @@ class Testor(unittest.TestCase):
 
         options['shutdownVm'] = True
 
+        options['marketPlaceEndpoint'] = Downloader.ENDPOINT
+        
         configHolder = ConfigHolder(options)
 
         return Creator(image, configHolder)

@@ -403,6 +403,7 @@ class Creator(object):
         downloader = Downloader(configHolder)
         downloader.downloadManifestByImageId(self.image)
         self.manifestObject = downloader.manifestObject
+        self.manifest = self.manifestObject.tostring()
 
     def __setAttributesFromManifest(self):
         self._setOsFromManifest()
@@ -441,7 +442,8 @@ class Creator(object):
 
         info.parseManifest(self.manifest)
         for name, checksum in self.checksums.items():
-            setattr(info, name, checksum['sum'])
+            if not getattr(info, name):
+                setattr(info, name, checksum['sum'])
         info.identifier = ManifestIdentifier().sha1ToIdentifier(info.sha1)
         info.created = Util.getTimeInIso8601()
         info.valid = Util.toTimeInIso8601(time.time() + ManifestInfo.IMAGE_VALIDITY)
