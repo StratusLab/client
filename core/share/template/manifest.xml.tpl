@@ -38,6 +38,7 @@
         <slterms:os-arch>%(arch)s</slterms:os-arch>
         <slterms:version>%(version)s</slterms:version>
         <dcterms:compression>%(compression)s</dcterms:compression>
+        <slterms:location>%(location)s</slterms:location>
 
         <dcterms:format>%(format)s</dcterms:format>
 

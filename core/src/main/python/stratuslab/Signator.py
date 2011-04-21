@@ -40,12 +40,16 @@ class Signator(Configurable):
         res, output = self._sign()
         if res:
             Util.printError(output, exit=False)
-        self._renameFiles()
+            self._cleanupTempFile()
+        else:
+            self._renameFiles()
+        return res
 
     def _sign(self):
         jarLocation = self._findJar()
         javaMainArgs = ' ' + self.manifestFile + ' ' + self.tempManifestFile + \
-                       ' ' + self.p12Cert + ' ' + self.p12Password
+                       ' ' + self.p12Cert + ' ' + self.p12Password + \
+                       ' ' + self.email
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.SignMetadata'))
         cmd += javaMainArgs
         self._printCalling(cmd)
@@ -61,7 +65,7 @@ class Signator(Configurable):
         
         for dir in dirs:
             try:
-                jarFile = self._findFile(dir, 'metadata', '.jar')
+                jarFile = self._findFile(dir, 'marketplace-metadata', '.jar')
                 self.printDetail('Loading signature jar file: %s' % jarFile)
                 return jarFile
             except ValueError:
@@ -87,6 +91,10 @@ class Signator(Configurable):
         os.rename(self.manifestFile, self.renamedInputManifestFile)
         self.printDetail('Renaming output file from %s to %s' % (self.tempManifestFile, self.outputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
         os.rename(self.tempManifestFile, self.outputManifestFile)
+
+    def _cleanupTempFile(self):
+        if os.path.isfile(self.tempManifestFile):
+            os.remove(self.tempManifestFile)
 
     def validate(self):
         jarLocation = self._findJar()
