@@ -35,7 +35,7 @@ from stratuslab.Signator import Signator
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to sign image manifest.'''
+    '''A command-line program to sign image metadata.'''
 
     def __init__(self):
         self.manifestFile = None
@@ -45,24 +45,28 @@ class MainProgram(AuthnCommand):
     def parse(self):
         AuthnCommand.addP12CertOptions(self.parser)
 
-        self.parser.usage='''%prog [options] <manifest-file>'''
+        self.parser.usage='''%prog [options] <metadata-file>'''
 
         self.parser.add_option('--output', dest='outputManifestFile',
-                help='newly signed manifest file (default <manifest-file>.sign)',
+                help='signed metadata file (same as input; input moved to *.orig)',
                 default=None)
+
+        self.parser.add_option('--email', dest='email',
+                help='email address if not in certificate',
+                default='')
 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
         if not self.args:
-            self.parser.error('Missing manifest file')
+            self.parser.error('Missing metadata file')
 
         self.manifestFile = self.args[0]
 
         isFile = os.path.isfile(self.manifestFile)
         exists = os.path.exists(self.manifestFile)
         if not (exists and isFile):
-            self.parser.error('Manifest file doesn\'t exist or is not a file')
+            self.parser.error('Metadata file doesn\'t exist or is not a file')
             
         AuthnCommand.checkP12CertOptionsOnly(self)
 
@@ -72,9 +76,9 @@ class MainProgram(AuthnCommand):
         signator = Signator(self.manifestFile, configHolder)
         isError = signator.sign()
         if isError:
-            printError('Error signing manifest file')
+            printError('Error signing metadata file')
         else:
-            printDetail('Manifest file successfully signed: %s' % signator.outputManifestFile)
+            printDetail('Metadata file successfully signed: %s' % signator.outputManifestFile)
 
 if __name__ == '__main__':
     try:
