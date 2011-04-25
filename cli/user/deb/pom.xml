@@ -151,6 +151,17 @@
 		</source>
 	      </sources>
 	    </mapping>
+        <mapping>
+          <directory>/etc/stratuslab/</directory>
+          <directoryIncluded>false</directoryIncluded>
+          <username>root</username>
+          <groupname>root</groupname>
+          <sources>
+            <source>
+               <location>${project.build.directory}/zip-sources/conf/stratuslab-user.cfg.ref</location>
+            </source>
+          </sources>
+        </mapping>
 	  </mappings>
 	  <installScriptlet>
 	    <script>

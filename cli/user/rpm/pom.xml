@@ -151,6 +151,18 @@
 		</source>
 	      </sources>
 	    </mapping>
+        <mapping>
+          <directory>/etc/stratuslab/</directory>
+          <directoryIncluded>false</directoryIncluded>
+          <configuration>noreplace</configuration>
+          <username>root</username>
+          <groupname>root</groupname>
+          <sources>
+            <source>
+              <location>${project.build.directory}/zip-sources/conf/stratuslab-user.cfg.ref</location>
+            </source>
+          </sources>
+        </mapping>
 	    <mapping>
           <directory>/var/lib/stratuslab/java/</directory>
           <directoryIncluded>false</directoryIncluded>
