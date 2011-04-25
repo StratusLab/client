@@ -41,6 +41,8 @@ class Runnable(AuthnCommand):
         defaultOptions = Runner.defaultRunOptions()
 
         self.parser.usage = '''%prog [defaultOptions] image'''
+        
+        self.parser.description = 'image - Marketplace image ID or image URL in Appliance Repository.'
 
         self.parser.add_option('-k', '--key', dest='userPublicKeyFile',
                 help='SSH public key(s) (.pub) to log on the machine. Default order %s, STRATUSLAB_KEY. In case of multiple keys, concatenate them to the file.' % defaultOptions['userPublicKeyFile'], 
@@ -90,7 +92,7 @@ class Runnable(AuthnCommand):
                 ', '.join(Runner.getVmTemplatesParameters())),
                 default=defaultOptions['vmTemplatePath'])
 
-        self.parser.add_option('--marketplace-endpoint', dest='marketPlaceEndpoint',
+        self.parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
                 help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT),
                 default=None)
 
@@ -125,8 +127,8 @@ class Runnable(AuthnCommand):
             self.parser.error('VNC listen IP is not valid')
             self.parser.error('Unspecified cloud endpoint')
 
-        if not self.options.marketPlaceEndpoint:
-            self.options.marketPlaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT) 
+        if not self.options.marketplaceEndpoint:
+            self.options.marketplaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT) 
 
         super(Runnable, self).checkOptions()
 

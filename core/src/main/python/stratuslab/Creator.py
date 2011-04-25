@@ -78,7 +78,7 @@ class Creator(object):
         self.os = ''
 
         self.endpoint = ''
-        self.appRepoUrl = ''
+        self.apprepoEndpoint = ''
 
         self.extraOsReposUrls = ''
         self.packages = ''
@@ -200,7 +200,7 @@ class Creator(object):
         self.appRepoFilename = parser.get('stratuslab_repo', 'repo_filename')
 
     def _buildConfigFileUrl(self):
-        url = self.appRepoUrl or self._extractRootPath()
+        url = self.apprepoEndpoint or self._extractRootPath()
         self.printDetail('Using root url: %s' % url)
         return url
 
@@ -398,7 +398,6 @@ class Creator(object):
         self._printStep('Retrieving image manifest')
         
         configHolder = self.configHolder.copy()
-        configHolder.set('endpoint', self.marketPlaceEndpoint)
         
         downloader = Downloader(configHolder)
         downloader.downloadManifestByImageId(self.image)
@@ -786,8 +785,8 @@ EOF
 
     def _constructRemoteImageAndManifestUris(self):
         image, manifest = self._constructRemoteImageAndManifestFileNames()
-        return '%s/%s' % (self.appRepoUrl, image), \
-                '%s/%s' % (self.appRepoUrl, manifest)
+        return '%s/%s' % (self.apprepoEndpoint, image), \
+                '%s/%s' % (self.apprepoEndpoint, manifest)
 
     def _constructRemoteImageAndManifestFileNames(self):
         imageName = self._constructRemoteImageName()

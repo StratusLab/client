@@ -39,8 +39,9 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] [test] ...\n
-where test is a comma separated list of tests, according to the name provided by -l/--list.'''
+        usage = '%prog [options] [test] ...'
+
+        self.parser.description = '[test] - comma separated list of tests, according to the name provided by -l/--list.'
 
         self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile',
@@ -51,11 +52,11 @@ where test is a comma separated list of tests, according to the name provided by
                                help='list available tests', action='store_true',
                                default=False)
 
-        self.parser.add_option('--app-repo-username', dest='appRepoUsername',
+        self.parser.add_option('--app-repo-username', dest='apprepoUsername',
                                help='Appliance repository username', metavar='USERNAME',
                                default=None)
 
-        self.parser.add_option('--app-repo-password', dest='appRepoPassword',
+        self.parser.add_option('--app-repo-password', dest='apprepoPassword',
                                help='Appliance repository password', metavar='PASSWORD',
                                default=None)
 

@@ -42,5 +42,5 @@ class Uploader(object):
         info = ManifestInfo(self.confHolder)
         info.parseManifest(manifest)
         
-        url = self.marketPlaceEndpoint + '/' + info.identifier
+        url = self.marketplaceEndpoint + '/' + info.identifier
         client.post(url, manifest)

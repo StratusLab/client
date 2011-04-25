@@ -71,7 +71,6 @@ class Image(object):
     def _createDownloader(self):
         if not self.downloader:
             configHolder = self.configHolder.copy()
-            configHolder.set('endpoint', self.marketPlaceEndpoint)
             self.downloader = Downloader(configHolder)
 
     def printDetail(self, msg):

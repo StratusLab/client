@@ -25,13 +25,13 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.CommandBase import CommandBase
+from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.Util import manifestExt
 from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
 
-class MainProgram(CommandBase):
+class MainProgram(CommandBaseUser):
     '''A command-line program to upload StratusLab appliance.'''
 
     def __init__(self):

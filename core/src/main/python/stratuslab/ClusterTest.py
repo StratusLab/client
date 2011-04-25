@@ -38,7 +38,7 @@ class ClusterTest(unittest.TestCase):
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': None,
                         'include_master': True, 'shared_folder':'/home', 'useQcowDiskFormat': True,
                         'add_packages': None, 'ssh_hostbased': False, 'instanceNumber': self.instanceNumber,
-                        'verboseLevel':0, 'marketPlaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+                        'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])
@@ -56,7 +56,7 @@ class ClusterTest(unittest.TestCase):
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': None,
                         'include_master': True, 'shared_folder': None, 'useQcowDiskFormat': True,
                         'add_packages': None, 'ssh_hostbased': True, 'instanceNumber': self.instanceNumber,
-                        'verboseLevel':0, 'marketPlaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+                        'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])
@@ -83,7 +83,7 @@ class ClusterTest(unittest.TestCase):
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': runner.vmIds[0],
                         'include_master': True, 'shared_folder': '/home', 'useQcowDiskFormat': True,
                         'add_packages': None, 'ssh_hostbased': False, 'instanceNumber': self.instanceNumber-1,
-                        'verboseLevel':0, 'marketPlaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+                        'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])

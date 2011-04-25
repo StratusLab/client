@@ -27,12 +27,12 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
 import stratuslab.Util as Util
-from stratuslab.CommandBase import CommandBase
+from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.marketplace.Downloader import Downloader
 
-class MainProgram(CommandBase):
+class MainProgram(CommandBaseSysadmin):
     '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
 
     def __init__(self):
@@ -43,7 +43,7 @@ class MainProgram(CommandBase):
     def parse(self):
         usage = '''%prog [options] <identifier-uri> <policy-config>
         
-<identifier-uri>       Image identifier, corresponding to a unique entry (i.e. checksum/email/date)
+<identifier-uri>   Image identifier, corresponding to a unique entry (i.e. checksum/email/date)
 <policy-config>    Policy configuration file'''
 
         self.parser.usage = usage

@@ -27,12 +27,12 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
 import stratuslab.Util as Util
-from stratuslab.CommandBase import CommandBase
+from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.Configurator import Configurator
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Downloader import Downloader
 
-class MainProgram(CommandBase):
+class MainProgram(CommandBaseSysadmin):
     '''A command-line program to download machine and disk images from a StratusLab Market-Place.'''
 
     def __init__(self):
@@ -40,10 +40,10 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] <uri>
+        usage = "%prog [options] <uri>"
         
-<uri>    URI of the metadata entry corresponding to the image to download
-'''
+        self.parser.description = "<uri>    URI of the metadata entry corresponding to the image to download"
+        
         self.parser.usage = usage
 
         self.parser.add_option('-e', '--endpoint', dest='endpoint',

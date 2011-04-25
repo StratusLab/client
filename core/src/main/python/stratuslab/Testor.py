@@ -63,13 +63,13 @@ class Testor(unittest.TestCase):
         self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz'
 
     def _setFieldsFromEnvVars(self):
-        self._setSingleFieldFromEnvVar('appRepoUsername', 'STRATUSLAB_REPO_USERNAME')
-        self._setSingleFieldFromEnvVar('appRepoPassword', 'STRATUSLAB_REPO_PASSWORD')
-        self._setSingleFieldFromEnvVar('appRepoUrl', 'STRATUSLAB_REPO_ADDRESS')
+        self._setSingleFieldFromEnvVar('apprepoUsername', 'STRATUSLAB_APPREPO_USERNAME')
+        self._setSingleFieldFromEnvVar('apprepoPassword', 'STRATUSLAB_APPREPO_PASSWORD')
+        self._setSingleFieldFromEnvVar('apprepoEndpoint', 'STRATUSLAB_APPREPO_ENDPOINT')
         self._setSingleFieldFromEnvVar('username', 'STRATUSLAB_USERNAME')
         self._setSingleFieldFromEnvVar('password', 'STRATUSLAB_PASSWORD')
         self._setSingleFieldFromEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
-        self._setSingleFieldFromEnvVar('p12Cert', 'STRATUSLAB_P12_CERTIFICATE')
+        self._setSingleFieldFromEnvVar('p12Certificate', 'STRATUSLAB_P12_CERTIFICATE')
         self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
         self._exportEndpointIfNotInEnv()
         self._setSingleFieldFromEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
@@ -243,7 +243,7 @@ class Testor(unittest.TestCase):
     def applianceRepositoryTest(self):
         '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
 
-        self._checkAttributePresent(['appRepoUsername', 'appRepoPassword'])
+        self._checkAttributePresent(['apprepoUsername', 'apprepoPassword'])
         self._testRepoConnection()
         self._uploadAndDeleteDummyImage()
 
@@ -256,15 +256,15 @@ class Testor(unittest.TestCase):
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
         passwordMgr.add_password(None,
-                                 self.appRepoUrl,
-                                 self.appRepoUsername,
-                                 self.appRepoPassword)
+                                 self.apprepoEndpoint,
+                                 self.apprepoUsername,
+                                 self.apprepoPassword)
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
 
         try:
-            opener.open(self.appRepoUrl)
+            opener.open(self.apprepoEndpoint)
         except RuntimeError:
             raise NetworkException('Authentication to appliance repository failed')
 
@@ -274,9 +274,9 @@ class Testor(unittest.TestCase):
 
         manifest = ''
         configHolder = Testor.configHolder.copy()
-        configHolder.set('repoUsername', self.appRepoUsername)
-        configHolder.set('repoPassword', self.appRepoPassword)
-        configHolder.set('appRepoUrl',  self.appRepoUrl)
+        configHolder.set('apprepoUsername', self.apprepoUsername)
+        configHolder.set('apprepoPassword', self.apprepoPassword)
+        configHolder.set('apprepoEndpoint',  self.apprepoEndpoint)
         configHolder.set('uploadOption', '')
         uploader = Uploader(manifest, configHolder)
         uploader.uploadFile(dummyFile, os.path.join('base', os.path.basename(dummyFile)))
@@ -338,7 +338,7 @@ class Testor(unittest.TestCase):
         creator = self._createCreator(image)
 
         newImage = creator.showName()
-        newImageUri = '%s/%s'%(creator.appRepoUrl, newImage)
+        newImageUri = '%s/%s'%(creator.apprepoEndpoint, newImage)
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
@@ -361,8 +361,8 @@ class Testor(unittest.TestCase):
     def _deleteImageAndManifestFromAppRepo(self, imageUri):
         urlDir = imageUri.rsplit('/',1)[0] + '/'
 
-        curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.appRepoUsername,
-                                                        self.appRepoPassword)]
+        curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.apprepoUsername,
+                                                        self.apprepoPassword)]
         deleteUrlCmd = curlCmd + [ '-X', 'DELETE', urlDir]
 
         Util.execute(deleteUrlCmd,
@@ -394,19 +394,19 @@ class Testor(unittest.TestCase):
         options['username'] = getattr(self, 'username', self.oneUsername)
         options['password'] = getattr(self, 'password', self.proxyOneadminPassword)
 
-        options['appRepoUrl'] = self.appRepoUrl
-        options['repoUsername'] = self.appRepoUsername
-        options['repoPassword'] = self.appRepoPassword
+        options['apprepoEndpoint'] = self.apprepoEndpoint
+        options['apprepoUsername'] = self.apprepoUsername
+        options['apprepoPassword'] = self.apprepoPassword
 
         options['userPublicKeyFile'] = self.sshKeyPub
         options['userPrivateKeyFile'] = self.sshKey
 
-        options['p12Cert'] = self.p12Cert
+        options['p12Certificate'] = self.p12Cert
         options['p12Password'] = self.p12Password
 
         options['shutdownVm'] = True
 
-        options['marketPlaceEndpoint'] = Downloader.ENDPOINT
+        options['marketplaceEndpoint'] = Downloader.ENDPOINT
         
         configHolder = ConfigHolder(options)
 

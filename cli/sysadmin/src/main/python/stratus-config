@@ -27,11 +27,11 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath
 import stratuslab.Util as Util
-from stratuslab.CommandBase import CommandBase
+from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.Configurator import Configurator
 from stratuslab.ConfigHolder import ConfigHolder
 
-class MainProgram(CommandBase):
+class MainProgram(CommandBaseSysadmin):
     '''A command-line program to configure StratusLab.'''
 
     def __init__(self):
@@ -42,9 +42,6 @@ class MainProgram(CommandBase):
 If the [value] is not provided, the command returns the current value of the key.'''
         self.parser.usage = usage
 
-        self.parser.add_option('-c', '--config', dest='configFile',
-                               help='Default configuration file', metavar='FILE',
-                               default=Util.defaultConfigFile)
         self.parser.add_option('-k', '--keys', dest='showDefaultKeys',
                                help='Display keys and default value', action='store_true',
                                default=False)
