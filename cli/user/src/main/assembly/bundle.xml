@@ -47,6 +47,14 @@
 			<outputDirectory>java</outputDirectory>
 		</fileSet>
 
+        <fileSet>
+            <directory>${project.build.directory}/zip-sources/conf/</directory>
+            <outputDirectory>conf</outputDirectory>
+            <includes>
+                <include>stratuslab-user.cfg.ref</include>
+            </includes>
+        </fileSet>
+
 	</fileSets>
 
 </assembly>
