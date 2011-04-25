@@ -159,7 +159,10 @@
           <groupname>root</groupname>
           <sources>
             <source>
-              <location>${project.build.directory}/zip-sources/conf/stratuslab-user.cfg.ref</location>
+              <location>${project.build.directory}/zip-sources/conf</location>
+              <includes>
+                <include>stratuslab-user.cfg.ref</include>
+              </includes>
             </source>
           </sources>
         </mapping>
