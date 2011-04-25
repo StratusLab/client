@@ -81,9 +81,9 @@ class ConfigHolder(object):
     @staticmethod
     def addConfigFileUserOption(parser):
         parser.add_option('-c', '--config', dest='configFile', 
-                           help='client configuration file. Default %s' % Util.defaultConfigFileClient, 
+                           help='user configuration file. Default %s' % Util.defaultConfigFileUser, 
                            metavar='FILE',
-                           default=Util.defaultConfigFileClient)
+                           default=Util.defaultConfigFileUser)
         return parser
 
     @staticmethod

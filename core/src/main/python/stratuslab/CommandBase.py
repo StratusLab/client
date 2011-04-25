@@ -134,7 +134,7 @@ class CommandBaseUser(CommandBase):
             self.config, self._configKeysClassAttrsTwoWayMap = \
                 ConfigHolder.configFileToDictWithFormattedKeys(configFile, withMap=True)
         except Exceptions.ConfigurationException:
-            if configFile == Util.defaultConfigFileClient:
+            if configFile == Util.defaultConfigFileUser:
                 Util.printWarning('Default configuration file does not exists: %s' % 
                                   configFile)
                 return
