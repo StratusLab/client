@@ -1,4 +1,4 @@
-:database: sqlite://auth.db
+:database: mysql://%(oneDbUsername)s:%(oneDbPassword)s@%(oneDbHost)s/opennebula
 :authentication: simple
 :quota:
   :enabled: true
