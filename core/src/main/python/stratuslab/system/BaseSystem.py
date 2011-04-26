@@ -524,7 +524,8 @@ class BaseSystem(object):
         self._configureVirtualNetInterface(device, ip,
                                            self.natNetmask)
 
-    def _enableIpForwarding(self):
+    @staticmethod
+    def enableIpForwarding():
         FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
         FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
         Util.printDetail('Enabling packets forwarding.')
@@ -532,6 +533,9 @@ class BaseSystem(object):
         appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
                               'net.ipv4.ip_forward',
                               'net.ipv4.ip_forward = 1')
+        
+    def _enableIpForwarding(self):
+        return BaseSystem.enableIpForwarding()
 
     def _configureVirtualNetInterface(self, device, ip, netmask):
         device = device + ':privlan'
@@ -820,3 +824,6 @@ group {
     def _configureDbUser(self, username, password):
         Util.execute("/usr/bin/mysqladmin -u%s -h localhost %s password '%s'" % (username, password))
         Util.execute("/usr/bin/mysql -uroot -p%s -e 'GRANT SELECT, INSERT, DELETE, UPDATE ON database.opennebula TO \'%s\'@\'localhost\';'" % (self.oneDbRootPassword, self.oneDbUsername))
+
+def enableIpForwarding():
+    return BaseSystem.enableIpForwarding()
