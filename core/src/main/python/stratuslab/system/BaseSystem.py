@@ -36,6 +36,8 @@ class BaseSystem(object):
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
         self.workOnFrontend()
+        self.oneDbUsername = None
+        self.oneDbPassword = None
 
     def init(self):
         self._setOneHome()
@@ -512,7 +514,7 @@ class BaseSystem(object):
             self._setFireWallRulesAll(rules)
 
     def _configureFireWallNatNetworking(self):
-        enableIpForwarding()
+        self._enableIpForwarding()
 
         device = self.natNetworkInterface
         ip = getattr(self, 'natGateway', '')
@@ -521,6 +523,15 @@ class BaseSystem(object):
 
         self._configureVirtualNetInterface(device, ip,
                                            self.natNetmask)
+
+    def _enableIpForwarding(self):
+        FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
+        FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
+        Util.printDetail('Enabling packets forwarding.')
+        file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
+        appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
+                              'net.ipv4.ip_forward',
+                              'net.ipv4.ip_forward = 1')
 
     def _configureVirtualNetInterface(self, device, ip, netmask):
         device = device + ':privlan'
@@ -795,13 +806,17 @@ group {
         if rc != 0:
             Util.printError('Filed to (re)start DHCP service.')
 
+    def configureDatabase(self):
 
-FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
-FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
+        Util.printDetail('Changing db root password')
+        self._configureRootDbUser(self.oneDbRootPassword)
 
-def enableIpForwarding():
-    Util.printDetail('Enabling packets forwarding.')
-    file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
-    appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
-                          'net.ipv4.ip_forward',
-                          'net.ipv4.ip_forward = 1')
+        Util.printDetail('Creating oneadmin db account')
+        self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
+        
+    def _configureRootDbUser(self, password):
+        Util.execute("/usr/bin/mysqladmin -uroot password '%s'" % password)
+
+    def _configureDbUser(self, username, password):
+        Util.execute("/usr/bin/mysqladmin -u%s -h localhost %s password '%s'" % (username, password))
+        Util.execute("/usr/bin/mysql -uroot -p%s -e 'GRANT SELECT, INSERT, DELETE, UPDATE ON database.opennebula TO \'%s\'@\'localhost\';'" % (self.oneDbRootPassword, self.oneDbUsername))
