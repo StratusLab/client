@@ -25,12 +25,12 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBase
+from stratuslab.CommandBase import CommandBaseSysadmin
 import stratuslab.installator.InstallatorFactory as InstallatorFactory
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 
-class MainProgram(CommandBase):
+class MainProgram(CommandBaseSysadmin):
     '''A command-line program to install StratusLab.'''
 
     def __init__(self):
@@ -40,9 +40,7 @@ class MainProgram(CommandBase):
         usage = '%prog [options]'
 
         self.parser.usage = usage
-        self.parser.add_option('-c', '--config', dest='configFile', 
-                               help='configuration file', metavar='FILE',
-                               default=Util.defaultConfigFile)
+        
         self.parser.add_option('-n', '--node', dest='nodeAddr', 
                                help='IP address or hostname of the node to configure',
                                default=None, metavar='ADDRESS')

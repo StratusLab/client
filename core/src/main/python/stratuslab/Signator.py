@@ -48,7 +48,7 @@ class Signator(Configurable):
     def _sign(self):
         jarLocation = self._findJar()
         javaMainArgs = ' ' + self.manifestFile + ' ' + self.tempManifestFile + \
-                       ' ' + self.p12Cert + ' ' + self.p12Password + \
+                       ' ' + self.p12Certificate + ' ' + self.p12Password + \
                        ' ' + self.email
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.SignMetadata'))
         cmd += javaMainArgs

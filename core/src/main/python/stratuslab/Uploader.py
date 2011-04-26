@@ -74,9 +74,9 @@ class Uploader(object):
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] <metadata-file>'''
 
-        parser.add_option('-r', '--repository', dest='appRepoUrl',
-                help='appliance repository address. Default STRATUSLAB_REPO_ADDRESS',
-                default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
+        parser.add_option('-r', '--repository', dest='apprepoEndpoint',
+                help='appliance repository address. Default STRATUSLAB_APPREPO_ENDPOINT',
+                default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT'), metavar='ADDRESS')
 
         parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
                 help='additional curl option', default='')
@@ -96,7 +96,7 @@ class Uploader(object):
                 help='Also upload the metadata file to the marketplace',
                 default=False, action='store_true')
 
-        parser.add_option('--marketplace-endpoint', dest='marketPlaceEndpoint',
+        parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
                 help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT),
                 default=None)
 
@@ -105,20 +105,20 @@ class Uploader(object):
                 action='store_true',
                 default=False)
 
-        parser.add_option('-U', '--repo-username', dest='repoUsername',
-                help='repository username. Default STRATUSLAB_REPO_USERNAME',
-                default=os.getenv('STRATUSLAB_REPO_USERNAME'))
-        parser.add_option('-P', '--repo-password', dest='repoPassword',
-                help='repository password. Default STRATUSLAB_REPO_PASSWORD',
-                default=os.getenv('STRATUSLAB_REPO_PASSWORD'))
+        parser.add_option('-U', '--repo-username', dest='apprepoUsername',
+                help='repository username. Default STRATUSLAB_APPREPO_USERNAME',
+                default=os.getenv('STRATUSLAB_APPREPO_USERNAME', ''))
+        parser.add_option('-P', '--repo-password', dest='apprepoPassword',
+                help='repository password. Default STRATUSLAB_APPREPO_PASSWORD',
+                default=os.getenv('STRATUSLAB_APPREPO_PASSWORD', ''))
 
     @staticmethod
     def checkUploadOptions(options, parser):
 
-        if options.marketPlaceEndpoint:
+        if options.marketplaceEndpoint:
             options.withMarketPlace = True
-        if not options.marketPlaceEndpoint:
-            options.marketPlaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT)                    
+        if not options.marketplaceEndpoint:
+            options.marketplaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT)                    
 
         if options.withMarketPlaceOnly:
             options.withMarketPlace = True
@@ -126,11 +126,11 @@ class Uploader(object):
 
         if options.compressionFormat not in Uploader.availableCompressionFormat():
             parser.error('Unknown compression format')
-        if not options.appRepoUrl:
+        if not options.apprepoEndpoint:
             parser.error('Unspecified repository address')
-        if not options.repoUsername:
+        if not options.apprepoUsername:
             parser.error('Unspecified repository username')
-        if not options.repoPassword:
+        if not options.apprepoPassword:
             parser.error('Unspecified repository password')
  
     @staticmethod
@@ -150,8 +150,8 @@ class Uploader(object):
         configHolder.assign(self)
         self.manifestFile = manifestFile
         self.appliance = self.manifestFile.replace('.xml', '.img')
-        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.repoUsername,
-                                                             self.repoPassword)]
+        self.curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.apprepoUsername,
+                                                             self.apprepoPassword)]
         self.uploadedFile = []
 
         self.os = ''
@@ -204,7 +204,7 @@ class Uploader(object):
         else:
             self.uploadFile(self.appliance, applianceUri)
 
-        self._addLocationToManifest('%s/%s' % (self.appRepoUrl, applianceUri))
+        self._addLocationToManifest('%s/%s' % (self.apprepoEndpoint, applianceUri))
 
     def _signManifest(self):
         configHolder = ConfigHolder(self.__dict__)
@@ -224,7 +224,7 @@ class Uploader(object):
         if Util.getProtoFromUri(remoteName) and Util.getHostnameFromUri(remoteName):
             uploadUrl = remoteName
         else:
-            uploadUrl = '%s/%s' % (self.appRepoUrl, remoteName)
+            uploadUrl = '%s/%s' % (self.apprepoEndpoint, remoteName)
 
         curlUploadCmd = self.curlCmd + ['-T', filename]
 
@@ -318,14 +318,14 @@ class Uploader(object):
 
     def _checkFileAlreadyExists(self, filename):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None, self.appRepoUrl, self.repoUsername, self.repoPassword)
+        passwordMgr.add_password(None, self.apprepoEndpoint, self.apprepoUsername, self.apprepoPassword)
 
         handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
         opener = urllib2.build_opener(handler)
 
         status = 0
         try:
-            opener.open('%s/%s' % (self.appRepoUrl, filename))
+            opener.open('%s/%s' % (self.apprepoEndpoint, filename))
         except urllib2.HTTPError, e:
             status = e.code
 
@@ -343,7 +343,7 @@ class Uploader(object):
 
     def _parseRepoConfig(self):
         tmpRepoCfg = '/tmp/stratus-repo.tmp'
-        Util.wget('%s/%s' % (self.appRepoUrl, Util.defaultRepoConfigPath), tmpRepoCfg)
+        Util.wget('%s/%s' % (self.apprepoEndpoint, Util.defaultRepoConfigPath), tmpRepoCfg)
 
         repoConf = RawConfigParser()
         repoConf.read(tmpRepoCfg)

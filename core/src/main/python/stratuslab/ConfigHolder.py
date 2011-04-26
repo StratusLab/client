@@ -32,6 +32,11 @@ class ConfigHolder(object):
         return dict
 
     @staticmethod
+    def configFileToDictWithFormattedKeys(configFileName, withMap=False):
+        config = ConfigHolder.configFileToDict(configFileName)
+        return ConfigHolder._formatConfigKeys(config, withMap)
+
+    @staticmethod
     def configFileHandlerToDict(configFileHandler):
         config = SafeConfigParser()
         config.readfp(configFileHandler)
@@ -65,25 +70,51 @@ class ConfigHolder(object):
         config.read(configFileName)
         return config
 
+    @staticmethod
+    def addConfigFileSysadminOption(parser):
+        parser.add_option('-c', '--config', dest='configFile', 
+                            help='configuration file. Default %s' % Util.defaultConfigFile, 
+                            metavar='FILE',
+                            default=Util.defaultConfigFile)
+        return parser
+
+    @staticmethod
+    def addConfigFileUserOption(parser):
+        parser.add_option('-c', '--config', dest='configFile', 
+                           help='user configuration file. Default %s' % Util.defaultConfigFileUser, 
+                           metavar='FILE',
+                           default=Util.defaultConfigFileUser)
+        return parser
+
+    @staticmethod
+    def _formatConfigKeys(config, withMap=False):
+        _dict = {}
+        _map = {}
+        for k, v in config.items():
+            camel = ConfigHolder._camelCase(k)
+            _dict[camel] = v
+            if withMap:
+                _map[k] = camel
+                _map[camel] = k
+        if withMap:
+            return _dict, _map
+        else:
+            return _dict
+
+    @staticmethod
+    def _camelCase(key):
+        formattedKey = ''.join([part.title() for part in key.split('_')])
+        if len(formattedKey) > 0:
+            formattedKey = formattedKey[0].lower() + formattedKey[1:]
+        return formattedKey
+
     def __init__(self, options={}, config={}):
         self.options = options
         self.config = config
 
     def assign(self, obj):
-        Util.assignAttributes(obj, self._formatConfigKeys(self.config))
+        Util.assignAttributes(obj, ConfigHolder._formatConfigKeys(self.config))
         Util.assignAttributes(obj, self.options)
-
-    def _formatConfigKeys(self, config):
-        dict = {}
-        for k, v in config.items():
-            dict[self._camelCase(k)] = v
-        return dict
-
-    def _camelCase(self, key):
-        formattedKey = ''.join([part.title() for part in key.split('_')])
-        if len(formattedKey) > 0:
-            formattedKey = formattedKey[0].lower() + formattedKey[1:]
-        return formattedKey
 
     def copy(self):
         copy = ConfigHolder(self.options.copy(), self.config.copy())

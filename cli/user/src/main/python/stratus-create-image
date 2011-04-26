@@ -94,18 +94,18 @@ class MainProgram(Runnable):
                 help='leave the VM running. A public IP will be assigned.',
                 default=True, action='store_false')
 
-        self.parser.add_option('-r', '--repository', dest='appRepoUrl',
+        self.parser.add_option('-r', '--repository', dest='apprepoEndpoint',
                 help='appliance repository address. Url of the root of the appliance repository. '
-                'Default STRATUSLAB_REPO_ADDRESS',
-                default=os.getenv('STRATUSLAB_REPO_ADDRESS'), metavar='ADDRESS')
+                'Default STRATUSLAB_APPREPO_ENDPOINT',
+                default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT'), metavar='ADDRESS')
 
-        self.parser.add_option('-U', '--repo-username', dest='repoUsername',
-                help='repository username. Default STRATUSLAB_REPO_USERNAME',
-                default=os.getenv('STRATUSLAB_REPO_USERNAME'))
+        self.parser.add_option('-U', '--repo-username', dest='apprepoUsername',
+                help='repository username. Default STRATUSLAB_APPREPO_USERNAME',
+                default=os.getenv('STRATUSLAB_APPREPO_USERNAME'))
 
-        self.parser.add_option('-P', '--repo-password', dest='repoPassword',
-                help='repository password. Default STRATUSLAB_REPO_PASSWORD',
-                default=os.getenv('STRATUSLAB_REPO_PASSWORD'))
+        self.parser.add_option('-P', '--repo-password', dest='apprepoPassword',
+                help='repository password. Default STRATUSLAB_APPREPO_PASSWORD',
+                default=os.getenv('STRATUSLAB_APPREPO_PASSWORD'))
 
         self.parser.add_option('--no-upload', dest='noUpload',
                 help='do not upload the new image to an appliances repository. \
@@ -156,14 +156,14 @@ you\'ll never be able to retrieve the new image')
         if not self.options.author:
             self.parser.error('Please provide an author for the new image')
 
-        if not self.options.appRepoUrl and not self.options.noUpload:
+        if not self.options.apprepoEndpoint and not self.options.noUpload:
             if Util.getProtoFromUri(self.image) and Util.getProtoHostnameFromUri(self.image):
-                self.options.appRepoUrl = Util.getProtoHostnameFromUri(self.image)
+                self.options.apprepoEndpoint = Util.getProtoHostnameFromUri(self.image)
             else:
                 self.parser.error('Missing repository address')
-        if not self.options.repoUsername and not self.options.noUpload:
+        if not self.options.apprepoUsername and not self.options.noUpload:
             self.parser.error('Missing repository username')
-        if not self.options.repoPassword and not self.options.noUpload:
+        if not self.options.apprepoPassword and not self.options.noUpload:
             self.parser.error('Missing repository password')
 
         AuthnCommand.checkP12CertOptionsOnly(self)

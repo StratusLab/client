@@ -62,11 +62,12 @@ class Downloader(object):
     def __init__(self, configHolder=ConfigHolder()):
         self.localImageFilename = ''
         self.configHolder = configHolder
-        self.imageUrl = None
+        self.imageUrl = ''
         configHolder.assign(self)
-        self.compression = None
+        self.compression = ''
         self.localImageFilename = os.path.abspath(self.localImageFilename)
         self.manifestObject = None
+        self.marketplaceEndpoint = ''
 
     def _getManifest(self, imageId, tempMetadataFilename):
         """Return manifest as ManifestInfo object.
@@ -166,7 +167,7 @@ class Downloader(object):
         return self.localImageFilename
 
     def constructManifestUrl(self, uri):
-        endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
+        endpoint = Util.constructEndPoint(self.marketplaceEndpoint, 'http', '80', 'images')
         url = endpoint + '/' + uri
         return url
 

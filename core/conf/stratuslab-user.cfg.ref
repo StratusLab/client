@@ -1,0 +1,34 @@
+##############################################################################
+#                                                                            #
+#                  StratusLab Configuration Reference                        #
+#                  ----------------------------------                        #
+#                                                                            #
+#                                                                            #
+#     Note: parameters have to have a unique name, across the                #
+#           sections, as sections are only there to provide                  #
+#           structure and documentation.                                     #
+#                                                                            #
+##############################################################################
+
+[user]
+
+# Cloud frontend
+endpoint = cloud.frontend.org
+username = username
+password = password
+
+# Marketplace
+marketplace_endpoint = http://appliances.stratuslab.eu/marketplace/metadata
+
+# Appliance repository
+apprepo_endpoint = http://appliances.stratuslab.org/images
+apprepo_username = username
+apprepo_password = password
+
+key = <home>/.ssh/id_rsa.pub
+
+pem_certificate = <home>/.globus/usercert.pem
+pem_password = password
+
+p12_certificate = <home>/.globus/usercert.p12
+p12_password = password

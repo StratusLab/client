@@ -37,7 +37,7 @@ class AuthnFactory(object):
         except AttributeError:
             usernamePasswordCredentials = False
         try:
-            pemCredentials = runnable.pemCert and runnable.pemKey
+            pemCredentials = runnable.pemCertificate and runnable.pemPassword
         except AttributeError:
             pemCredentials = False
         
@@ -128,20 +128,20 @@ class CertificateCredentialsConnector(CredentialsConnector):
 
     def __init__(self, runnable):
         super(CertificateCredentialsConnector, self).__init__(runnable)
-        self.pemCert = runnable.pemCert
-        self.pemKey = runnable.pemKey
+        self.pemCertificate = runnable.pemCertificate
+        self.pemPassword = runnable.pemPassword
         self.pathPrefix = '/cert/'
         self._validate()
 
     def _validate(self):
-        if not os.path.exists(self.pemCert):
-            raise ValueError('Can\'t find certificate file %s' % self.pemCert)
+        if not os.path.exists(self.pemCertificate):
+            raise ValueError('Can\'t find certificate file %s' % self.pemCertificate)
         
-        if not os.path.exists(self.pemKey):
-            raise ValueError('Can\'t find key file %s' % self.pemKey)
+        if not os.path.exists(self.pemPassword):
+            raise ValueError('Can\'t find key file %s' % self.pemPassword)
     
     def createRpcConnection(self):
-        transport = CertificateCredentialsConnector.SafeTransportWithCert(self.pemCert, self.pemKey)
+        transport = CertificateCredentialsConnector.SafeTransportWithCert(self.pemCertificate, self.pemPassword)
         url = self._manglePath(self.runnable.cloud.server)
         return xmlrpclib.ServerProxy(url, transport=transport)
     

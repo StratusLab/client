@@ -41,6 +41,8 @@ class BaseInstallator(object):
         self.config = None
         self.options = {}
         self.nodeAddr = None
+        self.appRepoAddr = None
+        self.installCloudia = None
         self.frontend = None
         self.node = None
         self.cloud = None

@@ -33,7 +33,7 @@ class Claudia(object):
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         # add your packages here 
         #self.packages = ['apache2']
-        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq']
+        self.packages = ['claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq', 'reportclient-rpm']
         
         # claudia configuration files
         self.smFile = self.claudiaHome+"/conf/sm.properties"

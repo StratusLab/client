@@ -38,6 +38,7 @@ varLibDir = '/var/lib/stratuslab/python'
 shareDir = '/var/share/stratuslab/'
 etcDir = '/etc/stratuslab/'
 defaultConfigFile = etcDir + 'stratuslab.cfg'
+defaultConfigFileUser = os.path.join(os.path.expanduser('~'), '.stratuslab', 'stratuslab-user.cfg')
 manifestExt = '.xml'
 cliLineSplitChar = '#'
 
