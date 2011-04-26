@@ -526,8 +526,6 @@ class BaseSystem(object):
 
     @staticmethod
     def enableIpForwarding():
-        FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
-        FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
         Util.printDetail('Enabling packets forwarding.')
         file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
         appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
@@ -824,6 +822,10 @@ group {
     def _configureDbUser(self, username, password):
         Util.execute("/usr/bin/mysqladmin -u%s -h localhost %s password '%s'" % (username, password))
         Util.execute("/usr/bin/mysql -uroot -p%s -e 'GRANT SELECT, INSERT, DELETE, UPDATE ON database.opennebula TO \'%s\'@\'localhost\';'" % (self.oneDbRootPassword, self.oneDbUsername))
+
+
+FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
+FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
 
 def enableIpForwarding():
     return BaseSystem.enableIpForwarding()
