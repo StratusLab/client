@@ -817,11 +817,11 @@ group {
         self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
         
     def _configureRootDbUser(self, password):
-        Util.execute("/usr/bin/mysqladmin -uroot password '%s'" % password)
+        self._execute(["/usr/bin/mysqladmin", "-uroot password '%s'" % password])
 
     def _configureDbUser(self, username, password):
-        Util.execute("/usr/bin/mysqladmin -u%s -h localhost %s password '%s'" % (username, password))
-        Util.execute("/usr/bin/mysql -uroot -p%s -e 'GRANT SELECT, INSERT, DELETE, UPDATE ON database.opennebula TO \'%s\'@\'localhost\';'" % (self.oneDbRootPassword, self.oneDbUsername))
+        self._execute(["/usr/bin/mysqladmin", "-uroot -p%s -h localhost %s password '%s'" % (self.oneDbRootPassword, username, password)])
+        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
 
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
