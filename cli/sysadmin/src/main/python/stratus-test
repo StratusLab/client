@@ -32,6 +32,8 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
 
+defaultAppRepoEndpoint = 'http://appliances.stratuslab.org/images'
+
 class MainProgram(CommandBase):
     '''A command-line program to test StratusLab.'''
 
@@ -54,7 +56,7 @@ class MainProgram(CommandBase):
 
         self.parser.add_option('--app-repo-endpoint', dest='apprepoEndpoint',
                                help='Appliance repository endpoint', metavar='ENDPOINT',
-                               default=None)
+                               default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT', defaultAppRepoEndpoint))
 
         self.parser.add_option('--app-repo-username', dest='apprepoUsername',
                                help='Appliance repository username', metavar='USERNAME',
