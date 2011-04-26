@@ -43,7 +43,7 @@ SCRIPTS_REMOTE_DIR=/var/tmp/one
 
 # Sample configuration for MySQL
  DB = [ backend = "mysql",
-        server  = "localhost",
+        server  = "%(one_db_host)s",
         user    = "%(one_db_username)s",
         passwd  = "%(one_db_password)s",
         db_name = "opennebula" ]

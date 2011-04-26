@@ -38,6 +38,7 @@ one_password = oneadmin
 one_db_username = oneadmin
 one_db_password = oneadmin
 one_db_root_password = root
+one_db_host = localhost
 
 [one-advanced]
 one_home =
