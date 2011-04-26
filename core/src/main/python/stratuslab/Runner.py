@@ -390,4 +390,4 @@ class Runner(object):
             return image
 
         imageId = image
-        return '%s/%s' % (self.marketlaceEndpoint, imageId)
+        return '%s/%s' % (self.marketplaceEndpoint, imageId)

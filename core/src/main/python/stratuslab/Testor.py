@@ -401,7 +401,7 @@ class Testor(unittest.TestCase):
         options['userPublicKeyFile'] = self.sshKeyPub
         options['userPrivateKeyFile'] = self.sshKey
 
-        options['p12Certificate'] = self.p12Cert
+        options['p12Certificate'] = self.p12Certificate
         options['p12Password'] = self.p12Password
 
         options['shutdownVm'] = True

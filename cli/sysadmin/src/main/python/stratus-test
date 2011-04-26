@@ -52,6 +52,10 @@ class MainProgram(CommandBase):
                                help='list available tests', action='store_true',
                                default=False)
 
+        self.parser.add_option('--app-repo-endpoint', dest='apprepoEndpoint',
+                               help='Appliance repository endpoint', metavar='ENDPOINT',
+                               default=None)
+
         self.parser.add_option('--app-repo-username', dest='apprepoUsername',
                                help='Appliance repository username', metavar='USERNAME',
                                default=None)

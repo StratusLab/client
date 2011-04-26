@@ -63,11 +63,13 @@ class Downloader(object):
         self.localImageFilename = ''
         self.configHolder = configHolder
         self.imageUrl = ''
-        configHolder.assign(self)
         self.compression = ''
+        self.marketplaceEndpoint = ''
+
+        configHolder.assign(self)
+        
         self.localImageFilename = os.path.abspath(self.localImageFilename)
         self.manifestObject = None
-        self.marketplaceEndpoint = ''
 
     def _getManifest(self, imageId, tempMetadataFilename):
         """Return manifest as ManifestInfo object.
