@@ -26,7 +26,7 @@ import urllib2
 import random
 from random import sample
 from string import ascii_lowercase
-from Exceptions import ImportException, ExecutionException
+from Exceptions import ExecutionException
 from Compressor import Compressor
 from stratuslab.Exceptions import ValidationException
 
