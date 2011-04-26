@@ -345,10 +345,10 @@ def importSystem(system):
     module = None
     try:
         module = __import__(system)
-    except:
-        msg = 'Error while importing module %s' % system
-        printError('', exit=False)
-        raise ImportException(msg)
+    except ImportError, ex:
+        msg = 'Error while importing module %s, with detail: ' % system
+        printError(msg + str(ex), exit=False)
+        raise
     else:
         return module
 
