@@ -215,7 +215,7 @@ def setPythonPath(path):
     if not path in sys.path:
         sys.path.append(path)
 
-def execute(cmd, **kwargs):
+def execute(commandAndArgsList, **kwargs):
     wait = not kwargs.get('noWait', False)
 
     if kwargs.has_key('noWait'):
@@ -229,13 +229,13 @@ def execute(cmd, **kwargs):
     if kwargs.has_key('withOutput'):
         del kwargs['withOutput']
 
-    if isinstance(cmd, list):
-        _cmd = ' '.join(cmd)
+    if isinstance(commandAndArgsList, list):
+        _cmd = ' '.join(commandAndArgsList)
     else:
-        _cmd = cmd
+        _cmd = commandAndArgsList
     _printDetail('Calling: ' + _cmd, kwargs)
 
-    process = subprocess.Popen(cmd, **kwargs)
+    process = subprocess.Popen(commandAndArgsList, **kwargs)
 
     if wait:
         process.wait()
