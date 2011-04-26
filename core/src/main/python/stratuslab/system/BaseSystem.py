@@ -44,6 +44,8 @@ class BaseSystem(object):
         self.certificateAuthorityRepo = ''
         
         self.workOnFrontend()
+        self.oneDbUsername = None
+        self.oneDbPassword = None
 
     def init(self):
         self._setOneHome()
@@ -297,10 +299,10 @@ class BaseSystem(object):
     #     Front-end related methods
     # -------------------------------------------
 
-    def execute(self, command):
-        return self._execute(command)
+    def execute(self, commandAndArgsList):
+        return self._execute(commandAndArgsList)
 
-    def _execute(self, command, **kwargs):
+    def _execute(self, commandAndArgsList, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
         stderr = kwargs.get('stderr', self.stderr)
 
@@ -309,7 +311,7 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        return execute(command,
+        return execute(commandAndArgsList,
                        stdout=stdout,
                        stderr=stderr,
                        verboseLevel=self.verboseLevel,
@@ -539,7 +541,7 @@ class BaseSystem(object):
             self._setFireWallRulesAll(rules)
 
     def _configureFireWallNatNetworking(self):
-        enableIpForwarding()
+        self._enableIpForwarding()
 
         device = self.natNetworkInterface
         ip = getattr(self, 'natGateway', '')
@@ -548,6 +550,17 @@ class BaseSystem(object):
 
         self._configureVirtualNetInterface(device, ip,
                                            self.natNetmask)
+
+    @staticmethod
+    def enableIpForwarding():
+        Util.printDetail('Enabling packets forwarding.')
+        file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
+        appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
+                              'net.ipv4.ip_forward',
+                              'net.ipv4.ip_forward = 1')
+        
+    def _enableIpForwarding(self):
+        return BaseSystem.enableIpForwarding()
 
     def _configureVirtualNetInterface(self, device, ip, netmask):
         device = device + ':privlan'
@@ -856,13 +869,24 @@ group {
         if rc != 0:
             Util.printError('Filed to (re)start DHCP service.')
 
+    def configureDatabase(self):
+
+        Util.printDetail('Changing db root password')
+        self._configureRootDbUser(self.oneDbRootPassword)
+
+        Util.printDetail('Creating oneadmin db account')
+        self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
+        
+    def _configureRootDbUser(self, password):
+        self._execute(["/usr/bin/mysqladmin", "-uroot password '%s'" % password])
+
+    def _configureDbUser(self, username, password):
+        self._execute(["/usr/bin/mysqladmin", "-uroot -p%s -h localhost %s password '%s'" % (self.oneDbRootPassword, username, password)])
+        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
+
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
 FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
 
 def enableIpForwarding():
-    Util.printDetail('Enabling packets forwarding.')
-    file(FILE_IPFORWARD_HOT_ENABLE, 'w').write('1')
-    appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
-                          'net.ipv4.ip_forward',
-                          'net.ipv4.ip_forward = 1')
+    return BaseSystem.enableIpForwarding()

@@ -164,6 +164,9 @@ class BaseInstallator(object):
 
         self._configureDhcpServer()
 
+        printStep('Configuring database')
+        self._configureDatabase()
+
         printStep('Configuring cloud admin account')
         self._configureCloudAdminFrontend()
 
@@ -223,6 +226,9 @@ class BaseInstallator(object):
 
     def _configureDhcpServer(self):
         self.frontend.configureDhcpServer()
+
+    def _configureDatabase(self):
+        self.frontend.configureDatabase()
 
     def _configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminAccount()

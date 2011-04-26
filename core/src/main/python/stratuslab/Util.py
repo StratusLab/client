@@ -26,7 +26,7 @@ import urllib2
 import random
 from random import sample
 from string import ascii_lowercase
-from Exceptions import ImportException, ExecutionException
+from Exceptions import ExecutionException
 from Compressor import Compressor
 from stratuslab.Exceptions import ValidationException
 
@@ -215,7 +215,7 @@ def setPythonPath(path):
     if not path in sys.path:
         sys.path.append(path)
 
-def execute(cmd, **kwargs):
+def execute(commandAndArgsList, **kwargs):
     wait = not kwargs.get('noWait', False)
 
     if kwargs.has_key('noWait'):
@@ -229,13 +229,13 @@ def execute(cmd, **kwargs):
     if kwargs.has_key('withOutput'):
         del kwargs['withOutput']
 
-    if isinstance(cmd, list):
-        _cmd = ' '.join(cmd)
+    if isinstance(commandAndArgsList, list):
+        _cmd = ' '.join(commandAndArgsList)
     else:
-        _cmd = cmd
+        _cmd = commandAndArgsList
     _printDetail('Calling: ' + _cmd, kwargs)
 
-    process = subprocess.Popen(cmd, **kwargs)
+    process = subprocess.Popen(commandAndArgsList, **kwargs)
 
     if wait:
         process.wait()
@@ -345,10 +345,10 @@ def importSystem(system):
     module = None
     try:
         module = __import__(system)
-    except:
-        msg = 'Error while importing module %s' % system
-        printError('', exit=False)
-        raise ImportException(msg)
+    except ImportError, ex:
+        msg = 'Error while importing module %s, with detail: ' % system
+        printError(msg + str(ex), exit=False)
+        raise
     else:
         return module
 
