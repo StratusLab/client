@@ -95,4 +95,29 @@ iface %s inet static
 
         Util.appendOrReplaceMultilineBlockInFile(self.FILE_INTERFACES, data)
 
+    # -------------------------------------------
+    # CA
+    # -------------------------------------------
+
+    def _installCAs(self):
+        """CA:
+        https://wiki.egi.eu/wiki/EGI_IGTF_Release
+        http://repository.egi.eu/sw/production/cas/1/current/tgz/
+        """
+        Util.printDetail('NB! Installation of CA is not implemented for Ubuntu.')
+        Util.printDetail("""For manual installation see:
+        https://wiki.egi.eu/wiki/EGI_IGTF_Release
+        http://repository.egi.eu/sw/production/cas/1/current/tgz/""")
+        self._installFetchCrl()
+        
+    def _installFetchCrl(self):
+        """fetch-crl 3:
+        http://www.nikhef.nl/grid/fetchcrl3
+        http://dist.eugridpma.info/distribution/util/fetch-crl3/
+        """
+        Util.printDetail('NB! Installation of fetch-crl is not implemented for Ubuntu.')
+        Util.printDetail("""For manual installation see:
+        http://www.nikhef.nl/grid/fetchcrl3
+        http://dist.eugridpma.info/distribution/util/fetch-crl3/""")
+
 system = Ubuntu()

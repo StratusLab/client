@@ -111,6 +111,7 @@
 	  
 	  <requires>
 	    <require>opennebula</require>
+	    <require>fetch-crl3</require>
 	  </requires>
 
 	  <mappings>

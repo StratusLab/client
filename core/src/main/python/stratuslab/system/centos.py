@@ -24,14 +24,21 @@ from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
 import stratuslab.Util as Util
 
+packageManagerReposConfDir = '/etc/yum.repos.d'
 installCmd = 'yum -q -y --nogpgcheck install'
 updateCmd = 'yum update'
 cleanPackageCacheCmd = 'yum clean all'
 queryPackageCmd = 'rpm -q'
 
+repoFileNamePattern = '%s/%s.repo' %(packageManagerReposConfDir, '%s')
+
 class CentOS(BaseSystem):
 
+    repoFileNamePattern = '%s/%s.repo' %(packageManagerReposConfDir, '%s')
+
     def __init__(self):
+        super(CentOS, self).__init__()
+        
         self.systemName = 'CentOS 5.5'
         self.arch = self.getSystemArch()
         self.installCmd = installCmd
@@ -65,12 +72,33 @@ class CentOS(BaseSystem):
             'ssh': [],
         }
 
+        self.extraRepos = {
+            'epel' : {'content' : """[epel]
+name=Extra Packages for Enterprise Linux 5 - $basearch
+#baseurl=http://download.fedoraproject.org/pub/epel/5/$basearch
+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-5&arch=$basearch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+#gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL
+""", 'filename' : repoFileNamePattern % 'epel'},
+
+            self.caRepoName : {'content' : """[EGI-trustanchors]
+name=EGI-trustanchors
+baseurl=http://repository.egi.eu/sw/production/cas/1/current/
+#gpgkey=http://repository.egi.eu/sw/production/cas/1/GPG-KEY-EUGridPMA-RPM-3
+gpgcheck=0
+enabled=1
+""", 'filename' : repoFileNamePattern % self.caRepoName}
+            }
+
         self.packages = {'apache2': PackageInfo('httpd','/etc/httpd'),
                          'dhcp': PackageInfo('dhcp',
                                              configFile='/etc/dhcpd.conf',
-                                             initdScriptName='dhcpd')}
+                                             initdScriptName='dhcpd'),
+                         'CA' : PackageInfo('ca-policy-egi-core', 
+                                                repository=self.caRepoName)}
 
-        super(CentOS, self).__init__()
 
     def getSystemArch(self):
         _, _, _, _, arch = os.uname()
@@ -83,6 +111,30 @@ class CentOS(BaseSystem):
     # -------------------------------------------
     #     Package manager and related
     # -------------------------------------------
+    
+    def addRepositories(self, packages):
+        """Accepts package names and aliases as defined in self.packages.
+        """
+        repos = []
+        for pkgName in packages:
+            repo = ''
+            if pkgName in self.packages:
+                repo = self.packages[pkgName].repository
+            else:
+                for pkgInfo in self.packages.values():
+                    if pkgInfo.packageName == pkgName:
+                        repo = pkgInfo.repository
+            if repo and repo not in repos:
+                repos.append(repo)
+        
+        for repo in repos:
+            if repo in self.extraRepos:
+                filename = self.extraRepos[repo]['filename']
+                content = self.extraRepos[repo]['content']
+                Util.filePutContent(filename, content)
+            else:
+                Util.printError("Repository '%s' is not defined in the extra list of repositories (%s)." % \
+                                (repo, ', '.join(self.extraRepos)))
 
     def updatePackageManager(self):
         pass
@@ -178,5 +230,8 @@ IPADDR=%s
 NETMASK=%s
 """ % (device, ip, netmask)
         Util.filePutContent(deviceConf, data)
+
+
+    
 
 system = CentOS()

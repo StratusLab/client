@@ -22,6 +22,7 @@ from stratuslab.Exceptions import ExecutionException
 from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
     fileGetContent, filePutContent, scp, sshCmd
 import stratuslab.Util as Util
+from stratuslab.system.PackageInfo import PackageInfo
 import os
 import re
 import shutil
@@ -29,12 +30,19 @@ import time
 
 class BaseSystem(object):
 
-    packages = {}
+    caRepoName = 'CAs'
 
     def __init__(self):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
         self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
+
+        self.extraRepos = {}
+        self.packages = {}
+        self.repoFileNamePattern = '/etc/%s'
+        self.certificateAuthorityPackages = ''
+        self.certificateAuthorityRepo = ''
+        
         self.workOnFrontend()
 
     def init(self):
@@ -43,6 +51,9 @@ class BaseSystem(object):
     # -------------------------------------------
     #     Packages manager and related
     # -------------------------------------------
+
+    def addRepositories(self, packages):
+        pass
 
     def updatePackageManager(self):
         pass
@@ -53,6 +64,8 @@ class BaseSystem(object):
     def installPackages(self, packages):
         if len(packages) < 1:
             return
+
+        self.addRepositories(packages)
 
         cmd = '%s %s' % (self.installCmd, ' '.join(packages))
         _, output = self._executeWithOutput(cmd, shell=True)
@@ -67,6 +80,7 @@ class BaseSystem(object):
                 raise ExecutionException('Error installing packages: %s' % packages)
 
     def installFrontendDependencies(self):
+        self.addRepositories(self.frontendDeps)
         self.updatePackageManager()
         self.installPackages(self.frontendDeps)
 
@@ -76,6 +90,12 @@ class BaseSystem(object):
     def installHypervisor(self):
         self.installNodePackages(self.hypervisorDeps.get(self.hypervisor))
 
+
+    def _updatePackageAndRepoInfo(self, packageName, repoName, repoConf):
+        self.packages[packageName] = PackageInfo(packageName, repository=repoName)
+        self.extraRepos[repoName] = {'content' : repoConf,
+                                     'filename' : self.repoFileNamePattern % repoName}
+
     def getPackageName(self, package):
         return self.packages[package].packageName
 
@@ -84,6 +104,13 @@ class BaseSystem(object):
 
     def getPackageInitdScriptName(self, package):
         return self.packages[package].initdScriptName
+
+    def getPakcageRepositoryName(self, package):
+        return self.packages[package].repository
+
+    def getPakcageRepositoryConfig(self, package):
+        repoName = self.getPakcageRepositoryName(package)
+        return self.extraRepos[repoName]
 
     def getIsPackageInstalledCommand(self, package):
         pass
@@ -604,6 +631,40 @@ class BaseSystem(object):
     def _getRuleAndTableFromRuleSpec(self, ruleSpec):
         return ruleSpec['rule'], \
                ruleSpec.get('table', self.DEFAULT_FIREWALL_TABLE)
+
+    # -------------------------------------------
+    # CA
+    # -------------------------------------------
+
+    def installCAs(self):
+        def _isCertificateAuthority():
+            return Util.isTrueConfVal(getattr(self, 'certificateAuthority', False))
+
+        if not _isCertificateAuthority():
+            Util.printDetail('Requested not to install CAs.')
+            return
+        
+        self._installCAs()
+        
+    def _installCAs(self):
+        packages = []
+
+        if self.certificateAuthorityPackages and self.certificateAuthorityRepo:
+            caPackages = map(lambda x: x.strip(), 
+                             self.certificateAuthorityPackages.split(','))
+            packages.extend(caPackages)
+            repoConf = ''.join(self.certificateAuthorityRepo.strip().split('|'))
+            repoName = self.caRepoName
+            for package in packages:
+                self._updatePackageAndRepoInfo(package, repoName, repoConf)
+        else: 
+            packages.append(self.getPackageName('CA'))
+
+        self.installPackages(packages)
+
+        for package in packages:
+            if not self.isPackageInstalled(package):
+                Util.printError('Failed to install %s.' % package)
 
     # -------------------------------------------
     # DHCP server

@@ -130,6 +130,21 @@ proxy_oneadmin_password = oneadmin
 quota_cpu = 20
 quota_memory = 1GB
 
+[certificate-authority]
+# Install CAs or not?
+certificate_authority = True
+# Comma separated list of CA (meta-)package(s) to install.
+certificate_authority_packages = ca-policy-egi-core
+# Multi-line content of repository specification file. Start lines with 
+# space ' ' and terminate with pipe '|'.
+certificate_authority_repo =
+ [EGI-trustanchors]|
+ name=EGI-trustanchors|
+ baseurl=http://repository.egi.eu/sw/production/cas/1/current/|
+ #gpgkey=http://repository.egi.eu/sw/production/cas/1/GPG-KEY-EUGridPMA-RPM-3|
+ gpgcheck=0|
+ enabled=1
+
 [app-repo]
 # Appliance Repository
 app_repo_url = https://appliances.stratuslab.eu/images

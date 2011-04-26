@@ -150,6 +150,9 @@ class BaseInstallator(object):
 
         self._setFrontend()
 
+        printStep('Installing CAs')
+        self._installCAs()
+
         printStep('Configuring file sharing')
         self._setupFileSharingServer()
 
@@ -175,6 +178,9 @@ class BaseInstallator(object):
 
         printStep('Adding default ONE vnet')
         self._addDefaultNetworks()
+
+    def _installCAs(self):
+        self.frontend.installCAs()
 
     def _setFrontend(self):
         if not self.frontendIp or self.frontendIp == '127.0.0.1':
