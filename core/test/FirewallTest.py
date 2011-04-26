@@ -26,6 +26,8 @@ import commands
 import stratuslab.system.BaseSystem as system
 from stratuslab.system.BaseSystem import BaseSystem as Firewall
 from stratuslab.system.BaseSystem import enableIpForwarding
+import tempfile
+import shutil
 
 class FirewallTest(unittest.TestCase):
 
@@ -63,6 +65,14 @@ class FirewallTest(unittest.TestCase):
         return False
     
     def testConfigureIpForwarding(self):
+        fileEnable_saved = system.FILE_IPFORWARD_HOT_ENABLE
+        filePersist_saved = system.FILE_IPFORWARD_PERSIST
+
+        system.FILE_IPFORWARD_HOT_ENABLE = tempfile.mkstemp()[1]
+        open(system.FILE_IPFORWARD_HOT_ENABLE, 'w').write("1")
+        
+        system.FILE_IPFORWARD_PERSIST = tempfile.mkstemp()[1]
+
         fileEnable = system.FILE_IPFORWARD_HOT_ENABLE
         filePersist = system.FILE_IPFORWARD_PERSIST
         
@@ -73,9 +83,12 @@ class FirewallTest(unittest.TestCase):
         
         self.assertTrue(self._isIpForwardingEnabled(fileEnable))
         self.assertTrue(self._isIpForwardingPersistedAndOn(filePersist))
-        
-        _fileWrite(fileEnable, savedState)
-        _fileWrite(filePersist, savedConfig)
+
+        system.FILE_IPFORWARD_HOT_ENABLE = fileEnable_saved
+        system.FILE_IPFORWARD_PERSIST = filePersist_saved
+
+        fileEnable = system.FILE_IPFORWARD_HOT_ENABLE
+        filePersist = system.FILE_IPFORWARD_PERSIST
         
     def _isIpForwardingEnabled(self, filename):
         return _fileRead(filename).strip() == '1'
