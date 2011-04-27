@@ -27,8 +27,8 @@ apprepo_password = password
 
 key = <home>/.ssh/id_rsa.pub
 
+pem_key = <home>/.globus/userkey.pem
 pem_certificate = <home>/.globus/usercert.pem
-pem_password = password
 
 p12_certificate = <home>/.globus/usercert.p12
 p12_password = password

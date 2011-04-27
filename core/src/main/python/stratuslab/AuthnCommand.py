@@ -62,7 +62,7 @@ class AuthnCommand(CommandBaseUser):
         AuthnCommand.addPemCertOptions(self.parser, defaultOptions)
 
     def checkPemCertOptions(self):
-        pemCredentials = self.options.pemCertificate and self.options.pemPassword
+        pemCredentials = self.options.pemCertificate and self.options.pemKey
         if not pemCredentials:
             return False
         return True
@@ -128,7 +128,7 @@ class PemCertificate(object):
     def options():
         return {'pemCertificate': os.getenv('STRATUSLAB_PEM_CERTIFICATE', 
                                             PemCertificate.defaultLocation),
-                'pemPassword': os.getenv('STRATUSLAB_PEM_PASSWORD', '')}
+                'pemKey': os.getenv('STRATUSLAB_PEM_KEY', '')}
 
     @staticmethod
     def addOptions(parser, defaultOptions=None):
@@ -138,9 +138,9 @@ class PemCertificate(object):
         parser.add_option('--pem-cert', dest='pemCertificate', 
                                help='PEM certificate file. Default order %s, STRATUSLAB_PEM_CERTIFICATE' % PemCertificate.defaultLocation, 
                                default=defaultOptions['pemCertificate'], metavar='FILE')
-        parser.add_option('--pem-password', dest='pemPassword', 
-                               help='PEM certificate password. Default STRATUSLAB_PEM_PASSWORD', 
-                               default=defaultOptions['pemPassword'], metavar='PASSWORD')
+        parser.add_option('--pem-key', dest='pemKey', 
+                               help='PEM public key file. Default STRATUSLAB_PEM_KEY', 
+                               default=defaultOptions['pemKey'], metavar='Key')
         return parser
 
 
