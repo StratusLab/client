@@ -53,8 +53,6 @@ class CommandBase(object):
         self.parse()
         self.verboseLevel = self.options.verboseLevel
         
-        self._loadConfigFileAndUpdateOptions()
-
     def _addConfigFileOption(self):
         pass
 
@@ -135,8 +133,8 @@ class CommandBaseUser(CommandBase):
                 ConfigHolder.configFileToDictWithFormattedKeys(configFile, withMap=True)
         except Exceptions.ConfigurationException:
             if configFile == Util.defaultConfigFileUser:
-                Util.printWarning('Default configuration file does not exists: %s' % 
-                                  configFile)
+                Util.printDetail('Default configuration file does not exists: %s' % 
+                                  configFile, verboseLevel=self.verboseLevel)
                 return
             else:
                 raise
