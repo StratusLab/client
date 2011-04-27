@@ -110,6 +110,9 @@ class BaseInstallator(object):
         printStep('Installing dependencies')
         self._installNodeDependencies()
 
+        printStep('Configuring bridge')
+        self._configureBridgeOnNode()
+
         printStep('Configuring file sharing')
         self._setupFileSharingClient()
 
@@ -118,6 +121,9 @@ class BaseInstallator(object):
 
         if self.hypervisor == 'xen':
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
+
+    def _configureBridgeOnNode(self):
+        self.node.configureBridgeRemotely()
 
     def _setCloud(self):
         self.username = self.oneUsername

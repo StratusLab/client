@@ -884,6 +884,33 @@ group {
         self._execute(["/usr/bin/mysqladmin", "-uroot -p%s -h localhost %s password '%s'" % (self.oneDbRootPassword, username, password)])
         self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
 
+    # -------------------------------------------
+    # Bridge
+    # -------------------------------------------
+    
+    def configureBridgeRemotely(self):
+        def doNotConfigureBridge():
+            return Util.isFalseConfVal(getattr(self, 'nodeBridgeConfigure', True))
+
+        if doNotConfigureBridge():
+            Util.printDetail('Asked not to configure bridge')
+            return
+        
+        checkBridgeCmd = "brctl show \| grep -q ^%s.*%s$" % \
+                            (self.nodeBridgeName, self.nodeNetworkInterface)
+        if self._nodeShell(checkBridgeCmd):
+            Util.printDetail('Bridge already configured')
+            return
+        
+        configureBridgeCmd = 'nohup "brctl addbr %(bridge)s; sleep 10; ifconfig %(interf)s 0.0.0.0; sleep 10; brctl addif %(bridge)s %(interf)s; sleep 10; dhclient %(bridge)s"' % \
+                            {'bridge' : self.nodeBridgeName,
+                             'interf' : self.nodeNetworkInterface}
+
+        if self._nodeShell(configureBridgeCmd):
+            Util.printDetail('Failed to configure bridge')
+        else:
+            Util.printDetail('Bridge configured')
+        
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
 FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
