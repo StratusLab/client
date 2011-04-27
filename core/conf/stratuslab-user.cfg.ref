@@ -14,8 +14,14 @@
 
 # Cloud frontend
 endpoint = cloud.frontend.org
+
+# Authentication to Cloud frontend. 
+# Use either username/password or PEM key/cert.
+# If both are enabled, PEM key/cert takes precedence. 
 username = username
 password = password
+#pem_key = <home>/.globus/userkey.pem
+#pem_certificate = <home>/.globus/usercert.pem
 
 # Marketplace
 marketplace_endpoint = http://appliances.stratuslab.eu/marketplace/metadata
@@ -26,9 +32,6 @@ apprepo_username = username
 apprepo_password = password
 
 key = <home>/.ssh/id_rsa.pub
-
-pem_key = <home>/.globus/userkey.pem
-pem_certificate = <home>/.globus/usercert.pem
 
 p12_certificate = <home>/.globus/usercert.p12
 p12_password = password
