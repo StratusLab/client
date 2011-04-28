@@ -45,7 +45,7 @@ class Runnable(AuthnCommand):
         self.parser.description = 'image - Marketplace image ID or image URL in Appliance Repository.'
 
         self.parser.add_option('-k', '--key', dest='userPublicKeyFile',
-                help='SSH public key(s) (.pub) to log on the machine. Default order %s, STRATUSLAB_KEY. In case of multiple keys, concatenate them to the file.' % defaultOptions['userPublicKeyFile'], 
+                help='SSH public key(s) (.pub) to log on the machine. Default %s. In case of multiple keys, concatenate them to the file.' % defaultOptions['userPublicKeyFile'], 
                 metavar='FILE',
                 default=defaultOptions['userPublicKeyFile'])
 
@@ -93,7 +93,7 @@ class Runnable(AuthnCommand):
                 default=defaultOptions['vmTemplatePath'])
 
         self.parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT),
+                help='Market place endpoint. Default %s' % Downloader.ENDPOINT,
                 default=None)
 
         super(Runnable, self).parse()

@@ -20,6 +20,7 @@
 import os
 
 from CommandBase import CommandBaseUser
+from stratuslab import Defaults
 
 class AuthnCommand(CommandBaseUser):
     
@@ -120,15 +121,17 @@ class UsernamePassword(object):
     
 class PemCertificate(object):
     
-    optionString = '--pem-cert/--pem-password'
+    optionString = '--pem-cert/--pem-key'
     
-    defaultLocation = '%s/%s' % (os.path.expanduser('~'), '.globus/usercert.pem')
+    certDefaultLocation = Defaults.pemCertificateLocation
+    keyDefaultLocation = Defaults.pemKeyLocation
     
     @staticmethod
     def options():
         return {'pemCertificate': os.getenv('STRATUSLAB_PEM_CERTIFICATE', 
-                                            PemCertificate.defaultLocation),
-                'pemKey': os.getenv('STRATUSLAB_PEM_KEY', '')}
+                                            PemCertificate.certDefaultLocation),
+                'pemKey': os.getenv('STRATUSLAB_PEM_KEY', 
+                                    PemCertificate.keyDefaultLocation)}
 
     @staticmethod
     def addOptions(parser, defaultOptions=None):
@@ -136,11 +139,11 @@ class PemCertificate(object):
             defaultOptions = AuthnCommand.defaultRunOptions()
 
         parser.add_option('--pem-cert', dest='pemCertificate', 
-                               help='PEM certificate file. Default order %s, STRATUSLAB_PEM_CERTIFICATE' % PemCertificate.defaultLocation, 
-                               default=defaultOptions['pemCertificate'], metavar='FILE')
+                               help='PEM certificate file. Default %s' % PemCertificate.certDefaultLocation, 
+                               default=PemCertificate.certDefaultLocation, metavar='FILE')
         parser.add_option('--pem-key', dest='pemKey', 
-                               help='PEM public key file. Default STRATUSLAB_PEM_KEY', 
-                               default=defaultOptions['pemKey'], metavar='Key')
+                               help='PEM public key file. Default %s' % PemCertificate.keyDefaultLocation, 
+                               default=PemCertificate.keyDefaultLocation, metavar='Key')
         return parser
 
 
@@ -148,12 +151,12 @@ class P12Certificate(object):
     
     optionString = '--p12-cert/--p12-password'
 
-    defaultLocation = '%s/%s' % (os.path.expanduser('~'), '.globus/usercert.p12')
+    certDefaultLocation = Defaults.p12CertificateLocation
 
     @staticmethod
     def options():
         return {'p12Certificate': os.getenv('STRATUSLAB_P12_CERTIFICATE', 
-                                     P12Certificate.defaultLocation),
+                                     P12Certificate.certDefaultLocation),
                 'p12Password': os.getenv('STRATUSLAB_P12_PASSWORD', '')}
 
     @staticmethod
@@ -162,8 +165,8 @@ class P12Certificate(object):
             defaultOptions = AuthnCommand.defaultRunOptions()
 
         parser.add_option('--p12-cert', dest='p12Certificate', 
-                          help='PKCS12 (P12) certificate file. Default order %s, STRATUSLAB_P12_CERTIFICATE' % P12Certificate.defaultLocation, 
-                          default=defaultOptions['p12Certificate'], metavar='FILE')
+                          help='PKCS12 (P12) certificate file. Default %s' % P12Certificate.certDefaultLocation, 
+                          default=P12Certificate.certDefaultLocation, metavar='FILE')
         parser.add_option('--p12-password', dest='p12Password', 
                           help='PKCS12 (P12) password. Default STRATUSLAB_P12_PASSWORD', 
                           default=defaultOptions['p12Password'], metavar='PASSWORD')
