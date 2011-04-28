@@ -65,7 +65,7 @@ class Signator(Configurable):
         
         for dir in dirs:
             try:
-                jarFile = self._findFile(dir, 'marketplace-metadata', '.jar')
+                jarFile = self._findFile(dir, 'marketplace-metadata', 'dependencies.jar')
                 self.printDetail('Loading signature jar file: %s' % jarFile)
                 return jarFile
             except ValueError:
