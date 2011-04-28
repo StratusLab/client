@@ -26,7 +26,6 @@ import Util
 from ManifestInfo import ManifestInfo
 from Exceptions import InputException
 from Exceptions import NetworkException
-import Exceptions as Exceptions
 from Signator import Signator
 from ConfigHolder import ConfigHolder
 
