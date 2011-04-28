@@ -32,6 +32,11 @@
 			<outputDirectory>conf</outputDirectory>
 		</fileSet>
 
+		<fileSet>
+			<directory>${project.build.directory}/jar/</directory>
+			<outputDirectory>java</outputDirectory>
+		</fileSet>
+
 	</fileSets>
 
 </assembly>
