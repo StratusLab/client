@@ -909,8 +909,19 @@ group {
         if self._nodeShell(configureBridgeCmd):
             Util.printDetail('Failed to configure bridge')
         else:
-            Util.printDetail('Bridge configured')
-        
+            sleepTime = 15
+            Util.printDetail('Sleeping %i sec for the bridge one the node to come up.')
+            time.time(sleepTime)
+            Util.printDetail('Testing connection to the node.')
+            if self._nodeShell('true'):
+                Util.printDetail('OK.')
+            else:
+                Util.printError('Could not connect to the node after attempt to configre bridge.')
+                
+            Util.printDetail('Testing if bridge was configured.')
+            if not self._nodeShell(checkBridgeCmd):
+                Util.printError('Bridge was not configured.')
+
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
 FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'
