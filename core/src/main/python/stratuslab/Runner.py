@@ -27,6 +27,7 @@ from stratuslab.Util import modulePath
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
+from stratuslab import Defaults
 
 class Runner(object):
 
@@ -160,8 +161,8 @@ class Runner(object):
 
     @staticmethod
     def defaultRunOptions():
-        _sshPublicKeyDeafultLocation = '%s/%s' % (os.path.expanduser('~'), '.ssh/id_rsa.pub')
-        _sshPublicKey = os.getenv('STRATUSLAB_KEY', _sshPublicKeyDeafultLocation)
+
+        _sshPublicKey = os.getenv('STRATUSLAB_KEY', Defaults.sshPublicKeyLocation)
         _sshPrivateKey = _sshPublicKey.strip('.pub')
         return {'userPublicKeyFile': _sshPublicKey,
                 'userPrivateKeyFile': _sshPrivateKey,
