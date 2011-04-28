@@ -60,11 +60,11 @@ class MainProgram(CommandBase):
 
         self.parser.add_option('--app-repo-username', dest='apprepoUsername',
                                help='Appliance repository username', metavar='USERNAME',
-                               default=None)
+                               default=os.getenv('STRATUSLAB_APPREPO_USERNAME', ''))
 
         self.parser.add_option('--app-repo-password', dest='apprepoPassword',
                                help='Appliance repository password', metavar='PASSWORD',
-                               default=None)
+                               default=os.getenv('STRATUSLAB_APPREPO_PASSWORD', ''))
 
         self.parser.add_option('--requested-ip-address', dest='requestedIpAddress',
                                help='IP address for requested IP address assignment', metavar='IP',
@@ -72,11 +72,11 @@ class MainProgram(CommandBase):
 
         self.parser.add_option('--test-username', dest='testUsername',
                                help='Test username to use when communicating with ONE', metavar='USER',
-                               default=None)
+                               default=os.getenv('STRATUSLAB_USERNAME', ''))
 
         self.parser.add_option('--test-password', dest='testPassword',
                                help='Test password to use when communicating with ONE', metavar='PASSWORD',
-                               default=None)
+                               default=os.getenv('STRATUSLAB_PASSWORD', ''))
 
         self.parser.add_option('--exclude', dest='testsToExclude',
                                help='list of tests to exclude (comma separated)',
