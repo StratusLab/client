@@ -20,7 +20,7 @@
 import sys
 import time
 
-from stratuslab.Exceptions import OneException, InputException
+from stratuslab.Exceptions import OneException
 from stratuslab.Util import printError
 
 try:
