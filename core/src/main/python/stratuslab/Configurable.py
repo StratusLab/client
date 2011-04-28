@@ -43,7 +43,7 @@ class Configurable(object):
         attrs = ['verboseLevel']
         for attr in attrs:
             if not hasattr(self, attr):
-                raise Exceptions.ValidationException("%s: missing attribute %s." % \
+                raise Exceptions.ValidationException("%s: missing attribute '%s'" % \
                                                      (self.__class__.__name__, attr))
         self.verify()
 

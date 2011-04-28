@@ -29,6 +29,7 @@ class Signator(Configurable):
     def __init__(self, manifestFile, configHolder):
         self.outputManifestFile = None
         self.renamedInputManifestFile = manifestFile
+        self.email = ''
         super(Signator, self).__init__(configHolder)
         self.manifestFile = manifestFile
         if not self.outputManifestFile:
@@ -105,4 +106,5 @@ class Signator(Configurable):
         return Util.execute(cmd.split(' '))
 
     def _printCalling(self, cmd):
-        Util.printDetail('Calling: %s' % cmd, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        Util.printDetail('Calling: %s' % cmd, verboseLevel=self.verboseLevel,
+                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
