@@ -682,10 +682,10 @@ EOF
     def _setDiskNamesOfRemoteNode(self):
         if self.os == 'centos':
             self.mainDisk  = 'hda'
-            self.extraDisk = 'hdd'
+            self.extraDisk = 'hdc'
         elif self.os == 'ubuntu':
             self.mainDisk  = 'sda'
-            self.extraDisk = 'sdd'
+            self.extraDisk = 'sdc'
 
     def _bundleImage(self):
         self._printStep('Bundling image')
