@@ -139,9 +139,9 @@ class Claudia(object):
 
         # configure reportClient.properties file
         print " :: Configuring "+self.reportClientFile
-        for k in self.reportprops 
+        for k in self.reportprops:
             #print k + " |-----> " + self.reportprops[k]
-            self._overrideValueInFile(k, self.self.reportprops[k], self.reportClientFile)
+            self._overrideValueInFile(k, self.reportprops[k], self.reportClientFile)
         print " ::"
     
     def _startServices(self):
