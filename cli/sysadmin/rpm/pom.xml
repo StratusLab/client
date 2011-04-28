@@ -110,7 +110,7 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
-	    <require>opennebula</require>
+	    <require>one-2.2-StratusLab</require>
 	    <require>fetch-crl3</require>
 	  </requires>
 
