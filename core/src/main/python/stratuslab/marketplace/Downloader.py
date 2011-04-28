@@ -64,7 +64,7 @@ class Downloader(object):
         self.configHolder = configHolder
         self.imageUrl = ''
         self.compression = ''
-        self.marketplaceEndpoint = ''
+        self.marketplaceEndpoint = Downloader.ENDPOINT
 
         configHolder.assign(self)
         
