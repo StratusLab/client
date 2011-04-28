@@ -133,7 +133,7 @@ class CommandBaseUser(CommandBase):
                 ConfigHolder.configFileToDictWithFormattedKeys(configFile, withMap=True)
         except Exceptions.ConfigurationException:
             if configFile == Util.defaultConfigFileUser:
-                Util.printDetail('Default configuration file does not exists: %s' % 
+                Util.printDetail('[WARNING] Default configuration file does not exists: %s' % 
                                   configFile, verboseLevel=self.verboseLevel)
                 return
             else:
