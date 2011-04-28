@@ -55,7 +55,7 @@ class MainProgram(CommandBaseUser):
         Uploader.checkUploadOptions(self.options, self.parser)
 
         if not self.manifest.endswith(manifestExt):
-            self.parser.error('Manifest must ends with %s' % manifestExt)
+            self.parser.error('Manifest must end with %s' % manifestExt)
         if not os.path.isfile(self.manifest):
             self.parser.error('Appliance manifest does not exist: ' + self.manifest)
 
