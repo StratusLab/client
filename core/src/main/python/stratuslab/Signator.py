@@ -66,7 +66,7 @@ class Signator(Configurable):
         for dir in dirs:
             try:
                 jarFile = self._findFile(dir, 'marketplace-metadata', '.jar')
-                self.printDetail('Loading signature jar file: %s' % jarFile)
+                Util.printDetail('Loading signature jar file: %s' % jarFile)
                 return jarFile
             except ValueError:
                 pass
@@ -87,9 +87,9 @@ class Signator(Configurable):
         raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
 
     def _renameFiles(self):
-        self.printDetail('Renaming input file from %s to %s' % (self.manifestFile, self.renamedInputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        Util.printDetail('Renaming input file from %s to %s' % (self.manifestFile, self.renamedInputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
         os.rename(self.manifestFile, self.renamedInputManifestFile)
-        self.printDetail('Renaming output file from %s to %s' % (self.tempManifestFile, self.outputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        Util.printDetail('Renaming output file from %s to %s' % (self.tempManifestFile, self.outputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
         os.rename(self.tempManifestFile, self.outputManifestFile)
 
     def _cleanupTempFile(self):
@@ -105,4 +105,4 @@ class Signator(Configurable):
         return Util.execute(cmd.split(' '))
 
     def _printCalling(self, cmd):
-        self.printDetail('Calling: %s' % cmd, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        Util.printDetail('Calling: %s' % cmd, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)

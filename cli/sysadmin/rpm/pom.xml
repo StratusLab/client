@@ -110,7 +110,7 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
-	    <require>opennebula</require>
+	    <require>one-2.2-StratusLab</require>
 	    <require>fetch-crl3</require>
 	  </requires>
 
@@ -171,6 +171,20 @@
 	        </source>
 	      </sources>
 	    </mapping>
+	    <mapping>
+          <directory>/var/lib/stratuslab/java/</directory>
+          <directoryIncluded>false</directoryIncluded>
+          <username>root</username>
+          <groupname>root</groupname>
+          <sources>
+            <source>
+              <location>${project.build.directory}/zip-sources/java</location>
+              <includes>
+                <include>**/*.jar</include>
+              </includes>
+            </source>
+          </sources>
+        </mapping>
 	  </mappings>
 	  <installScriptlet>
 	    <script>

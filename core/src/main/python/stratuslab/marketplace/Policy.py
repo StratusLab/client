@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
 import ConfigParser
 import urllib2
@@ -45,12 +46,13 @@ except ImportError:
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ValidationException, InputException
-
+from stratuslab.marketplace.Downloader import Downloader
 class Policy(object):
 
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
         self.whiteListEndorsers = ['whiteListEndorsersFlag']
         self.blackListChecksums = ['blackListChecksumsFlag']
+	self.validateMetaData = []
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
         self._loadConfig(self.policyConfigFilename)
@@ -61,16 +63,24 @@ class Policy(object):
         config = ConfigParser.ConfigParser()
         config.read(configfile)
         for _,j in config.items('whitelistendorsers'):
+	    print "j=",j	
             self.whiteListEndorsers.append(j)
         for _,j in config.items('blacklistchecksums'):
-            self.blackListChecksums.append(j)    
-
+            self.blackListChecksums.append(j)
+	for _,j in config.items('validatemetadatafile'):
+	    self.validateMetaData.append(j)	    
+    
     def check(self, identifierUri):
-
+	if not self._deactivateMetadataValidation():
+	    print "validation processus"
+      	    self._Validate(identifierUri)
         self._loadDom(self._downloadManifest(identifierUri))
 
         metadatas = self._retrieveMetadataList()
-        metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
+	print "metadatas=",metadatas
+        #metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
+	metadataEntries=[metadatas]
+	print "len of metadataEntries=",len(metadataEntries)
         filtered1 = self._filter(metadataEntries, self.whiteListEndorsers)
         filtered2 = self._filter(filtered1, self.blackListChecksums)	
         if len(filtered2) == 0:
@@ -80,6 +90,7 @@ class Policy(object):
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
         url = endpoint + '/' + identifierUri
+	print "url=",url
         try:
             manifest = Util.wstring(url)
         except urllib2.HTTPError:
@@ -130,6 +141,7 @@ class Policy(object):
             return self._blackListChecksumsPlugin(checksumimage)
 
     def _whiteListEndorsersPlugin(self, emailendorser):
+	print 'emailendorser=',emailendorser
         if (emailendorser in self.whiteListEndorsers):
             print True
             return True
@@ -145,3 +157,13 @@ class Policy(object):
             print False
             return False
 
+    def _deactivateMetadataValidation(self):
+	if (self.validateMetaData[0] == 'no'):
+            return True
+	else:
+	    return False
+	
+    def _Validate(self, identifierUri):
+	downloader = Downloader()
+	downloader.download(identifierUri)
+			
