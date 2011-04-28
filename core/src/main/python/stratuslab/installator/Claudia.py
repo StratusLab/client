@@ -39,6 +39,7 @@ class Claudia(object):
         self.smFile = self.claudiaHome+"/conf/sm.properties"
         self.tcloudFile = self.claudiaHome+"/conf/tcloud.properties"
         self.claudiaClientFile= self.claudiaHome+"/conf/claudiaClient.properties"
+        selt.reportClientFile = self.claudiaHome+"/conf/reportClient.properties"
 
         # Network configuration 
         self.publicNet = "IP:"+self.claudiaPublicIp+";"+    \
@@ -92,6 +93,11 @@ class Claudia(object):
                         "rest.host":self.frontendIp
                         }
 
+        # reportClient.properties
+        self.reportprops = {"SiteRoot":self.domainName, \
+                            "TServer.url":"http://"+self.frontendIp+":8182"
+                            }
+
     def _overrideValueInFile(self, key, value, fileName):
         # Here's how you could override config files...
         search = key + '='
@@ -131,6 +137,13 @@ class Claudia(object):
             self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
         print " ::"
 
+        # configure reportClient.properties file
+        print " :: Configuring "+self.reportClientFile
+        for k in self.reportprops 
+            #print k + " |-----> " + self.reportprops[k]
+            self._overrideValueInFile(k, self.self.reportprops[k], self.reportClientFile)
+        print " ::"
+    
     def _startServices(self):
         print " :: Starting activemq"
         self.system.execute(['/etc/init.d/activemq', 'restart'])
@@ -142,4 +155,9 @@ class Claudia(object):
         
         print " :: Starting clotho"
         self.system.execute(['/etc/init.d/clothod', 'restart'])
+
+        print " :: Starting reportclient"
+        self.system.execute(['/etc/init.d/reportclientd', 'restart'])
+
+        # last line
         print " ::"
