@@ -471,6 +471,8 @@ class Creator(object):
             return
         self._printStep('Signing image manifest')
 
+        self.configHolder.set('email', '')
+
         signator = Signator(self.manifestLocalFileName, self.configHolder)
         signator.sign()
         shutil.move(signator.outputManifestFile, self.manifestLocalFileName)
