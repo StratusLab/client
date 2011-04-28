@@ -164,6 +164,8 @@ class Policy(object):
 	    return False
 	
     def _Validate(self, identifierUri):
-	downloader = Downloader()
+        configHolder = ConfigHolder()
+        configHolder.set('verboseLevel', 3)
+        downloader = Downloader(configHolder)
 	downloader.download(identifierUri)
 			
