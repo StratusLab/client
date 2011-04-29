@@ -29,7 +29,7 @@ from Exceptions import NetworkException
 from Signator import Signator
 from ConfigHolder import ConfigHolder
 
-import marketplace.Downloader
+from marketplace.Downloader import Downloader as MarketPlaceDownloader
 import marketplace.Uploader
 
 
@@ -96,7 +96,7 @@ class Uploader(object):
                 default=False, action='store_true')
 
         parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s or %s' % (Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT),
+                help='Market place endpoint. Default %s' % MarketPlaceDownloader.ENDPOINT,
                 default=None)
 
         parser.add_option('--marketplace-only', dest='withMarketPlaceOnly',
@@ -117,7 +117,7 @@ class Uploader(object):
         if options.marketplaceEndpoint:
             options.withMarketPlace = True
         if not options.marketplaceEndpoint:
-            options.marketplaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, marketplace.Downloader.Downloader.ENDPOINT)                    
+            options.marketplaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, MarketPlaceDownloader.ENDPOINT)                    
 
         if options.withMarketPlaceOnly:
             options.withMarketPlace = True

@@ -901,7 +901,7 @@ group {
         
         checkBridgeCmd = "brctl show \| grep -q ^%s.*%s$" % \
                             (self.nodeBridgeName, self.nodeNetworkInterface)
-        if self._nodeShell(checkBridgeCmd):
+        if self._nodeShell(checkBridgeCmd) == 0:
             Util.printDetail('Bridge already configured')
             return
         
@@ -909,20 +909,20 @@ group {
                             {'bridge' : self.nodeBridgeName,
                              'interf' : self.nodeNetworkInterface}
 
-        if self._nodeShell(configureBridgeCmd):
+        if self._nodeShell(configureBridgeCmd) != 0:
             Util.printDetail('Failed to configure bridge')
         else:
             sleepTime = 15
             Util.printDetail('Sleeping %i sec for the bridge one the node to come up.')
             time.time(sleepTime)
             Util.printDetail('Testing connection to the node.')
-            if self._nodeShell('true'):
+            if self._nodeShell('true') == 0:
                 Util.printDetail('OK.')
             else:
                 Util.printError('Could not connect to the node after attempt to configre bridge.')
                 
             Util.printDetail('Testing if bridge was configured.')
-            if not self._nodeShell(checkBridgeCmd):
+            if self._nodeShell(checkBridgeCmd) != 0:
                 Util.printError('Bridge was not configured.')
 
 

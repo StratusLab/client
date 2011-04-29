@@ -63,7 +63,6 @@ class Policy(object):
         config = ConfigParser.ConfigParser()
         config.read(configfile)
         for _,j in config.items('whitelistendorsers'):
-	    print "j=",j	
             self.whiteListEndorsers.append(j)
         for _,j in config.items('blacklistchecksums'):
             self.blackListChecksums.append(j)
@@ -77,10 +76,8 @@ class Policy(object):
         self._loadDom(self._downloadManifest(identifierUri))
 
         metadatas = self._retrieveMetadataList()
-	print "metadatas=",metadatas
         #metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
 	metadataEntries=[metadatas]
-	print "len of metadataEntries=",len(metadataEntries)
         filtered1 = self._filter(metadataEntries, self.whiteListEndorsers)
         filtered2 = self._filter(filtered1, self.blackListChecksums)	
         if len(filtered2) == 0:
@@ -90,7 +87,6 @@ class Policy(object):
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
         url = endpoint + '/' + identifierUri
-	print "url=",url
         try:
             manifest = Util.wstring(url)
         except urllib2.HTTPError:
@@ -134,14 +130,12 @@ class Policy(object):
         xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
         emailendorser = metadata.findtext(xpathPrefix % 'endorser' + 'email')
         checksumimage = metadata.findtext(xpathPrefix % 'checksum' + 'value')
-        print emailendorser, checksumimage
         if (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
             return self._whiteListEndorsersPlugin(emailendorser)
         elif (whiteOrblackList[0] == 'blackListChecksumsFlag'):
             return self._blackListChecksumsPlugin(checksumimage)
 
     def _whiteListEndorsersPlugin(self, emailendorser):
-	print 'emailendorser=',emailendorser
         if (emailendorser in self.whiteListEndorsers):
             print True
             return True
@@ -164,6 +158,8 @@ class Policy(object):
 	    return False
 	
     def _Validate(self, identifierUri):
-	downloader = Downloader()
+        configHolder = ConfigHolder()
+        configHolder.set('verboseLevel', 3)
+        downloader = Downloader(configHolder)
 	downloader.download(identifierUri)
 			

@@ -143,7 +143,7 @@ class Downloader(object):
 
         tempImageFilename = ''
         for location in locations:
-            Util._printDetail('Looking for image: %s' % location)
+            self._printDetail('Looking for image: %s' % location)
             try:
                 tempImageFilename = self._downloadImage(location)
                 break
@@ -212,7 +212,7 @@ class Downloader(object):
         extension = self._extractCompressionExtension(imageFilename)
         inflatedFilename = imageFilename
         if extension:
-            Util._printDetail('Inflating image %s' % imageFilename)
+            self._printDetail('Inflating image %s' % imageFilename)
             Compressor.inflate(imageFilename)
             inflatedFilename = imageFilename[:-len(extension)]
 
