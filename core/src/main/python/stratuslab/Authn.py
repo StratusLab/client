@@ -41,10 +41,10 @@ class AuthnFactory(object):
         except AttributeError:
             pemCredentials = False
         
-        if pemCredentials:
-            return CertificateCredentialsConnector(runnable)
         if usernamePasswordCredentials:
             return UsernamePasswordCredentialsConnector(runnable)
+        if pemCredentials:
+            return CertificateCredentialsConnector(runnable)
         
         raise ValueError('Missing credentials')
 
