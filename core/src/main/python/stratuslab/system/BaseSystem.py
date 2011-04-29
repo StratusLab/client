@@ -878,7 +878,7 @@ group {
         self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
         
     def _configureRootDbUser(self, password):
-        self._execute(["/usr/bin/mysqladmin", "-uroot password '%s'" % password])
+        self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password])
 
     def _configureDbUser(self, username, password):
         self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'\"" % (username, password)])
