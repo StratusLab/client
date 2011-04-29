@@ -871,21 +871,18 @@ group {
 
     def configureDatabase(self):
 
-        Util.printDetail('Starting db')
-        self._execute(["service", "mysqld", "start"])
-        
         Util.printDetail('Changing db root password')
         self._configureRootDbUser(self.oneDbRootPassword)
 
         Util.printDetail('Creating oneadmin db account')
         self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
-
+        
     def _configureRootDbUser(self, password):
         self._execute(["/usr/bin/mysqladmin", "-uroot password '%s'" % password])
 
     def _configureDbUser(self, username, password):
-        self._execute(["/usr/bin/mysqladmin", "-uroot -p%s -h localhost %s password '%s'" % (self.oneDbRootPassword, username, password)])
-        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
+        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'\"" % (username, password)])
+        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
 
     # -------------------------------------------
     # Bridge
@@ -901,7 +898,7 @@ group {
         
         checkBridgeCmd = "brctl show \| grep -q ^%s.*%s$" % \
                             (self.nodeBridgeName, self.nodeNetworkInterface)
-        if self._nodeShell(checkBridgeCmd) == 0:
+        if self._nodeShell(checkBridgeCmd):
             Util.printDetail('Bridge already configured')
             return
         
@@ -909,20 +906,20 @@ group {
                             {'bridge' : self.nodeBridgeName,
                              'interf' : self.nodeNetworkInterface}
 
-        if self._nodeShell(configureBridgeCmd) != 0:
+        if self._nodeShell(configureBridgeCmd):
             Util.printDetail('Failed to configure bridge')
         else:
             sleepTime = 15
             Util.printDetail('Sleeping %i sec for the bridge one the node to come up.')
             time.time(sleepTime)
             Util.printDetail('Testing connection to the node.')
-            if self._nodeShell('true') == 0:
+            if self._nodeShell('true'):
                 Util.printDetail('OK.')
             else:
                 Util.printError('Could not connect to the node after attempt to configre bridge.')
                 
             Util.printDetail('Testing if bridge was configured.')
-            if self._nodeShell(checkBridgeCmd) != 0:
+            if not self._nodeShell(checkBridgeCmd):
                 Util.printError('Bridge was not configured.')
 
 
