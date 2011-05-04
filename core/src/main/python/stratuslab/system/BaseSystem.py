@@ -39,6 +39,7 @@ class BaseSystem(object):
 
         self.extraRepos = {}
         self.packages = {}
+        self.installPackagesErrorMsgs = []
         self.repoFileNamePattern = '/etc/%s'
         self.certificateAuthorityPackages = ''
         self.certificateAuthorityRepo = ''
@@ -77,9 +78,16 @@ class BaseSystem(object):
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
-            if self._nodeShell('%s %s' %
-                (self.installCmd, ' '.join(packages))):
-                raise ExecutionException('Error installing packages: %s' % packages)
+            rc, output = self._nodeShell('%s %s' %
+                                     (self.installCmd, ' '.join(packages)),
+                                     withOutput=True)
+            if rc != 0:
+                raise ExecutionException('Error installing packages: %s\n%s' % \
+                                         (packages, output))
+            for err in self.installPackagesErrorMsgs:
+                if re.search(err, output, re.M):
+                    raise ExecutionException('Error installing packages: %s\n%s' % \
+                                             (packages, output))
 
     def installFrontendDependencies(self):
         self.addRepositories(self.frontendDeps)
@@ -221,9 +229,13 @@ class BaseSystem(object):
         self._configureCloudAdminSsh()
 
     def configureCloudAdminSshKeysNode(self):
+
         self.createDirsCmd('%s/.ssh/' % self.oneHome)
         self.setOwnerCmd('%s/.ssh/' % self.oneHome)
 
+        # FIXME: why ssh key-pair from the Frontend is pushed to the Node?
+        #        ssh-keygen on the Node should be used to generate the user 
+        #        specific ssh key-pair on that machine.
         oneKey = fileGetContent('%s/.ssh/id_rsa' % self.oneHome)
         self._filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.oneHome, oneKey)
 
@@ -231,13 +243,18 @@ class BaseSystem(object):
         self._filePutContentAsOneAdmin('%s/.ssh/authorized_keys' % self.oneHome,
                                        oneKeyPub)
         self.chmodCmd('%s/.ssh/id_rsa' % self.oneHome, 0600)
+
         self._configureCloudAdminSsh()
 
     def _configureCloudAdminSsh(self):
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome,
-                                      'Host', 'Host *')
-        self.appendOrReplaceInFileCmd('%s/.ssh/config' % self.oneHome,
-                                      '\tStrictHost', '\tStrictHostKeyChecking no')
+        confFile = '%s/.ssh/config' % self.oneHome
+
+        self.appendOrReplaceInFileCmd(confFile,
+                                      '^Host.*$', 'Host *')
+        self.appendOrReplaceInFileCmd(confFile,
+                                      '^StrictHost.*$', 'StrictHostKeyChecking no')
+        self.setOwnerCmd(confFile)
+        self.chmodCmd(confFile, 0600)
 
     def configureCloudAdminAccount(self):
         oneAuthFile = '%s/.one/one_auth' % self.oneHome
@@ -247,6 +264,20 @@ class BaseSystem(object):
     def _setOneHome(self):
         if not self.oneHome:
             self.oneHome = os.path.expanduser('~' + self.oneUsername)
+
+    # -------------------------------------------
+    #     Persistent disks
+    # -------------------------------------------
+
+    def configureCloudAdminPdiskNode(self):
+        if Util.isFalseConfVal(getattr(self, 'persistentDisks', False)):
+            return
+
+        Util.printDetail('Configuring persistent disks management for oneadmin user.')
+
+        line = 'oneadmin ALL = NOPASSWD: /usr/sbin/attach-persistent-disk.sh, /usr/sbin/detach-persistent-disk.sh'
+        self.appendOrReplaceInFileCmd('/etc/sudoers',
+                                      '^oneadmin.*persistent-disk.*$', line)
 
     # -------------------------------------------
     #     File sharing configuration
@@ -361,12 +392,12 @@ class BaseSystem(object):
         if kwargs.has_key('stderr'):
             del kwargs['stderr']
 
-        if type(command) == type(list()):
+        if isinstance(command, list):
             command = ' '.join(command)
 
         return sshCmd(command,
                       self.nodeAddr,
-                      self.nodePrivateKey,
+                      sshKey=self.nodePrivateKey,
                       stdout=stdout,
                       stderr=stderr,
                       verboseLevel=self.verboseLevel,
@@ -399,11 +430,13 @@ class BaseSystem(object):
         self._nodeShell('mkdir -p %s' % path)
 
     def _remoteAppendOrReplaceInFile(self, filename, search, replace):
-        res = self._nodeShell(['grep', search, filename])
+        res = self._nodeShell(['grep', '"%s"'%search, filename])
 
         if self._patternExists(res):
-            self._nodeShell(['sed -i \'s#%s.*#%s#\' %s' % (
-                            search, replace, filename)], shell=True)
+            rc, output = self._nodeShell('"sed -i \'s|%s|%s|\' %s"' % (search, replace, filename), 
+                                         withOutput=True, shell=True)
+            if rc != 0:
+                Util.printError("Failed to modify %s.\n%s" % (filename, output))
         else:
             self._remoteFileAppendContents(filename, replace)
 
@@ -417,10 +450,16 @@ class BaseSystem(object):
         self._nodeShell(['rm -rf %s' % path])
 
     def _remoteFilePutContents(self, filename, data):
-        self._nodeShell('echo \'%s\' > %s' % (data, filename))
+        rc, output = self._nodeShell('"echo \\"%s\\" > %s"' % (data, filename),
+                                     withOutput=True, shell=True)
+        if rc != 0:
+            Util.printError("Failed to write to %s\n%s" % (filename, output))
 
     def _remoteFileAppendContents(self, filename, data):
-        self._nodeShell('echo \'%s\' >> %s' % (data, filename))
+        rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
+                                     withOutput=True, shell=True)
+        if rc != 0:
+            Util.printError("Failed to append to %s\n%s" % (filename, output))
 
     def _filePutContentAsOneAdmin(self, filename, content):
         self.filePutContentsCmd(filename, content)
@@ -887,7 +926,7 @@ group {
     # -------------------------------------------
     # Bridge
     # -------------------------------------------
-    
+
     def configureBridgeRemotely(self):
         def doNotConfigureBridge():
             return Util.isFalseConfVal(getattr(self, 'nodeBridgeConfigure', True))
@@ -895,32 +934,38 @@ group {
         if doNotConfigureBridge():
             Util.printDetail('Asked not to configure bridge')
             return
-        
-        checkBridgeCmd = "brctl show \| grep -q ^%s.*%s$" % \
+
+        checkBridgeCmd = '"brctl show | grep ^%s.*%s$"' % \
                             (self.nodeBridgeName, self.nodeNetworkInterface)
-        if self._nodeShell(checkBridgeCmd) == 0:
+        rc, output = self._nodeShell(checkBridgeCmd, withOutput=True, shell=True)
+        if rc == 0:
             Util.printDetail('Bridge already configured')
             return
-        
+        else:
+            Util.printDetail('Bridge is NOT configured. %s' % output)
+
         configureBridgeCmd = 'nohup "brctl addbr %(bridge)s; sleep 10; ifconfig %(interf)s 0.0.0.0; sleep 10; brctl addif %(bridge)s %(interf)s; sleep 10; dhclient %(bridge)s"' % \
                             {'bridge' : self.nodeBridgeName,
                              'interf' : self.nodeNetworkInterface}
-
-        if self._nodeShell(configureBridgeCmd) != 0:
-            Util.printDetail('Failed to configure bridge')
+        rc, output = self._nodeShell(configureBridgeCmd, withOutput=True, shell=True)
+        if rc != 0:
+            Util.printDetail('Failed to configure bridge.\n%s' % output)
         else:
-            sleepTime = 15
-            Util.printDetail('Sleeping %i sec for the bridge one the node to come up.')
-            time.time(sleepTime)
+            sleepTime = 5
+            Util.printDetail('Sleeping %i sec for the bridge one the node to come up.' % sleepTime)
+            time.sleep(sleepTime)
             Util.printDetail('Testing connection to the node.')
             if self._nodeShell('true') == 0:
                 Util.printDetail('OK.')
             else:
                 Util.printError('Could not connect to the node after attempt to configre bridge.')
-                
+
             Util.printDetail('Testing if bridge was configured.')
-            if self._nodeShell(checkBridgeCmd) != 0:
-                Util.printError('Bridge was not configured.')
+            rc, output = self._nodeShell(checkBridgeCmd, withOutput=True, shell=True)
+            if rc == 0:
+                Util.printDetail('OK.')
+            else:
+                Util.printError('Bridge was not configured.\n%s' % output)
 
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'

@@ -233,7 +233,11 @@ def execute(commandAndArgsList, **kwargs):
         _cmd = ' '.join(commandAndArgsList)
     else:
         _cmd = commandAndArgsList
-    _printDetail('Calling: ' + _cmd, kwargs)
+
+    _printDetail('Calling: %s' % _cmd, kwargs)
+
+    if isinstance(commandAndArgsList, list) and kwargs.get('shell', False) == True:
+        commandAndArgsList = ' '.join(commandAndArgsList)
 
     process = subprocess.Popen(commandAndArgsList, **kwargs)
 

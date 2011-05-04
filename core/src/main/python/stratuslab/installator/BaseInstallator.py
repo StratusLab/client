@@ -223,6 +223,7 @@ class BaseInstallator(object):
 
     def _configureCloudAdminNode(self):
         self.node.configureCloudAdminSshKeysNode()
+        self.node.configureCloudAdminPdiskNode()
 
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()

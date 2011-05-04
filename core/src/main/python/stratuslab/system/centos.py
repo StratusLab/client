@@ -25,7 +25,7 @@ from stratuslab.system.PackageInfo import PackageInfo
 import stratuslab.Util as Util
 
 packageManagerReposConfDir = '/etc/yum.repos.d'
-installCmd = 'yum -q -y --nogpgcheck install'
+installCmd = 'yum -y --nogpgcheck install'
 updateCmd = 'yum update'
 cleanPackageCacheCmd = 'yum clean all'
 queryPackageCmd = 'rpm -q'
@@ -58,7 +58,7 @@ class CentOS(BaseSystem):
         self.frontendDeps = [
             'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'mkisofs', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh', 'brctl']
+        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh', 'bridge-utils']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
             'kvm': ['kvm'],
@@ -98,6 +98,8 @@ enabled=1
                                              initdScriptName='dhcpd'),
                          'CA' : PackageInfo('ca-policy-egi-core', 
                                                 repository=self.caRepoName)}
+
+        self.installPackagesErrorMsgs = ['No package .* available']
 
 
     def getSystemArch(self):

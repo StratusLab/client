@@ -148,6 +148,9 @@ certificate_authority_repo =
  gpgcheck=1|
  enabled=1
 
+[persistent-disks]
+persistent_disks = False
+
 [app-repo]
 # Appliance Repository
 app_repo_url = https://appliances.stratuslab.eu/images
