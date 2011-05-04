@@ -917,11 +917,11 @@ group {
         self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
         
     def _configureRootDbUser(self, password):
-        self._execute(["/usr/bin/mysqladmin", "-uroot password '%s'" % password])
+        self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password])
 
     def _configureDbUser(self, username, password):
-        self._execute(["/usr/bin/mysqladmin", "-uroot -p%s -h localhost %s password '%s'" % (self.oneDbRootPassword, username, password)])
-        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
+        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'\"" % (username, password)])
+        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
 
     # -------------------------------------------
     # Bridge
@@ -947,6 +947,7 @@ group {
         configureBridgeCmd = 'nohup "brctl addbr %(bridge)s; sleep 10; ifconfig %(interf)s 0.0.0.0; sleep 10; brctl addif %(bridge)s %(interf)s; sleep 10; dhclient %(bridge)s"' % \
                             {'bridge' : self.nodeBridgeName,
                              'interf' : self.nodeNetworkInterface}
+
         rc, output = self._nodeShell(configureBridgeCmd, withOutput=True, shell=True)
         if rc != 0:
             Util.printDetail('Failed to configure bridge.\n%s' % output)
@@ -955,7 +956,7 @@ group {
             Util.printDetail('Sleeping %i sec for the bridge one the node to come up.' % sleepTime)
             time.sleep(sleepTime)
             Util.printDetail('Testing connection to the node.')
-            if self._nodeShell('true') == 0:
+            if self._nodeShell('true'):
                 Util.printDetail('OK.')
             else:
                 Util.printError('Could not connect to the node after attempt to configre bridge.')
