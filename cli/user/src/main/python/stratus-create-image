@@ -121,6 +121,14 @@ class MainProgram(Runnable):
                 help='persistent disk UUID',
                 default=None)
 
+        self.parser.add_option('--vm-start-timeout', dest='vmStartTimeout',
+                help='seconds to wait for VM to become available. Default: %i' % Creator.VM_START_TIMEOUT,
+                default=Creator.VM_START_TIMEOUT, type='int', metavar='TIMEOUT')
+
+        self.parser.add_option('--vm-ping-timeout', dest='vmPingTimeout',
+                help='seconds to wait for VM\'s network to become available. Default: %i' % Creator.VM_PING_TIMEPUT,
+                default=Creator.VM_PING_TIMEPUT, type='int', metavar='TIMEOUT')
+
         # Uploader
         self.parser.add_option('-f', '--force', dest='forceUpload',
                 help='force upload of the appliance even if already exist.',

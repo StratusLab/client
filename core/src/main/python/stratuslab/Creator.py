@@ -51,12 +51,12 @@ from stratuslab.ManifestInfo import ManifestIdentifier
 from stratuslab.Image import Image
 from stratuslab.marketplace.Downloader import Downloader
 
-VM_START_TIMEOUT = 60 * 10
-VM_PING_TIMEPUT = 60 * 5
-
 INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
 
 class Creator(object):
+
+    VM_START_TIMEOUT = 60 * 10
+    VM_PING_TIMEPUT = 60 * 5
 
     _defaultChecksum = 'NOT CHECKSUMMED'
     checksums = {'md5'   :{'cmd':'md5sum',   'sum':_defaultChecksum},
@@ -91,6 +91,9 @@ class Creator(object):
         self.shutdownVm = True
 
         self.signManifest = True
+
+        self.vmStartTimeout = self.VM_START_TIMEOUT
+        self.vmPingTimeout = self.VM_PING_TIMEPUT
 
         self.options = Runner.defaultRunOptions()
         self.options.update(configHolder.options)
@@ -355,10 +358,10 @@ class Creator(object):
 
         self._printStep('Waiting for machine to boot')
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
-                                                            VM_START_TIMEOUT)
+                                                            self.vmStartTimeout)
         if not vmStarted:
             msg = 'Failed to start VM within %i seconds (id=%s, ip=%s)' % \
-                                (VM_START_TIMEOUT, self.vmId, self.vmAddress)
+                                (self.vmStartTimeout, self.vmId, self.vmAddress)
             self.printDetail(msg)
             self._stopMachine()
             self._printError(msg)
@@ -383,9 +386,9 @@ class Creator(object):
 
     def _waitMachineNetworkUpOrAbort(self):
         self._printStep('Waiting for machine network to start')
-        if not waitUntilPingOrTimeout(self.vmAddress, VM_PING_TIMEPUT):
+        if not waitUntilPingOrTimeout(self.vmAddress, self.vmPingTimeout):
             msg = 'Unable to ping VM in %i seconds (id=%s, ip=%s)' % \
-                                    (VM_PING_TIMEPUT, self.vmId, self.vmAddress)
+                                    (self.vmPingTimeout, self.vmId, self.vmAddress)
             self._printError(msg)
             self._stopMachine()
 
