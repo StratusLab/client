@@ -21,28 +21,9 @@ import sys
 import time
 
 from stratuslab.Exceptions import OneException
-from stratuslab.Util import printError
+from stratuslab import Util
 
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    raise Exception("Failed to import ElementTree from any known place")
+etree = Util.importETree()
 
 class OneConnector(object):
 
@@ -335,7 +316,7 @@ class OneVmState(object):
         if (lcm != None) and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
             return self.lcmStateDefintion[lcm]
         else:
-            printError('Invalid state: %s' % lcm, exit=False)
+            Util.printError('Invalid state: %s' % lcm, exit=False)
             return self.invalidState
 
     def _lcmStateAsInt(self):

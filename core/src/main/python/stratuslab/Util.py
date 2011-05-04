@@ -527,3 +527,26 @@ def isTrueConfVal(var):
 
 def isFalseConfVal(var):
     return (str(var).lower() in ['false', 'no', 'off', '0', '']) or False
+
+def importETree():
+    try:
+        from lxml import etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.cElementTree as etree
+        except ImportError:
+            try:
+                # Python 2.5
+                import xml.etree.ElementTree as etree
+            except ImportError:
+                try:
+                    # normal cElementTree install
+                    import cElementTree as etree
+                except ImportError:
+                    try:
+                        # normal ElementTree install
+                        import elementtree.ElementTree as etree
+                    except ImportError:
+                        raise Exception("Failed to import ElementTree from any known place")
+    return etree

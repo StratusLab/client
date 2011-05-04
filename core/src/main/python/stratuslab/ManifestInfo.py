@@ -23,31 +23,11 @@ import re
 import string
 import time
 
-import Util
+import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ExecutionException
 
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    raise Exception("Failed to import ElementTree from any known place")
-
+etree = Util.importETree()
 
 NS_RDF     = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 NS_DCTERMS = 'http://purl.org/dc/terms/'

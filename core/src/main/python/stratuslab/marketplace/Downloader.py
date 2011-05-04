@@ -24,28 +24,8 @@ import urllib2
 import hashlib
 from stratuslab.ManifestInfo import _normalizeForInstanceAttribute as normalizeManifestElementForClassAttr
 
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    raise Exception("Failed to import ElementTree from any known place")
-
 from stratuslab import Util
+from stratuslab import Defaults
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.Signator import Signator
@@ -54,9 +34,11 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import InputException
 from stratuslab.Exceptions import ValidationException
 
+etree = Util.importETree()
+
 class Downloader(object):
 
-    ENDPOINT = 'http://appliances.stratuslab.eu/marketplace/metadata'
+    ENDPOINT = Defaults.marketplaceEndpoint
     LOCAL_IMAGE_FILENAME = '/tmp/image.img'
 
     def __init__(self, configHolder=ConfigHolder()):

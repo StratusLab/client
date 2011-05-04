@@ -18,11 +18,12 @@
 # limitations under the License.
 #
 import sys
+import getpass
 import os.path
 import urllib2
 from ConfigParser import RawConfigParser
 
-import Util
+import stratuslab.Util as Util
 from ManifestInfo import ManifestInfo
 from Exceptions import InputException
 from Exceptions import NetworkException
@@ -32,28 +33,7 @@ from ConfigHolder import ConfigHolder
 from marketplace.Downloader import Downloader as MarketPlaceDownloader
 import marketplace.Uploader
 
-
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    raise Exception("Failed to import ElementTree from any known place")
-
+etree = Util.importETree()
 
 class Uploader(object):
 
@@ -72,10 +52,6 @@ class Uploader(object):
     @staticmethod
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] <metadata-file>'''
-
-        parser.add_option('-r', '--repository', dest='apprepoEndpoint',
-                help='appliance repository address. Default STRATUSLAB_APPREPO_ENDPOINT',
-                default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT'), metavar='ADDRESS')
 
         parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
                 help='additional curl option', default='')
@@ -104,12 +80,19 @@ class Uploader(object):
                 action='store_true',
                 default=False)
 
-        parser.add_option('-U', '--repo-username', dest='apprepoUsername',
+        # FIXME: move out of here
+        parser.add_option('-r', '--apprepo-endpoint', dest='apprepoEndpoint',
+                help='appliance repository address. Default STRATUSLAB_APPREPO_ENDPOINT',
+                default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT'), metavar='ADDRESS')
+        
+        parser.add_option('-U', '--apprepo-username', dest='apprepoUsername',
                 help='repository username. Default STRATUSLAB_APPREPO_USERNAME',
                 default=os.getenv('STRATUSLAB_APPREPO_USERNAME', ''))
-        parser.add_option('-P', '--repo-password', dest='apprepoPassword',
+        
+        parser.add_option('-P', '--apprepo-password', dest='apprepoPassword',
                 help='repository password. Default STRATUSLAB_APPREPO_PASSWORD',
                 default=os.getenv('STRATUSLAB_APPREPO_PASSWORD', ''))
+        # FIXME: move out of here
 
     @staticmethod
     def checkUploadOptions(options, parser):
@@ -130,7 +113,12 @@ class Uploader(object):
         if not options.apprepoUsername:
             parser.error('Unspecified repository username')
         if not options.apprepoPassword:
-            parser.error('Unspecified repository password')
+            prompt = "'%s' at '%s' password: " % (options.apprepoUsername,
+                                      options.apprepoEndpoint)
+            options.apprepoPassword = getpass.getpass(prompt=prompt)
+        
+        print options.apprepoPassword
+        raise SystemExit()
  
     @staticmethod
     def buildRepoNameStructure(structure, info):

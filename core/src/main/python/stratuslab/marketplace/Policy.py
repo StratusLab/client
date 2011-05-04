@@ -22,31 +22,13 @@ import os
 import ConfigParser
 import urllib2
 
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    raise Exception("Failed to import ElementTree from any known place")
-
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ValidationException, InputException
 from stratuslab.marketplace.Downloader import Downloader
+
+etree = Util.importETree()
+
 class Policy(object):
 
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
