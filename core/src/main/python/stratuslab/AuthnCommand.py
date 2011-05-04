@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 import os
+import getpass
 
 from CommandBase import CommandBaseUser
 from stratuslab import Defaults
@@ -75,7 +76,7 @@ class AuthnCommand(CommandBaseUser):
         return True
 
     def checkUsernamePasswordOptions(self):
-        return UsernamePassword().checkOptions
+        return UsernamePassword().checkOptions(self.options)
 
     def checkOptions(self):
         if not (self.checkUsernamePasswordOptions() or self.checkPemCertOptions()):
@@ -112,10 +113,16 @@ class UsernamePassword(object):
                           default=defaultOptions['password'])
         return parser
 
-    def checkOptions(self):
-        usernamePasswordCredentials = self.options.username and self.options.password
+    def checkOptions(self, options):
+        usernamePasswordCredentials = options.username and options.password
         if not usernamePasswordCredentials:
+            if options.username and not options.password:
+                prompt = "'%s' at '%s' password: " % (options.username,
+                                                      options.endpoint)
+                options.password = getpass.getpass(prompt=prompt)
+                return True
             return False
+
         return True
 
     
