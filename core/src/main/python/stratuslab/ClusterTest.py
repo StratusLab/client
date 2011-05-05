@@ -27,16 +27,16 @@ from stratuslab.Cluster import Cluster
 
 class ClusterTest(unittest.TestCase):
     instanceNumber = 2
-    image = "MVtdRuENlChXp8Gm-LQy5imrDa4"
+    image = "OMd8M7ixG3toGqm8C1MhUphMJWF"
     instanceType = "c1.medium"
 
     def testDeployNFSCluster(self):
         options = Runner.defaultRunOptions()
         options.update({'username': os.environ['STRATUSLAB_USERNAME'],
                         'password': os.environ['STRATUSLAB_PASSWORD'],
-                        'mpi_machine_file': True, 'instanceType': self.instanceType,
+                        'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': None,
-                        'include_master': True, 'shared_folder':'/home', 'useQcowDiskFormat': True,
+                        'include_master': True, 'shared_folder':'/home', 'useQcowDiskFormat': False,
                         'add_packages': None, 'ssh_hostbased': False, 'instanceNumber': self.instanceNumber,
                         'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
@@ -52,9 +52,9 @@ class ClusterTest(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options.update({'username': os.environ['STRATUSLAB_USERNAME'],
                         'password': os.environ['STRATUSLAB_PASSWORD'],
-                        'mpi_machine_file': True, 'instanceType': self.instanceType,
+                        'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': None,
-                        'include_master': True, 'shared_folder': None, 'useQcowDiskFormat': True,
+                        'include_master': True, 'shared_folder': None, 'useQcowDiskFormat': False,
                         'add_packages': None, 'ssh_hostbased': True, 'instanceNumber': self.instanceNumber,
                         'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
@@ -70,18 +70,21 @@ class ClusterTest(unittest.TestCase):
         # Master node instance
         options = Runner.defaultRunOptions()
         options.update({'username': os.environ['STRATUSLAB_USERNAME'],
-                        'password': os.environ['STRATUSLAB_PASSWORD'],
-                        'instanceType': 'm1.large', 'instanceNumber': 1, 'verboseLevel':0})
+                        'password': os.environ['STRATUSLAB_PASSWORD'], 'useQcowDiskFormat': False, 'noCheckImageUrl': True,
+                        'instanceType': 'm1.large', 'instanceNumber': 1, 'verboseLevel':0,
+                        'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         runner.runInstance()
 
+        masterId = runner.vmIds
+
         # Worker node instance
         options.update({'username': os.environ['STRATUSLAB_USERNAME'],
                         'password': os.environ['STRATUSLAB_PASSWORD'],
-                        'mpi_machine_file': True, 'instanceType': self.instanceType,
+                        'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': runner.vmIds[0],
-                        'include_master': True, 'shared_folder': '/home', 'useQcowDiskFormat': True,
+                        'include_master': True, 'shared_folder': '/home', 'useQcowDiskFormat': False,
                         'add_packages': None, 'ssh_hostbased': False, 'instanceNumber': self.instanceNumber-1,
                         'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
@@ -90,6 +93,8 @@ class ClusterTest(unittest.TestCase):
         runner.runInstance()
 
         self.assertEquals(cluster.deploy(), 0)
+
+        runner.killInstances(masterId)
         runner.killInstances(runner.vmIds)
 
 if __name__ == "__main__":
