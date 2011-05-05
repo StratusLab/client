@@ -125,8 +125,10 @@ class ConfigHolder(object):
 
     def __str__(self):
         output = '* %s:\n' % self.__class__.__name__
-        for p in ['options', 'config']:
-            if getattr(self, p):
-                output += '** %s:\n' % p.upper()
-                output += '\n'.join(['  %s = %s'%(k,v) for k,v in getattr(self, p).items()]) + '\n'
+        for attr in ['options', 'config']:
+            if getattr(self, attr):
+                output += '** %s:\n' % attr.upper()
+                pkeys = getattr(self, attr).keys()
+                pkeys.sort()
+                output += '\n'.join(['  %s = %s'%(k,getattr(self, attr)[k]) for k in pkeys]) + '\n'
         return output
