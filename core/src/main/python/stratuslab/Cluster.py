@@ -211,7 +211,12 @@ class Cluster(object):
             if vmNetwork[0] == 'public':
                 host = Host()
                 host.public_ip = vmNetwork[1]
-                host.public_dns = socket.gethostbyaddr(host.public_ip)[0]
+
+                try:
+                    host.public_dns = socket.gethostbyaddr(host.public_ip)[0]
+                except:
+                    host.public_dns = host.public_ip
+
                 host.cores = vm_cpu
                 host.ram = vm_ram
                 host.swap = vm_swap
