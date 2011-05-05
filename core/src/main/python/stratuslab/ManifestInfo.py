@@ -181,10 +181,15 @@ class ManifestInfo(object):
         return template % self.__dict__
 
     def __str__(self):
-        output = '* %s:\n' % self.__class__.__name__
+        sortedKeys = []
         for k in self.__dict__:
             if not k.startswith('_') and not callable(k):
-                output += '  %s = %s\n' % (k, self.__dict__[k])
+                sortedKeys.append(k)
+        sortedKeys.sort()
+
+        output = '* %s:\n' % self.__class__.__name__
+        for k in sortedKeys:
+            output += '  %s = %s\n' % (k, self.__dict__[k])
         return output
 
 class ManifestIdentifier(object):
