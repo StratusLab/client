@@ -34,3 +34,7 @@ pemKeyLocation = path.join(pemDirectory, pemKeyFile)
 p12Directory = _globusDirectory
 p12CertificateFile = 'usercert.p12'
 p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
+
+marketplaceEndpoint = 'http://appliances.stratuslab.eu/marketplace/metadata'
+
+apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
