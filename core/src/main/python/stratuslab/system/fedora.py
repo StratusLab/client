@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 from stratuslab.system.centos import CentOS
+from stratuslab import Util
 
 class Fedora(CentOS):
     def __init__(self):
@@ -27,6 +28,8 @@ class Fedora(CentOS):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
         
+        self.executeCmd('/etc/init.d/libvirtd stop'.split())
+
         libvirtConf = '/etc/libvirt/libvirtd.conf'
         self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_group.*$',
                                       'unix_sock_group = "cloud"')
@@ -46,7 +49,9 @@ class Fedora(CentOS):
         self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/libexec/qemu-kvm'.split())
         self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/bin/kvm'.split())
         
-        self.executeCmd('/etc/init.d/libvirtd start'.split())
+        rc, output = self.executeCmd('/etc/init.d/libvirtd start'.split(), withOutput=True)
+        if rc != 0:
+            Util.printError('Could not start libvirt.\n%s' % output)
 
 
 system = Fedora()

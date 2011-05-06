@@ -432,6 +432,8 @@ class BaseSystem(object):
     def _remoteAppendOrReplaceInFile(self, filename, search, replace):
         res = self._nodeShell(['grep', '"%s"'%search, filename])
 
+        replace = Util.escapeDoubleQuotes(replace)
+
         if self._patternExists(res):
             rc, output = self._nodeShell('"sed -i \'s|%s|%s|\' %s"' % (search, replace, filename), 
                                          withOutput=True, shell=True)
@@ -450,12 +452,16 @@ class BaseSystem(object):
         self._nodeShell(['rm -rf %s' % path])
 
     def _remoteFilePutContents(self, filename, data):
+        data = Util.escapeDoubleQuotes(data, times=2)
+
         rc, output = self._nodeShell('"echo \\"%s\\" > %s"' % (data, filename),
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to write to %s\n%s" % (filename, output))
 
     def _remoteFileAppendContents(self, filename, data):
+        data = Util.escapeDoubleQuotes(data, times=2)
+
         rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
                                      withOutput=True, shell=True)
         if rc != 0:
