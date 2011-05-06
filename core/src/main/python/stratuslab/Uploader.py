@@ -29,6 +29,7 @@ from Exceptions import InputException
 from Exceptions import NetworkException
 from Signator import Signator
 from ConfigHolder import ConfigHolder
+from Compressor import Compressor
 
 from stratuslab import Defaults
 import marketplace.Uploader
@@ -359,13 +360,7 @@ class Uploader(object):
         return repoFilename.split('.img')[0] + '.xml'
 
     def _compressFile(self, file, format):
-        # TODO: use stratuslab.Compressor
-        if format == 'gz':
-            compressionCmd = 'gzip'
-        elif format == 'bz2':
-            compressionCmd = 'bzip2'
-        else:
-            raise NotImplementedError('Unknown compression format')
+        compressionCmd = Compressor._getCompressionCommandByFormat(format)
 
         compressedFilename = '%s.%s' % (file, format)
         if os.path.isfile(compressedFilename):
