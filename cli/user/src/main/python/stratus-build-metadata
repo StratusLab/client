@@ -39,6 +39,8 @@ class MainProgram(CommandBase):
     def parse(self):
         self.parser.usage = '%prog [options] image'
 
+        self.parser.description = 'image - image to build the metadata for'
+
         self.parser.add_option('--author', dest='creator',
                 help='Author of the new image',
                 default='', metavar='NAME')

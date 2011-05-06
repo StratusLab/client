@@ -21,6 +21,7 @@
 
 import os
 import sys
+from stratuslab import Defaults
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -29,6 +30,7 @@ from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util
 from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.Uploader import Uploader
 
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
@@ -58,7 +60,7 @@ class MainProgram(Runnable):
                 default='', metavar='VERSION')
 
         self.parser.add_option('--author', dest='author',
-                help='Author of the new image',
+                help='author of the new image',
                 default='', metavar='NAME')
 
         self.parser.add_option('-s', '--scripts', dest='scripts',
@@ -87,25 +89,12 @@ class MainProgram(Runnable):
                 default='', metavar='FILE')
 
         self.parser.add_option('--comment', dest='comment',
-                help='Comment to append to the manifest file',
+                help='comment to append to the manifest file',
                 default='', metavar='TEXT')
 
         self.parser.add_option('--no-shutdown', dest='shutdownVm',
                 help='leave the VM running. A public IP will be assigned.',
                 default=True, action='store_false')
-
-        self.parser.add_option('-r', '--repository', dest='apprepoEndpoint',
-                help='appliance repository address. Url of the root of the appliance repository. '
-                'Default STRATUSLAB_APPREPO_ENDPOINT',
-                default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT'), metavar='ADDRESS')
-
-        self.parser.add_option('-U', '--repo-username', dest='apprepoUsername',
-                help='repository username. Default STRATUSLAB_APPREPO_USERNAME',
-                default=os.getenv('STRATUSLAB_APPREPO_USERNAME'))
-
-        self.parser.add_option('-P', '--repo-password', dest='apprepoPassword',
-                help='repository password. Default STRATUSLAB_APPREPO_PASSWORD',
-                default=os.getenv('STRATUSLAB_APPREPO_PASSWORD'))
 
         self.parser.add_option('--no-upload', dest='noUpload',
                 help='do not upload the new image to an appliances repository. \
@@ -138,6 +127,7 @@ class MainProgram(Runnable):
                 help='additional curl option', default='')
 
         AuthnCommand.addP12CertOptions(self.parser)
+        Uploader.buildAppRepoOptionsParser(self.parser)
 
         super(MainProgram, self).parse()
 
@@ -159,20 +149,13 @@ class MainProgram(Runnable):
 you\'ll never be able to retrieve the new image')
 
         if not self.options.comment:
-            self.parser.error('Please provide a comment describing the new image')
+            self.parser.error('Provide a comment describing the new image')
 
         if not self.options.author:
-            self.parser.error('Please provide an author for the new image')
+            self.parser.error('Provide an author for the new image')
 
-        if not self.options.apprepoEndpoint and not self.options.noUpload:
-            if Util.getProtoFromUri(self.image) and Util.getProtoHostnameFromUri(self.image):
-                self.options.apprepoEndpoint = Util.getProtoHostnameFromUri(self.image)
-            else:
-                self.parser.error('Missing repository address')
-        if not self.options.apprepoUsername and not self.options.noUpload:
-            self.parser.error('Missing repository username')
-        if not self.options.apprepoPassword and not self.options.noUpload:
-            self.parser.error('Missing repository password')
+        if not self.options.noUpload:
+            Uploader.checkAppRepoOptions(self.options, self.parser)
 
         AuthnCommand.checkP12CertOptionsOnly(self)
 
