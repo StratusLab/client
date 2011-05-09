@@ -32,6 +32,9 @@ with minimal dependencies for maximum portability.
 #
     </BUILD_INFO>
 
+    <nexus.release.repository.name>releases</nexus.release.repository.name>
+    <nexus.snapshot.repository.name>snapshots</nexus.snapshot.repository.name>
+
   </properties>
 
   <licenses>
@@ -67,16 +70,16 @@ with minimal dependencies for maximum portability.
     <repository>
       <id>stratuslab.releases</id>
       <name>Releases</name>
-      <url>http://repo.stratuslab.eu:8081/content/repositories/releases/</url>
+      <url>http://repo.stratuslab.eu:8081/content/repositories/${nexus.release.repository.name}</url>
     </repository>
     <snapshotRepository>
       <id>stratuslab.snapshots</id>
       <name>Snapshots</name>
-      <url>http://repo.stratuslab.eu:8081/content/repositories/snapshots/</url>
+      <url>http://repo.stratuslab.eu:8081/content/repositories/${nexus.snapshot.repository.name}</url>
     </snapshotRepository>
     <site>
       <id>hudson.webserver</id>
-      <url>scp://hudson.stratuslab.eu/var/www/integration</url>
+      <url>scp://hudson.stratuslab.eu/var/www/one</url>
     </site>
   </distributionManagement>
 
