@@ -961,16 +961,19 @@ group {
             sleepTime = 5
             Util.printDetail('Sleeping %i sec for the bridge one the node to come up.' % sleepTime)
             time.sleep(sleepTime)
+
             Util.printDetail('Testing connection to the node.')
-            if self._nodeShell('true'):
+            rc, output = self._nodeShell('true', withOutput=True)
+            if rc == 0:
                 Util.printDetail('OK.')
             else:
-                Util.printError('Could not connect to the node after attempt to configre bridge.')
+                Util.printError('Could not connect to the node after attempt to configre bridge.\n%s' % output)
 
             Util.printDetail('Testing if bridge was configured.')
             rc, output = self._nodeShell(checkBridgeCmd, withOutput=True, shell=True)
             if rc == 0:
                 Util.printDetail('OK.')
+                return
             else:
                 Util.printError('Bridge was not configured.\n%s' % output)
 
