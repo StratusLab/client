@@ -34,10 +34,11 @@ repoFileNamePattern = '%s/%s.repo' %(packageManagerReposConfDir, '%s')
 
 class CentOS(BaseSystem):
 
-    repoFileNamePattern = '%s/%s.repo' %(packageManagerReposConfDir, '%s')
 
     def __init__(self):
         super(CentOS, self).__init__()
+        
+        self.repoFileNamePattern = repoFileNamePattern
         
         self.systemName = 'CentOS 5.5'
         self.arch = self.getSystemArch()
