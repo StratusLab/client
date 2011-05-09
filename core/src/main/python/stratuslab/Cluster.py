@@ -71,20 +71,13 @@ class SSHUtil(object):
         
         cmd = "ssh" + self._options + " " + additional_options + " -i " + self._private_key + " " + self._username + "@" + host.public_ip + " true"
         # print "Command: " + cmd
-               
-        attempts_counter = 0
-        
-        while True:
-            error = os.system(cmd)
-            
-            if error >0 :
-                if attempts_counter<attempts:
-                    time.sleep(timeout)
-                    attempts_counter += 1
-                else:
-                    return False
-            else:
-                return True        
+        error = os.system(cmd)
+
+        if error > 0:
+            return False
+        else:
+            return True
+    
     
 class Cluster(object):
 
@@ -221,33 +214,45 @@ class Cluster(object):
                 host.ram = vm_ram
                 host.swap = vm_swap
                 self.hosts.append(host)
-                
-        master_node = self.hosts[0]
-        
-        worker_nodes = list(self.hosts)
-        
-        worker_nodes.remove(master_node)
-        
-        print "\nMaster is " + master_node.public_dns
-        
-        for node in worker_nodes:
-            print "Worker:" + node.public_dns
             
         print "Waiting for all instances to become accessible..."
-        
+
+        failedHosts = []
+
         for host in self.hosts:
-            hostready = False
-            hostfailed = False
-            
-            while not hostready and not hostfailed:
+            hostReady = False
+            hostFailed = False
+
+            while not hostReady and not hostFailed:
                 if not ssh.waitForConnectivity(host, 10, 30):
                     print "Timed out while connecting to " + host.public_ip
                     print "Removing from target configuration list"
-                    self.hosts.remove(host)
-                    hostfailed = True
+                    failedHosts.append(host)
+                    hostFailed = True
                 else:
-                    hostready=True
-            
+                    hostReady=True
+
+
+        if self.tolerate_failures == True:
+            for host in failedHosts:
+                self.hosts.remove(host)
+        else:
+            print "Error instantiating some or all of the nodes. Bailing out..."
+            if self.clean_after_failure:
+                self._runner.killInstances(self._runner.vmIds)
+            return 128
+
+        master_node = self.hosts[0]
+
+        worker_nodes = list(self.hosts)
+
+        worker_nodes.remove(master_node)
+
+        print "\nMaster is " + master_node.public_dns
+
+        for node in worker_nodes:
+            print "Worker:" + node.public_dns
+
         # Configure the hosts
         printAction('Configuring nodes')       
         
