@@ -167,7 +167,7 @@ class Runner(object):
         _sshPrivateKey = _sshPublicKey.strip('.pub')
         return {'userPublicKeyFile': _sshPublicKey,
                 'userPrivateKeyFile': _sshPrivateKey,
-                'endpoint': CloudEndpoint.options(),
+                'endpoint': CloudEndpoint.options().get('endpoint', ''),
                 'instanceNumber': 1,
                 'instanceType': 'm1.small',
                 'vmTemplatePath': Runner.getTemplatePath(),
