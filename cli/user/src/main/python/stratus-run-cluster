@@ -73,6 +73,15 @@ class MainProgram(Runnable):
         self.parser.add_option('--master-vmid', dest='master_vmid', action='store',
                 help='VMID of master node if this has been instantiated separately',
                 default=None, type='int')
+
+        self.parser.add_option('--tolerate-failures', dest='tolerate_failures', action='store_true',
+                help='If set true the program will try to configure the cluster with as many nodes as it can  ' \
+                'in case some of them fail during instantiation',
+                default=False)
+
+        self.parser.add_option('--clean-after-failure', dest='clean_after_failure', action='store_true',
+                help='In case the program stops on failure it will try to kill all VMs instantiated',
+                default=True)
         
         self.parser.add_option('-n', '--number', dest='instanceNumber',
                 help='number of machines to start (default 1) for the cluster', metavar='INT',
