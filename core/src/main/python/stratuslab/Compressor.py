@@ -38,7 +38,10 @@ class Compressor(object):
     @staticmethod        
     def _getCompressionCommand(filename):
         format = filename.split('.')[-1]
+        return Compressor._getCompressionCommandByFormat(format)
 
+    @staticmethod
+    def _getCompressionCommandByFormat(format):
         if format == 'gz':
             cmd = 'gzip'
         elif format == 'bz2':

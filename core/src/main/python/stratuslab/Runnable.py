@@ -22,9 +22,9 @@ import sys
 
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
-from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
+from stratuslab import Defaults
 
 class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
@@ -64,10 +64,6 @@ class Runnable(AuthnCommand):
                 help='extra context string (separate by %s)' % Util.cliLineSplitChar,
                 default=defaultOptions['extraContextData'])
 
-        self.parser.add_option('--endpoint', dest='endpoint',
-                help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
-                default=defaultOptions['endpoint'])
-
         self.parser.add_option('--vnc-port', dest='vncPort', metavar='PORT', type='int',
                 help='VNC port number. Note for KVM it\'s the real one , not the '
                      'VNC port. So for VNC port 0 you should specify 5900, for '
@@ -93,8 +89,11 @@ class Runnable(AuthnCommand):
                 default=defaultOptions['vmTemplatePath'])
 
         self.parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s' % Downloader.ENDPOINT,
+                help='Market place endpoint. Default %s. %s' % (Defaults.marketplaceEndpoint,
+                                                                Uploader.ENVVAR_MARKETPLACE_ENDPOINT),
                 default=None)
+
+        AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(Runnable, self).parse()
 
@@ -117,6 +116,8 @@ class Runnable(AuthnCommand):
 
         self.image = self.args[0]
 
+        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+
         self._checkKeyPair()
 
         if self.options.instanceType not in Runner.getInstanceType().keys():
@@ -125,10 +126,10 @@ class Runnable(AuthnCommand):
             self.parser.error('Extra context file does not exist')
         if self.options.vncListen and not Util.validateIp(self.options.vncListen):
             self.parser.error('VNC listen IP is not valid')
-            self.parser.error('Unspecified cloud endpoint')
 
         if not self.options.marketplaceEndpoint:
-            self.options.marketplaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, Downloader.ENDPOINT) 
+            self.options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, 
+                                                         Defaults.marketplaceEndpoint) 
 
         super(Runnable, self).checkOptions()
 

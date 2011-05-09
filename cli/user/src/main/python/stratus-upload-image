@@ -31,7 +31,7 @@ from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
 
-class MainProgram(CommandBaseUser):
+class MainProgram(AuthnCommand):
     '''A command-line program to upload StratusLab appliance.'''
 
     def __init__(self):
@@ -40,7 +40,7 @@ class MainProgram(CommandBaseUser):
 
     def parse(self):
         Uploader.buildUploadParser(self.parser)
-        AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
+        self.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
 
         self.options, self.args = self.parser.parse_args()
 
@@ -53,6 +53,7 @@ class MainProgram(CommandBaseUser):
         self.manifest = self.args[0]
 
         Uploader.checkUploadOptions(self.options, self.parser)
+        self.checkP12CertOptionsOnly()
 
         if not self.manifest.endswith(manifestExt):
             self.parser.error('Manifest must end with %s' % manifestExt)
@@ -62,6 +63,7 @@ class MainProgram(CommandBaseUser):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         uploader = Uploader(self.manifest, configHolder)
+    
         try:
             uploader.start()
         except InputException, e:

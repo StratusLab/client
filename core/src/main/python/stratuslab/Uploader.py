@@ -29,15 +29,17 @@ from Exceptions import InputException
 from Exceptions import NetworkException
 from Signator import Signator
 from ConfigHolder import ConfigHolder
+from Compressor import Compressor
 
-from marketplace.Downloader import Downloader as MarketPlaceDownloader
+from stratuslab import Defaults
 import marketplace.Uploader
 
 etree = Util.importETree()
 
 class Uploader(object):
 
-    MARKETPLACE_ADDRESS = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
+    ENVVAR_MARKETPLACE_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
+    ENVVAR_APPREPO_ENDPOINT = 'STRATUSLAB_APPREPO_ENDPOINT'
 
     @staticmethod
     def availableCompressionFormat(printIt=False):
@@ -72,7 +74,8 @@ class Uploader(object):
                 default=False, action='store_true')
 
         parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s' % MarketPlaceDownloader.ENDPOINT,
+                help='Market place endpoint. Default %s. %s' % \
+                    (Defaults.marketplaceEndpoint, Uploader.ENVVAR_MARKETPLACE_ENDPOINT),
                 default=None)
 
         parser.add_option('--marketplace-only', dest='withMarketPlaceOnly',
@@ -80,10 +83,15 @@ class Uploader(object):
                 action='store_true',
                 default=False)
 
-        # FIXME: move out of here
+        Uploader.buildAppRepoOptionsParser(parser)
+
+    # FIXME: create a separate class AppRepo
+    @staticmethod
+    def buildAppRepoOptionsParser(parser):
         parser.add_option('-r', '--apprepo-endpoint', dest='apprepoEndpoint',
-                help='appliance repository address. Default STRATUSLAB_APPREPO_ENDPOINT',
-                default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT'), metavar='ADDRESS')
+                help='appliance repository endpoint. Default %s. %s' % \
+                    (Defaults.apprepoEndpoint, Uploader.ENVVAR_APPREPO_ENDPOINT),
+                default=Defaults.apprepoEndpoint, metavar='ENDPOINT')
         
         parser.add_option('-U', '--apprepo-username', dest='apprepoUsername',
                 help='repository username. Default STRATUSLAB_APPREPO_USERNAME',
@@ -92,7 +100,6 @@ class Uploader(object):
         parser.add_option('-P', '--apprepo-password', dest='apprepoPassword',
                 help='repository password. Default STRATUSLAB_APPREPO_PASSWORD',
                 default=os.getenv('STRATUSLAB_APPREPO_PASSWORD', ''))
-        # FIXME: move out of here
 
     @staticmethod
     def checkUploadOptions(options, parser):
@@ -100,7 +107,7 @@ class Uploader(object):
         if options.marketplaceEndpoint:
             options.withMarketPlace = True
         if not options.marketplaceEndpoint:
-            options.marketplaceEndpoint = os.getenv(Uploader.MARKETPLACE_ADDRESS, MarketPlaceDownloader.ENDPOINT)                    
+            options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, Defaults.marketplaceEndpoint)                    
 
         if options.withMarketPlaceOnly:
             options.withMarketPlace = True
@@ -108,18 +115,22 @@ class Uploader(object):
 
         if options.compressionFormat not in Uploader.availableCompressionFormat():
             parser.error('Unknown compression format')
+        
+        Uploader.checkAppRepoOptions(options, parser)
+
+    # FIXME: create a separate class AppRepo
+    @staticmethod
+    def checkAppRepoOptions(options, parser):            
         if not options.apprepoEndpoint:
-            parser.error('Unspecified repository address')
+            parser.error('Unspecified appliance repository address')
         if not options.apprepoUsername:
-            parser.error('Unspecified repository username')
+            parser.error('Unspecified appliance repository username')
         if not options.apprepoPassword:
-            prompt = "'%s' at '%s' password: " % (options.apprepoUsername,
-                                      options.apprepoEndpoint)
+            prompt = "'%s' at AppRepo '%s' password: " % (options.apprepoUsername,
+                                                          options.apprepoEndpoint)
             options.apprepoPassword = getpass.getpass(prompt=prompt)
         
-        print options.apprepoPassword
-        raise SystemExit()
- 
+    # FIXME: create a separate class AppRepo
     @staticmethod
     def buildRepoNameStructure(structure, info):
         varPattern = '#%s#'
@@ -349,13 +360,7 @@ class Uploader(object):
         return repoFilename.split('.img')[0] + '.xml'
 
     def _compressFile(self, file, format):
-        # TODO: use stratuslab.Compressor
-        if format == 'gz':
-            compressionCmd = 'gzip'
-        elif format == 'bz2':
-            compressionCmd = 'bzip2'
-        else:
-            raise NotImplementedError('Unknown compression format')
+        compressionCmd = Compressor._getCompressionCommandByFormat(format)
 
         compressedFilename = '%s.%s' % (file, format)
         if os.path.isfile(compressedFilename):

@@ -12,7 +12,7 @@
 
 [user]
 
-# Cloud frontend
+# Cloud frontend. NB! There is no default value for the endpoint in the code.
 endpoint = <cloud.frontend.hostname>
 
 # Authentication to Cloud frontend. 

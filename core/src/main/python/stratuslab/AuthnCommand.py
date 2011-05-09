@@ -46,6 +46,10 @@ class AuthnCommand(CommandBaseUser):
         return P12Certificate.options()
 
     @staticmethod
+    def cloudEndpointOptions():
+        return CloudEndpoint.options()
+
+    @staticmethod
     def addUsernamePasswordOptions(parser, defaultOptions=None):
         return UsernamePassword.addOptions(parser, defaultOptions)
 
@@ -57,6 +61,10 @@ class AuthnCommand(CommandBaseUser):
     def addP12CertOptions(parser, defaultOptions=None):
         return P12Certificate.addOptions(parser, defaultOptions)
 
+    @staticmethod
+    def addCloudEndpointOptions(parser, defaultOptions=None):
+        return CloudEndpoint.addOptions(parser, defaultOptions)
+
     def parse(self):
         defaultOptions = AuthnCommand.defaultRunOptions()
         
@@ -64,19 +72,16 @@ class AuthnCommand(CommandBaseUser):
         AuthnCommand.addPemCertOptions(self.parser, defaultOptions)
 
     def checkPemCertOptions(self):
-        pemCredentials = self.options.pemCertificate and self.options.pemKey
-        if not pemCredentials:
-            return False
-        return True
+        return PemCertificate.checkOptions(self.options)
 
     def checkP12CertOptions(self):
-        p12Credentials = self.options.p12Certificate and self.options.p12Password
-        if not p12Credentials:
-            return False
-        return True
+        return P12Certificate.checkOptions(self.options)
 
     def checkUsernamePasswordOptions(self):
-        return UsernamePassword().checkOptions(self.options)
+        return UsernamePassword.checkOptions(self.options)
+
+    def checkCloudEndpointOptoins(self):
+        return CloudEndpoint.checkOptions(self.options)
 
     def checkOptions(self):
         if not (self.checkUsernamePasswordOptions() or self.checkPemCertOptions()):
@@ -90,6 +95,10 @@ class AuthnCommand(CommandBaseUser):
     def checkP12CertOptionsOnly(self):
         if not self.checkP12CertOptions():
             self.parser.error('Missing credentials. Please provide %s' % P12Certificate.optionString)
+
+    def checkCloudEndpointOptionsOnly(self):
+        if not self.checkCloudEndpointOptoins():
+            self.parser.error('Missing cloud endpoint. Please provide %s' % CloudEndpoint.optionString)
 
 class UsernamePassword(object):
     
@@ -113,19 +122,18 @@ class UsernamePassword(object):
                           default=defaultOptions['password'])
         return parser
 
-    def checkOptions(self, options):
-        usernamePasswordCredentials = options.username and options.password
-        if not usernamePasswordCredentials:
-            if options.username and not options.password:
-                prompt = "'%s' at '%s' password: " % (options.username,
-                                                      options.endpoint)
-                options.password = getpass.getpass(prompt=prompt)
-                return True
-            return False
+    @staticmethod
+    def checkOptions(options):
+        if options.username and options.password:
+            return True
+
+        if options.username and not options.password:
+            prompt = "'%s' at '%s' password: " % (options.username,
+                                                  options.endpoint)
+            options.password = getpass.getpass(prompt=prompt)
 
         return True
 
-    
 class PemCertificate(object):
     
     optionString = '--pem-cert/--pem-key'
@@ -146,13 +154,19 @@ class PemCertificate(object):
             defaultOptions = AuthnCommand.defaultRunOptions()
 
         parser.add_option('--pem-cert', dest='pemCertificate', 
-                               help='PEM certificate file. Default %s' % PemCertificate.certDefaultLocation, 
+                               help='PEM certificate file. Default %s. STRATUSLAB_PEM_CERTIFICATE' % PemCertificate.certDefaultLocation, 
                                default=PemCertificate.certDefaultLocation, metavar='FILE')
         parser.add_option('--pem-key', dest='pemKey', 
-                               help='PEM public key file. Default %s' % PemCertificate.keyDefaultLocation, 
+                               help='PEM public key file. Default %s. STRATUSLAB_PEM_KEY' % PemCertificate.keyDefaultLocation, 
                                default=PemCertificate.keyDefaultLocation, metavar='Key')
         return parser
 
+    @staticmethod
+    def checkOptions(options):
+        if options.pemCertificate and options.pemKey:
+            return True
+
+        return False
 
 class P12Certificate(object):
     
@@ -172,9 +186,44 @@ class P12Certificate(object):
             defaultOptions = AuthnCommand.defaultRunOptions()
 
         parser.add_option('--p12-cert', dest='p12Certificate', 
-                          help='PKCS12 (P12) certificate file. Default %s' % P12Certificate.certDefaultLocation, 
+                          help='PKCS12 (P12) certificate file. Default %s. STRATUSLAB_P12_CERTIFICATE' % P12Certificate.certDefaultLocation, 
                           default=P12Certificate.certDefaultLocation, metavar='FILE')
         parser.add_option('--p12-password', dest='p12Password', 
                           help='PKCS12 (P12) password. Default STRATUSLAB_P12_PASSWORD', 
                           default=defaultOptions['p12Password'], metavar='PASSWORD')
         return parser
+
+    @staticmethod
+    def checkOptions(options):
+        if options.p12Certificate and options.p12Password:
+            return True
+        
+        if options.p12Certificate and not options.p12Password:
+            prompt = "PKCS12 (P12) cert '%s' password: " % options.p12Certificate
+            options.p12Password = getpass.getpass(prompt=prompt)
+            return True
+
+        return False
+
+class CloudEndpoint(object):
+    optionString = '--endpoint'
+
+    @staticmethod
+    def options():
+        return {'endpoint' : os.getenv('STRATUSLAB_ENDPOINT', '')}  
+
+    @staticmethod
+    def addOptions(parser, defaultOptions=None):
+        if not defaultOptions:
+            defaultOptions = CloudEndpoint.options()
+
+        parser.add_option('--endpoint', dest='endpoint',
+                          help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
+                          default=defaultOptions['endpoint'])
+
+    @staticmethod
+    def checkOptions(options):
+        if options.endpoint:
+            return True
+
+        return False

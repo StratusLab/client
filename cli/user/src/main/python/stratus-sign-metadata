@@ -25,16 +25,14 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
-from stratuslab.Util import printDetail
-from stratuslab.Util import printError
-from stratuslab.CommandBase import CommandBase
+import stratuslab.Util as Util
+from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.AuthnCommand import P12Certificate
 from stratuslab.Signator import Signator
 
 
-class MainProgram(AuthnCommand):
+class MainProgram(CommandBaseUser):
     '''A command-line program to sign image metadata.'''
 
     def __init__(self):
@@ -46,7 +44,7 @@ class MainProgram(AuthnCommand):
 
         self.parser.usage='''%prog [options] <metadata-file>'''
 
-        self.addP12CertOptions(self.parser)
+        P12Certificate.addOptions(self.parser)
 
         self.parser.add_option('--output', dest='outputManifestFile',
                 help='signed metadata file (same as input; input moved to *.orig)',
@@ -69,16 +67,17 @@ class MainProgram(AuthnCommand):
         if not (exists and isFile):
             self.parser.error('Metadata file doesn\'t exist or is not a file')
         
-        self.checkP12CertOptionsOnly()
-
+        if not P12Certificate.checkOptions(self.options):
+            self.parser.error('Missing credentials. Please provide %s' % P12Certificate.optionString)
+            
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         signator = Signator(self.manifestFile, configHolder)
         isError = signator.sign()
         if isError:
-            printError('Error signing metadata file')
+            Util.printError('Error signing metadata file')
         else:
-            printDetail('Metadata file successfully signed: %s' % signator.outputManifestFile)
+            Util.printDetail('Metadata file successfully signed: %s' % signator.outputManifestFile)
 
 if __name__ == '__main__':
     try:

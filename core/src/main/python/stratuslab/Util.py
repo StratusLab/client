@@ -550,3 +550,6 @@ def importETree():
                     except ImportError:
                         raise Exception("Failed to import ElementTree from any known place")
     return etree
+
+def escapeDoubleQuotes(string, times=1):
+    return re.sub('"', '%s"' % ('\\'*times), string)

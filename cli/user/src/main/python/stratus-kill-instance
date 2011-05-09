@@ -43,24 +43,24 @@ class MainProgram(AuthnCommand):
         usage = '''%prog [options] vm-id ...'''
 
         self.parser.usage=usage
-        
-        self.parser.add_option('--endpoint', dest='endpoint',
-                help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
-                default=os.getenv('STRATUSLAB_ENDPOINT', ''))
 
         self.parser.add_option('-i', '--input', dest='inVmIdsFile',
                 help='file containing line separated vm-ids', metavar='FILE',
                 default=None)
+
+        AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, self.vmIds = self.parser.parse_args()
 
     def checkOptions(self):
+        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+
         if not self.vmIds and not self.options.inVmIdsFile:
             self.parser.error('Missing vm-id or input file (-i/--input)')
-        super(MainProgram, self).checkOptions()
 
+        super(MainProgram, self).checkOptions()
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)

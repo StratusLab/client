@@ -432,6 +432,8 @@ class BaseSystem(object):
     def _remoteAppendOrReplaceInFile(self, filename, search, replace):
         res = self._nodeShell(['grep', '"%s"'%search, filename])
 
+        replace = Util.escapeDoubleQuotes(replace)
+
         if self._patternExists(res):
             rc, output = self._nodeShell('"sed -i \'s|%s|%s|\' %s"' % (search, replace, filename), 
                                          withOutput=True, shell=True)
@@ -450,12 +452,16 @@ class BaseSystem(object):
         self._nodeShell(['rm -rf %s' % path])
 
     def _remoteFilePutContents(self, filename, data):
+        data = Util.escapeDoubleQuotes(data, times=2)
+
         rc, output = self._nodeShell('"echo \\"%s\\" > %s"' % (data, filename),
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to write to %s\n%s" % (filename, output))
 
     def _remoteFileAppendContents(self, filename, data):
+        data = Util.escapeDoubleQuotes(data, times=2)
+
         rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
                                      withOutput=True, shell=True)
         if rc != 0:
@@ -955,16 +961,19 @@ group {
             sleepTime = 5
             Util.printDetail('Sleeping %i sec for the bridge one the node to come up.' % sleepTime)
             time.sleep(sleepTime)
+
             Util.printDetail('Testing connection to the node.')
-            if self._nodeShell('true'):
+            rc, output = self._nodeShell('true', withOutput=True)
+            if rc == 0:
                 Util.printDetail('OK.')
             else:
-                Util.printError('Could not connect to the node after attempt to configre bridge.')
+                Util.printError('Could not connect to the node after attempt to configre bridge.\n%s' % output)
 
             Util.printDetail('Testing if bridge was configured.')
             rc, output = self._nodeShell(checkBridgeCmd, withOutput=True, shell=True)
             if rc == 0:
                 Util.printDetail('OK.')
+                return
             else:
                 Util.printError('Bridge was not configured.\n%s' % output)
 

@@ -28,6 +28,7 @@ import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
 from stratuslab import Defaults
+from stratuslab.AuthnCommand import CloudEndpoint
 
 class Runner(object):
 
@@ -166,7 +167,7 @@ class Runner(object):
         _sshPrivateKey = _sshPublicKey.strip('.pub')
         return {'userPublicKeyFile': _sshPublicKey,
                 'userPrivateKeyFile': _sshPrivateKey,
-                'endpoint': os.getenv('STRATUSLAB_ENDPOINT', ''),
+                'endpoint': CloudEndpoint.options(),
                 'instanceNumber': 1,
                 'instanceType': 'm1.small',
                 'vmTemplatePath': Runner.getTemplatePath(),

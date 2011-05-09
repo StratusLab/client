@@ -39,20 +39,23 @@ class MainProgram(AuthnCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] [vm-id]
-Without the parameter [vm-id] the command lists the available vms'''
 
-        self.parser.usage=usage
-        
-        self.parser.add_option('--endpoint', dest='endpoint',
-                help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
-                default=os.getenv('STRATUSLAB_ENDPOINT', ''), metavar='URL')
+        self.parser.usage = '%prog [options] [vm-id]'
+
+        self.parser.description = '''[vm-id] - space separated list of VM IDs.
+Without the parameter [vm-id] the command lists the available VMs belonging
+to the user (-u/--username).'''
+
+        AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, self.vmIds = self.parser.parse_args()
 
-
+    def checkOptions(self):
+        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+        super(MainProgram, self).checkOptions()
+        
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         monitor = Monitor(configHolder)

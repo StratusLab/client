@@ -25,14 +25,12 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-import stratuslab
 from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
-
-defaultAppRepoEndpoint = 'http://appliances.stratuslab.org/images'
+from stratuslab.Uploader import Uploader
 
 class MainProgram(CommandBase):
     '''A command-line program to test StratusLab.'''
@@ -53,18 +51,6 @@ class MainProgram(CommandBase):
         self.parser.add_option('-l', '--list', dest='listTests',
                                help='list available tests', action='store_true',
                                default=False)
-
-        self.parser.add_option('--app-repo-endpoint', dest='apprepoEndpoint',
-                               help='Appliance repository endpoint', metavar='ENDPOINT',
-                               default=os.getenv('STRATUSLAB_APPREPO_ENDPOINT', defaultAppRepoEndpoint))
-
-        self.parser.add_option('--app-repo-username', dest='apprepoUsername',
-                               help='Appliance repository username', metavar='USERNAME',
-                               default=os.getenv('STRATUSLAB_APPREPO_USERNAME', ''))
-
-        self.parser.add_option('--app-repo-password', dest='apprepoPassword',
-                               help='Appliance repository password', metavar='PASSWORD',
-                               default=os.getenv('STRATUSLAB_APPREPO_PASSWORD', ''))
 
         self.parser.add_option('--requested-ip-address', dest='requestedIpAddress',
                                help='IP address for requested IP address assignment', metavar='IP',
@@ -94,7 +80,9 @@ class MainProgram(CommandBase):
                                help='Endpoint of the OVF file used by Claudia',
                                default=None, metavar='ENDPOINT')
 
-        self.parser = AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
+        Uploader.buildAppRepoOptionsParser(self.parser)
+
+        AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
 
         self.options, self.tests = self.parser.parse_args()
 
