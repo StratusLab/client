@@ -169,7 +169,9 @@ class OneConnector(object):
         start = time.time()
         state = ''
 
-        while (not str(state) == 'Running') and (not str(state) == 'Failed'):
+        noWaitStates = ('Running','Failed')
+
+        while (str(state) not in noWaitStates):
 
             state = self._getVmStateSummary(vmId)
 
