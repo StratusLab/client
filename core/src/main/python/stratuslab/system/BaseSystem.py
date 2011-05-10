@@ -533,7 +533,7 @@ class BaseSystem(object):
         Util.appendOrReplaceInFile(filename, search, replace)
 
     def _restartJetty(self):
-        self.executeCmd('/etc/init.d/jetty restart'.split(' '))
+        self.executeCmd('/etc/init.d/authn-proxy restart'.split(' '))
 
     # -------------------------------------------
     # Firewall
