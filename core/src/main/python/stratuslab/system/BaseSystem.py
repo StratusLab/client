@@ -914,6 +914,10 @@ group {
         if rc != 0:
             Util.printError('Filed to (re)start DHCP service.')
 
+    # -------------------------------------------
+    # DB
+    # -------------------------------------------
+
     def configureDatabase(self):
 
         Util.printDetail('Changing db root password')
