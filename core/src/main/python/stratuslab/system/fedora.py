@@ -23,6 +23,9 @@ from stratuslab import Util
 class Fedora(CentOS):
     def __init__(self):
         super(Fedora, self).__init__()
+        self.frontendDeps = [
+                'openssh', 'ruby', 'zlib-devel', 'curl', 'mysql', 'mysql-server'
+        ]
         
     def _configureKvm(self):
         self.executeCmd(['modprobe', 'kvm_intel'])
