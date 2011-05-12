@@ -920,12 +920,19 @@ group {
 
     def configureDatabase(self):
 
-        Util.printDetail('Changing db root password')
-        self._configureRootDbUser(self.oneDbRootPassword)
+        if self.oneDbHost in ['localhost', '127.0.0.1']:
+            Util.printDetail('Installing MySQL server.')
+            mysqlPackage = self.getPackageName('MySQLServer')
+            self.installPackages([mysqlPackage])
 
-        Util.printDetail('Creating oneadmin db account')
-        self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
-        
+            Util.printDetail('Changing db root password')
+            self._configureRootDbUser(self.oneDbRootPassword)
+
+            Util.printDetail('Creating oneadmin db account')
+            self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
+        else:
+            Util.printDetail('Skipping MySQL installation/configuration. It is assumed to be configured on %s' % self.oneDbHost)
+            
     def _configureRootDbUser(self, password):
         self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password])
 
