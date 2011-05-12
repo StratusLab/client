@@ -45,6 +45,7 @@ class VmInfoTest(unittest.TestCase):
                 <id3>ID3</id3>
             </level3>
         </level2>
+        <id4>ID4</id4>
     </level1>
 </root>
 '''
@@ -53,8 +54,9 @@ class VmInfoTest(unittest.TestCase):
         info = CloudInfo()
         info.populate(root)
         
-        self.assertEqual('ID1',info.id1)
-        self.assertEqual('ID3',info.id3)
+        self.assertEqual('ID1',info.level1_id1)
+        self.assertEqual('ID3',info.level1_level2_level3_id3)
+        self.assertEqual('ID4',info.level1_id4)
 
 if __name__ == "__main__":
     unittest.main()
