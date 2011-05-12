@@ -28,15 +28,24 @@ class CloudInfo(object):
         self._populate(element)
         assignAttributes(self, self.attribs)
 
-    def _populate(self, element):
+    def _populate(self, element, parentHierachy=[]):
         children = self._getChildren(element)
         if children:
+            _parentHierachy = self._updateHierachy(element, parentHierachy)
             for child in children:
-                self._populate(child)
+                self._populate(child, _parentHierachy)
         else:
-            self.attribs.__setitem__(element.tag.lower(),element.text)
+            # skip the root element
+            hierachy = parentHierachy[1:] + [element.tag]
+            attributeName = '_'.join(hierachy)
+            self.attribs.__setitem__(attributeName.lower(), element.text)
         return
 
     def _getChildren(self, parent):
         return parent.getchildren()
+    
+    def _updateHierachy(self, element, parentHierachy):
+        _parentHierachy = parentHierachy[:]
+        _parentHierachy.append(element.tag)
+        return _parentHierachy
     
