@@ -925,6 +925,10 @@ group {
             mysqlPackage = self.getPackageName('MySQLServer')
             self.installPackages([mysqlPackage])
 
+            Util.printDetail('Starting MySQL server.')
+            mysqlService = self.getPackageInitdScriptName('MySQLServer')
+            self.startService(mysqlService)
+
             Util.printDetail('Changing db root password')
             self._configureRootDbUser(self.oneDbRootPassword)
 
@@ -934,11 +938,24 @@ group {
             Util.printDetail('Skipping MySQL installation/configuration. It is assumed to be configured on %s' % self.oneDbHost)
             
     def _configureRootDbUser(self, password):
-        self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password])
+        rc, output = self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password], withOutput=True)
+        if rc != 0:
+            Util.printWarning("Couldn't set root password. Already set?\n%s" % output)
 
     def _configureDbUser(self, username, password):
-        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'\"" % (username, password)])
-        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
+        mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
+        userCreate = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'" % (username, password)
+        userGrant =  "GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'" % username
+
+        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate), 
+                                   withOutput=True, shell=True)
+        if rc != 0:
+            Util.printWarning("Couldn't create user '%s'. Already exist?\n%s" % (username, output))
+
+        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userGrant), 
+                                   withOutput=True, shell=True)
+        if rc != 0:
+            Util.printError("Error granting permission for user '%s'.\n%s" % (username, output))
 
     # -------------------------------------------
     # Bridge
