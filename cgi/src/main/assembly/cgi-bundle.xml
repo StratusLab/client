@@ -15,8 +15,8 @@
 		</fileSet>
 
 		<fileSet>
-			<directory>main/html</directory>
-			<outputDirectory>cgi-bin</outputDirectory>
+			<directory>main/template</directory>
+			<outputDirectory>cgi-bin/template</outputDirectory>
 			<includes>
 				<include>*.tpl</include>
 			</includes>
