@@ -20,6 +20,7 @@
 #
 # ${BUILD_INFO}
 
+import sys
 import cgi, cgitb
 cgitb.enable()
 
@@ -44,7 +45,7 @@ class VmDetailGenerator(DetailedGenerator):
     def _getData(self):
         id = self._getId()
         return self.monitor.vmDetail([id])
-    
+
     def _getState(self, info):
         stateValue = info.attribs.get('state','')
         lcmStateValue = info.attribs.get('lcm_state','')
@@ -52,4 +53,7 @@ class VmDetailGenerator(DetailedGenerator):
         return str(state)
 
 if __name__ == '__main__':
+    if (len(sys.argv) > 2):
+        VmDetailGenerator.configFile = sys.argv[1]
+        VmDetailGenerator._getQueryValue = lambda _m, id: sys.argv[2]
     VmDetailGenerator().run()

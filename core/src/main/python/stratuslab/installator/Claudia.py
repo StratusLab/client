@@ -69,7 +69,10 @@ class Claudia(object):
                         "ImagesServerHost":self.frontendIp, \
                         "VEEMHost":self.frontendIp, \
                         "SiteRoot":self.domainName, \
-                        "NetworkRanges":self.network
+                        "NetworkRanges":self.network, \
+			"MacEnabled":self.claudiaMacEnabled, \
+			"NetworkMacList":self.claudiaMacList, \
+			"StaticIpList":self.claudiaStaticIpList
                         }
 
         #pass the password to the sha1 constructor 
@@ -95,7 +98,9 @@ class Claudia(object):
 
         # reportClient.properties
         self.reportprops = {"SiteRoot":self.domainName, \
-                            "TServer.url":"http://"+self.frontendIp+":8182"
+                            "TServer.url":"http://"+self.frontendIp+":8182", \
+			    "vmMonName":self.claudiaMonitorVmName, \
+			    "monitorName":self.claudiaMonitorName
                             }
 
     def _overrideValueInFile(self, key, value, fileName):
