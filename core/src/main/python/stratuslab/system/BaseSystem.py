@@ -523,6 +523,11 @@ class BaseSystem(object):
         self._configureProxyDefaultUsers()
         self._restartJetty()
 
+    def configureRegistrationApplication(self):
+        self.installPackages(['registration'])
+        self._configureProxyDefaultUsers()
+        self._restartJetty()
+
     def _configureProxyDefaultUsers(self):
         self._configureProxyDefaultUsersUsernamePassword()
 

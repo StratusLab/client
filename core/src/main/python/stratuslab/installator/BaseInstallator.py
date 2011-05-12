@@ -228,6 +228,9 @@ class BaseInstallator(object):
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
 
+    def _configureRegistrationApplication(self):
+        self.frontend.configureRegistrationApplication()
+
     def _configureFireWall(self):
         self.frontend.configureFireWall()
 
