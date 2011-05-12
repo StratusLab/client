@@ -24,7 +24,7 @@ class Fedora(CentOS):
     def __init__(self):
         super(Fedora, self).__init__()
         self.frontendDeps = [
-                'openssh', 'ruby', 'zlib-devel', 'curl', 'mysql', 'mysql-server'
+                'openssh', 'ruby', 'zlib-devel', 'curl'
         ]
         
     def _configureKvm(self):

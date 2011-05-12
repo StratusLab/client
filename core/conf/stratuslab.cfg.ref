@@ -38,6 +38,8 @@ one_password = oneadmin
 one_db_username = oneadmin
 one_db_password = oneadmin
 one_db_root_password = root
+# If localhost or 127.0.0.1, attempt to install MySQL 
+# on the current node will be made.
 one_db_host = localhost
 
 [one-advanced]
