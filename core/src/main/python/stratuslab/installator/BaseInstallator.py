@@ -30,6 +30,7 @@ from stratuslab.system import SystemFactory
 from stratuslab.Util import printError
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
+from stratuslab.installator.Registration import Registration
 
 class BaseInstallator(object):
 
@@ -48,6 +49,7 @@ class BaseInstallator(object):
         self.cloud = None
         self.onedTpl = shareDir + 'template/oned.conf.tpl'
         self.cloudVarLibDir = '/var/lib/one'
+        self.registration = False
 
     def runInstall(self, configHolder):
         # TODO: fix the logs for apprepo installs
@@ -70,6 +72,10 @@ class BaseInstallator(object):
         elif self.installCloudia:
             printAction('Claudia installation')
             self._runInstallClaudia()
+            return
+        elif self.installRegistrationApplication:
+            printAction('Registration Application installation')
+            self._runInstallRegistration()
             return
         else:
             printAction('Frontend installation')
@@ -188,6 +194,8 @@ class BaseInstallator(object):
         printStep('Adding default ONE vnet')
         self._addDefaultNetworks()
 
+        self._configureRegistrationApplication()
+
     def _installCAs(self):
         self.frontend.installCAs()
 
@@ -227,6 +235,10 @@ class BaseInstallator(object):
 
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
+
+    def _configureRegistrationApplication(self):
+        if(self.registration):
+            Registration(self.configHolder).run()
 
     def _configureFireWall(self):
         self.frontend.configureFireWall()
