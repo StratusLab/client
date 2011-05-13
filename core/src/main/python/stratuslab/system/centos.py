@@ -99,7 +99,8 @@ enabled=1
                                              initdScriptName='dhcpd'),
                          'CA' : PackageInfo('ca-policy-egi-core', 
                                                 repository=self.caRepoName),
-                         'MySQLServer': PackageInfo('mysql-server')}
+                         'MySQLServer': PackageInfo('mysql-server',
+                                                    initdScriptName='mysqld')}
 
         self.installPackagesErrorMsgs = ['No package .* available']
 
