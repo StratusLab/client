@@ -32,7 +32,7 @@ class Registration(object):
     def run(self):
         self._installPackages()
         self._configure()
-        self._restartServices('jetty7')
+        self._restartService('jetty7')
         
     def _installPackages(self):
         Util.printStep('Installing packages')
