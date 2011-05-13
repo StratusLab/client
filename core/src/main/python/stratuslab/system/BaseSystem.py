@@ -452,17 +452,17 @@ class BaseSystem(object):
         self._nodeShell(['rm -rf %s' % path])
 
     def _remoteFilePutContents(self, filename, data):
-        data = Util.escapeDoubleQuotes(data, times=2)
+        data = Util.escapeDoubleQuotes(data, times=4)
 
-        rc, output = self._nodeShell('"echo \\"%s\\" > %s"' % (data, filename),
+        rc, output = self._nodeShell('"echo %s > %s"' % (data, filename),
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to write to %s\n%s" % (filename, output))
 
     def _remoteFileAppendContents(self, filename, data):
-        data = Util.escapeDoubleQuotes(data, times=2)
+        data = Util.escapeDoubleQuotes(data, times=4)
 
-        rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
+        rc, output = self._nodeShell('"echo %s >> %s"' % (data, filename), 
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to append to %s\n%s" % (filename, output))
