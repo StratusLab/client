@@ -48,5 +48,5 @@ class Registration(object):
 
     def _restartService(self, service):
         Util.printStep("Restarting Jetty7 (authn-proxy)")
-        cmd = '/etc/init.d/%s restart' % service
+        cmd = 'service %s restart' % service
         Util.execute(cmd.split(' '))
