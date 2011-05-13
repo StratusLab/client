@@ -26,6 +26,7 @@ import time
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ExecutionException
+from stratuslab import Defaults
 
 etree = Util.importETree()
 
@@ -89,7 +90,7 @@ class ManifestInfo(object):
 
         self.user = self.creator
 
-        self.template = os.path.join(Util.getShareDir(),'template/manifest.xml.tpl')
+        self.template = os.path.join(os.path.join(Defaults.TEMPLATE_DIR, 'manifest.xml.tpl'))
 
         self.attrsAndNamespaces = \
                             (('type','type',NS_DCTERMS,None),

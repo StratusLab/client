@@ -24,13 +24,13 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 from stratuslab.Util import printWarning
-from stratuslab.Util import shareDir
 from stratuslab.AppRepo import AppRepo
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printError
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Registration import Registration
+from stratuslab import Defaults
 
 class BaseInstallator(object):
 
@@ -47,7 +47,7 @@ class BaseInstallator(object):
         self.frontend = None
         self.node = None
         self.cloud = None
-        self.onedTpl = shareDir + 'template/oned.conf.tpl'
+        self.onedTpl = os.path.join(Defaults.TEMPLATE_DIR, 'oned.conf.tpl')
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
 

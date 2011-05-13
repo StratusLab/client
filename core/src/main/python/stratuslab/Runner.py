@@ -147,7 +147,7 @@ class Runner(object):
         if instance and hasattr(instance, 'vmTemplatePath'):
             vmTemplate = instance.vmTemplatePath
         if not os.path.exists(vmTemplate):
-            vmTemplate = Util.shareDir +'vm/schema.one'
+            vmTemplate = os.path.join(Defaults.SHARE_DIR +'vm/schema.one')
         if not os.path.exists(vmTemplate):
             vmTemplate = '%s/../../../share/vm/schema.one' % modulePath
         return vmTemplate
