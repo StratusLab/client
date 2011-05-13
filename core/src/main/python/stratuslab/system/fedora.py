@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 from stratuslab.system.centos import CentOS
+from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab import Util
 
 class Fedora(CentOS):
@@ -26,6 +27,10 @@ class Fedora(CentOS):
         self.frontendDeps = [
                 'openssh', 'ruby', 'zlib-devel', 'curl'
         ]
+        
+        self.packages['dhcp'] = PackageInfo('dhcp',
+                                            configFile='/etc/dhcp/dhcpd.conf',
+                                            initdScriptName='dhcpd')
         
     def _configureKvm(self):
         self.executeCmd(['modprobe', 'kvm_intel'])
