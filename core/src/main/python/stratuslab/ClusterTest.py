@@ -21,7 +21,6 @@ import unittest
 import os
 
 from stratuslab.Runner import Runner
-from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Cluster import Cluster
 
@@ -102,4 +101,3 @@ class ClusterTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-  
