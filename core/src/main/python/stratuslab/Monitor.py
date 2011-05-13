@@ -42,7 +42,7 @@ class Monitor(Configurable):
         self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['template_nic_ip', 16], ['name', 16])
         self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['template_nic_ip', 16], ['name', 16])
 
-        self.labelDecorator = {'state_summary': 'state'}
+        self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip'}
 
     def _setCloud(self):
         credentials = AuthnFactory.getCredentials(self)
