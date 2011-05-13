@@ -1,8 +1,8 @@
-ldap.manager.password=secret
-admin.email=%(admin_email)s
-mail.host=smtp.gmail.com
-mail.port=465
-mail.user=no-reply@stratuslab.eu
-mail.password=slm(1492)
-mail.ssl=true
-mail.debug=true
+ldap.manager.password=%(registrationLdapManagerPassword)s
+admin.email=%(registrationMailAdmin)s
+mail.host=%(registrationMailHost)s
+mail.port=%(registrationMailPort)s
+mail.user=%(registrationMailUser)s
+mail.password=%(registrationMailPassword)s
+mail.ssl=%(registrationMailSsl)s
+mail.debug=%(registrationMailDebug)s
