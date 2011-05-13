@@ -73,10 +73,6 @@ class BaseInstallator(object):
             printAction('Claudia installation')
             self._runInstallClaudia()
             return
-        elif self.installRegistrationApplication:
-            printAction('Registration Application installation')
-            self._runInstallRegistration()
-            return
         else:
             printAction('Frontend installation')
             self._runInstallFrontend()
