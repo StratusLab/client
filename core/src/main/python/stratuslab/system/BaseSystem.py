@@ -950,7 +950,7 @@ group {
         rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate), 
                                    withOutput=True, shell=True)
         if rc != 0:
-            Util.printWarning("Couldn't create user '%s'. Already exist?\n%s" % (username, output))
+            Util.printWarning("Couldn't create user '%s'. Already exists?\n%s" % (username, output))
 
         rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userGrant), 
                                    withOutput=True, shell=True)
