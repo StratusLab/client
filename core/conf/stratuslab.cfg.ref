@@ -190,13 +190,13 @@ app_repo_httpd_passwd_file =
 [registration]
 # Install the registration web application?
 registration = False
-ldap_manager_password = secret
+registration_ldap_manager_password = secret
 # administrator email address
-mail_admin =
-mail_host =
-mail_port = 465
+registration_mail_admin =
+registration_mail_host =
+registration_mail_port = 465
 # Address used in the reply-to
-mail_reply_user =
-mail_password =
-mail_ssl = True
-mail_debug = True
+registration_mail_reply_user =
+registration_mail_password =
+registration_mail_ssl = True
+registration_mail_debug = True
