@@ -71,7 +71,7 @@ class ClusterTest(unittest.TestCase):
         # Master node instance
         options = Runner.defaultRunOptions()
         options.update({'username': 'oneadmin',
-                        'password': 'oneadmin', 'useQcowDiskFormat': True, 'noCheckImageUrl': True,
+                        'password': 'oneadmin', 'useQcowDiskFormat': True, 'noCheckImageUrl': False,
                         'instanceType': 'm1.large', 'instanceNumber': 1, 'verboseLevel':0,
                         'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
