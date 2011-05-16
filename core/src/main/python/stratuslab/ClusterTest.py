@@ -81,8 +81,8 @@ class ClusterTest(unittest.TestCase):
         masterId = runner.vmIds
 
         # Worker node instance
-        options.update({'username': os.environ['STRATUSLAB_USERNAME'],
-                        'password': os.environ['STRATUSLAB_PASSWORD'],
+        options.update({'username': 'oneadmin',
+                        'password': 'oneadmin',
                         'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
                         'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': runner.vmIds[0],
                         'include_master': True, 'shared_folder': '/home', 'useQcowDiskFormat': True,
