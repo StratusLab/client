@@ -371,11 +371,17 @@ class BaseSystem(object):
                              '-d', '/', '-s', '/sbin/nologin',
                              '-c', '"%s user"'%user, user])
 
-        # Add the user to ONE admin group. Directory with the images on 
-        # shared Frontend is restricted to ONE admin user.
-        cmd = ['usermod', '-aG', self.oneGroup, user]
-        self._execute(cmd)
-        self._nodeShell(cmd)
+        # Instruct libvirt to run VMs with GID of ONE group.
+        qemuConf = '/etc/libvirt/qemu.conf'
+        self.appendOrReplaceInFileCmd(qemuConf, '^group.*$',
+                                      'group = "%s"' % self.oneGroup)
+        
+        # TODO: check why this didn't work
+#        # Add the user to ONE admin group. Directory with the images on 
+#        # shared Frontend is restricted to ONE admin user.
+#        cmd = ['usermod', '-aG', self.oneGroup, user]
+#        self._execute(cmd)
+#        self._nodeShell(cmd)
 
 
     def _configureXen(self):
