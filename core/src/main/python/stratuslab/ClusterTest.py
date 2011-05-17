@@ -34,6 +34,7 @@ class ClusterTest(unittest.TestCase):
 
     def testDeployNFSCluster(self):
         options = Runner.defaultRunOptions()
+<<<<<<< HEAD
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
                         'mpi_machine_file': True, 
@@ -53,6 +54,16 @@ class ClusterTest(unittest.TestCase):
                         'verboseLevel':0, 
                         'userPublicKeyFile': ClusterTest.userPublicKeyFile,
                         'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+=======
+        options.update({'username': 'oneadmin',
+                        'password': 'oneadmin',
+                        'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
+                        'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': None,
+                        'tolerate_failures': False, 'clean_after_failure': False,
+                        'include_master': True, 'shared_folder':'/home', 'useQcowDiskFormat': True,
+                        'add_packages': None, 'ssh_hostbased': False, 'instanceNumber': self.instanceNumber,
+                        'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+>>>>>>> cea8de8d77ebc1bf4059e12a49041c4c1892613f
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])
@@ -64,6 +75,7 @@ class ClusterTest(unittest.TestCase):
 
     def testDeploySSHCluster(self):
         options = Runner.defaultRunOptions()
+<<<<<<< HEAD
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
                         'mpi_machine_file': True, 
@@ -83,6 +95,16 @@ class ClusterTest(unittest.TestCase):
                         'verboseLevel':0, 
                         'userPublicKeyFile': ClusterTest.userPublicKeyFile,
                         'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+=======
+        options.update({'username': 'oneadmin',
+                        'password': 'oneadmin',
+                        'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
+                        'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': None,
+                        'tolerate_failures': False, 'clean_after_failure': False,
+                        'include_master': True, 'shared_folder': None, 'useQcowDiskFormat': True,
+                        'add_packages': None, 'ssh_hostbased': True, 'instanceNumber': self.instanceNumber,
+                        'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+>>>>>>> cea8de8d77ebc1bf4059e12a49041c4c1892613f
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])
@@ -95,6 +117,7 @@ class ClusterTest(unittest.TestCase):
     def testHeterogeneousCluster(self):
         # Master node instance
         options = Runner.defaultRunOptions()
+<<<<<<< HEAD
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
                         'useQcowDiskFormat': True, 
@@ -103,6 +126,11 @@ class ClusterTest(unittest.TestCase):
                         'instanceNumber': 1, 
                         'verboseLevel':0,
                         'userPublicKeyFile': ClusterTest.userPublicKeyFile,
+=======
+        options.update({'username': 'oneadmin',
+                        'password': 'oneadmin', 'useQcowDiskFormat': True, 'noCheckImageUrl': False,
+                        'instanceType': 'm1.large', 'instanceNumber': 1, 'verboseLevel':0,
+>>>>>>> cea8de8d77ebc1bf4059e12a49041c4c1892613f
                         'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
@@ -111,6 +139,7 @@ class ClusterTest(unittest.TestCase):
         masterId = runner.vmIds
 
         # Worker node instance
+<<<<<<< HEAD
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
                         'mpi_machine_file': True, 
@@ -130,6 +159,16 @@ class ClusterTest(unittest.TestCase):
                         'verboseLevel':0, 
                         'userPublicKeyFile': ClusterTest.userPublicKeyFile,
                         'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+=======
+        options.update({'username': 'oneadmin',
+                        'password': 'oneadmin',
+                        'mpi_machine_file': True, 'instanceType': self.instanceType, 'noCheckImageUrl': False,
+                        'cluster_admin': 'root', 'cluster_user':'vangelis', 'master_vmid': runner.vmIds[0],
+                        'include_master': True, 'shared_folder': '/home', 'useQcowDiskFormat': True,
+                        'tolerate_failures': False, 'clean_after_failure': False,
+                        'add_packages': None, 'ssh_hostbased': False, 'instanceNumber': self.instanceNumber-1,
+                        'verboseLevel':0, 'marketplaceEndpoint':'http://appliances.stratuslab.eu/marketplace/metadata'})
+>>>>>>> cea8de8d77ebc1bf4059e12a49041c4c1892613f
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])

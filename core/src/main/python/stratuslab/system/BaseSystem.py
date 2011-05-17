@@ -315,6 +315,72 @@ class BaseSystem(object):
     def _configureKvm(self):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
+        
+        # FIXME: remove when centos is removed
+        if self.frontendSystem not in ['fedora', 'ubuntu']:
+            return
+
+        if self.shareType == 'nfs':
+                self._configureQemuUserOnFrontend()
+
+    def _configureQemuUserOnFrontend(self):
+        """Add qemu user on Fronted with the same UID and GID as on the node
+        being configured. Add qemu user to 'cloud' group both on Frontend 
+        and the node.
+        """
+        if self.shareType != 'nfs':
+                return
+        
+        
+        user = group = 'qemu'
+        getUidGidCmd = "getent passwd %s"
+
+        Util.printDetail("Configuring '%s' user on Frontend as shared filesystem setup requested." % user)
+
+        def getUidGidFromNode(user):
+            rc, output = self._nodeShell(getUidGidCmd % user,
+                                         withOutput=True)
+            if rc != 0:
+                Util.printError("Error getting '%s' user UID/GID from Node.\n%s" % 
+                                    (user,output))
+    
+            return _extractUidGidFromGetentPasswdOutput(output)
+        def _extractUidGidFromGetentPasswdOutput(output):
+            uid, gid = output.split(':')[2:4] # uid, gid
+            if not all([uid, gid]):
+                Util.printError("Error extracting '%s' user UID/GID from output.\n%s" % 
+                                    (user,output))
+            return uid, gid
+
+        uidNode, gidNode = getUidGidFromNode(user)
+        
+        rc, output = self._executeWithOutput((getUidGidCmd % uidNode).split())
+        if rc == 0:
+            uidLocal, gidLocal = _extractUidGidFromGetentPasswdOutput(output)
+            Util.printDetail("User with UID:%s/GID:%s already configured on Frontend." % 
+                             (uidLocal, gidLocal), verboseLevel=self.verboseLevel)
+            
+            if gidNode != gidLocal:
+                Util.printError("Frontend user '%s' GID:%s doesn't match GID:%s on Node %s." % 
+                                 (gidLocal, user, gidNode, self.nodeAddr))
+        else:
+            self._execute(['groupadd', '-g', gidNode, '-r', group])
+            self._execute(['useradd', '-r', '-u', uidNode, '-g', group, 
+                             '-d', '/', '-s', '/sbin/nologin',
+                             '-c', '"%s user"'%user, user])
+
+        # Instruct libvirt to run VMs with GID of ONE group.
+        qemuConf = '/etc/libvirt/qemu.conf'
+        self.appendOrReplaceInFileCmd(qemuConf, '^group.*$',
+                                      'group = "%s"' % self.oneGroup)
+        
+        # TODO: check why this didn't work
+#        # Add the user to ONE admin group. Directory with the images on 
+#        # shared Frontend is restricted to ONE admin user.
+#        cmd = ['usermod', '-aG', self.oneGroup, user]
+#        self._execute(cmd)
+#        self._nodeShell(cmd)
+
 
     def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.oneUsername,
@@ -445,7 +511,7 @@ class BaseSystem(object):
     def _remoteFilePutContents(self, filename, data):
         data = Util.escapeDoubleQuotes(data, times=4)
 
-        rc, output = self._nodeShell('"echo %s > %s"' % (data, filename),
+        rc, output = self._nodeShell('"echo \\"%s\\" > %s"' % (data, filename),
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to write to %s\n%s" % (filename, output))
@@ -453,7 +519,7 @@ class BaseSystem(object):
     def _remoteFileAppendContents(self, filename, data):
         data = Util.escapeDoubleQuotes(data, times=4)
 
-        rc, output = self._nodeShell('"echo %s >> %s"' % (data, filename), 
+        rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to append to %s\n%s" % (filename, output))
@@ -941,7 +1007,7 @@ group {
         rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate), 
                                    withOutput=True, shell=True)
         if rc != 0:
-            Util.printWarning("Couldn't create user '%s'. Already exist?\n%s" % (username, output))
+            Util.printWarning("Couldn't create user '%s'. Already exists?\n%s" % (username, output))
 
         rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userGrant), 
                                    withOutput=True, shell=True)

@@ -22,7 +22,6 @@ from ConfigParser import SafeConfigParser
 
 import Util
 from Exceptions import ConfigurationException
-from stratuslab.Exceptions import ValidationException
 
 class ConfigHolder(object):
 

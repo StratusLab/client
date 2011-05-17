@@ -180,9 +180,9 @@ class Runner(object):
                 'extraContextFile': '',
                 'extraContextData': '',
                 
-                # FIXME: hack to fix a weird problem with netowork in CentOS on Fedora 14 + KVM. 
+                # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
                 #        Network in not starting unless VNC is defined. Weird yeh...? 8-/
-                'vncPort': '5900',
+                'vncPort': '-1',
                 #'vncPort': None,
                 
                 'vncListen': '',
