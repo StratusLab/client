@@ -36,6 +36,8 @@ class Fedora(CentOS):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
         
+        self._configureQemuUserOnFrontend()
+        
         self.executeCmd('/etc/init.d/libvirtd stop'.split())
 
         libvirtConf = '/etc/libvirt/libvirtd.conf'
