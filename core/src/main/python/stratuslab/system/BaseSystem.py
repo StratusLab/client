@@ -153,11 +153,9 @@ class BaseSystem(object):
         return rc
 
     def startCloudSystem(self):
-        try:
-            self._cloudAdminExecute(['one stop'])
-        except ExecutionException:
-            pass
-        self._cloudAdminExecute(['one start'])
+        self.stopService('oned')
+        if self.startService('oned'):
+            Util.printError("ONE failed to start")
         Util.printDetail('Waiting for ONE to finish starting')
         time.sleep(10)
 
@@ -418,13 +416,6 @@ class BaseSystem(object):
     def _executeWithOutput(self, command, **kwargs):
         kwargs['withOutput'] = True
         return self._execute(command, **kwargs)
-
-    def _cloudAdminExecute(self, command, **kwargs):
-        su = ['su', '-l', self.oneUsername, '-c']
-        su.extend(command)
-        res = self._execute(su, **kwargs)
-        if res:
-            raise ExecutionException('error executing command %s, with code: %s' % (command, res))
 
     def _setCloudAdminOwner(self, path):
         os.chown(path, int(self.oneUid), int(self.oneGid))

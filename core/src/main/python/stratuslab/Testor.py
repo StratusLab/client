@@ -427,6 +427,9 @@ class Testor(unittest.TestCase):
 
     def clusterTest(self):
         '''Cluster test'''
+        ClusterTest.ClusterTest.sshKeyPub = self.sshKeyPub
+        ClusterTest.ClusterTest.username = self.testUsername
+        ClusterTest.ClusterTest.password = self.testPassword
         suite = self._createSuiteFromTestModule(ClusterTest)
         self._executeSuite(suite)
   
