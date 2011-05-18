@@ -58,6 +58,7 @@ class Testor(unittest.TestCase):
         self._setFieldsFromEnvVars()
 
         self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz'
+        self.quotaCpu = 2
 
     def _setFieldsFromEnvVars(self):
         self._setSingleFieldFromEnvVar('apprepoUsername', 'STRATUSLAB_APPREPO_USERNAME')
@@ -137,7 +138,7 @@ class Testor(unittest.TestCase):
 
         print 'Current cpu quota: %s, starting as many +1' % self.quotaCpu
         try:
-            for _ in range(self.quotaCpu):
+            for _ in range(int(self.quotaCpu)):
                 self._startVm()
         except OneException, ex:
             print ex
