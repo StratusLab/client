@@ -133,12 +133,12 @@ class Testor(unittest.TestCase):
         self._stopVm(runner)
 
     def exceedCpuQuotaTest(self):
-        '''Start three instances, having a cpu quota of 2, then stop it.'''
+        '''Start x instances, where x is the cpu quota +1, then stop them.'''
 
+        print 'Current cpu quota: %s, starting as many +1' % self.quotaCpu
         try:
-            self._startVm()
-            self._startVm()
-            self._startVm()
+            for _ in range(self.quotaCpu):
+                self._startVm()
         except OneException, ex:
             print ex
             pass
