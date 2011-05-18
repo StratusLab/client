@@ -475,7 +475,9 @@ class Creator(object):
         self._printStep('Signing image manifest')
 
         signator = Signator(self.manifestLocalFileName, self.configHolder)
-        signator.sign()
+        rc = signator.sign()
+        if rc != 0:
+            Util.printError("Error signing metadata.")
         shutil.move(signator.outputManifestFile, self.manifestLocalFileName)
 
     def _installPackages(self):
