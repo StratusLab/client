@@ -52,7 +52,9 @@ class Ubuntu(BaseSystem):
         self.packages = {'apache2': PackageInfo('apache2','/etc/apache2'),
                          'dhcp': PackageInfo('dhcp3-server',
                                              configFile='/etc/dhcp3/dhcpd.conf',
-                                             initdScriptName='dhcp3-server')}
+                                             initdScriptName='dhcp3-server'),
+                        'MySQLServer': PackageInfo('mysql-server',
+                                                   initdScriptName='mysql')}
 
         super(Ubuntu, self).__init__()
 

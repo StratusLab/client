@@ -19,16 +19,22 @@
 # limitations under the License.
 #
 
-import cgi, cgitb
+import cgi
+import cgitb
 cgitb.enable()
 import datetime
+import os
+
 from urllib2 import HTTPError
 
 from stratuslab.Monitor import Monitor
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Exceptions import ConfigurationException
 
 class HtmlGenerator(object):
-    
+
+    configFile = 'conf/stratuslab.cfg'
+
     def __init__(self):
         self.template = None
         self.monitor = None
@@ -37,15 +43,23 @@ class HtmlGenerator(object):
         self.fieldTemplate = '            <td>%(value)s</td>\n'
         self.metaRefresh = '<meta http-equiv="refresh" content="%(refreshInSeconds)s">'
         self.autoRefreshLink = '<a href="%(query)s">%(enableDisable)s auto refresh</a>'
-        
+
+
     def run(self):
-        configFile = 'conf/stratuslab.cfg'
-        config = ConfigHolder.configFileToDict(configFile)
-        configHolder = ConfigHolder(config=config)
+        configHolder = ConfigHolder(config=self._loadConfiguration())
+        configHolder = self._assignUsernamePassword(configHolder)
         self.monitor = Monitor(configHolder)
         content = self._generate()
         self._serialize(content)
         
+    def _loadConfiguration(self):
+        return ConfigHolder.configFileToDict(self.configFile)
+        
+    def _assignUsernamePassword(self, configHolder):
+        configHolder.username = configHolder.one_username
+        configHolder.password = configHolder.proxy_oneadmin_password
+        return configHolder
+
     def _generate(self):
         templateTokens = {'headTitle': 'StratusLab Monitor',
                           'title': self.title}
@@ -155,11 +169,20 @@ class HtmlGenerator(object):
         else:
             return None
 
+    def _readTemplate(self, filename):
+        if (os.path.exists('../template')):
+            rootLocation = '../template/'
+        elif (os.path.exists('template')):
+            rootLocation = 'template/'
+        else:
+            raise(ConfigurationException('Missing template directory'))
+        return open(rootLocation + filename).read()    
+    
 class ListGenerator(HtmlGenerator):
 
     def __init__(self):
         super(ListGenerator,self).__init__()
-        self.template = open('list.html.tpl').read()
+        self.template = self._readTemplate('list.html.tpl')
         self.idTemplate = ''
 
     def _generateSingleFieldContent(self, key, value, template=None):
@@ -174,7 +197,7 @@ class DetailedGenerator(HtmlGenerator):
 
     def __init__(self):
         super(DetailedGenerator,self).__init__()
-        self.template = open('detail.html.tpl').read()
+        self.template = self._readTemplate('detail.html.tpl')
         self.fieldTemplate = '        <tr>\n          <td>%(key)s</td><td>%(value)s</td>\n        </tr>\n'
         self.fieldGroups = []
 
@@ -197,4 +220,8 @@ class DetailedGenerator(HtmlGenerator):
         for field, displayName in group:
             value = self._getFieldValue(field, info)
             content += self._generateSingleFieldContent(displayName, value)
+        error = self._getFieldValue('template_error_message', info)
+        if error:
+            content += self._generateSingleFieldContent('Error', error)
+            
         return content

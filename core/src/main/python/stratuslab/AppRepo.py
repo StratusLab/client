@@ -25,6 +25,7 @@ from stratuslab.Util import execute
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 import stratuslab.system.SystemFactory as SystemFactory
+from stratuslab import Defaults
 
 class AppRepo(Configurable):
     '''Perform local installation of an Appliance Repository'''
@@ -73,14 +74,14 @@ class AppRepo(Configurable):
     def _setupWebDav(self):
         self.printDetail('Creating webdav configuration')        
         if (self.appRepoUseLdap):
-            httpdConf = fileGetContent(Util.shareDir + 'template/webdav-ldap.conf.tpl')
+            httpdConf = fileGetContent(os.path.join(Defaults.TEMPLATE_DIR, 'webdav-ldap.conf.tpl'))
             httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
                                      'ldapSSL': self._getLdapCertString(),
                                      'ldapURL': self.appRepoLdapUrl,
                                      'ldapBind': self.appRepoLdapBind,
                                      'ldapPasswd': self.appRepoLdapPasswd}
         else:
-            httpdConf = fileGetContent(Util.shareDir + 'template/webdav.conf.tpl')
+            httpdConf = fileGetContent(os.path.join(Defaults.TEMPLATE_DIR, 'webdav.conf.tpl'))
             httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
                                      'passwd': self.appRepoHttpdPasswdFile}	   
 
@@ -99,7 +100,7 @@ class AppRepo(Configurable):
 
     def _createRepoConfig(self):
         self.printDetail('Creating repository configuration file')
-        repoConfig = fileGetContent(Util.shareDir + 'template/stratuslab.repo.cfg.tpl')
+        repoConfig = fileGetContent(os.path.join(Defaults.TEMPLATE_DIR, 'stratuslab.repo.cfg.tpl'))
         repoConfig = repoConfig % {'repo_structure': self.appRepoStructure,
                                      'repo_filename': self.appRepoFilename}
         filePutContent('%s/.stratuslab/stratuslab.repo.cfg' % self.appRepoImageDir, repoConfig)

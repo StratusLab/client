@@ -31,6 +31,7 @@ class Monitor(Configurable):
 
     def __init__(self, configHolder):
         self.endpoint = None
+        self.verboseLevel = 1
         super(Monitor, self).__init__(configHolder)
 
         self._setCloud()
@@ -38,10 +39,10 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16], ['name', 16])
-        self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['ip', 16], ['name', 16])
+        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['template_nic_ip', 16], ['name', 16])
+        self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['template_nic_ip', 16], ['name', 16])
 
-        self.labelDecorator = {'state_summary': 'state'}
+        self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip'}
 
     def _setCloud(self):
         credentials = AuthnFactory.getCredentials(self)
@@ -79,10 +80,6 @@ class Monitor(Configurable):
         info = CloudInfo()
         info.populate(vm)
         return info
-
-    def _printList(self, infoList):
-        for info in infoList:
-            self._printInfo(info, self.hostInfoListAttributes)
 
     def listNodes(self):
         nodes = self.cloud.listHosts()
@@ -144,10 +141,21 @@ class Monitor(Configurable):
     def _printInfo(self, info, headerAttributes):
         for attrib in headerAttributes[:-1]:
             sys.stdout.write(getattr(info, attrib[0]).ljust(int(attrib[1])))
+
+        self._printVmName(headerAttributes, info)
+
+        self._printErrorIfRequired(info, headerAttributes)
+
+    def _printVmName(self, headerAttributes, info):
         # adjust last element to its own length
         attrib = headerAttributes[-1]
         sys.stdout.write(getattr(info,attrib[0]).ljust(len(attrib[0])))
         sys.stdout.write('\n')
+
+    def _printErrorIfRequired(self, info, headerAttributes):
+        if(self.verboseLevel >= Util.NORMAL_VERBOSE_LEVEL):
+            if(getattr(info, 'template_error_message', None)):
+                print ' ' * headerAttributes[0][1] + info.template_error_message
 
     def _adjustVmAttributeFields(self, _list):
         attrList = ('vmInfoDetailAttributes', 'vmInfoListAttributes')
@@ -160,7 +168,7 @@ class Monitor(Configurable):
     def _adjustAttributeFields(self, _list, attrList):
         if _list:
             for attr in attrList:
-                for i,attrVal in enumerate(getattr(self, attr)):
+                for i, attrVal in enumerate(getattr(self, attr)):
                     lenMax = max(map(lambda x: len(getattr(x, attrVal[0])), _list))
                     if lenMax >= getattr(self, attr)[i][1]:
                         getattr(self, attr)[i][1] = lenMax + 1

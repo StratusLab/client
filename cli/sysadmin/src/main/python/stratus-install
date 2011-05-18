@@ -25,6 +25,7 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
+from stratuslab import Defaults
 from stratuslab.CommandBase import CommandBaseSysadmin
 import stratuslab.installator.InstallatorFactory as InstallatorFactory
 import stratuslab.Util as Util
@@ -63,7 +64,7 @@ class MainProgram(CommandBaseSysadmin):
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 
                                help='ONe daemon template', metavar='TEMPLATE',
-                               default=Util.shareDir + 'template/oned.conf.tpl')
+                               default=os.path.join(Defaults.TEMPLATE_DIR, 'oned.conf.tpl'))
         self.parser.add_option('--im', dest='infoDriver', 
                                help='information driver', metavar='IM_NAME', default=None)
         self.parser.add_option('--vmm', dest='virtDriver',

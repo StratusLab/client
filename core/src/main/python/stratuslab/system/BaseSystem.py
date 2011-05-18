@@ -153,11 +153,9 @@ class BaseSystem(object):
         return rc
 
     def startCloudSystem(self):
-        try:
-            self._cloudAdminExecute(['one stop'])
-        except ExecutionException:
-            pass
-        self._cloudAdminExecute(['one start'])
+        self.stopService('oned')
+        if self.startService('oned'):
+            Util.printError("ONE failed to start")
         Util.printDetail('Waiting for ONE to finish starting')
         time.sleep(10)
 
@@ -317,6 +315,72 @@ class BaseSystem(object):
     def _configureKvm(self):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
+        
+        # FIXME: remove when centos is removed
+        if self.frontendSystem not in ['fedora', 'ubuntu']:
+            return
+
+        if self.shareType == 'nfs':
+                self._configureQemuUserOnFrontend()
+
+    def _configureQemuUserOnFrontend(self):
+        """Add qemu user on Fronted with the same UID and GID as on the node
+        being configured. Add qemu user to 'cloud' group both on Frontend 
+        and the node.
+        """
+        if self.shareType != 'nfs':
+                return
+        
+        
+        user = group = 'qemu'
+        getUidGidCmd = "getent passwd %s"
+
+        Util.printDetail("Configuring '%s' user on Frontend as shared filesystem setup requested." % user)
+
+        def getUidGidFromNode(user):
+            rc, output = self._nodeShell(getUidGidCmd % user,
+                                         withOutput=True)
+            if rc != 0:
+                Util.printError("Error getting '%s' user UID/GID from Node.\n%s" % 
+                                    (user,output))
+    
+            return _extractUidGidFromGetentPasswdOutput(output)
+        def _extractUidGidFromGetentPasswdOutput(output):
+            uid, gid = output.split(':')[2:4] # uid, gid
+            if not all([uid, gid]):
+                Util.printError("Error extracting '%s' user UID/GID from output.\n%s" % 
+                                    (user,output))
+            return uid, gid
+
+        uidNode, gidNode = getUidGidFromNode(user)
+        
+        rc, output = self._executeWithOutput((getUidGidCmd % uidNode).split())
+        if rc == 0:
+            uidLocal, gidLocal = _extractUidGidFromGetentPasswdOutput(output)
+            Util.printDetail("User with UID:%s/GID:%s already configured on Frontend." % 
+                             (uidLocal, gidLocal), verboseLevel=self.verboseLevel)
+            
+            if gidNode != gidLocal:
+                Util.printError("Frontend user '%s' GID:%s doesn't match GID:%s on Node %s." % 
+                                 (gidLocal, user, gidNode, self.nodeAddr))
+        else:
+            self._execute(['groupadd', '-g', gidNode, '-r', group])
+            self._execute(['useradd', '-r', '-u', uidNode, '-g', group, 
+                             '-d', '/', '-s', '/sbin/nologin',
+                             '-c', '"%s user"'%user, user])
+
+        # Instruct libvirt to run VMs with GID of ONE group.
+        qemuConf = '/etc/libvirt/qemu.conf'
+        self.appendOrReplaceInFileCmd(qemuConf, '^group.*$',
+                                      'group = "%s"' % self.oneGroup)
+        
+        # TODO: check why this didn't work
+#        # Add the user to ONE admin group. Directory with the images on 
+#        # shared Frontend is restricted to ONE admin user.
+#        cmd = ['usermod', '-aG', self.oneGroup, user]
+#        self._execute(cmd)
+#        self._nodeShell(cmd)
+
 
     def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.oneUsername,
@@ -352,13 +416,6 @@ class BaseSystem(object):
     def _executeWithOutput(self, command, **kwargs):
         kwargs['withOutput'] = True
         return self._execute(command, **kwargs)
-
-    def _cloudAdminExecute(self, command, **kwargs):
-        su = ['su', '-l', self.oneUsername, '-c']
-        su.extend(command)
-        res = self._execute(su, **kwargs)
-        if res:
-            raise ExecutionException('error executing command %s, with code: %s' % (command, res))
 
     def _setCloudAdminOwner(self, path):
         os.chown(path, int(self.oneUid), int(self.oneGid))
@@ -452,7 +509,7 @@ class BaseSystem(object):
         self._nodeShell(['rm -rf %s' % path])
 
     def _remoteFilePutContents(self, filename, data):
-        data = Util.escapeDoubleQuotes(data, times=2)
+        data = Util.escapeDoubleQuotes(data, times=4)
 
         rc, output = self._nodeShell('"echo \\"%s\\" > %s"' % (data, filename),
                                      withOutput=True, shell=True)
@@ -460,7 +517,7 @@ class BaseSystem(object):
             Util.printError("Failed to write to %s\n%s" % (filename, output))
 
     def _remoteFileAppendContents(self, filename, data):
-        data = Util.escapeDoubleQuotes(data, times=2)
+        data = Util.escapeDoubleQuotes(data, times=4)
 
         rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
                                      withOutput=True, shell=True)
@@ -920,18 +977,42 @@ group {
 
     def configureDatabase(self):
 
-        Util.printDetail('Changing db root password')
-        self._configureRootDbUser(self.oneDbRootPassword)
+        if self.oneDbHost in ['localhost', '127.0.0.1']:
+            Util.printDetail('Installing MySQL server.')
+            mysqlPackage = self.getPackageName('MySQLServer')
+            self.installPackages([mysqlPackage])
 
-        Util.printDetail('Creating oneadmin db account')
-        self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
-        
+            Util.printDetail('Starting MySQL server.')
+            mysqlService = self.getPackageInitdScriptName('MySQLServer')
+            self.startService(mysqlService)
+
+            Util.printDetail('Changing db root password')
+            self._configureRootDbUser(self.oneDbRootPassword)
+
+            Util.printDetail('Creating oneadmin db account')
+            self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
+        else:
+            Util.printDetail('Skipping MySQL installation/configuration. It is assumed to be configured on %s' % self.oneDbHost)
+            
     def _configureRootDbUser(self, password):
-        self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password])
+        rc, output = self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password], withOutput=True)
+        if rc != 0:
+            Util.printWarning("Couldn't set root password. Already set?\n%s" % output)
 
     def _configureDbUser(self, username, password):
-        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'\"" % (username, password)])
-        self._execute(["/usr/bin/mysql", "-uroot", "-p%s" % self.oneDbRootPassword, "-e", "\"GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'\"" % username])
+        mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
+        userCreate = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'" % (username, password)
+        userGrant =  "GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'" % username
+
+        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate), 
+                                   withOutput=True, shell=True)
+        if rc != 0:
+            Util.printWarning("Couldn't create user '%s'. Already exists?\n%s" % (username, output))
+
+        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userGrant), 
+                                   withOutput=True, shell=True)
+        if rc != 0:
+            Util.printError("Error granting permission for user '%s'.\n%s" % (username, output))
 
     # -------------------------------------------
     # Bridge

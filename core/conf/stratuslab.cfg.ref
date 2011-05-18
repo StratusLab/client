@@ -38,6 +38,8 @@ one_password = oneadmin
 one_db_username = oneadmin
 one_db_password = oneadmin
 one_db_root_password = root
+# If localhost or 127.0.0.1, attempt to install and configure MySQL 
+# on the current node will be made.
 one_db_host = localhost
 
 [one-advanced]
@@ -70,10 +72,10 @@ one_private_network_size = 65536
 
 [one-deployment]
 frontend_ip = 127.0.0.1
-# Can be centos/ubuntu
-frontend_system = centos
-# Can be centos/ubuntu
-node_system = centos
+# Can be fedora/centos/ubuntu
+frontend_system = fedora
+# Can be fedora/centos/ubuntu
+node_system = fedora
 default_gateway = 3.13.3.7
 
 node_private_key = /root/.ssh/id_rsa
@@ -184,3 +186,17 @@ app_repo_apache_home = /etc/httpd
 
 # HTTPD user password file (required if not using LDAP)
 app_repo_httpd_passwd_file =
+
+[registration]
+# Install the registration web application?
+registration = False
+registration_ldap_manager_password = secret
+# administrator email address
+registration_mail_admin =
+registration_mail_host =
+registration_mail_port = 465
+# Address used in the reply-to
+registration_mail_reply_user =
+registration_mail_password =
+registration_mail_ssl = True
+registration_mail_debug = True

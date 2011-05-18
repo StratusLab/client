@@ -22,18 +22,38 @@ import os
 import ConfigParser
 import urllib2
 
+try:
+    from lxml import etree
+except ImportError:
+    try:
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                except ImportError:
+                    raise Exception("Failed to import ElementTree from any known place")
+
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ValidationException, InputException
 from stratuslab.marketplace.Downloader import Downloader
-
-etree = Util.importETree()
-
 class Policy(object):
 
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
         self.whiteListEndorsers = ['whiteListEndorsersFlag']
         self.blackListChecksums = ['blackListChecksumsFlag']
+        self.whiteListImages = ['whiteListImagesFlag']
+        self.blackListImages = ['blackListImagesFlag']
 	self.validateMetaData = []
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
@@ -49,8 +69,11 @@ class Policy(object):
         for _,j in config.items('blacklistchecksums'):
             self.blackListChecksums.append(j)
 	for _,j in config.items('validatemetadatafile'):
-	    self.validateMetaData.append(j)	    
-    
+	    self.validateMetaData.append(j)
+        for _,j in config.items('whitelistimages'):
+            self.whiteListImages.append(j)	    
+        for _,j in config.items('blacklistimages'):
+            self.blackListImages.append(j)    
     def check(self, identifierUri):
 	if not self._deactivateMetadataValidation():
 	    print "validation processus"
@@ -60,11 +83,25 @@ class Policy(object):
         metadatas = self._retrieveMetadataList()
         #metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
 	metadataEntries=[metadatas]
-        filtered1 = self._filter(metadataEntries, self.whiteListEndorsers)
-        filtered2 = self._filter(filtered1, self.blackListChecksums)	
+        filtered0 = self._filter(metadataEntries, self.whiteListImages)
+        if len(filtered0) == 0:
+            raise ValidationException('Failed policy check')
+        print len(filtered0)
+
+        filtered1 = self._filter(filtered0, self.blackListImages)
+        if len(filtered1) == 0:
+            raise ValidationException('Failed policy check')
+        print len(filtered1)
+
+        filtered2 = self._filter(filtered1, self.whiteListEndorsers)
         if len(filtered2) == 0:
             raise ValidationException('Failed policy check')
         print len(filtered2)
+        
+        filtered3 = self._filter(filtered2, self.blackListChecksums)	
+        if len(filtered3) == 0:
+            raise ValidationException('Failed policy check')
+        print len(filtered3)
 
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
@@ -111,11 +148,17 @@ class Policy(object):
     def _keep(self, metadata, whiteOrblackList):
         xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
         emailendorser = metadata.findtext(xpathPrefix % 'endorser' + 'email')
-        checksumimage = metadata.findtext(xpathPrefix % 'checksum' + 'value')
-        if (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
+        imageidentifier = metadata.findtext('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
+        checksumimages = metadata.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://mp.stratuslab.eu/slreq#}checksum')
+        
+        if (whiteOrblackList[0] == 'whiteListImagesFlag'):
+            return self._whiteListImagesPlugin(imageidentifier)
+        elif (whiteOrblackList[0] == 'blackListImagesFlag'):
+            return self._blackListImagesPlugin(imageidentifier)
+	elif (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
             return self._whiteListEndorsersPlugin(emailendorser)
         elif (whiteOrblackList[0] == 'blackListChecksumsFlag'):
-            return self._blackListChecksumsPlugin(checksumimage)
+            return self._blackListChecksumsPlugin(checksumimages)
 
     def _whiteListEndorsersPlugin(self, emailendorser):
         if (emailendorser in self.whiteListEndorsers):
@@ -125,8 +168,27 @@ class Policy(object):
             print False
             return False
 
-    def _blackListChecksumsPlugin(self, checksumimage):
-        if (checksumimage not in self.blackListChecksums):
+    def _blackListChecksumsPlugin(self, checksumimages):
+        for checksumimage in checksumimages:
+               if (checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}algorithm') == 'SHA-1'):
+                  checksum_sha1 = checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}value')
+        if (checksum_sha1 not in self.blackListChecksums):
+            print True
+            return True
+        else:
+            print False
+            return False
+
+    def _whiteListImagesPlugin(self, imageidentifier):
+        if (imageidentifier in self.whiteListImages):
+            print True
+            return True
+        else:
+            print False
+            return False
+
+    def _blackListImagesPlugin(self, imageidentifier):
+        if (imageidentifier not in self.blackListImages):
             print True
             return True
         else:

@@ -23,6 +23,7 @@ from BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 import stratuslab.Util as Util
 from stratuslab.Exceptions import OneException
+from stratuslab import Defaults
 
 class OneInstallator(BaseInstallator):
     
@@ -47,7 +48,7 @@ class OneInstallator(BaseInstallator):
             Util.printWarning('Coulnd\'t create virtual networks, already present?')
 
     def _buildFixedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent(Util.shareDir + 'vnet/fixed.net')
+        vnetTpl = fileGetContent(os.path.join(Defaults.SHARE_DIR, 'vnet/fixed.net'))
         
         ips = self.config.get('one_%s_network_addr' % networkName)
         ips = (ips and ips.split(' ')) or []
@@ -63,7 +64,7 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
 
     def _buildRangedNetworkTemplate(self, networkName):
-        vnetTpl = fileGetContent(Util.shareDir + 'vnet/ranged.net')
+        vnetTpl = fileGetContent(os.path.join(Defaults.SHARE_DIR, 'vnet/ranged.net'))
         vnetTpl = vnetTpl % ({'network_name': networkName,
                               'bridge': self.config.get('node_bridge_name'),
                               'network_size': self.config.get('one_%s_network_size' % networkName),
@@ -71,7 +72,7 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
 
     def _configurePolicies(self):
-        oneAuthTpl = Util.shareDir + 'template/auth.conf.tpl'
+        oneAuthTpl = os.path.join(Defaults.TEMPLATE_DIR, 'auth.conf.tpl')
         if not os.path.isfile(oneAuthTpl):
             Util.printError('ONE auth configuration template '
                        '%s does not exists' % oneAuthTpl)

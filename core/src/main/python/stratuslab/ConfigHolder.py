@@ -109,8 +109,12 @@ class ConfigHolder(object):
         return formattedKey
 
     def __init__(self, options={}, config={}):
-        self.options = options
-        self.config = config
+        if not isinstance(options, dict):
+            raise TypeError('options parameter must be omitted or a dictionary')
+        if not isinstance(config, dict):
+            raise TypeError('config parameter must be omitted or a dictionary')
+        object.__setattr__(self, 'options', options)
+        object.__setattr__(self, 'config', config)
 
     def assign(self, obj):
         Util.assignAttributes(obj, ConfigHolder._formatConfigKeys(self.config))
@@ -132,3 +136,21 @@ class ConfigHolder(object):
                 pkeys.sort()
                 output += '\n'.join(['  %s = %s'%(k,getattr(self, attr)[k]) for k in pkeys]) + '\n'
         return output
+
+    def __getattribute__(self, key):
+        try:
+            return object.__getattribute__(self, key)
+        except AttributeError:
+            pass
+        try:
+            return object.__getattribute__(self, 'options')[key]
+        except KeyError:
+            pass
+        try:
+            return object.__getattribute__(self, 'config')[key]
+        except KeyError:
+            pass
+        raise AttributeError("'%s' object has no attribute '%s'" % (object.__getattribute__(self, '__class__'), key))
+
+    def __setattr__(self, key, value):
+        self.options[key] = value

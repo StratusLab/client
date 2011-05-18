@@ -29,15 +29,14 @@ from string import ascii_lowercase
 from Exceptions import ExecutionException
 from Compressor import Compressor
 from stratuslab.Exceptions import ValidationException
+import Defaults
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
 systemsDir = '%s/stratuslab/system' % modulePath
 varLibDir = '/var/lib/stratuslab/python'
-shareDir = '/var/share/stratuslab/'
-etcDir = '/etc/stratuslab/'
-defaultConfigFile = etcDir + 'stratuslab.cfg'
+defaultConfigFile = Defaults.ETC_DIR + 'stratuslab.cfg'
 defaultConfigFileUser = os.path.join(os.path.expanduser('~'), '.stratuslab', 'stratuslab-user.cfg')
 manifestExt = '.xml'
 cliLineSplitChar = '#'
@@ -54,8 +53,8 @@ SSH_CONNECTION_RETRY_NUMBER = 2
 SSH_CONNECTION_RETRY_SLEEP_MAX = 5
 
 def getShareDir():
-    if os.path.exists(shareDir):
-        return shareDir
+    if os.path.exists(Defaults.SHARE_DIR):
+        return Defaults.SHARE_DIR
     else:
         return os.path.join(os.path.dirname(__file__),'../../../../share')
 

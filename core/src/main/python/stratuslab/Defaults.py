@@ -38,3 +38,6 @@ p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
 marketplaceEndpoint = 'http://appliances.stratuslab.eu/marketplace/metadata'
 
 apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
+ETC_DIR = '/etc/stratuslab/'
+SHARE_DIR = '/var/share/stratuslab/'
+TEMPLATE_DIR = path.join(SHARE_DIR, 'template')

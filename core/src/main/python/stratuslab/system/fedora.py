@@ -18,18 +18,25 @@
 # limitations under the License.
 #
 from stratuslab.system.centos import CentOS
+from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab import Util
 
 class Fedora(CentOS):
     def __init__(self):
         super(Fedora, self).__init__()
         self.frontendDeps = [
-                'openssh', 'ruby', 'zlib-devel', 'curl', 'mysql', 'mysql-server'
+                'openssh', 'ruby', 'zlib-devel', 'curl'
         ]
+        
+        self.packages['dhcp'] = PackageInfo('dhcp',
+                                            configFile='/etc/dhcp/dhcpd.conf',
+                                            initdScriptName='dhcpd')
         
     def _configureKvm(self):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
+        
+        self._configureQemuUserOnFrontend()
         
         self.executeCmd('/etc/init.d/libvirtd stop'.split())
 

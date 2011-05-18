@@ -98,7 +98,9 @@ enabled=1
                                              configFile='/etc/dhcpd.conf',
                                              initdScriptName='dhcpd'),
                          'CA' : PackageInfo('ca-policy-egi-core', 
-                                                repository=self.caRepoName)}
+                                                repository=self.caRepoName),
+                         'MySQLServer': PackageInfo('mysql-server',
+                                                    initdScriptName='mysqld')}
 
         self.installPackagesErrorMsgs = ['No package .* available']
 

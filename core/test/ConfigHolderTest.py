@@ -58,5 +58,29 @@ class ConfigHolderTest(unittest.TestCase):
 """
         self.assertEquals(str(configHolder), result)
 
+    def testGetterSetter(self):
+        configHolder = ConfigHolder({'a':'A'},{'b':'B'})
+
+        configHolder.c = 'C'
+
+        self.assertEquals('A', configHolder.a)
+        self.assertEquals('B', configHolder.b)
+
+        self.assertEquals('C', configHolder.c)
+        
+    def testGetterSetterEmpty(self):
+        configHolder = ConfigHolder()
+
+        try:
+            configHolder.a
+        except AttributeError:
+            pass
+        else:
+            self.fail()
+        
+    def testGetterSetterEmpty2(self):
+        self.assertRaises(TypeError, ConfigHolder, None, None)
+        
+
 if __name__ == "__main__":
     unittest.main()

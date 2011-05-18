@@ -34,13 +34,10 @@ from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Exceptions import InputException
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Util import execute
-from stratuslab.Util import ping
-from stratuslab.Util import printError
-from stratuslab.Util import sshCmd
 import Util
-from stratuslab.ClaudiaTest import ClaudiaTest
 from stratuslab.marketplace.Downloader import Downloader
+import stratuslab.ClaudiaTest as ClaudiaTest
+import stratuslab.ClusterTest as ClusterTest
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -181,7 +178,7 @@ class Testor(unittest.TestCase):
             vmStarted = runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
-                printError(error, exit=False)
+                Util.printError(error, exit=False)
                 raise OneException(error)
 
         return runner
@@ -218,14 +215,14 @@ class Testor(unittest.TestCase):
                 break
 
         if failed:
-            printError('Failed executing method %s %s times, giving-up' % (method, numberOfRepetition), exit=False)
+            Util.printError('Failed executing method %s %s times, giving-up' % (method, numberOfRepetition), exit=False)
             raise
 
     def _ping(self, runner):
 
         for vmId in self.vmIds:
             _, ip = runner.getNetworkDetail(vmId)
-            res = ping(ip)
+            res = Util.ping(ip)
             if not res:
                 raise ExecutionException('Failed to ping %s' % ip)
 
@@ -233,7 +230,7 @@ class Testor(unittest.TestCase):
 
         for vmId in self.vmIds:
             _, ip = runner.getNetworkDetail(vmId)
-            res = sshCmd(cmd, ip, self.sshKey)
+            res = Util.sshCmd(cmd, ip, self.sshKey)
             if res:
                 raise ExecutionException('Failed to SSH into machine for %s with return code %s' % (ip, res))
 
@@ -287,7 +284,7 @@ class Testor(unittest.TestCase):
 
     def _generateDummyImage(self, filename, size=2):
         devNull = open('/dev/null', 'w')
-        execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1000000', 'count=%s' % size],
+        Util.execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1000000', 'count=%s' % size],
         stdout=devNull, stderr=devNull)
         devNull.close()
 
@@ -419,13 +416,29 @@ class Testor(unittest.TestCase):
     def claudiaTest(self):
         '''Cloudia test'''
         if self.claudiaCustomer:
-            ClaudiaTest.CLAUDIA_CUSTOMER = self.claudiaCustomer
+            ClaudiaTest.ClaudiaTest.CLAUDIA_CUSTOMER = self.claudiaCustomer
         if self.claudiaServiceName:
-            ClaudiaTest.CLAUDIA_SERVICENAME = self.claudiaServiceName
+            ClaudiaTest.ClaudiaTest.CLAUDIA_SERVICENAME = self.claudiaServiceName
         if self.claudiaOvfEndpoint:
-            ClaudiaTest.OVF = self.claudiaOvfEndpoint
+            ClaudiaTest.ClaudiaTest.OVF = self.claudiaOvfEndpoint
+
+        suite = self._createSuiteFromTestModule(ClaudiaTest)
+        self._executeSuite(suite)
+
+    def clusterTest(self):
+        '''Cluster test'''
+        ClusterTest.ClusterTest.sshKeyPub = self.sshKeyPub
+        ClusterTest.ClusterTest.username = self.testUsername
+        ClusterTest.ClusterTest.password = self.testPassword
+        suite = self._createSuiteFromTestModule(ClusterTest)
+        self._executeSuite(suite)
+  
+    def _createSuiteFromTestModule(self, module):
         suite = unittest.TestSuite()
-        suite.addTest(ClaudiaTest('testDeploy'))
+        tests = unittest.TestLoader().loadTestsFromModule(module)
+        suite.addTests(tests)
+        return suite
+        
+    def _executeSuite(self, suite):
         testResult = unittest.TextTestRunner(verbosity=2).run(suite)
         self.assertTrue(testResult.wasSuccessful())
-
