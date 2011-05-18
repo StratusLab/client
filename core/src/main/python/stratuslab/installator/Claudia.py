@@ -161,8 +161,5 @@ class Claudia(object):
         print " :: Starting clotho"
         self.system.execute(['/etc/init.d/clothod', 'restart'])
 
-        print " :: Starting reportclient"
-        self.system.execute(['/etc/init.d/reportclientd', 'restart'])
-
         # last line
         print " ::"
