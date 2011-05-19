@@ -66,6 +66,7 @@ class Claudia(object):
         self.smprops = {"java.naming.provider.url":"tcp://"+self.frontendIp+":61616", \
                         "RestListenerHost":self.frontendIp, \
                         "SMIHost":self.frontendIp, \
+                        "MonitoringAddress":self.frontendIp, \
                         "ImagesServerHost":self.frontendIp, \
                         "VEEMHost":self.frontendIp, \
                         "SiteRoot":self.domainName, \
