@@ -39,10 +39,10 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['template_nic_ip', 16], ['name', 16])
-        self.vmInfoListAttributes = (['id',4], ['state_summary', 16], ['cpu', 10], ['memory', 10], ['template_nic_ip', 16], ['name', 16])
+        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
+        self.vmInfoListAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
 
-        self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip'}
+        self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
     def _setCloud(self):
         credentials = AuthnFactory.getCredentials(self)
