@@ -53,6 +53,7 @@ class Testor(unittest.TestCase):
         self.sshKey = '/tmp/id_rsa_smoke_test'
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
+        self.quotaCpu = 2
 
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
@@ -133,12 +134,11 @@ class Testor(unittest.TestCase):
         self._stopVm(runner)
 
     def exceedCpuQuotaTest(self):
-        '''Start three instances, having a cpu quota of 2, then stop it.'''
+        '''Start x instances, where x is the cpu quota +1, then stop them.'''
 
+        print 'Current cpu quota: %s, starting as many +1' % self.quotaCpu
         try:
-            self._startVm()
-            self._startVm()
-            self._startVm()
+            self._startVm(instanceNumber=int(self.quotaCpu)+1)
         except OneException, ex:
             print ex
             pass
@@ -168,8 +168,9 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n' * 3)
         return log
 
-    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None):
+    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1):
         runner = self._createRunner(withLocalNetwork, requestedIpAddress)
+        runner.instanceNumber = instanceNumber
 
         vmIds = runner.runInstance()
         self.vmIds.extend(vmIds)

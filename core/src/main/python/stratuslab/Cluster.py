@@ -18,7 +18,6 @@
 # limitations under the License.
 #
 import os
-import time
 import socket
 
 from stratuslab.Util import printAction

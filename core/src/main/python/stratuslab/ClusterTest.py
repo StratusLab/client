@@ -18,7 +18,6 @@
 # limitations under the License.
 #
 import unittest
-import os
 
 from stratuslab.Runner import Runner
 from stratuslab.ConfigHolder import ConfigHolder

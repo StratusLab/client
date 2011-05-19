@@ -54,6 +54,7 @@ class Runner(object):
 
     def __init__(self, image, configHolder):
         self.quiet = False
+        self.instanceNumber = 1
         configHolder.assign(self)
         self.configHolder = configHolder
 
