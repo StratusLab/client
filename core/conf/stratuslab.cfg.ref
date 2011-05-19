@@ -153,6 +153,10 @@ certificate_authority_repo =
 [persistent-disks]
 persistent_disks = False
 
+[quarantine]
+# Time to keep VMs in quarantine. m - minutes, h - hours, d - days.
+quarantine_period = 15m
+
 [app-repo]
 # Appliance Repository
 app_repo_url = https://appliances.stratuslab.eu/images
