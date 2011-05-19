@@ -272,7 +272,7 @@ class BaseSystem(object):
         pdiskDetach = '/usr/sbin/detach-persistent-disk.sh'
 
         if Util.isFalseConfVal(getattr(self, 'persistentDisks', False)):
-            self.executeCmd('[ -f %(pd)s ] || { touch %(pd)s; chmod +x %(pd)s} ' % {'pd':pdiskDetach}, shell=True)
+            self.executeCmd('[ -f %(pd)s ] || { touch %(pd)s; chmod +x %(pd)s; } ' % {'pd':pdiskDetach}, shell=True)
             return
 
         Util.printDetail('Configuring persistent disks management for oneadmin user.')
