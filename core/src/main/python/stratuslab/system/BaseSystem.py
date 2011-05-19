@@ -268,12 +268,16 @@ class BaseSystem(object):
     # -------------------------------------------
 
     def configureCloudAdminPdiskNode(self):
+        pdiskAttach = '/usr/sbin/attach-persistent-disk.sh'
+        pdiskDetach = '/usr/sbin/detach-persistent-disk.sh'
+
         if Util.isFalseConfVal(getattr(self, 'persistentDisks', False)):
+            self.executeCmd('[ -f %(pd)s ] || { touch %(pd)s; chmod +x %(pd)s} ' % {'pd':pdiskDetach}, shell=True)
             return
 
         Util.printDetail('Configuring persistent disks management for oneadmin user.')
 
-        line = 'oneadmin ALL = NOPASSWD: /usr/sbin/attach-persistent-disk.sh, /usr/sbin/detach-persistent-disk.sh'
+        line = 'oneadmin ALL = NOPASSWD: %s, %s' % (pdiskAttach, pdiskDetach)
         self.appendOrReplaceInFileCmd('/etc/sudoers',
                                       '^oneadmin.*persistent-disk.*$', line)
 
@@ -574,6 +578,12 @@ class BaseSystem(object):
         self.chmodCmd = self._remoteChmod
         self.copyCmd = self._nodeCopy
         self.removeCmd = self._remoteRemove
+
+    def configureQuarantine(self):
+        filename = '/etc/stratuslab/quarantine.cfg'
+        search = '^PERIOD.*$'
+        replace = 'PERIOD=%(quarantinePeriod)s' % self.__dict__
+        Util.appendOrReplaceInFile(filename, search, replace)        
 
     def configureCloudProxyService(self):
         self.installPackages(['stratuslab-cloud-proxy'])
