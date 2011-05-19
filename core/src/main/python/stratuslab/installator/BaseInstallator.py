@@ -164,6 +164,9 @@ class BaseInstallator(object):
         printStep('Configuring file sharing')
         self._setupFileSharingServer()
 
+        printStep('Configuring quarantine')
+        self._configureQuarantine()
+
         printStep('Configuring cloud proxy service')
         self._configureCloudProxyService()
 
@@ -229,6 +232,9 @@ class BaseInstallator(object):
         self.node.configureCloudAdminSshKeysNode()
         self.node.configureCloudAdminPdiskNode()
 
+    def _configureQuarantine(self):
+        self.frontend.configureQuarantine()
+        
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
 
