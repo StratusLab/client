@@ -34,8 +34,10 @@ with minimal dependencies for maximum portability.
 
     <nexus.release.repository.name>fedora-14-releases</nexus.release.repository.name>
     <nexus.snapshot.repository.name>fedora-14-snapshots</nexus.snapshot.repository.name>
+    <marketplace-metadata.version>0.0.6</marketplace-metadata.version><!--
+    <marketplace-metadata.version>0.0.6-SNAPSHOT</marketplace-metadata.version>
 
-  </properties>
+  --></properties>
 
   <licenses>
     <license>
@@ -88,7 +90,7 @@ with minimal dependencies for maximum portability.
       <dependency>
         <groupId>eu.stratuslab.marketplace</groupId>
         <artifactId>marketplace-metadata</artifactId>
-        <version>0.0.6-SNAPSHOT</version>
+        <version>${marketplace-metadata.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
