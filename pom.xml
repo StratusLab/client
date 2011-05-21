@@ -68,6 +68,25 @@ with minimal dependencies for maximum portability.
     <developerConnection>scm:git:ssh://apache@code.stratuslab.eu/ext/git/stratuslab-integration.git</developerConnection>
   </scm>
 
+  <repositories>
+    <repository>
+      <releases>
+	<enabled>true</enabled>
+	<updatePolicy>always</updatePolicy>
+	<checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+	<enabled>false</enabled>
+	<updatePolicy>never</updatePolicy>
+	<checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <id>StratusLabReleases</id>
+      <name>StratusLab Releases</name>
+      <url>http://repo.stratuslab.eu:8081/content/repositories/${nexus.release.repository.name}</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+
   <distributionManagement>
     <repository>
       <id>stratuslab.releases</id>
