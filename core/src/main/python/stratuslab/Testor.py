@@ -38,6 +38,7 @@ import Util
 from stratuslab.marketplace.Downloader import Downloader
 import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
+import stratuslab.RegistrationTest as RegistrationTest
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -432,6 +433,11 @@ class Testor(unittest.TestCase):
         ClusterTest.ClusterTest.username = self.testUsername
         ClusterTest.ClusterTest.password = self.testPassword
         suite = self._createSuiteFromTestModule(ClusterTest)
+        self._executeSuite(suite)
+  
+    def registrationTest(self):
+        '''Registration test'''
+        suite = self._createSuiteFromTestModule(RegistrationTest)
         self._executeSuite(suite)
   
     def _createSuiteFromTestModule(self, module):
