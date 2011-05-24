@@ -141,8 +141,10 @@ class Testor(unittest.TestCase):
         try:
             self._startVm(instanceNumber=int(self.quotaCpu)+1)
         except OneException, ex:
-            print ex
-            pass
+            message="Cpu quota exceeded (Quota: %s, Used: %s.0, asked: 1.0)." % (
+                self.quotaCpu, self.quotaCpu)
+
+            self.assertTrue(message in ex.message, 'Quota not working')
         else:
             self.fail('Quota not enforced')
 
