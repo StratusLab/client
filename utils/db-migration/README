@@ -1,0 +1,16 @@
+
+This script migrates the sqlite database from OpenNebula to MySQL. The target version is 2.2 (StratusLab version) but the source sqlite database can come from 2.0.
+
+The file mysql_base.sql holds the database structure, it was extracted from a current (May 24, 2011) installation.
+
+The script expects one.db to be in the current directory and the information about the MySQL database configured in migrate.sh:
+
+    HOST=127.0.0.1
+    PORT=3306
+    USER=oneadmin
+    DATABASE=opennebula
+
+Running the migrate.sh will export the database from one.db, will create the database structure and push the exported data into MySQL. It will ask for password.
+
+
+
