@@ -42,7 +42,7 @@ function populate_tables()
 # The useful parameters
 
 HOST=127.0.0.1
-PORT=8889
+PORT=3306
 USER=oneadmin
 DATABASE=opennebula
 
