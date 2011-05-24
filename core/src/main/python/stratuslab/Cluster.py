@@ -19,6 +19,7 @@
 #
 import os
 import socket
+import time
 
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
@@ -65,12 +66,17 @@ class SSHUtil(object):
 
         return 0
                 
-    def waitForConnectivity(self, host, timeout, attempts):
-        additional_options = "-o ConnectTimeout=" + str(timeout) + " -o ConnectionAttempts=" + str(attempts)
-        
+    def waitForConnectivity(self, host, timeout):
+        start_time = time.time()
+
+        additional_options = "-o ConnectTimeout=10"
+
         cmd = "ssh" + self._options + " " + additional_options + " -i " + self._private_key + " " + self._username + "@" + host.public_ip + " true"
-        # print "Command: " + cmd
-        error = os.system(cmd)
+
+        error = 1
+
+        while (time.time() - start_time) < timeout and error>0:
+            error = os.system(cmd)
 
         if error > 0:
             return False
@@ -223,7 +229,7 @@ class Cluster(object):
             hostFailed = False
 
             while not hostReady and not hostFailed:
-                if not ssh.waitForConnectivity(host, 10, 30):
+                if not ssh.waitForConnectivity(host, vmStartTimeout):
                     print "Timed out while connecting to " + host.public_ip
                     print "Removing from target configuration list"
                     failedHosts.append(host)
@@ -231,15 +237,15 @@ class Cluster(object):
                 else:
                     hostReady=True
 
-
-        if self.tolerate_failures == True:
-            for host in failedHosts:
-                self.hosts.remove(host)
-        else:
-            print "Error instantiating some or all of the nodes. Bailing out..."
-            if self.clean_after_failure:
-                self._runner.killInstances(self._runner.vmIds)
-            return 128
+        if len(failedHosts)>0:
+            if self.tolerate_failures:
+                for host in failedHosts:
+                    self.hosts.remove(host)
+            else:
+                print "Error instantiating some or all of the nodes. Bailing out..."
+                if self.clean_after_failure:
+                    self._runner.killInstances(self._runner.vmIds)
+                return 128
 
         master_node = self.hosts[0]
 
