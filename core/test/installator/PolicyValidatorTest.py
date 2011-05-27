@@ -4,12 +4,14 @@ import tempfile
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.installator.PolicyValidator import PolicyValidator
-import TestDefaults
 
 class PolicyValidatorTest(unittest.TestCase):
 
+    SHARE_DIR = '../../share'
+    TEMPLATE_DIR = os.path.join(SHARE_DIR, 'template')
+
     def testConfigurationCreation(self):
-        PolicyValidator.TEMPLATE_CFG = os.path.join(TestDefaults.TEMPLATE_DIR, os.path.basename(PolicyValidator.TEMPLATE_CFG))
+        PolicyValidator.TEMPLATE_CFG = os.path.join(PolicyValidatorTest.TEMPLATE_DIR, os.path.basename(PolicyValidator.TEMPLATE_CFG))
         PolicyValidator.CONFIG = tempfile.mktemp()
 
         configHolder = ConfigHolder(config={
