@@ -134,6 +134,13 @@ proxy_oneadmin_password = oneadmin
 [policy]
 quota_cpu = 20
 quota_memory = 1GB
+# Metadata validation policy, comma separated
+validate_metadata = True
+whitelistendorsers =
+whitelistimages =
+blacklistimages =
+blacklistendorsers =
+blacklistchecksums =
 
 [certificate-authority]
 # Install CAs or not?
