@@ -24,10 +24,14 @@ import random
 import string
 
 import ldap
-import ldap.modlist as modlist
+
+from subprocess import call
 
 class LdapAuthenticationTest(unittest.TestCase):
 
+    oneEndpoint = 'onehost-5.lal.in2p3.fr'
+    pemCert = '/tmp/stratuslab-test-user/stratuslab-test-user-cert.pem'
+    pemKey = '/tmp/stratuslab-test-user/stratuslab-test-user-key.pem'
     baseUrl = 'https://localhost:8444'
     ldapUrl = 'ldap://localhost:10389/'
 
@@ -36,7 +40,7 @@ class LdapAuthenticationTest(unittest.TestCase):
 
     username = 'jsmith'
     userDn = 'uid=jsmith,ou=users,o=cloud'
-    userCertDn = 'should be parameter'
+    userCertDn = 'CN=John Smith,OU=Test,O=StratusLab,C=EU'
     userPassword = 'dummy_password'
 
     cloudAccessDn = 'cn=cloud-access,ou=groups,o=cloud'
@@ -73,7 +77,8 @@ class LdapAuthenticationTest(unittest.TestCase):
     def verifyProfile(self):
         h = httplib2.Http()
         h.add_credentials(self.username, self.userPassword)
-        resp, content = h.request(self.baseUrl + '/profile/')
+        url = self.baseUrl + '/profile/'
+        resp, content = h.request(url)
 
         self.assertEquals(200, resp.status, url + ': invalid status ' + str(resp.status))
 
@@ -81,22 +86,39 @@ class LdapAuthenticationTest(unittest.TestCase):
         self.assertTrue(length > 0, url + ': invalid length ' + str(length))
 
 
-    def authorizeUser(self):
-        print getCloudAccessGroup()
-        print 'authorizeUser'
-
-
     def getCloudAccessGroup(self):
-
         ldapObj = ldap.initialize(self.ldapUrl)
         ldapObj.simple_bind_s(self.managerDn, self.managerPassword)
         
-        searchScope = ldap.SCOPE_ONE
-        searchFilter = 'objectClass=groupOfUniqueMembers'
-        retrieveAttributes = 'uniqueMembers'
+        searchScope = ldap.SCOPE_BASE
+        searchFilter = '(&(objectClass=groupOfUniqueNames)(cn=cloud-access))'
+        retrieveAttributes = [ 'uniqueMember' ]
 
-        return ldapObj.search_s(self.cloudAccessDn, searchScope, 
-                                searchFilter, retrieveAttributes)
+        resultData = ldapObj.search_s(self.cloudAccessDn, searchScope, 
+                                      searchFilter, retrieveAttributes)
+
+        self.assertTrue(len(resultData) > 0, "no cloud-access group found encountered")
+        self.assertTrue(len(resultData[0]) > 0, "malformed tuple for group information")
+
+        return resultData[0][1]
+
+
+    def authorizeUser(self):
+        ldapObj = ldap.initialize(self.ldapUrl)
+        ldapObj.simple_bind_s(self.managerDn, self.managerPassword)
+
+        modlist = [(ldap.MOD_ADD, 'uniquemember', self.userDn)]
+
+        ldapObj.modify_s(self.cloudAccessDn, modlist)
+
+
+    def unauthorizeUser(self):
+        ldapObj = ldap.initialize(self.ldapUrl)
+        ldapObj.simple_bind_s(self.managerDn, self.managerPassword)
+
+        modlist = [(ldap.MOD_DELETE, 'uniquemember', self.userDn)]
+
+        ldapObj.modify_s(self.cloudAccessDn, modlist)
 
 
     def deleteUserFromLdap(self):
@@ -106,17 +128,49 @@ class LdapAuthenticationTest(unittest.TestCase):
         ldapObj.delete_s(self.userDn)
 
 
+    def tryUsernamePassword(self):
+        cmd = [ 'stratus-describe-instance', 
+                '--endpoint', self.oneEndpoint, 
+                '-u', self.username, 
+                '-p', self.userPassword ]
+
+        return call(cmd)
+
+
+    def tryCertificate(self):
+        cmd = [ 'stratus-describe-instance', 
+                '--endpoint', self.oneEndpoint, 
+                '--pem-cert', self.pemCert, 
+                '--pem-key', self.pemKey ]
+
+        return call(cmd)
+
+
     def testLdapAuthentication(self):
 
         try:
+            
+            rc = self.tryUsernamePassword()
+            self.assertTrue(rc != 0, 'unregistered user accessed service with username password')
 
             self.registerUser()
             self.verifyProfile()
-            self.authorizeUser()
-        
-        finally:
 
+            rc = self.tryUsernamePassword()
+            self.assertTrue(rc != 0, 'user without role accessed service with username password')
+
+            self.authorizeUser()
+
+            rc = self.tryUsernamePassword()
+            self.assertTrue(rc == 0, 'registered user with role could not access service with username password')
+            
+            #rc = self.tryCertificate()
+            #self.assertTrue(rc == 0, 'registered user with role could not access service with certificate')
+            
+        finally:
+            self.unauthorizeUser()
             self.deleteUserFromLdap()
+            print "DONE"
 
 
 if __name__ == "__main__":
