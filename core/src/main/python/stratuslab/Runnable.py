@@ -73,21 +73,6 @@ class Runnable(AuthnCommand):
                 help='IP to listen on',
                 default=defaultOptions['vncListen'])
 
-        self.parser.add_option('--raw', dest='rawData', metavar='DATA',
-                help='hypervisor raw data',
-                default=defaultOptions['rawData'])
-        self.parser.add_option('--ramdisk', dest='vmRamdisk', metavar='PATH',
-                help='machine ramdisk',
-                default=defaultOptions['vmRamdisk'])
-        self.parser.add_option('--kernel', dest='vmKernel', metavar='PATH',
-                help='machine kernel',
-                default=defaultOptions['vmKernel'])
-
-        self.parser.add_option( '--template', dest='vmTemplatePath', metavar='FILE',
-                help='machine template. Available substitution variables: %s' % (
-                ', '.join(Runner.getVmTemplatesParameters())),
-                default=defaultOptions['vmTemplatePath'])
-
         self.parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
                 help='Market place endpoint. Default %s. %s' % (Defaults.marketplaceEndpoint,
                                                                 Uploader.ENVVAR_MARKETPLACE_ENDPOINT),

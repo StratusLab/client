@@ -32,7 +32,7 @@ class Registration(object):
     def run(self):
         self._installPackages()
         self._configure()
-        self._restartService('authn-proxy')
+        self._restartService('one-proxy')
         
     def _installPackages(self):
         Util.printStep('Installing packages')
@@ -47,6 +47,6 @@ class Registration(object):
                             Util.fileGetContent(registrationTpl) % self.__dict__)
 
     def _restartService(self, service):
-        Util.printStep("Restarting Jetty7 (authn-proxy)")
+        Util.printStep("Restarting Jetty7 (one-proxy)")
         cmd = 'service %s restart' % service
         Util.execute(cmd.split(' '))

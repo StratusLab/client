@@ -38,6 +38,7 @@ import Util
 from stratuslab.marketplace.Downloader import Downloader
 import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
+import stratuslab.RegistrationTest as RegistrationTest
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -54,6 +55,7 @@ class Testor(unittest.TestCase):
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
         self.quotaCpu = 2
+        self.runner = None
 
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
@@ -140,13 +142,13 @@ class Testor(unittest.TestCase):
         try:
             self._startVm(instanceNumber=int(self.quotaCpu)+1)
         except OneException, ex:
-            print ex
-            pass
+            message="Cpu quota exceeded (Quota: %s, Used: %s.0, asked: 1.0)." % (self.quotaCpu, self.quotaCpu)
+            self.assertTrue(message in ex.message, 'Quota not working, got %s expected %s' % (ex.message, message))
         else:
             self.fail('Quota not enforced')
 
-        self._createRunner().killInstances(self.vmIds)
-
+        self._createRunner().killInstances(self.runner.vmIds)
+        
     def _excludeTests(self, tests):
         if self.testsToExclude:
             for test in self.testsToExclude.split(','):
@@ -169,20 +171,20 @@ class Testor(unittest.TestCase):
         return log
 
     def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1):
-        runner = self._createRunner(withLocalNetwork, requestedIpAddress)
-        runner.instanceNumber = instanceNumber
+        self.runner = self._createRunner(withLocalNetwork, requestedIpAddress)
+        self.runner.instanceNumber = instanceNumber
 
-        vmIds = runner.runInstance()
+        vmIds = self.runner.runInstance()
         self.vmIds.extend(vmIds)
 
         for id in vmIds:
-            vmStarted = runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
+            vmStarted = self.runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
                 Util.printError(error, exit=False)
                 raise OneException(error)
 
-        return runner
+        return self.runner
 
     def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None):
         Util.generateSshKeyPair(self.sshKey)
@@ -432,6 +434,11 @@ class Testor(unittest.TestCase):
         ClusterTest.ClusterTest.username = self.testUsername
         ClusterTest.ClusterTest.password = self.testPassword
         suite = self._createSuiteFromTestModule(ClusterTest)
+        self._executeSuite(suite)
+  
+    def registrationTest(self):
+        '''Registration test'''
+        suite = self._createSuiteFromTestModule(RegistrationTest)
         self._executeSuite(suite)
   
     def _createSuiteFromTestModule(self, module):

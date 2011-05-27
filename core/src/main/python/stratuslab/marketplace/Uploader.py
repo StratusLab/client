@@ -18,18 +18,36 @@
 # limitations under the License.
 #
 
+import os
+
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.HttpClient import HttpClient
 from stratuslab.Exceptions import InputException
-import os
 from stratuslab.ManifestInfo import ManifestInfo
+from stratuslab import Defaults
 from stratuslab import Util
 
 class Uploader(object):
 
+    ENVVAR_MARKETPLACE_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
+
     def __init__(self, configHolder = ConfigHolder()):
         self.confHolder = configHolder
         configHolder.assign(self)
+
+    @staticmethod
+    def buildUploadParser(parser):
+        parser.usage = '''usage: %prog [options] <metadata-file>'''
+
+        parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
+                help='Market place endpoint. Default %s. %s' % \
+                    (Defaults.marketplaceEndpoint, Uploader.ENVVAR_MARKETPLACE_ENDPOINT),
+                default=None)
+
+    @staticmethod
+    def checkUploadOptions(options, parser):
+        if not options.marketplaceEndpoint:
+            options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, Defaults.marketplaceEndpoint)                    
 
     def upload(self, manifestFilename):
         Util.printStep('Uploading metadata')

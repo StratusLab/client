@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.pkgs</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>1.6-SNAPSHOT</version>
+  <version>1.7-SNAPSHOT</version>
   <name>StratusLab Parent POM</name>
 
   <url>http://hudson.stratuslab.eu/integration</url>
@@ -32,9 +32,12 @@ with minimal dependencies for maximum portability.
 #
     </BUILD_INFO>
 
-    <nexus.release.repository.name>releases</nexus.release.repository.name>
-    <nexus.snapshot.repository.name>snapshots</nexus.snapshot.repository.name>
-
+    <nexus.release.repository.name>fedora-14-releases</nexus.release.repository.name>
+    <nexus.snapshot.repository.name>fedora-14-snapshots</nexus.snapshot.repository.name>
+<!--
+    <marketplace-metadata.version>0.0.7</marketplace-metadata.version>
+-->
+    <marketplace-metadata.version>0.0.7-SNAPSHOT</marketplace-metadata.version>
   </properties>
 
   <licenses>
@@ -66,6 +69,25 @@ with minimal dependencies for maximum portability.
     <developerConnection>scm:git:ssh://apache@code.stratuslab.eu/ext/git/stratuslab-integration.git</developerConnection>
   </scm>
 
+  <repositories>
+    <repository>
+      <releases>
+	<enabled>true</enabled>
+	<updatePolicy>always</updatePolicy>
+	<checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+	<enabled>false</enabled>
+	<updatePolicy>never</updatePolicy>
+	<checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <id>StratusLabReleases</id>
+      <name>StratusLab Releases</name>
+      <url>http://repo.stratuslab.eu:8081/content/repositories/${nexus.release.repository.name}</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+
   <distributionManagement>
     <repository>
       <id>stratuslab.releases</id>
@@ -88,7 +110,7 @@ with minimal dependencies for maximum portability.
       <dependency>
         <groupId>eu.stratuslab.marketplace</groupId>
         <artifactId>marketplace-metadata</artifactId>
-        <version>0.0.6-SNAPSHOT</version>
+        <version>${marketplace-metadata.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

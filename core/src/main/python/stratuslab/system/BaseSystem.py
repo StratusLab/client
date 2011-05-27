@@ -28,6 +28,7 @@ from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
     fileGetContent, filePutContent, scp, sshCmd
 import stratuslab.Util as Util
 from stratuslab.system.PackageInfo import PackageInfo
+from stratuslab import Defaults
 
 class BaseSystem(object):
 
@@ -587,7 +588,7 @@ class BaseSystem(object):
         Util.appendOrReplaceInFile(filename, search, replace)        
 
     def configureCloudProxyService(self):
-        self.installPackages(['stratuslab-cloud-proxy'])
+        self.installPackages(['stratuslab-one-proxy'])
         self._configureProxyDefaultUsers()
         self._restartJetty()
 
@@ -595,13 +596,13 @@ class BaseSystem(object):
         self._configureProxyDefaultUsersUsernamePassword()
 
     def _configureProxyDefaultUsersUsernamePassword(self):
-        filename = '/opt/jetty-7/etc/login/login-pswd.properties'
+        filename = '/etc/stratuslab/one-proxy/login-pswd.properties'
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
 
     def _restartJetty(self):
-        self.executeCmd('/etc/init.d/authn-proxy restart'.split(' '))
+        self.executeCmd('/etc/init.d/one-proxy restart'.split(' '))
 
     # -------------------------------------------
     # Firewall

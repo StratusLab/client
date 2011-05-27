@@ -66,14 +66,18 @@ class MainProgram(Runnable):
                 help='save vm-id to a file', metavar='FILE',
                 default=None)
 
-        self.parser.add_option('--extra-disk', dest='extraDiskSize',
-                help='extra data disk size in GB', metavar='INT',
+        self.parser.add_option('--volatile-disk', dest='extraDiskSize',
+                help='volatile data disk size in GB', metavar='INT',
                 action='callback', callback=self.diskSizeOptionCallback,
                 default=0, type='int')
 
-        self.parser.add_option('--persistent-disk', dest='persistentDiskUUID',
+        self.parser.add_option('--persistent-disk', dest='UUID',
                 help='persistent disk UUID',
                 default=None)
+
+        self.parser.add_option('--readonly-disk', dest='readonlyDiskId',
+                help='marketplace readonly disk image ID',
+                default=None, metavar='MARKETPLACEID')
 
         self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
                 help='launch instance from an image in qcow2 disk format. This option requires ',
@@ -92,10 +96,6 @@ class MainProgram(Runnable):
         self.parser.add_option('--vm-name', dest='vmName',
                 help='name of VM. If not given, a default name will be assigned by cloud layer.',
                 metavar='NAME', default=options['vmName'])
-
-        self.parser.add_option('--readonly-disk', dest='readonlyDiskId',
-                help='marketplace ID of readonly disk.',
-                default=None, metavar='MARKETPLACEID')
 
         super(MainProgram, self).parse()
 
