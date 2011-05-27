@@ -47,6 +47,7 @@ import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ValidationException, InputException
 from stratuslab.marketplace.Downloader import Downloader
+
 class Policy(object):
 
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
@@ -54,7 +55,7 @@ class Policy(object):
         self.blackListChecksums = ['blackListChecksumsFlag']
         self.whiteListImages = ['whiteListImagesFlag']
         self.blackListImages = ['blackListImagesFlag']
-	self.validateMetaData = []
+        self.validateMetaData = []
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
         self._loadConfig(self.policyConfigFilename)
@@ -68,21 +69,22 @@ class Policy(object):
             self.whiteListEndorsers.append(j)
         for _,j in config.items('blacklistchecksums'):
             self.blackListChecksums.append(j)
-	for _,j in config.items('validatemetadatafile'):
-	    self.validateMetaData.append(j)
+        for _,j in config.items('validatemetadatafile'):
+            self.validateMetaData.append(j)
         for _,j in config.items('whitelistimages'):
             self.whiteListImages.append(j)	    
         for _,j in config.items('blacklistimages'):
             self.blackListImages.append(j)    
+    
     def check(self, identifierUri):
-	if not self._deactivateMetadataValidation():
-	    print "validation processus"
-      	    self._Validate(identifierUri)
+        if not self._deactivateMetadataValidation():
+            print "validation processus"
+            self._Validate(identifierUri)
         self._loadDom(self._downloadManifest(identifierUri))
 
         metadatas = self._retrieveMetadataList()
         #metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
-	metadataEntries=[metadatas]
+        metadataEntries=[metadatas]
         filtered0 = self._filter(metadataEntries, self.whiteListImages)
         if len(filtered0) == 0:
             raise ValidationException('Failed policy check')
