@@ -7,7 +7,7 @@ from stratuslab.installator.PolicyValidator import PolicyValidator
 
 class PolicyValidatorTest(unittest.TestCase):
 
-    SHARE_DIR = os.path.join(os.path.basename(__file__),'../../share')
+    SHARE_DIR = os.path.join(os.path.dirname(__file__),'../../share')
     TEMPLATE_DIR = os.path.join(SHARE_DIR, 'template')
 
     def testConfigurationCreation(self):
