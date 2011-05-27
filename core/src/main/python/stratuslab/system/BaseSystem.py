@@ -596,7 +596,7 @@ class BaseSystem(object):
         self._configureProxyDefaultUsersUsernamePassword()
 
     def _configureProxyDefaultUsersUsernamePassword(self):
-        filename = os.path.join(Defaults.ONE_PROXY_DIR, 'etc/login/login-pswd.properties')
+        filename = '/etc/stratuslab/login-pswd.properties'
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
