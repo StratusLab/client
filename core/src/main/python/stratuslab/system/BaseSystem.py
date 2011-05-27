@@ -17,16 +17,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
-from stratuslab.Exceptions import ExecutionException
-from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
-    fileGetContent, filePutContent, scp, sshCmd
-import stratuslab.Util as Util
-from stratuslab.system.PackageInfo import PackageInfo
 import os
 import re
 import shutil
 import time
+from datetime import datetime
+
+from stratuslab import Exceptions
+from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
+    fileGetContent, filePutContent, scp, sshCmd
+import stratuslab.Util as Util
+from stratuslab.system.PackageInfo import PackageInfo
 
 class BaseSystem(object):
 
@@ -82,11 +83,11 @@ class BaseSystem(object):
                                      (self.installCmd, ' '.join(packages)),
                                      withOutput=True)
             if rc != 0:
-                raise ExecutionException('Error installing packages: %s\n%s' % \
+                raise Exceptions.ExecutionException('Error installing packages: %s\n%s' % \
                                          (packages, output))
             for err in self.installPackagesErrorMsgs:
                 if re.search(err, output, re.M):
-                    raise ExecutionException('Error installing packages: %s\n%s' % \
+                    raise Exceptions.ExecutionException('Error installing packages: %s\n%s' % \
                                              (packages, output))
 
     def installFrontendDependencies(self):
@@ -719,7 +720,7 @@ class BaseSystem(object):
             rc, output = self.executeCmdWithOutput(('iptables-save -t %s' %
                                                    table).split(' '))
             if rc != 0:
-                raise ExecutionException('iptables-save reported an error:\n%s'%
+                raise Exceptions.ExecutionException('iptables-save reported an error:\n%s'%
                                          output)
             rules.update({table:output})
         return rules

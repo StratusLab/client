@@ -379,7 +379,7 @@ class Testor(unittest.TestCase):
         options['newImageGroupName'] = 'base'
         options['newInstalledSoftwareName'] = 'CentOS'
         options['newInstalledSoftwareVersion'] = '5.5'
-        options['excludeFromBundle'] = '/etc/resolve.conf,/usr/sbin/pppdump'
+        options['excludeFromCreatedImage'] = '/etc/resolve.conf,/usr/sbin/pppdump'
         options['extraDiskSize'] = str(7*1024)
         options['scripts'] = '' # TODO: add some
         options['packages'] = 'python-dirq'

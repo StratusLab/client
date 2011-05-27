@@ -55,12 +55,16 @@ class MainProgram(Runnable):
                 default='', metavar='NAME')
 
         self.parser.add_option('--image-version', dest='newImageGroupVersion',
-                help='version for the new image',
+                help='version for the new image. By default a minor version of the base image is incremented.',
                 default='', metavar='VERSION')
 
         self.parser.add_option('--author', dest='author',
                 help='author of the new image',
                 default='', metavar='NAME')
+
+        self.parser.add_option('--comment', dest='comment',
+                help='description of the new image',
+                default='', metavar='TEXT')
 
         self.parser.add_option('-s', '--scripts', dest='scripts',
                 help='scripts to execute on the VM (comma separated)',
@@ -70,26 +74,23 @@ class MainProgram(Runnable):
                 help='packages to install on the machine (comma separated)',
                 default='', metavar='PACKAGE')
 
-        self.parser.add_option('--installer', dest='installer',
-                help='package installer (default yum)',
-                default='yum', metavar='NAME')
-
         self.parser.add_option('--os', dest='os',
                 help='operation system. By default is taken from Manifest.',
                 default='', metavar='OS')
+
+        self.parser.add_option('--installer', dest='installer',
+                help='package installer. By default recovered based on OS.',
+                default='', metavar='NAME')
 
         self.parser.add_option('--extra-os-repos', dest='extraOsReposUrls',
                 help='extra repositories to install [--packages] from (comma separated). For apt \
 "base_uri distribution [component1] ..."',
                 default='', metavar='URL')
 
-        self.parser.add_option('--exclude', dest='excludeFromBundle',
-                help='exclude file/dir from bundle (comma separated). Note: /tmp and /mnt are automatically excluded',
+        self.parser.add_option('--exclude', dest='excludeFromCreatedImage',
+                help='exclude file/dir from new image (comma separated). Removed by default: %s' % \
+                ', '.join(Creator.excludeFromCreatedImageDefault),
                 default='', metavar='FILE')
-
-        self.parser.add_option('--comment', dest='comment',
-                help='comment to append to the manifest file',
-                default='', metavar='TEXT')
 
         self.parser.add_option('--no-shutdown', dest='shutdownVm',
                 help='leave the VM running. A public IP will be assigned.',
@@ -99,11 +100,6 @@ class MainProgram(Runnable):
                 help='do not upload the new image to an appliances repository. \
                 Requires --no-shutdown (otherwise it makes little sense ;-)',
                 default=False, action='store_true')
-
-        self.parser.add_option('--extra-disk', dest='extraDiskSize',
-                help='extra data disk size in GB', metavar='INT',
-                action='callback', callback=self.diskSizeOptionCallback,
-                default=0, type='int')
 
         self.parser.add_option('--persistent-disk', dest='persistentDiskUUID',
                 help='persistent disk UUID',

@@ -27,7 +27,6 @@ import shutil
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Runner import Runner
-from stratuslab.Util import scp
 from stratuslab.Util import sshCmd
 from stratuslab.Util import sshCmdWithOutput
 from stratuslab.Util import waitUntilPingOrTimeout
@@ -50,8 +49,7 @@ from stratuslab.Signator import Signator
 from stratuslab.ManifestInfo import ManifestIdentifier
 from stratuslab.Image import Image
 from stratuslab.marketplace.Downloader import Downloader
-
-INSTALLERS = ('yum', 'apt') # TODO: should go to system/__init__.py
+from stratuslab.system import Systems
 
 class Creator(object):
 
@@ -63,6 +61,10 @@ class Creator(object):
                  'sha1'  :{'cmd':'sha1sum',  'sum':_defaultChecksum},
                  'sha256':{'cmd':'sha256sum','sum':_defaultChecksum},
                  'sha512':{'cmd':'sha512sum','sum':_defaultChecksum}}
+
+    excludeFromCreatedImageDefault = ['/tmp/*',
+                                      '/etc/ssh/ssh_host_*',
+                                      '/root/.ssh/{authorized_keys,known_hosts}']
 
     def __init__(self, image, configHolder):
         self.image = image
@@ -116,7 +118,7 @@ class Creator(object):
         self.vmName = 'creator'
 
         # Structure of the repository
-        self.appRepoStructure = 'images/#type_#/#os#-#osversion#-#arch#-#type#/#version#'
+        self.appRepoStructure = '#type_#/#os#-#osversion#-#arch#-#type#/#version#'
         # Repository image filename structure
         self.appRepoFilename = '#os#-#osversion#-#arch#-#type#-#version#.img.#compression#'
 
@@ -131,11 +133,9 @@ class Creator(object):
         self.imageFile = ''
         self.imageFileBundled = ''
 
-        self.excludeFromBundle = ['/tmp/*',
-                                  '/etc/ssh/ssh_host_*',
-                                  '/root/.ssh/{authorized_keys,known_hosts}'
-                                  ] + \
-                                  self.options.get('excludeFromBundle','').split(',')
+        self.excludeFromCreatedImage = \
+                                self.excludeFromCreatedImageDefault + \
+                                self.options.get('excludeFromCreatedImage','').split(',')
 
         self.installer = self.options.get('installer')
 
@@ -150,7 +150,6 @@ class Creator(object):
 
     @staticmethod
     def checksumImageLocal(filename, chksums=ManifestInfo.MANDATORY_CHECKSUMS):
-        # TODO: use 'hashlib' ?
         if not chksums:
             return {}
 
@@ -412,9 +411,12 @@ class Creator(object):
         self._setInstallerBasedOnOs()
 
     def _setOsFromManifest(self):
-        # could have been set via command line parameter
         if not self.os:
             self.os = self._getAttrFromManifest('os').lower()
+
+    def _setInstallerBasedOnOs(self):
+        if not self.installer:
+            self.installer = Systems.getInstallerBasedOnOs(self.os)
 
     def _getExtraDiskSizeBasedOnManifest(self):
         size = self._getAttrFromManifest('bytes')
@@ -424,9 +426,6 @@ class Creator(object):
         return newSize
 
     def _getAttrFromManifest(self, attr):
-#        info = ManifestInfo()
-#        info.parseManifest(self.manifest)
-        
         return getattr(self.manifestObject, attr)
 
     def _updateAndSaveManifest(self):
@@ -458,7 +457,7 @@ class Creator(object):
             if self.newImageGroupVersion:
                 info.version = '%s.%s' % (self.newImageGroupVersion, info.identifier)
         else:
-            info.version = self.newImageGroupVersion or info.version
+            info.version = self.newImageGroupVersion or str(float(info.version) + 0.1)
         info.comment = self.comment or info.comment
 
         return info
@@ -496,19 +495,13 @@ class Creator(object):
         if ret != 0:
             self._printError('An error occurred while installing packages')
 
-    def _setInstallerBasedOnOs(self):
-        if self.os == 'centos':
-            self.installer = 'yum'
-        elif self.os == 'ubuntu':
-            self.installer = 'apt'
-
     def _setUpExtraRepositories(self):
         if not self.extraOsReposUrls:
             return
 
         self.printDetail('Adding extra repositories')
 
-        if self.installer not in INSTALLERS:
+        if self.installer not in Systems.INSTALLERS:
             ValidationException('Unknown installer %s. Bailing out.' %
                                 self.installer)
 
@@ -564,16 +557,24 @@ deb %(name)s
             self.printDetail('No scripts to execute')
             return
 
-        self._printStep('Executing scripts: ' % self.scripts)
+        self._printStep('Executing scripts: %s' % self.scripts)
 
         for script in self.scripts.split(','):
-            scriptPath = '/tmp/%s' % os.path.basename(script)
-            scp(script, 'root@%s:%s' % (self.vmAddress, scriptPath),
-                self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
-
-            rc, output = self._sshCmdWithOutput(scriptPath, throwOnError=False)
+            scriptNameAndArgs = os.path.basename(script)
+            scriptName, args = scriptNameAndArgs.split(' ', 1)
+            
+            scriptDirectory = os.path.dirname(script)
+            scriptPathLocal = '%s/%s' % (scriptDirectory, scriptName)
+            scriptPathRemote = '/tmp/%s' % scriptName
+            rc = self._scp(scriptPathLocal, 'root@%s:%s' % (self.vmAddress, scriptPathRemote))
             if rc != 0:
-                self._printError('An error occurred while executing script %s:\n%s' % (script, output))
+                self._printError('An error occurred while uploading script %s' % script)
+            
+            self._sshCmdWithOutput('chmod 0755 %s' % scriptPathRemote)
+
+            rc = self._sshCmd('%s %s' % (scriptPathRemote, args), throwOnError=False)
+            if rc != 0:
+                self._printError('An error occurred while executing script %s' % script)
 
     def _executeRecipe(self):
         self._printStep('Executing user recipe')
@@ -588,17 +589,24 @@ deb %(name)s
             os.close(fd)
             os.chmod(recipeFile, 0755)
             scriptPath = '/tmp/%s' % os.path.basename(recipeFile)
-            scp(recipeFile, 'root@%s:%s' % (self.vmAddress, scriptPath),
-                self.userPrivateKeyFile, stderr=self.stderr, stdout=self.stdout)
-    
-            rc, output = self._sshCmdWithOutput(scriptPath, throwOnError=False)
+            rc = self._scp(recipeFile, 'root@%s:%s' % (self.vmAddress, scriptPath))
             if rc != 0:
-                self._printError('An error occurred while executing user recipe:\n%s' % output)
+                self._printError('An error occurred while uploading recipe')
+            self._sshCmdWithOutput('chmod 0755 %s' % scriptPath)
+    
+            rc = self._sshCmd(scriptPath, throwOnError=False)
+            if rc != 0:
+                self._printError('An error occurred while executing user recipe.')
         finally:
             try:
                 os.unlink(recipeFile)
             except:
                 pass
+
+    def _scp(self, src, dst):
+        return Util.scp(src, dst, self.userPrivateKeyFile,
+                        verboseLevel=self.verboseLevel, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                        stderr=self.stderr, stdout=self.stdout)
 
     def _createImage(self):
         self._printStep('Creating image')
@@ -663,7 +671,7 @@ EOF
         def _removeFilesForExclusion(base=''):
             self._printStep('Removing files/directories to be excluded')
 
-            filesOnBase = ['%s/%s' % (base, x) for x in self.excludeFromBundle if x]
+            filesOnBase = ['%s/%s' % (base, x) for x in self.excludeFromCreatedImage if x]
             cmd = 'rm -rf %s' % ' '.join(filesOnBase).strip()
 
             self._sshCmd(cmd, throwOnError=False)
