@@ -39,6 +39,7 @@ from stratuslab.marketplace.Downloader import Downloader
 import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
+import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -439,6 +440,11 @@ class Testor(unittest.TestCase):
     def registrationTest(self):
         '''Registration test'''
         suite = self._createSuiteFromTestModule(RegistrationTest)
+        self._executeSuite(suite)
+  
+    def ldapAuthenticationTest(self):
+        '''LDAP authentication test'''
+        suite = self._createSuiteFromTestModule(LdapAuthenticationTest)
         self._executeSuite(suite)
   
     def _createSuiteFromTestModule(self, module):
