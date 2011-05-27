@@ -31,6 +31,7 @@ from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Registration import Registration
 from stratuslab import Defaults
+from stratuslab.installator.PolicyValidator import PolicyValidator
 
 class BaseInstallator(object):
 
@@ -194,7 +195,8 @@ class BaseInstallator(object):
         self._addDefaultNetworks()
 
         self._configureRegistrationApplication()
-
+        self._configureMarketPlacePolicyValidation()
+        
     def _installCAs(self):
         self.frontend.installCAs()
 
@@ -244,7 +246,7 @@ class BaseInstallator(object):
 
     def _configureMarketPlacePolicyValidation(self):
         if(self.validateMetadata):
-            Registration(self.configHolder).run()
+            PolicyValidator(self.configHolder).run()
 
     def _configureFireWall(self):
         self.frontend.configureFireWall()
