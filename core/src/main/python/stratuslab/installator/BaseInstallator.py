@@ -242,6 +242,10 @@ class BaseInstallator(object):
         if(self.registration):
             Registration(self.configHolder).run()
 
+    def _configureMarketPlacePolicyValidation(self):
+        if(self.validateMetadata):
+            Registration(self.configHolder).run()
+
     def _configureFireWall(self):
         self.frontend.configureFireWall()
 

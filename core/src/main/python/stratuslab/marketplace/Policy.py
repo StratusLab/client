@@ -21,6 +21,7 @@
 import os
 import ConfigParser
 import urllib2
+from stratuslab import Defaults
 
 try:
     from lxml import etree
@@ -50,6 +51,8 @@ from stratuslab.marketplace.Downloader import Downloader
 
 class Policy(object):
 
+    POLICY_CFG = os.path.join(Defaults.ETC_DIR, 'policy.cfg')
+
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
         self.whiteListEndorsers = ['whiteListEndorsersFlag']
         self.blackListChecksums = ['blackListChecksumsFlag']
@@ -77,9 +80,9 @@ class Policy(object):
             self.blackListImages.append(j)    
     
     def check(self, identifierUri):
-        if not self._deactivateMetadataValidation():
-            print "validation processus"
-            self._Validate(identifierUri)
+        if self._isActive():
+            print "validation process"
+            self._validate(identifierUri)
         self._loadDom(self._downloadManifest(identifierUri))
 
         metadatas = self._retrieveMetadataList()
@@ -157,7 +160,7 @@ class Policy(object):
             return self._whiteListImagesPlugin(imageidentifier)
         elif (whiteOrblackList[0] == 'blackListImagesFlag'):
             return self._blackListImagesPlugin(imageidentifier)
-	elif (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
+        elif (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
             return self._whiteListEndorsersPlugin(emailendorser)
         elif (whiteOrblackList[0] == 'blackListChecksumsFlag'):
             return self._blackListChecksumsPlugin(checksumimages)
@@ -172,8 +175,8 @@ class Policy(object):
 
     def _blackListChecksumsPlugin(self, checksumimages):
         for checksumimage in checksumimages:
-               if (checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}algorithm') == 'SHA-1'):
-                  checksum_sha1 = checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}value')
+            if (checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}algorithm') == 'SHA-1'):
+                checksum_sha1 = checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}value')
         if (checksum_sha1 not in self.blackListChecksums):
             print True
             return True
@@ -197,15 +200,12 @@ class Policy(object):
             print False
             return False
 
-    def _deactivateMetadataValidation(self):
-	if (self.validateMetaData[0] == 'no'):
-            return True
-	else:
-	    return False
-	
-    def _Validate(self, identifierUri):
+    def _isActive(self):
+        return (Util.isTrueConfVal(self.validateMetaData[0]) and True) or False
+
+    def _validate(self, identifierUri):
         configHolder = ConfigHolder()
         configHolder.set('verboseLevel', 3)
         downloader = Downloader(configHolder)
-	downloader.download(identifierUri)
-			
+        downloader.download(identifierUri)
+        

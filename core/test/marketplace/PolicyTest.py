@@ -1,13 +1,12 @@
 import unittest
 import os
-import stratuslab.marketplace.Policy as Policy
 from xml.etree.ElementTree import ElementTree
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Exceptions import ValidationException, InputException
-
+from stratuslab.Exceptions import ValidationException
 
 class PolicyTest(unittest.TestCase):
+    
     def testFilter(self):
         xmltree = ElementTree()
         xmltree2 = ElementTree()
@@ -26,6 +25,14 @@ class PolicyTest(unittest.TestCase):
         if len(filtered2) == 0:
                 raise ValidationException('Failed policy check')
         print len(filtered2)
+
+    def testActivate(self):
+        policy = Policy(os.path.dirname(__file__) + "/policy.cfg")
+        policy.validateMetaData = ['no']
+        self.assertFalse(policy._isActive())
+        policy.validateMetaData = ['yes']
+        self.assertTrue(policy._isActive())
+
 
 if __name__ == "__main__":
     unittest.main()
