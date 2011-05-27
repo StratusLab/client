@@ -32,7 +32,7 @@ class Registration(object):
     def run(self):
         self._installPackages()
         self._configure()
-        self._restartService('authn-proxy')
+        self._restartService('one-proxy')
         
     def _installPackages(self):
         Util.printStep('Installing packages')

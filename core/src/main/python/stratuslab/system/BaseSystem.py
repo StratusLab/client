@@ -588,7 +588,7 @@ class BaseSystem(object):
         Util.appendOrReplaceInFile(filename, search, replace)        
 
     def configureCloudProxyService(self):
-        self.installPackages(['stratuslab-cloud-proxy'])
+        self.installPackages(['stratuslab-one-proxy'])
         self._configureProxyDefaultUsers()
         self._restartJetty()
 
@@ -602,7 +602,7 @@ class BaseSystem(object):
         Util.appendOrReplaceInFile(filename, search, replace)
 
     def _restartJetty(self):
-        self.executeCmd('/etc/init.d/authn-proxy restart'.split(' '))
+        self.executeCmd('/etc/init.d/one-proxy restart'.split(' '))
 
     # -------------------------------------------
     # Firewall

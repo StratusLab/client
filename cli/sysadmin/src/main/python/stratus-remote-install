@@ -94,7 +94,7 @@ class MainProgram(CommandBase):
         self.sshCmd("kill -9 $(ps aux | grep oneadmin | grep -v grep | awk '{print $2}')")
 
         self.sshCmd('yum remove one-2.0-StratusLab -y')
-        self.sshCmd('yum remove stratuslab-cloud-proxy -y')
+        self.sshCmd('yum remove stratuslab-one-proxy -y')
 
         self.sshCmd('userdel -r oneadmin')
         self.sshCmd('rm -rf /home/oneadmin')
