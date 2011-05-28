@@ -153,24 +153,29 @@ class LdapAuthenticationTest(unittest.TestCase):
             rc = self.tryUsernamePassword()
             self.assertTrue(rc != 0, 'unregistered user accessed service with username password')
 
+            rc = self.tryCertificate()
+            self.assertTrue(rc != 0, 'unregistered user accessed service with certificate')
+
             self.registerUser()
             self.verifyProfile()
 
             rc = self.tryUsernamePassword()
             self.assertTrue(rc != 0, 'user without role accessed service with username password')
 
+            rc = self.tryCertificate()
+            self.assertTrue(rc != 0, 'user without role accessed service with certificate')
+
             self.authorizeUser()
 
             rc = self.tryUsernamePassword()
             self.assertTrue(rc == 0, 'registered user with role could not access service with username password')
             
-            #rc = self.tryCertificate()
-            #self.assertTrue(rc == 0, 'registered user with role could not access service with certificate')
+            rc = self.tryCertificate()
+            self.assertTrue(rc == 0, 'registered user with role could not access service with certificate')
             
         finally:
             self.unauthorizeUser()
             self.deleteUserFromLdap()
-            print "DONE"
 
 
 if __name__ == "__main__":
