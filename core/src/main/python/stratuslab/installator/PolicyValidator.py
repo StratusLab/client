@@ -18,29 +18,42 @@
 # limitations under the License.
 #
 import os
+import shutil
 
 from stratuslab import Util
 from stratuslab import Defaults
 from stratuslab.marketplace.Policy import Policy
+from stratuslab.ConfigHolder import ConfigHolder
 
 class PolicyValidator(object):
     
     TEMPLATE_CFG = os.path.join(Defaults.TEMPLATE_DIR, 'policy.cfg.tpl')
-    CONFIG = os.path.join(Defaults.ETC_DIR, 'policy.cfg') 
+    CONFIG = os.path.join(Defaults.ETC_DIR, Policy.POLICY_CFG) 
+    CONFIG_SAV = CONFIG + '.sav'
 
-    def __init__(self, configHolder):
+    def __init__(self, configHolder=ConfigHolder()):
         configHolder.assign(self)
         
     def run(self):
         self._configure()
         
     def _configure(self):
-        policyFilename = os.path.join(Defaults.ETC_DIR, Policy.POLICY_CFG)
-        if os.path.exists(policyFilename):
-            Util.printWarning("Policy validation configuration file %s exists, skipping configuration")
+        if self._backupConfigFileExists():
+            Util.printWarning("Policy validation backup file %s already exists, skipping configuration" % PolicyValidator.CONFIG_SAV)
             return
 
         Util.printStep('Creating policy validation configuration file')
 
+        self._backup()
+
         Util.filePutContent(PolicyValidator.CONFIG,
                             Util.fileGetContent(PolicyValidator.TEMPLATE_CFG) % self.__dict__)
+
+    def _backupConfigFileExists(self):
+        return os.path.exists(PolicyValidator.CONFIG_SAV)
+    
+    def _backup(self):
+        if os.path.exists(PolicyValidator.CONFIG):
+            shutil.move(PolicyValidator.CONFIG, PolicyValidator.CONFIG_SAV)
+    
+    
