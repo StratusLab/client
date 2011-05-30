@@ -32,7 +32,6 @@ class NodeListGenerator(ListGenerator):
     def __init__(self):
         super(NodeListGenerator,self).__init__()
         self.title = 'List of nodes'
-        self.template = open('list.html.tpl').read()
         self.idTemplate = '            <td><a href="nodedetail.py?id=%(value)s"/>%(value)s</a></td>\n'
         self.fields = [['id','Id'],
                        ['name', 'IP'],

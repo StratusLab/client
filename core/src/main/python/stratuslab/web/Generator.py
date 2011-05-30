@@ -19,11 +19,12 @@
 # limitations under the License.
 #
 
+import os
+import sys
 import cgi
 import cgitb
 cgitb.enable()
 import datetime
-import os
 
 from urllib2 import HTTPError
 
@@ -32,8 +33,6 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ConfigurationException
 
 class HtmlGenerator(object):
-
-    configFile = 'conf/stratuslab.cfg'
 
     def __init__(self):
         self.template = None
@@ -53,7 +52,7 @@ class HtmlGenerator(object):
         self._serialize(content)
         
     def _loadConfiguration(self):
-        return ConfigHolder.configFileToDict(self.configFile)
+        return ConfigHolder.configFileToDict(self._findConfigFile())
         
     def _assignUsernamePassword(self, configHolder):
         configHolder.username = configHolder.one_username
@@ -170,14 +169,27 @@ class HtmlGenerator(object):
             return None
 
     def _readTemplate(self, filename):
-        if (os.path.exists('../template')):
-            rootLocation = '../template/'
-        elif (os.path.exists('template')):
-            rootLocation = 'template/'
-        else:
-            raise(ConfigurationException('Missing template directory'))
-        return open(rootLocation + filename).read()    
+        templateDir = self._findTemplateDir()
+        return open(os.path.join(templateDir, filename)).read()
     
+    def _findTemplateDir(self):
+        devRelativePath = '../../../../../../cgi/src/main/template'
+        cgiInstallPath = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'template')
+        paths = (devRelativePath, cgiInstallPath)
+        for path in paths:
+            if os.path.exists(path):
+                return path
+        raise(ConfigurationException('Missing template directory'))
+
+    def _findConfigFile(self):
+        devRelativePath = '../../../../../conf/stratuslab.cfg'
+        cgiConfig = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'conf/stratuslab.cfg')
+        paths = (devRelativePath, cgiConfig)
+        for path in paths:
+            if os.path.exists(path):
+                return path
+        raise(ConfigurationException('Missing configuration file'))
+
 class ListGenerator(HtmlGenerator):
 
     def __init__(self):

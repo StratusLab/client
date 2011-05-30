@@ -20,6 +20,7 @@
 #
 # ${BUILD_INFO}
 
+import sys
 import cgi, cgitb
 cgitb.enable()
 
@@ -71,4 +72,7 @@ class NodeDetailGenerator(DetailedGenerator):
         return str(state)
 
 if __name__ == '__main__':
+    if (len(sys.argv) > 2):
+        NodeDetailGenerator._findConfigFile = lambda _m: sys.argv[1]
+        NodeDetailGenerator._getQueryValue = lambda _m, id: sys.argv[2]
     NodeDetailGenerator().run()
