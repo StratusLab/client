@@ -31,8 +31,8 @@ from stratuslab.cloud.one import OneVmState
 
 class VmListGenerator(ListGenerator):
     
-    def __init__(self):
-        super(VmListGenerator,self).__init__()
+    def __init__(self, configFile):
+        super(VmListGenerator,self).__init__(configFile)
         self.title = 'List of instances'
         self.fields = [['id', 'Id'],
                        ['username', 'User'],
@@ -55,6 +55,8 @@ class VmListGenerator(ListGenerator):
         return str(state)
 
 if __name__ == '__main__':
+    configFile = ''
     if (len(sys.argv) > 1):
-        VmListGenerator.configFile = sys.argv[1]
-    VmListGenerator().run()
+        configFile = sys.argv[1]
+    VmListGenerator(configFile).run()
+

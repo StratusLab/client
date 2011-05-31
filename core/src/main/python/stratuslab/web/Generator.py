@@ -34,7 +34,8 @@ from stratuslab.Exceptions import ConfigurationException
 
 class HtmlGenerator(object):
 
-    def __init__(self):
+    def __init__(self, configFile=''):
+        self.configFile = configFile
         self.template = None
         self.monitor = None
         self.title = ''
@@ -42,7 +43,6 @@ class HtmlGenerator(object):
         self.fieldTemplate = '            <td>%(value)s</td>\n'
         self.metaRefresh = '<meta http-equiv="refresh" content="%(refreshInSeconds)s">'
         self.autoRefreshLink = '<a href="%(query)s">%(enableDisable)s auto refresh</a>'
-
 
     def run(self):
         configHolder = ConfigHolder(config=self._loadConfiguration())
@@ -173,7 +173,7 @@ class HtmlGenerator(object):
         return open(os.path.join(templateDir, filename)).read()
     
     def _findTemplateDir(self):
-        devRelativePath = '../../../../../../cgi/src/main/template'
+        devRelativePath = os.path.join(os.path.dirname(__file__),'../../../../../../cgi/src/main/template')
         cgiInstallPath = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'template')
         paths = (devRelativePath, cgiInstallPath)
         for path in paths:
@@ -182,9 +182,8 @@ class HtmlGenerator(object):
         raise(ConfigurationException('Missing template directory'))
 
     def _findConfigFile(self):
-        devRelativePath = '../../../../../conf/stratuslab.cfg'
         cgiConfig = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'conf/stratuslab.cfg')
-        paths = (devRelativePath, cgiConfig)
+        paths = (self.configFile, cgiConfig)
         for path in paths:
             if os.path.exists(path):
                 return path
@@ -192,8 +191,8 @@ class HtmlGenerator(object):
 
 class ListGenerator(HtmlGenerator):
 
-    def __init__(self):
-        super(ListGenerator,self).__init__()
+    def __init__(self, configFile):
+        super(ListGenerator,self).__init__(configFile)
         self.template = self._readTemplate('list.html.tpl')
         self.idTemplate = ''
 
@@ -207,8 +206,8 @@ class ListGenerator(HtmlGenerator):
 
 class DetailedGenerator(HtmlGenerator):
 
-    def __init__(self):
-        super(DetailedGenerator,self).__init__()
+    def __init__(self, configFile):
+        super(DetailedGenerator,self).__init__(configFile)
         self.template = self._readTemplate('detail.html.tpl')
         self.fieldTemplate = '        <tr>\n          <td>%(key)s</td><td>%(value)s</td>\n        </tr>\n'
         self.fieldGroups = []

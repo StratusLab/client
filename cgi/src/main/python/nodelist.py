@@ -20,6 +20,7 @@
 #
 # ${BUILD_INFO}
 
+import sys
 import cgi
 import cgitb
 cgitb.enable()
@@ -29,8 +30,8 @@ from stratuslab.cloud.one import OneHostState
 
 class NodeListGenerator(ListGenerator):
 
-    def __init__(self):
-        super(NodeListGenerator,self).__init__()
+    def __init__(self, configFile):
+        super(NodeListGenerator, self).__init__(configFile)
         self.title = 'List of nodes'
         self.idTemplate = '            <td><a href="nodedetail.py?id=%(value)s"/>%(value)s</a></td>\n'
         self.fields = [['id','Id'],
@@ -51,4 +52,7 @@ class NodeListGenerator(ListGenerator):
         return str(state)
 
 if __name__ == '__main__':
-    NodeListGenerator().run()
+    configFile = ''
+    if (len(sys.argv) > 1):
+        configFile = sys.argv[1]
+    NodeListGenerator(configFile).run()

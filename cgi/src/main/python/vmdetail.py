@@ -31,8 +31,8 @@ from stratuslab.cloud.one import OneVmState
 
 class VmDetailGenerator(DetailedGenerator):
     
-    def __init__(self):
-        super(VmDetailGenerator,self).__init__()
+    def __init__(self, configFile):
+        super(VmDetailGenerator, self).__init__(configFile)
         self.title = 'Instance detail'
         self.fieldGroups = [['Virtual Machine Information', [['id', 'Id'],
                                                              ['deploy_id', 'Deployment id'],
@@ -53,7 +53,8 @@ class VmDetailGenerator(DetailedGenerator):
         return str(state)
 
 if __name__ == '__main__':
-    if (len(sys.argv) > 2):
-        VmDetailGenerator.configFile = sys.argv[1]
+    configFile = ''
+    if (len(sys.argv) > 1):
+        configFile = sys.argv[1]
         VmDetailGenerator._getQueryValue = lambda _m, id: sys.argv[2]
-    VmDetailGenerator().run()
+    VmDetailGenerator(configFile).run()

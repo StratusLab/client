@@ -31,8 +31,8 @@ from stratuslab.cloud.one import OneHostState
 
 class NodeDetailGenerator(DetailedGenerator):
     
-    def __init__(self):
-        super(NodeDetailGenerator,self).__init__()
+    def __init__(self, configFile):
+        super(NodeDetailGenerator, self).__init__(configFile)
         self.title = 'Node detail'
         self.fieldGroups = [['Host Information', [['id', 'Id'],
                                                   ['name', 'Name'],
@@ -72,7 +72,8 @@ class NodeDetailGenerator(DetailedGenerator):
         return str(state)
 
 if __name__ == '__main__':
-    if (len(sys.argv) > 2):
-        NodeDetailGenerator._findConfigFile = lambda _m: sys.argv[1]
+    configFile = ''
+    if (len(sys.argv) > 1):
+        configFile = sys.argv[1]
         NodeDetailGenerator._getQueryValue = lambda _m, id: sys.argv[2]
-    NodeDetailGenerator().run()
+    NodeDetailGenerator(configFile).run()
