@@ -248,6 +248,11 @@ def execute(commandAndArgsList, **kwargs):
     else:
         return process.returncode
 
+def executeRaiseOnError(cmd):
+    res, output = execute(cmd.split(' '), withOutput=True)
+    if res:
+        raise ExecutionException('Failed executing %s with detail %s' % (cmd, output))
+
 def _printDetail(message, kwargs={}):
     verboseLevel = _extractVerboseLevel(kwargs)
     verboseThreshold = _extractVerboseThreshold(kwargs)
