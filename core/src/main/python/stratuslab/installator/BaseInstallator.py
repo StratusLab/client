@@ -32,6 +32,7 @@ from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Registration import Registration
 from stratuslab import Defaults
 from stratuslab.installator.PolicyValidator import PolicyValidator
+from stratuslab.installator.WebMonitor import WebMonitor
 
 class BaseInstallator(object):
 
@@ -44,6 +45,7 @@ class BaseInstallator(object):
         self.options = {}
         self.nodeAddr = None
         self.appRepoAddr = None
+        self.webMonitor = False
         self.installCloudia = None
         self.frontend = None
         self.node = None
@@ -70,6 +72,12 @@ class BaseInstallator(object):
             self._runInstallAppRepo()
             printStep('Installation completed')
             return
+        elif self.webMonitor:
+            printAction('Web Monitor installation')
+            self._runInstallWebMonitor()
+            printStep('Installation completed')
+            return
+
         elif self.installCloudia:
             printAction('Claudia installation')
             self._runInstallClaudia()
@@ -147,6 +155,11 @@ class BaseInstallator(object):
     def _runInstallAppRepo(self):
         appRepo = AppRepo(self.configHolder)
         appRepo.run()
+
+
+    def _runInstallWebMonitor(self):
+        webMonitor = WebMonitor(self.configHolder)
+        webMonitor.run()
 
     def _runInstallClaudia(self):
         claudiaInstaller = Claudia(self.configHolder)
