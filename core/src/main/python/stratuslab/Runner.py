@@ -385,7 +385,7 @@ class Runner(object):
         return vmStarted
 
     def _checkImageExists(self, image):
-        """image - URL or image ID"""
+        '''image - URL or image ID'''
         self.printDetail('Checking image availability.')
         if self.noCheckImageUrl:
             Util.printWarning('Image availability check is disabled.')
