@@ -39,7 +39,7 @@ class Claudia(object):
         self.smFile = self.claudiaHome+"/conf/sm.properties"
         self.tcloudFile = self.claudiaHome+"/conf/tcloud.properties"
         self.claudiaClientFile= self.claudiaHome+"/conf/claudiaClient.properties"
-        selt.reportClientFile = self.claudiaHome+"/conf/reportClient.properties"
+        self.reportClientFile = self.claudiaHome+"/conf/reportClient.properties"
 
         # Network configuration 
         self.publicNet = "IP:"+self.claudiaPublicIp+";"+    \
