@@ -26,7 +26,6 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseUser
-from stratuslab.Util import manifestExt
 from stratuslab.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
@@ -55,8 +54,6 @@ class MainProgram(AuthnCommand):
         Uploader.checkUploadOptions(self.options, self.parser)
         self.checkP12CertOptionsOnly()
 
-        if not self.manifest.endswith(manifestExt):
-            self.parser.error('Manifest must end with %s' % manifestExt)
         if not os.path.isfile(self.manifest):
             self.parser.error('Appliance manifest does not exist: ' + self.manifest)
 
