@@ -72,7 +72,7 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
 
     def _configurePolicies(self):
-        oneAuthTpl = os.path.join(Defaults.TEMPLATE_DIR, 'auth.conf.tpl')
+        oneAuthTpl = os.path.join(Util.getTemplateDir(), 'auth.conf.tpl')
         if not os.path.isfile(oneAuthTpl):
             Util.printError('ONE auth configuration template '
                        '%s does not exists' % oneAuthTpl)

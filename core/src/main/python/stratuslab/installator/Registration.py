@@ -41,7 +41,7 @@ class Registration(object):
     def _configure(self):
         Util.printStep('Creating registration configuration file')
         
-        registrationTpl = os.path.join(Defaults.TEMPLATE_DIR, 'registration.cfg.tpl')
+        registrationTpl = os.path.join(Util.getTemplateDir(), 'registration.cfg.tpl')
         registrationConfFile = os.path.join(Defaults.ETC_DIR, 'registration.cfg') 
         Util.filePutContent(registrationConfFile,
                             Util.fileGetContent(registrationTpl) % self.__dict__)

@@ -27,7 +27,7 @@ from stratuslab.ConfigHolder import ConfigHolder
 
 class PolicyValidator(object):
     
-    TEMPLATE_CFG = os.path.join(Defaults.TEMPLATE_DIR, 'policy.cfg.tpl')
+    TEMPLATE_CFG = os.path.join(Util.getTemplateDir(), 'policy.cfg.tpl')
     CONFIG = os.path.join(Defaults.ETC_DIR, Policy.POLICY_CFG) 
     CONFIG_SAV = CONFIG + '.sav'
 

@@ -58,6 +58,12 @@ def getShareDir():
     else:
         return os.path.join(os.path.dirname(__file__),'../../../../share')
 
+def getTemplateDir():
+    if os.path.exists(Defaults.TEMPLATE_DIR):
+        return Defaults.TEMPLATE_DIR
+    else:
+        return os.path.join(os.path.dirname(__file__),'../../../../share/template')
+
 def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())

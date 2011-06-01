@@ -67,7 +67,7 @@ class MainProgram(CommandBaseSysadmin):
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 
                                help='ONe daemon template', metavar='TEMPLATE',
-                               default=os.path.join(Defaults.TEMPLATE_DIR, 'oned.conf.tpl'))
+                               default=os.path.join(Util.getTemplateDir(), 'oned.conf.tpl'))
         self.parser.add_option('--im', dest='infoDriver', 
                                help='information driver', metavar='IM_NAME', default=None)
         self.parser.add_option('--vmm', dest='virtDriver',

@@ -90,7 +90,7 @@ class ManifestInfo(object):
 
         self.user = self.creator
 
-        self.template = os.path.join(os.path.join(Defaults.TEMPLATE_DIR, 'manifest.xml.tpl'))
+        self.template = os.path.join(os.path.join(Util.getTemplateDir(), 'manifest.xml.tpl'))
 
         self.attrsAndNamespaces = \
                             (('type','type',NS_DCTERMS,None),
