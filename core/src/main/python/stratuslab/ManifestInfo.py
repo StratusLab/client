@@ -96,7 +96,7 @@ class ManifestInfo(object):
 
         self.attrsAndNamespaces = \
                             (('type','type',NS_DCTERMS,None),
-                             ('created','created',NS_DCTERMS,None),
+                             ('created','created',NS_SLREQ,None),
                              ('email','email',NS_SLREQ,None),
                              ('valid','valid',NS_DCTERMS,None),
                              ('os','os',NS_SLTERMS,None),
