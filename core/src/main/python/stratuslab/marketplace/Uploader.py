@@ -64,5 +64,5 @@ class Uploader(object):
         url = '%s/%s' % (self.marketplaceEndpoint, info.identifier)
         client.post(url, manifest)
 
-        finalUrl = '%s/%s/%s/%s' % (self.marketplaceEndpoint, info.identifier, info.email, info.created)
+        finalUrl = '%s/%s/%s/%s' % (self.marketplaceEndpoint, info.identifier, info.email, info.endorsementCreated)
         print finalUrl
