@@ -62,6 +62,8 @@ class ManifestInfo(object):
         self.created = '' # image creation time (in iso8601)
         self.user = self.creator = '' # full name of image creator
 
+        self.email = '' # email address of endorser
+
         self.compression = '' # image compression: gz, bz2, ..
         self.comment = ''
         self.filename = '' # filename of compressed image (old manifest)
@@ -95,6 +97,7 @@ class ManifestInfo(object):
         self.attrsAndNamespaces = \
                             (('type','type',NS_DCTERMS,None),
                              ('created','created',NS_DCTERMS,None),
+                             ('email','email',NS_SLREQ,None),
                              ('valid','valid',NS_DCTERMS,None),
                              ('os','os',NS_SLTERMS,None),
                              ('arch','os-arch',NS_SLTERMS,None),

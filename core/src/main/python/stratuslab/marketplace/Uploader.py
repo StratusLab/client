@@ -19,6 +19,7 @@
 #
 
 import os
+import re
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.HttpClient import HttpClient
@@ -47,10 +48,10 @@ class Uploader(object):
     @staticmethod
     def checkUploadOptions(options, parser):
         if not options.marketplaceEndpoint:
-            options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, Defaults.marketplaceEndpoint)                    
+            options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, Defaults.marketplaceEndpoint)
+        options.marketplaceEndpoint = re.sub(r"/*$", '', options.marketplaceEndpoint)
 
     def upload(self, manifestFilename):
-        Util.printStep('Uploading metadata')
         client = HttpClient()
         if not os.path.exists(manifestFilename):
             raise InputException('Can\'t find metadata file: %s' % manifestFilename)
@@ -60,5 +61,8 @@ class Uploader(object):
         info = ManifestInfo(self.confHolder)
         info.parseManifest(manifest)
         
-        url = self.marketplaceEndpoint + '/' + info.identifier
+        url = '%s/%s' % (self.marketplaceEndpoint, info.identifier)
         client.post(url, manifest)
+
+        finalUrl = '%s/%s/%s/%s' % (self.marketplaceEndpoint, info.identifier, info.email, info.created)
+        print finalUrl
