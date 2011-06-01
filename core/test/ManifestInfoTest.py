@@ -55,10 +55,7 @@ class AppRepoInfoTest(unittest.TestCase):
             <slreq:value>816e6f78364c814701f6497dd3e3e076ba25754560cff489b33ca2e46889ad4ec14497fb6fce11fb7631b006e7621b2442a7da7fe6a92fc888ea6d9097b9e453</slreq:value>
         </slreq:checksum>
 
-        <slreq:endorsement rdf:parseType="Resource">
-            <slreq:created>2011-01-24T09:59:59Z</slreq:created>
-            <slreq:email>jsmith@example.org</slreq:email>
-        </slreq:endorsement>
+        <slreq:endorsement rdf:parseType="Resource"/>
 
         <dcterms:created>2011-01-24T09:59:42Z</dcterms:created>
         <dcterms:creator>Charles LOOMIS</dcterms:creator>
@@ -123,10 +120,7 @@ class AppRepoInfoTest(unittest.TestCase):
             <slreq:value>816e6f78364c814701f6497dd3e3e076ba25754560cff489b33ca2e46889ad4ec14497fb6fce11fb7631b006e7621b2442a7da7fe6a92fc888ea6d9097b9e453</slreq:value>
         </slreq:checksum>
 
-        <slreq:endorsement rdf:parseType="Resource">
-            <slreq:created>2011-01-24T09:59:59Z</slreq:created>
-            <slreq:email>jsmith@example.org</slreq:email>
-        </slreq:endorsement>
+        <slreq:endorsement rdf:parseType="Resource"/>
 
         <dcterms:created>2011-01-24T09:59:42Z</dcterms:created>
         <dcterms:creator>Charles LOOMIS</dcterms:creator>
@@ -145,8 +139,7 @@ class AppRepoInfoTest(unittest.TestCase):
         infoDC = ManifestInfo()
         infoDC.parseManifest(AppRepoInfoTest.manifestDcFull)
 
-        self.assertEquals('2011-01-24T09:59:59Z', infoDC.created)
-        self.assertEquals('jsmith@example.org', infoDC.email)
+        self.assertEquals('2011-01-24T09:59:42Z', infoDC.created)
 
     def testUpdateManifest(self):
 
