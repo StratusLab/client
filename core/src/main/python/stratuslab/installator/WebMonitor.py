@@ -19,7 +19,6 @@
 #
 import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab import Util
-from stratuslab.Exceptions import ExecutionException
 
 class WebMonitor(object):
 

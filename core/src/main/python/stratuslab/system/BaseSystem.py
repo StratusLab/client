@@ -28,7 +28,6 @@ from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
     fileGetContent, filePutContent, scp, sshCmd
 import stratuslab.Util as Util
 from stratuslab.system.PackageInfo import PackageInfo
-from stratuslab import Defaults
 
 class BaseSystem(object):
 
