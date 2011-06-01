@@ -63,7 +63,6 @@ class ManifestInfo(object):
         self.user = self.creator = '' # full name of image creator
 
         self.email = '' # email address of endorser
-        self.endorsementCreated = '' # signature timestamp
 
         self.compression = '' # image compression: gz, bz2, ..
         self.comment = ''
@@ -148,8 +147,6 @@ class ManifestInfo(object):
         # email and endorsement timestamp if present
         self.email = getattr(xml.find('.//{%s}email' % NS_SLREQ), 'text',
                             self.email)
-        self.endorsementCreated = getattr(xml.find('.//{%s}created' % NS_SLREQ), 'text',
-                            self.endorsementCreated)
 
         # extra elements with defaults
         self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
