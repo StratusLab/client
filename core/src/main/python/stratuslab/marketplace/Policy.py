@@ -54,10 +54,12 @@ class Policy(object):
     POLICY_CFG = os.path.join(Defaults.ETC_DIR, 'policy.cfg')
 
     def __init__(self, policyConfigFilename, configHolder = ConfigHolder()):
-        self.whiteListEndorsers = ['whiteListEndorsersFlag']
-        self.blackListChecksums = ['blackListChecksumsFlag']
-        self.whiteListImages = ['whiteListImagesFlag']
-        self.blackListImages = ['blackListImagesFlag']
+        self.whiteListEndorsers = ['whiteListEndorsers']
+        self.blackListEndorsers = ['blackListEndorsers']
+        self.whiteListChecksums = ['whiteListChecksums']
+        self.blackListChecksums = ['blackListChecksums']
+        self.whiteListImages = ['whiteListImages']
+        self.blackListImages = ['blackListImages']
         self.validateMetaData = []
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
@@ -68,16 +70,35 @@ class Policy(object):
             raise InputException("Can't find policy configuration file: %s" % configfile)
         config = ConfigParser.ConfigParser()
         config.read(configfile)
-        for _,j in config.items('whitelistendorsers'):
-            self.whiteListEndorsers.append(j)
-        for _,j in config.items('blacklistchecksums'):
-            self.blackListChecksums.append(j)
-        for _,j in config.items('validatemetadatafile'):
-            self.validateMetaData.append(j)
-        for _,j in config.items('whitelistimages'):
-            self.whiteListImages.append(j)	    
-        for _,j in config.items('blacklistimages'):
-            self.blackListImages.append(j)    
+        sections=config.sections()
+        if 'whitelistendorsers' in sections:
+            for _,j in config.items('whitelistendorsers'):
+                if j != '':
+                    self.whiteListEndorsers.append(j)
+        if 'blacklistendorsers' in sections:
+            for _,j in config.items('blacklistendorsers'):
+                if j != '':
+                    self.blackListEndorsers.append(j)
+        if 'blacklistchecksum' in sections:
+            for _,j in config.items('blacklistchecksum'):
+                if j != '':
+                    self.blackListChecksums.append(j)
+        if 'whitelistchecksum' in sections:
+            for _,j in config.items('whitelistchecksum'):
+                if j != '':
+                    self.whiteListChecksums.append(j)
+        if 'whitelistimages' in sections:
+            for _,j in config.items('whitelistimages'):
+                if j != '':
+                    self.whiteListImages.append(j)
+        if 'blacklistimages' in sections:
+            for _,j in config.items('blacklistimages'):
+                if j != '':
+                    self.blackListImages.append(j)
+        if 'validatemetadatafile' in sections:
+            for _,j in config.items('validatemetadatafile'):
+                if j != '':
+                    self.validateMetaData.append(j)
     
     def check(self, identifierUri):
         if self._isActive():
@@ -103,10 +124,20 @@ class Policy(object):
             raise ValidationException('Failed policy check')
         print len(filtered2)
         
-        filtered3 = self._filter(filtered2, self.blackListChecksums)	
+        filtered3 = self._filter(filtered2, self.blackListEndorsers)
         if len(filtered3) == 0:
             raise ValidationException('Failed policy check')
         print len(filtered3)
+        
+        filtered4 = self._filter(filtered3, self.whiteListChecksums)
+        if len(filtered4) == 0:
+            raise ValidationException('Failed policy check')
+        print len(filtered4)
+
+        filtered5 = self._filter(filtered4, self.blackListChecksums)	
+        if len(filtered5) == 0:
+            raise ValidationException('Failed policy check')
+        print len(filtered5)
 
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
@@ -156,21 +187,48 @@ class Policy(object):
         imageidentifier = metadata.findtext('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
         checksumimages = metadata.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://mp.stratuslab.eu/slreq#}checksum')
         
-        if (whiteOrblackList[0] == 'whiteListImagesFlag'):
+        if (whiteOrblackList[0] == 'whiteListImages' and len(self.whiteListImages)>1):
             return self._whiteListImagesPlugin(imageidentifier)
-        elif (whiteOrblackList[0] == 'blackListImagesFlag'):
+        elif (whiteOrblackList[0] == 'blackListImages' and len(self.blackListImages)>1):
             return self._blackListImagesPlugin(imageidentifier)
-        elif (whiteOrblackList[0] == 'whiteListEndorsersFlag'):
+        elif (whiteOrblackList[0] == 'whiteListEndorsers' and len(self.whiteListEndorsers)>1):
             return self._whiteListEndorsersPlugin(emailendorser)
-        elif (whiteOrblackList[0] == 'blackListChecksumsFlag'):
+        elif (whiteOrblackList[0] == 'blackListEndorsers' and len(self.blackListEndorsers)>1):
+            return self._blackListEndorsersPlugin(emailendorser)
+        elif (whiteOrblackList[0] == 'whiteListChecksums' and len(self.whiteListChecksums)>1):
+            return self._whiteListChecksumsPlugin(checksumimages)
+        elif (whiteOrblackList[0] == 'blackListChecksums' and len(self.blackListChecksums)>1):
             return self._blackListChecksumsPlugin(checksumimages)
+        else:
+            print"Warning : no policy %s defined" %whiteOrblackList[0]
+            return True      
 
     def _whiteListEndorsersPlugin(self, emailendorser):
         if (emailendorser in self.whiteListEndorsers):
-            print True
+            print "email endorser %emailendorser is  whitelisted" %emailendorser
             return True
         else:
-            print False
+            print "email endorser %emailendorser is not whitelisted" %emailendorser
+            return False
+
+    def _blackListEndorsersPlugin(self, emailendorser):
+        if (emailendorser not in self.blackListEndorsers):
+            print "email endorser %s is not blacklisted" %emailendorser
+            return True
+        else:
+            print "email endorser %s is blacklisted" %emailendorser
+            return False
+    
+
+    def _whiteListChecksumsPlugin(self, checksumimages):
+        for checksumimage in checksumimages:
+            if (checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}algorithm') == 'SHA-1'):
+                checksum_sha1 = checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}value')
+        if (checksum_sha1  in self.whiteListChecksums):
+            print "SHA-1 checksum image %s is whitelisted" %checksum_sha1
+            return True
+        else:
+            print "SHA-1 checksum image %s is not whitelisted" %checksum_sha1
             return False
 
     def _blackListChecksumsPlugin(self, checksumimages):
@@ -178,26 +236,26 @@ class Policy(object):
             if (checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}algorithm') == 'SHA-1'):
                 checksum_sha1 = checksumimage.findtext('{http://mp.stratuslab.eu/slreq#}value')
         if (checksum_sha1 not in self.blackListChecksums):
-            print True
+            print "SHA-1 checksum image %s is not blacklisted" %checksum_sha1
             return True
         else:
-            print False
+            print "SHA-1 checksum image %s is blacklisted" %checksum_sha1
             return False
 
     def _whiteListImagesPlugin(self, imageidentifier):
         if (imageidentifier in self.whiteListImages):
-            print True
+            print "image identifier %s is whitelisted" %imageidentifier
             return True
         else:
-            print False
+            print "image identifier %s is not whitelisted" %imageidentifier
             return False
 
     def _blackListImagesPlugin(self, imageidentifier):
         if (imageidentifier not in self.blackListImages):
-            print True
+            print "image identifier %s is not blacklisted" %imageidentifier
             return True
         else:
-            print False
+            print "image identifier %s is blacklisted" %imageidentifier
             return False
 
     def _isActive(self):
