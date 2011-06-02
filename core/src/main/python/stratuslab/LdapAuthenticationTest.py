@@ -20,8 +20,6 @@
 import unittest
 import httplib2
 import urllib
-import random
-import string
 
 import ldap
 
