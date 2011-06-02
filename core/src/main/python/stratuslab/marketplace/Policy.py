@@ -205,10 +205,10 @@ class Policy(object):
 
     def _whiteListEndorsersPlugin(self, emailendorser):
         if (emailendorser in self.whiteListEndorsers):
-            print "email endorser %emailendorser is  whitelisted" %emailendorser
+            print "email endorser %s is  whitelisted" %emailendorser
             return True
         else:
-            print "email endorser %emailendorser is not whitelisted" %emailendorser
+            print "email endorser %s is not whitelisted" %emailendorser
             return False
 
     def _blackListEndorsersPlugin(self, emailendorser):
