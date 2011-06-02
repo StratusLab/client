@@ -24,22 +24,25 @@ import time
 import unittest
 import urllib2
 
-from stratuslab.Monitor import Monitor
-from stratuslab.Registrar import Registrar
-from stratuslab.Runner import Runner
-from stratuslab.Uploader import Uploader
-from stratuslab.Creator import Creator
-from stratuslab.Exceptions import NetworkException, OneException
-from stratuslab.Exceptions import ConfigurationException
-from stratuslab.Exceptions import ExecutionException
-from stratuslab.Exceptions import InputException
-from stratuslab.ConfigHolder import ConfigHolder
 import Util
-from stratuslab.marketplace.Downloader import Downloader
-import stratuslab.ClaudiaTest as ClaudiaTest
-import stratuslab.ClusterTest as ClusterTest
-import stratuslab.RegistrationTest as RegistrationTest
-import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
+
+from Monitor import Monitor
+from Registrar import Registrar
+from Runner import Runner
+from Uploader import Uploader
+from Creator import Creator
+from Exceptions import NetworkException, OneException
+from Exceptions import ConfigurationException
+from Exceptions import ExecutionException
+from Exceptions import InputException
+from ConfigHolder import ConfigHolder
+
+from marketplace.Downloader import Downloader
+
+import systemtest.ClaudiaTest as ClaudiaTest
+import systemtest.ClusterTest as ClusterTest
+import systemtest.RegistrationTest as RegistrationTest
+import systemtest.LdapAuthenticationTest as LdapAuthenticationTest
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
