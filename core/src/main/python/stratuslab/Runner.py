@@ -65,6 +65,8 @@ class Runner(object):
         self.vm_image = image
 
         self._initAttributes()
+        
+        self.instancesDetail = []
 
     def _initAttributes(self):
         # VM template parameters initialization
@@ -333,6 +335,7 @@ class Runner(object):
                 print '%s, %s' % (vmId, ip)
             else:
                 self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
+            self.instancesDetail.append({'id': vmId, 'ip': ip, 'networkName': networkName})
 
         self._saveVmIds()
 
