@@ -155,10 +155,10 @@ class PemCertificate(object):
 
         parser.add_option('--pem-cert', dest='pemCertificate', 
                                help='PEM certificate file. Default %s. STRATUSLAB_PEM_CERTIFICATE' % PemCertificate.certDefaultLocation, 
-                               default=PemCertificate.certDefaultLocation, metavar='FILE')
+                               default=defaultOptions['pemCertificate'], metavar='FILE')
         parser.add_option('--pem-key', dest='pemKey', 
                                help='PEM public key file. Default %s. STRATUSLAB_PEM_KEY' % PemCertificate.keyDefaultLocation, 
-                               default=PemCertificate.keyDefaultLocation, metavar='Key')
+                               default=defaultOptions['pemKey'], metavar='KEY')
         return parser
 
     @staticmethod
@@ -187,7 +187,7 @@ class P12Certificate(object):
 
         parser.add_option('--p12-cert', dest='p12Certificate', 
                           help='PKCS12 (P12) certificate file. Default %s. STRATUSLAB_P12_CERTIFICATE' % P12Certificate.certDefaultLocation, 
-                          default=P12Certificate.certDefaultLocation, metavar='FILE')
+                          default=defaultOptions['p12Certificate'], metavar='FILE')
         parser.add_option('--p12-password', dest='p12Password', 
                           help='PKCS12 (P12) password. Default STRATUSLAB_P12_PASSWORD', 
                           default=defaultOptions['p12Password'], metavar='PASSWORD')
