@@ -135,12 +135,16 @@ class Uploader(object):
     def buildRepoNameStructure(structure, info):
         varPattern = '#%s#'
         dirVarPattern = '#%s_#'
+
         for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
             if structure.find(varPattern % part) != -1:
-                structure = structure.replace(varPattern % part, getattr(info, part))
-
+                # if value contains '/' substitute it with '.', so that it's not 
+                # accounted later as a part of a directory structure.
+                replacement = getattr(info, part).replace('/','.')
+                structure = structure.replace(varPattern % part, replacement)
             if structure.find(dirVarPattern % part) != -1:
                 structure = structure.replace(dirVarPattern % part, getattr(info, part).replace('.', '/'))
+
         return structure
 
     def __init__(self, manifestFile, configHolder=ConfigHolder()):
