@@ -51,7 +51,8 @@ class MainProgram(Runnable):
                 default='', metavar='VERSION')
 
         self.parser.add_option('--image-group', dest='newImageGroupName',
-                help='group for the new image (this corresponds to the base image folder - e.g. base, grid)',
+                help='group for the new image (this corresponds to the base image folder - e.g. base, grid). '
+                'In case of structured groups use "." as delimiter. Eg. group.subgroup.etc',
                 default='', metavar='NAME')
 
         self.parser.add_option('--image-version', dest='newImageGroupVersion',
