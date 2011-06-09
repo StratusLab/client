@@ -138,10 +138,7 @@ class Uploader(object):
 
         for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
             if structure.find(varPattern % part) != -1:
-                # if value contains '/' substitute it with '.', so that it's not 
-                # accounted later as a part of a directory structure.
-                replacement = getattr(info, part).replace('/','.')
-                structure = structure.replace(varPattern % part, replacement)
+                structure = structure.replace(varPattern % part, getattr(info, part))
             if structure.find(dirVarPattern % part) != -1:
                 structure = structure.replace(dirVarPattern % part, getattr(info, part).replace('.', '/'))
 
