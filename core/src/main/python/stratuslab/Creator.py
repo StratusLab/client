@@ -179,7 +179,10 @@ class Creator(object):
 
         self._updateAppRepoStructures()
         self._retrieveManifest()
-        info = self._updateManifest()
+        info = self.manifestObject
+        # Update type if was given as a new image group name.
+        # All the rest is irrelevant here.
+        info.type = self.newImageGroupName or info.type
         fileName = self.appRepoFilename
 
         self.printDetail('Building image name')
@@ -443,8 +446,7 @@ class Creator(object):
 
         info.parseManifest(self.manifest)
         for name, checksum in self.checksums.items():
-            if not getattr(info, name):
-                setattr(info, name, checksum['sum'])
+            setattr(info, name, checksum['sum'])
         info.identifier = ManifestIdentifier().sha1ToIdentifier(info.sha1)
         info.created = Util.getTimeInIso8601()
         info.valid = Util.toTimeInIso8601(time.time() + ManifestInfo.IMAGE_VALIDITY)
