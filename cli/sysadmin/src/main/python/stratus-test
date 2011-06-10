@@ -85,6 +85,13 @@ class MainProgram(CommandBase):
                                'IP defined in configuration file will be used.',
                                default='', metavar='ENDPOINT')
 
+        self.parser.add_option('--image-id-createimage', dest='imageIdCreateImage',
+                               help='ID of the image to be used with createImageTest. '
+                               'Default: F_f_Kf97uAYrvcji6jbXjpVOYW4',
+                               default='F_f_Kf97uAYrvcji6jbXjpVOYW4', metavar='ID')
+
+        
+
         Uploader.buildAppRepoOptionsParser(self.parser)
 
         AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())

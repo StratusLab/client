@@ -64,6 +64,7 @@ class Testor(unittest.TestCase):
         self.testsToRun = []
         self.quotaCpu = 2
         self.runner = None
+        self.imageIdCreateImage = ''
 
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
@@ -340,8 +341,7 @@ class Testor(unittest.TestCase):
 
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
-        image = 'OMd8M7ixG3toGqm8C1MhUphMJWF'
-        creator = self._createCreator(image)
+        creator = self._createCreator(self.imageIdCreateImage)
 
         newImage = creator.showName()
         newImageUri = '%s/%s'%(creator.apprepoEndpoint, newImage)
