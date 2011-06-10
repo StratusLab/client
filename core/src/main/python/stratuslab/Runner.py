@@ -313,7 +313,7 @@ class Runner(object):
         self._checkImageExists(self.vm_image)
         self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
 
-        self.printAction('Starting machines')
+        self.printAction('Starting machine(s)')
 
         vmTpl = self._buildVmTemplate(self.vmTemplatePath)
 

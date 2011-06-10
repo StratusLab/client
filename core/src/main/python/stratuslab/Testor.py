@@ -48,6 +48,13 @@ class Testor(unittest.TestCase):
     configHolder = None
     testNames = []
 
+    def setUp(self):
+        self.vmIds = []
+        self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz'
+
+    def tearDown(self):
+        pass
+
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
 
@@ -61,7 +68,6 @@ class Testor(unittest.TestCase):
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
 
-        self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz'
 
     def _setFieldsFromEnvVars(self):
         self._setSingleFieldFromEnvVar('apprepoUsername', 'STRATUSLAB_APPREPO_USERNAME')
@@ -78,9 +84,6 @@ class Testor(unittest.TestCase):
     def _setSingleFieldFromEnvVar(self, field, env):
         if env in os.environ:
             setattr(self, field, os.environ[env])
-
-    def setupUp(self):
-        self.vmIds = []
 
     def _exportEndpointIfNotInEnv(self):
         if Util.envEndpoint in os.environ:
@@ -171,9 +174,11 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n' * 3)
         return log
 
-    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1):
+    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1, noCheckImageUrl=False):
         self.runner = self._createRunner(withLocalNetwork, requestedIpAddress)
         self.runner.instanceNumber = instanceNumber
+
+        self.runner.noCheckImageUrl = noCheckImageUrl
 
         vmIds = self.runner.runInstance()
         self.vmIds.extend(vmIds)
@@ -413,6 +418,47 @@ class Testor(unittest.TestCase):
 
         return Creator(image, configHolder)
 
+    def webMonitorTest(self):
+        '''Web Monitor test'''
+        
+        if not self.webMonitorHost:
+            self.webMonitorHost = self.frontendIp
+
+        uri = 'http://%s/cgi-bin' % self.webMonitorHost
+        pages = ['nodelist.py', 'vmlist.py']
+
+        for page in pages:
+            url = uri + '/' + page  
+            try:
+                urllib2.urlopen(url, timeout=5)
+            except Exception, ex:
+                self.fail("Failed to open %s.\n%s" % (url, ex))
+
+    def oneReportsErrorViaXmlRpcTest(self):
+        '''Test if ONE reports error messages via XML RPC'''
+        
+        # invalid image
+        self.image = self.image + '.gz'
+
+        self._startVm(noCheckImageUrl=True)
+        vmId = self.runner.vmIds[0]
+        self._stopVm(self.runner)
+
+        options = {}
+        options['endpoint'] = getattr(self, 'endpoint')
+        options['username'] = getattr(self, 'username', self.oneUsername)
+        options['password'] = getattr(self, 'password', self.proxyOneadminPassword)
+
+        monitor = Monitor(ConfigHolder(options))
+        info = monitor._vmDetail(vmId)
+        try:
+            errorMessage = info.attribs['template_error_message']
+        except KeyError:
+            self.fail("No error message set.")
+        else:
+            self.failUnless(errorMessage, "Empty error message.")
+            print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
+            
     def marketPlaceTest(self):
         '''Place holder for marketplace test'''
         pass

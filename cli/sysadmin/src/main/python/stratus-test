@@ -80,6 +80,11 @@ class MainProgram(CommandBase):
                                help='Endpoint of the OVF file used by Claudia',
                                default=None, metavar='ENDPOINT')
 
+        self.parser.add_option('--webmonitor-host', dest='webMonitorHost',
+                               help='IP or hostname where Web Monitor is installed. If not set, cloud frontend '
+                               'IP defined in configuration file will be used.',
+                               default='', metavar='ENDPOINT')
+
         Uploader.buildAppRepoOptionsParser(self.parser)
 
         AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
