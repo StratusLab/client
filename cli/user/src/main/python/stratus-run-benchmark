@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+import os
+import sys
+import time
+import socket
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Runner import Runner
+from stratuslab.Runnable import Runnable
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Util import printAction
+from stratuslab.Util import printStep
+from stratuslab.Cluster import Cluster
+from stratuslab.Benchmark import Benchmark
+
+class MainProgram(Runnable):
+    '''A command-line program to run Benchmarks.'''
+
+
+    def parse(self):
+        options = Runner.defaultRunOptions()
+        
+        self.parser.add_option('--openmp', dest='openmp', action='store_true', 
+                help='OpenMP benchmark', 
+                default=False)
+
+        self.parser.add_option('--io', dest='io', action='store_true',         
+                help='IO/Parallel, Large input data but relatively small output data, Large input data but relatively small output data and mall input, but significant output data with high-CPU requirements benchmark',         
+                default=False)
+
+        self.parser.add_option('--mpi', dest='mpi', action='store_true',         
+                help='MPI benchmark',         
+                default=False)
+
+
+        self.parser.add_option('--cpu-intensive', dest='cpu_intensive', action='store_true',         
+                help='High-CPU requirements but little or no input and output data',         
+                default=False)
+
+       
+        self.parser.add_option('--workflows', dest='workflows', action='store_true',         
+                help='Multiple interdependent tasks, Kepler Workflow benchmark',         
+                default=False)
+
+        self.parser.add_option('--all', dest='all', action='store_true',
+                help='Run all benchmarks',
+                default=False)
+ 
+        self.parser.add_option('--output-folder', dest='output_folder', action='store',
+                help='folder for xml output files',
+                default=None, type='string')
+        
+        super(MainProgram, self).parse()
+
+    
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        runner = Runner(self.image, configHolder)
+        
+        vmId = runner.runInstance()[0]
+        benchmark = Benchmark(runner,configHolder,vmId)            
+        benchmark.run()
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
