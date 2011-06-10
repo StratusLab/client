@@ -435,6 +435,7 @@ class Creator(object):
         self._printStep('Updating image manifest')
 
         self.manifestObject = self._updateManifest()
+        self._updateManifestForLocation()
 
         self.manifest = self.manifestObject.tostring()
 
@@ -463,6 +464,10 @@ class Creator(object):
         info.comment = self.comment or info.comment
 
         return info
+
+    def _updateManifestForLocation(self):
+        self.manifestObject.location = '%s/%s' % (self.apprepoEndpoint, 
+                                                  self._constructRemoteImageName())
 
     def _saveManifest(self):
         fd, self.manifestLocalFileName = tempfile.mkstemp('.xml')
