@@ -23,6 +23,7 @@ import os.path
 import time
 import unittest
 import urllib2
+import re
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
@@ -425,7 +426,7 @@ class Testor(unittest.TestCase):
             self.webMonitorHost = self.frontendIp
 
         uri = 'http://%s/cgi-bin' % self.webMonitorHost
-        pages = ['nodelist.py', 'vmlist.py']
+        pages = ['nodelist.py', 'nodedetail.py', 'vmlist.py', 'vmdetail.py']
 
         for page in pages:
             url = uri + '/' + page  
@@ -438,7 +439,52 @@ class Testor(unittest.TestCase):
         '''Test if ONE reports error messages via XML RPC'''
         
         # invalid image
-        self.image = self.image + '.gz'
+        image = self.image + '.gz'
+
+        info, vmId = self._startStopVmAndGetVmInfo(image)
+
+        try:
+            errorMessage = info.attribs['template_error_message']
+        except KeyError:
+            self.fail("No error message set.")
+        else:
+            self.failUnless(errorMessage, "Empty error message.")
+            print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
+    
+    def errorMessageInWebMonitorTest(self):
+        '''Check if VM creation error message is on Web Monitor's VM details page'''
+
+        # invalid image
+        image = self.image + '.gz'
+
+        info, vmId = self._startStopVmAndGetVmInfo(image)
+
+        try:
+            errorMessage = info.attribs['template_error_message']
+        except KeyError:
+            self.fail("No error message set.")
+        else:
+            self.failUnless(errorMessage, "Empty error message.")
+            if self.verboseLevel > 1:
+                print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
+
+        # check VM details page of Web Monitor
+        if not self.webMonitorHost:
+            self.webMonitorHost = self.endpoint
+
+        url = 'http://%s/cgi-bin/vmdetail.py?id=%s' % (self.webMonitorHost, vmId)
+
+        fh = urllib2.urlopen(url, timeout=5)
+        page = fh.read()
+
+        self.failUnless(re.search(errorMessage, page, re.M), 
+                        "Error message '%s' for VM %s wasn't found at %s" %
+                        (errorMessage, vmId, url))
+
+    def _startStopVmAndGetVmInfo(self, image):
+        'Return VM monitoring info and VM id.'
+        
+        self.image = image + '.gz'
 
         self._startVm(noCheckImageUrl=True)
         vmId = self.runner.vmIds[0]
@@ -451,14 +497,9 @@ class Testor(unittest.TestCase):
 
         monitor = Monitor(ConfigHolder(options))
         info = monitor._vmDetail(vmId)
-        try:
-            errorMessage = info.attribs['template_error_message']
-        except KeyError:
-            self.fail("No error message set.")
-        else:
-            self.failUnless(errorMessage, "Empty error message.")
-            print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
-            
+
+        return info, vmId
+
     def marketPlaceTest(self):
         '''Place holder for marketplace test'''
         pass
