@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
+import sys
 import os
 import ConfigParser
 import urllib2
 from stratuslab import Defaults
-
 try:
     from lxml import etree
 except ImportError:
@@ -61,6 +61,7 @@ class Policy(object):
         self.whiteListImages = ['whiteListImages']
         self.blackListImages = ['blackListImages']
         self.validateMetaData = []
+        self.messageinfo = []
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
         self._loadConfig(self.policyConfigFilename)
@@ -111,33 +112,33 @@ class Policy(object):
         metadataEntries=[metadatas]
         filtered0 = self._filter(metadataEntries, self.whiteListImages)
         if len(filtered0) == 0:
-            raise ValidationException('Failed policy check')
-        print len(filtered0)
+            sys.stderr.write(self._errorMessage())
+            raise ValidationException('Policy check Failed')
 
         filtered1 = self._filter(filtered0, self.blackListImages)
         if len(filtered1) == 0:
-            raise ValidationException('Failed policy check')
-        print len(filtered1)
+            sys.stderr.write(self._errorMessage())
+            raise ValidationException('Policy check Failed')
 
         filtered2 = self._filter(filtered1, self.whiteListEndorsers)
         if len(filtered2) == 0:
-            raise ValidationException('Failed policy check')
-        print len(filtered2)
-        
+            sys.stderr.write(self._errorMessage())
+            raise ValidationException('Policy check Failed')
+ 
         filtered3 = self._filter(filtered2, self.blackListEndorsers)
         if len(filtered3) == 0:
-            raise ValidationException('Failed policy check')
-        print len(filtered3)
-        
+            sys.stderr.write(self._errorMessage())
+            raise ValidationException('Policy check Failed')
+      
         filtered4 = self._filter(filtered3, self.whiteListChecksums)
         if len(filtered4) == 0:
-            raise ValidationException('Failed policy check')
-        print len(filtered4)
+            sys.stderr.write(self._errorMessage())
+            raise ValidationException('Policy check Failed')
 
         filtered5 = self._filter(filtered4, self.blackListChecksums)	
         if len(filtered5) == 0:
-            raise ValidationException('Failed policy check')
-        print len(filtered5)
+            sys.stderr.write(self._errorMessage())
+            raise ValidationException('Policy check Failed')
 
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
@@ -174,7 +175,6 @@ class Policy(object):
         for metadata in metadatas:
             if not self._keep(metadata, whiteOrblackList):
                 metadatas.remove(metadata)
-                print 'removing...'
         return metadatas
 
     # keep: inputs: element tree
@@ -208,7 +208,7 @@ class Policy(object):
             print "email endorser %s is  whitelisted" %emailendorser
             return True
         else:
-            print "email endorser %s is not whitelisted" %emailendorser
+            self.messageinfo.append("email endorser %s is not whitelisted" %emailendorser)
             return False
 
     def _blackListEndorsersPlugin(self, emailendorser):
@@ -216,7 +216,7 @@ class Policy(object):
             print "email endorser %s is not blacklisted" %emailendorser
             return True
         else:
-            print "email endorser %s is blacklisted" %emailendorser
+            self.messageinfo.append("email endorser %s is blacklisted" %emailendorser)
             return False
     
 
@@ -228,7 +228,7 @@ class Policy(object):
             print "SHA-1 checksum image %s is whitelisted" %checksum_sha1
             return True
         else:
-            print "SHA-1 checksum image %s is not whitelisted" %checksum_sha1
+            self.messageinfo.append("SHA-1 checksum image %s is not whitelisted" %checksum_sha1)
             return False
 
     def _blackListChecksumsPlugin(self, checksumimages):
@@ -239,7 +239,7 @@ class Policy(object):
             print "SHA-1 checksum image %s is not blacklisted" %checksum_sha1
             return True
         else:
-            print "SHA-1 checksum image %s is blacklisted" %checksum_sha1
+            self.messageinfo.append("SHA-1 checksum image %s is blacklisted" %checksum_sha1)
             return False
 
     def _whiteListImagesPlugin(self, imageidentifier):
@@ -247,7 +247,7 @@ class Policy(object):
             print "image identifier %s is whitelisted" %imageidentifier
             return True
         else:
-            print "image identifier %s is not whitelisted" %imageidentifier
+            self.messageinfo.append("image identifier %s is not whitelisted" %imageidentifier)
             return False
 
     def _blackListImagesPlugin(self, imageidentifier):
@@ -255,7 +255,7 @@ class Policy(object):
             print "image identifier %s is not blacklisted" %imageidentifier
             return True
         else:
-            print "image identifier %s is blacklisted" %imageidentifier
+            self.messageinfo.append("image identifier %s is blacklisted" %imageidentifier)
             return False
 
     def _isActive(self):
@@ -267,3 +267,12 @@ class Policy(object):
         downloader = Downloader(configHolder)
         downloader.download(identifierUri)
         
+
+
+
+    def _errorMessage(self):
+        self.messageinfo.append("Image isn't valid according to site policy\n")
+        return '\n'.join(self.messageinfo)
+
+
+
