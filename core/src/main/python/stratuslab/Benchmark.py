@@ -87,17 +87,17 @@ class Benchmark(object):
 
 
     def run_scenario(self,cmd,ip_vm,sshkey):
-        test=sshCmdWithOutput(cmd,ip_vm,sshkey)
+        sshCmdWithOutput(cmd,ip_vm,sshkey)
         script='/root/*.xml'
         destination=self.output_xml
-        test2 = scp('root@%s:%s' % (ip_vm,script),destination,sshkey)
+        scp('root@%s:%s' % (ip_vm,script),destination,sshkey)
 
     def all_benchmarks(self,ip_vm,vm_cpu,sshkey):
-        self.openmp_benchmark(self,ip_vm,vm_cpu,sshkey)
-        self.mpi_benchmark(self,ip_vm,vm_cpu,sshkey)        
-        self.io_benchmark(self,ip_vm,vm_cpu,sshkey)
-        self.cpu_benchmark(self,ip_vm,vm_cpu,sshkey)
-        self.workflow_benchmark(self,ip_vm,vm_cpu,sshkey)
+        self.openmp_benchmark(ip_vm,vm_cpu,sshkey)
+        self.mpi_benchmark(ip_vm,vm_cpu,sshkey)        
+        self.io_benchmark(ip_vm,vm_cpu,sshkey)
+        self.cpu_benchmark(ip_vm,vm_cpu,sshkey)
+        self.workflow_benchmark(ip_vm,vm_cpu,sshkey)
 
     def prepareMachine(self,vmId):
         vmStarted = self._runner.waitUntilVmRunningOrTimeout(vmId, VM_START_TIMEOUT)
