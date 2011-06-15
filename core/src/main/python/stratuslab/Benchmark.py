@@ -25,6 +25,9 @@ class Benchmark(object):
         self._runner = runner
         self.vmId = vmId
         self.output_xml=''
+        self.cpustresstime='600'
+        self.io_i='10'
+        self.io_o='10'
 
     def run(self):
         allocatedIp = self.prepareMachine(self.vmId)
@@ -64,11 +67,12 @@ class Benchmark(object):
     def io_benchmark(self,ip_vm,vm_cpu,sshkey):
         executables=['io-mpi-o','io-mpi-i','io-mpi-io']
         for executable in executables:
-            cmd = executable + ' ' + str(vm_cpu)
+            cmd = executable + ' ' + str(vm_cpu) + ' ' + self.io_i + ' ' + self.io_o
+            print "cmdio=", cmd
             self.run_scenario(cmd,ip_vm,sshkey)
 
     def cpu_benchmark(self,ip_vm,vm_cpu,sshkey):
-        executable = 'cpu_intensive %s  600'%str(vm_cpu)
+        executable = 'cpu_intensive' + ' ' + str(vm_cpu) + ' ' + self.cpustresstime 
         self.run_scenario(executable,ip_vm,sshkey)
 
     def workflow_benchmark(self,ip_vm,vm_cpu,sshkey):
@@ -96,8 +100,8 @@ class Benchmark(object):
         self.openmp_benchmark(ip_vm,vm_cpu,sshkey)
         self.mpi_benchmark(ip_vm,vm_cpu,sshkey)        
         self.io_benchmark(ip_vm,vm_cpu,sshkey)
-        self.cpu_benchmark(ip_vm,vm_cpu,sshkey)
         self.workflow_benchmark(ip_vm,vm_cpu,sshkey)
+        self.cpu_benchmark(ip_vm,vm_cpu,sshkey)
 
     def prepareMachine(self,vmId):
         vmStarted = self._runner.waitUntilVmRunningOrTimeout(vmId, VM_START_TIMEOUT)
