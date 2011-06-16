@@ -177,10 +177,17 @@ class Creator(object):
 
     def showName(self):
 
+        def _updateManifestForNewImageNameInAppRepo(manifestInfo):
+            manifestInfo.type = self.newImageGroupName or manifestInfo.type
+            manifestInfo.version = self.newImageGroupVersion or manifestInfo.version
+            manifestInfo.os = self.newInstalledSoftwareName or manifestInfo.os
+            manifestInfo.osversion = self.newInstalledSoftwareVersion or manifestInfo.osversion
+            return manifestInfo
+
         self._updateAppRepoStructures()
         self._retrieveManifest()
         info = self.manifestObject
-        info = self._updateManifestForNewImageNameInAppRepo(info)
+        info = _updateManifestForNewImageNameInAppRepo(info)
         fileName = self.appRepoFilename
 
         self.printDetail('Building image name')
@@ -213,13 +220,6 @@ class Creator(object):
 
     def _buildRepoNameStructure(self, structure, info):
         return Uploader.buildRepoNameStructure(structure, info)
-
-    def _updateManifestForNewImageNameInAppRepo(self, manifestInfo):
-        manifestInfo.type = self.newImageGroupName or manifestInfo.type
-        manifestInfo.version = self.newImageGroupVersion or manifestInfo.version
-        manifestInfo.os = self.newInstalledSoftwareName or manifestInfo.os
-        manifestInfo.osversion = self.newInstalledSoftwareVersion or manifestInfo.osversion
-        return manifestInfo
 
     def create(self):
 
