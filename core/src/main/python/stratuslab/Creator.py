@@ -180,9 +180,7 @@ class Creator(object):
         self._updateAppRepoStructures()
         self._retrieveManifest()
         info = self.manifestObject
-        # Update type if was given as a new image group name.
-        # All the rest is irrelevant here.
-        info.type = self.newImageGroupName or info.type
+        info = self._updateManifestForNewImageNameInAppRepo(info)
         fileName = self.appRepoFilename
 
         self.printDetail('Building image name')
@@ -215,6 +213,13 @@ class Creator(object):
 
     def _buildRepoNameStructure(self, structure, info):
         return Uploader.buildRepoNameStructure(structure, info)
+
+    def _updateManifestForNewImageNameInAppRepo(self, manifestInfo):
+        manifestInfo.type = self.newImageGroupName or manifestInfo.type
+        manifestInfo.version = self.newImageGroupVersion or manifestInfo.version
+        manifestInfo.os = self.newInstalledSoftwareName or manifestInfo.os
+        manifestInfo.osversion = self.newInstalledSoftwareVersion or manifestInfo.osversion
+        return manifestInfo
 
     def create(self):
 
