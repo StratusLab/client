@@ -359,8 +359,8 @@ class Runner(object):
 
         return vmIds
 
-    def killInstances(self, ids):
-        _ids = ids
+    def killInstances(self, ids=[]):
+        _ids = ids or self.vmIds
         if self.inVmIdsFile:
             _ids = self._loadVmIdsFromFile()
         for id in _ids:
