@@ -563,3 +563,9 @@ def importETree():
 
 def escapeDoubleQuotes(string, times=1):
     return re.sub('"', '%s"' % ('\\'*times), string)
+
+def sanitizePath(path):
+    subs = [('\ ', ' ')]
+    for s in subs:
+        path = path.replace(*s)
+    return path

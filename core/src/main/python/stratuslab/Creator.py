@@ -572,21 +572,40 @@ deb %(name)s
         self._printStep('Executing scripts: %s' % self.scripts)
 
         for script in self.scripts.split(','):
+            self._uploadAndExecuteRemoteScript(script)
+
+    def _uploadAndExecuteRemoteScript(self, script):
+
+        def __tellScriptNameAndArgs(script):
             scriptNameAndArgs = os.path.basename(script)
-            scriptName, args = scriptNameAndArgs.split(' ', 1)
+            scriptNameAndArgsList = scriptNameAndArgs.split(' ', 1)
+            if len(scriptNameAndArgsList) == 1: # no arguments given
+                scriptNameAndArgsList = scriptNameAndArgsList + ['']
+            return scriptNameAndArgsList
+
+        def _uploadScript(script):
+
+            scriptName, args = __tellScriptNameAndArgs(script)
             
-            scriptDirectory = os.path.dirname(script)
+            scriptDirectory = Util.sanitizePath(os.path.dirname(script))
             scriptPathLocal = '%s/%s' % (scriptDirectory, scriptName)
             scriptPathRemote = '/tmp/%s' % scriptName
-            rc = self._scp(scriptPathLocal, 'root@%s:%s' % (self.vmAddress, scriptPathRemote))
+
+            rc, output = self._scpWithOutput(scriptPathLocal, 'root@%s:%s' % (self.vmAddress, scriptPathRemote))
             if rc != 0:
-                self._printError('An error occurred while uploading script %s' % script)
+                self._printError('An error occurred while uploading script %s\n%s' % (script, output))
             
             self._sshCmdWithOutput('chmod 0755 %s' % scriptPathRemote)
 
+            return scriptPathRemote, args
+
+        def _executeRemoteScript(scriptPathRemote, args=''):
             rc = self._sshCmd('%s %s' % (scriptPathRemote, args), throwOnError=False)
             if rc != 0:
                 self._printError('An error occurred while executing script %s' % script)
+
+        scriptPathRemote, args = _uploadScript(script)
+        _executeRemoteScript(scriptPathRemote, args)
 
     def _executeRecipe(self):
         self._printStep('Executing user recipe')
@@ -615,10 +634,12 @@ deb %(name)s
             except:
                 pass
 
-    def _scp(self, src, dst):
+    def _scp(self, src, dst, **kwargs):
         return Util.scp(src, dst, self.userPrivateKeyFile,
                         verboseLevel=self.verboseLevel, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
-                        stderr=self.stderr, stdout=self.stdout)
+                        stderr=self.stderr, stdout=self.stdout, **kwargs)
+    def _scpWithOutput(self, src, dst):
+        return self._scp(src, dst, withOutput=True)
 
     def _createImage(self):
         self._printStep('Creating image')
