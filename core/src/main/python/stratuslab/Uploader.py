@@ -40,6 +40,8 @@ class Uploader(object):
 
     ENVVAR_MARKETPLACE_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
     ENVVAR_APPREPO_ENDPOINT = 'STRATUSLAB_APPREPO_ENDPOINT'
+    
+    APPREPO_FILENAMESTRUCTURE_ELEMENTS = ('type', 'os', 'arch', 'version', 'osversion', 'compression')
 
     @staticmethod
     def availableCompressionFormat(printIt=False):
@@ -136,7 +138,7 @@ class Uploader(object):
         varPattern = '#%s#'
         dirVarPattern = '#%s_#'
 
-        for part in ('type', 'os', 'arch', 'version', 'osversion', 'compression'):
+        for part in Uploader.APPREPO_FILENAMESTRUCTURE_ELEMENTS:
             if structure.find(varPattern % part) != -1:
                 structure = structure.replace(varPattern % part, getattr(info, part))
             if structure.find(dirVarPattern % part) != -1:
