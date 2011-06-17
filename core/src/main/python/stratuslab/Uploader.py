@@ -338,8 +338,7 @@ class Uploader(object):
     def _parseManifestAndSetObjectAttributes(self):
         manifestInfo = ManifestInfo()
         manifestInfo.parseManifestFromFile(self.manifestFile)
-        attrList = ['os', 'osversion', 'arch', 'type', 'version', 'compression']
-        for attr in attrList:
+        for attr in Uploader.APPREPO_FILENAMESTRUCTURE_ELEMENTS:
             setattr(self, attr, getattr(manifestInfo, attr))
 
     def _parseRepoConfig(self):
