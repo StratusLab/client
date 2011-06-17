@@ -22,11 +22,11 @@ import os
 import re
 import string
 import time
+import copy
 
 import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ExecutionException
-from stratuslab import Defaults
 
 etree = Util.importETree()
 
@@ -68,7 +68,8 @@ class ManifestInfo(object):
         self.comment = ''
         self.filename = '' # filename of compressed image (old manifest)
 
-        self.location = '' # URI of image in appliance repository
+        self.locations = [] # list of image URIs
+        self.locations_xml = '<slterms:location>%(location)s</slterms:location>'
 
         self.kind = '' # image kind: machine, disk
 
@@ -158,10 +159,13 @@ class ManifestInfo(object):
                                    self.format)
         self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
                                   self.hypervisor)
-        self.location = getattr(xml.find('.//{%s}location' % NS_SLTERMS), 'text',
-                                self.location)
         self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
                                  self.publisher)
+        locations = xml.findall('.//{%s}location' % NS_SLTERMS)
+        for location in locations:
+            uri = getattr(location, 'text', self.locations)
+            if uri and uri not in self.locations:
+                self.locations.append(uri)
 
     def parseManifestFromFile(self, filename):
         manifest = file(filename).read()
@@ -185,7 +189,16 @@ class ManifestInfo(object):
 
     def tostring(self):
         template = open(self.template).read()
+        self._updateLocationsXml()
         return template % self.__dict__
+
+    def _updateLocationsXml(self):
+        self.locations_xml = self._getLocationsAsXml()
+
+    def _getLocationsAsXml(self):
+        joint = '\n        '
+        return joint.join([copy.copy(self.locations_xml) % {'location':location} 
+                           for location in self.locations])
 
     def __str__(self):
         sortedKeys = []

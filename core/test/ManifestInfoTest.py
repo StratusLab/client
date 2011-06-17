@@ -23,10 +23,9 @@ import unittest
 from stratuslab.ManifestInfo import ManifestInfo, ManifestIdentifier
 from stratuslab.Exceptions import ExecutionException
 
-class AppRepoInfoTest(unittest.TestCase):
+class ManifestInfoTest(unittest.TestCase):
 
-    manifestDcFull = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    rdfFullTemplate = """<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:dcterms="http://purl.org/dc/terms/"
     xmlns:slterms="http://mp.stratuslab.eu/slterms#"
     xmlns:slreq="http://mp.stratuslab.eu/slreq#"
@@ -62,7 +61,7 @@ class AppRepoInfoTest(unittest.TestCase):
 
         <dcterms:type>machine</dcterms:type>
         <dcterms:valid>2011-07-23T10:59:42+0200</dcterms:valid>
-        <dcterms:publisher>StratusLab</dcterms:publisher>
+        <dcterms:publisher>%(publisher)s</dcterms:publisher>
         <dcterms:title>ttylinux-9.7-i486-base-1.1</dcterms:title>
         <dcterms:description>A 32-bit ttylinux image that follows the standard
             StratusLab contextualization strategy.</dcterms:description>
@@ -72,10 +71,28 @@ class AppRepoInfoTest(unittest.TestCase):
         <slterms:os-version>9.7</slterms:os-version>
         <slterms:os-arch>i486</slterms:os-arch>
         <slterms:hypervisor>kvm</slterms:hypervisor>
+        
+        <slterms:location>%(location1)s</slterms:location>
+        <slterms:location>%(location2)s</slterms:location>
 
     </rdf:Description>
 </rdf:RDF>
 """
+    _publisher1 = 'StratusLab'
+    _publisher2 = 'stratuslab'
+    _location1_1 = 'http://example.com/exmaple.file.1'
+    _location1_2 = 'http://example.com/exmaple.file.2'
+    _location2_1 = 'http://test.com/test.file.1'
+    _location2_2 = 'http://test.com/test.file.2'
+    rdfFull1 = rdfFullTemplate % {'publisher':_publisher1, 'location1':_location1_1,
+                                  'location2':_location1_2}
+    rdfFull2 = rdfFullTemplate % {'publisher':_publisher2, 'location1':_location2_1,
+                                  'location2':_location2_2}
+
+    manifestDcFull = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+%s
+""" % rdfFull1
+
     manifestDcMissingElemsMandatory = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:dcterms="http://purl.org/dc/terms/"
@@ -137,7 +154,7 @@ class AppRepoInfoTest(unittest.TestCase):
 
     def testGetInfo(self):
         infoDC = ManifestInfo()
-        infoDC.parseManifest(AppRepoInfoTest.manifestDcFull)
+        infoDC.parseManifest(ManifestInfoTest.manifestDcFull)
 
         self.assertEquals('2011-01-24T09:59:42Z', infoDC.created)
 
@@ -145,7 +162,7 @@ class AppRepoInfoTest(unittest.TestCase):
 
         info = ManifestInfo()
         info.template = self.template
-        info.parseManifest(AppRepoInfoTest.manifestDcFull)
+        info.parseManifest(ManifestInfoTest.manifestDcFull)
 
         self.assertEquals('machine', info.type)
         info.type = 'disk'
@@ -161,11 +178,40 @@ class AppRepoInfoTest(unittest.TestCase):
 
         info = ManifestInfo()
         info.template = self.template
-        self.failUnlessRaises(ExecutionException, info.parseManifest, AppRepoInfoTest.manifestDcMissingElemsMandatory)
+        self.failUnlessRaises(ExecutionException, info.parseManifest, 
+                              ManifestInfoTest.manifestDcMissingElemsMandatory)
 
         info = ManifestInfo()
         info.template = self.template
-        self.failUnlessRaises(ExecutionException, info.parseManifest, AppRepoInfoTest.manifestDcMissingElems)
+        self.failUnlessRaises(ExecutionException, info.parseManifest, 
+                              ManifestInfoTest.manifestDcMissingElems)
+
+    def testListOfManifests(self):
+        metadata = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<metadata>
+%s
+%s
+</metadata>
+""" % (self.rdfFull1, self.rdfFull2)
+        info = ManifestInfo()
+        info.parseManifest(metadata)
+        
+        self.failUnlessEqual(info.publisher, self._publisher1, "Failure in parsing list of manifests.")
+        self.failUnlessEqual(info.locations, [self._location1_1, self._location1_2,
+                                             self._location2_1, self._location2_2],
+                                             "Failure in parsing list of manifests.")
+
+    def testTostringWithListOfLocations(self):
+        info1 = ManifestInfo()
+        info1.template = self.template
+        info1.parseManifest(self.rdfFull1)
+        manifest = info1.tostring()
+        
+        info2 = ManifestInfo()
+        info2.parseManifest(manifest)
+        
+        self.failUnlessEqual(info1.locations, info2.locations, 
+                             "Lists of locations don't match. Serialization failed.")
 
 class ManifestIdentifierTest(unittest.TestCase):
 

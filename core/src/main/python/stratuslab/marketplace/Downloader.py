@@ -84,7 +84,7 @@ class Downloader(object):
         return manifestInfo
 
     def getImageLocations(self, imageId=''):
-        return [self.getImageElementValue('location', imageId)]
+        return self.getImageElementValue('locations', imageId)
 
     def getImageVersion(self, imageId=''):
         return self.getImageElementValue('version', imageId)
@@ -121,10 +121,8 @@ class Downloader(object):
 
         manifestInfo = self._getManifest(uri, tempMetadataFilename)
 
-        locations = [manifestInfo.location]
-
         tempImageFilename = ''
-        for location in locations:
+        for location in manifestInfo.locations:
             self._printDetail('Looking for image: %s' % location)
             try:
                 tempImageFilename = self._downloadImage(location)
