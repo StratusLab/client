@@ -49,5 +49,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception, ex:
-        print str(ex)
+        print >> sys.stderr, str(ex)
         sys.exit(1)
