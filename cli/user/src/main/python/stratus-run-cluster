@@ -58,8 +58,8 @@ class MainProgram(Runnable):
                 default=None, type='string')
         
         self.parser.add_option('--mpi-machine-file', dest='mpi_machine_file', action='store_true',
-                help='Defines that a machinefile should be prepared for MPI ,listing all available' \
-                'Workers and their respective number of cores (slot value)',
+                help='Defines that a machinefile should be prepared for MPI, listing all available ' \
+                'workers and their respective number of cores (slot value)',
                 default=False)
         
         self.parser.add_option('--include-master', dest='include_master', action='store_true',
@@ -91,7 +91,7 @@ class MainProgram(Runnable):
                 help='By default, worker virtual machines are assigned a public IP address. ' \
                 'With this option, a local address is provided, which means that it ' \
                 'not be reachable from the outside, but will be reachable from other ' \
-                'instances in the same data-center. In this case the frontend node will have' \
+                'instances in the same data-center. In this case the frontend node will have ' \
                 'both a public and a local ip to access the worker nodes',
                 default=False)
 

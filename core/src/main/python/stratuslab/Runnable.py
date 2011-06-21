@@ -65,7 +65,7 @@ class Runnable(AuthnCommand):
                 default=defaultOptions['extraContextData'])
 
         self.parser.add_option('--vnc-port', dest='vncPort', metavar='PORT', type='int',
-                help='VNC port number. Note for KVM it\'s the real one , not the '
+                help='VNC port number. Note for KVM it\'s the real one, not the '
                      'VNC port. So for VNC port 0 you should specify 5900, for '
                      'port 1 is 5901 and so on. ',
                 default=defaultOptions['vncPort'])

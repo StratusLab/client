@@ -51,8 +51,48 @@ class MainProgram(Runnable):
                 help='folder for xml output files',
                 default=None, type='string')
         
-        super(MainProgram, self).parse()
+        self.parser.add_option('--local-ip', dest='isLocalIp', action='store_true',
+                help='By default, worker virtual machines are assigned a public IP address. ' \
+                'With this option, a local address is provided, which means that it ' \
+                'not be reachable from the outside, but will be reachable from other ' \
+                'instances in the same data-center. In this case the frontend node will have' \
+                'both a public and a local ip to access the worker nodes',
+                default=False)
 
+        self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
+                help='By default, worker virtual machines are assigned a public IP address. ' \
+                'With this option, a private address is provided, which means that it ' \
+                'not be reachable anywhere. This is useful for instances that initiate '\
+                'the connection to other machinces. In this case the frontend node will have' \
+                'both a private and public ip',
+                default=False)
+
+        self.parser.add_option('--save', dest='saveDisk', action='store_true',
+                help='save image after VM shutdown',
+                default=False)
+
+        self.parser.add_option('-o', '--output', dest='outVmIdsFile',
+                help='save vm-ids to a file', metavar='FILE',
+                default=None)
+
+        self.parser.add_option('--extra-disk', dest='extraDiskSize',
+                help='extra data disk size in GB', metavar='INT',
+                action='callback', callback=self.diskSizeOptionCallback,
+                default=0, type='int')
+
+        self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
+                help='launch instances from an image in qcow2 disk format. This option requires ',
+                action='store_true',
+                default=False)
+
+        self.parser.add_option('--address', dest='specificAddressRequest',
+                help='request a specific ip address for the frontend',
+                metavar='IP', default=None) 
+        
+        super(MainProgram, self).parse()
+       
+    def diskSizeOptionCallback(self, option, opt_str, value, parser):
+        setattr(parser.values, option.dest, 1024*value)
     
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
