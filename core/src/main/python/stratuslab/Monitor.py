@@ -39,8 +39,8 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
-        self.vmInfoListAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
+        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16], ['hostname',16])
+        self.vmInfoListAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16], ['hostname',16])
 
         self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
@@ -83,11 +83,22 @@ class Monitor(Configurable):
 
     def listNodes(self):
         nodes = self.cloud.listHosts()
-        return self._iterate(etree.fromstring(nodes))
+        correct_nodes = []
+        for node in self._iterate(etree.fromstring(nodes)):
+            node.attribs['template_usedcpu'] = round(float(node.attribs['template_usedcpu']),2)
+            correct_nodes.append(node)
+        return correct_nodes
 
     def listVms(self, showVmsFromAllUsers=False):
         vms = self.cloud.listVms(showVmsFromAllUsers)
-        return self._iterate(etree.fromstring(vms))
+        correct_vms = []
+        for vm in self._iterate(etree.fromstring(vms)):
+            if (vm.attribs['username'].startswith('CN')):
+                vm.attribs['username'] = vm.attribs['username'].replace("CN%3D","")\
+                .replace("%2COU%3D"," OrgUnit:").replace("%2CO%3D"," Org:").replace("%2CC%3D", " Country:")\
+                .replace("+"," ")
+            correct_vms.append(vm)
+        return correct_vms
 
     def _iterate(self, list):
         infoList = []

@@ -31,16 +31,19 @@ from stratuslab.cloud.one import OneHostState
 class NodeListGenerator(ListGenerator):
 
     def __init__(self, configFile):
-        super(NodeListGenerator, self).__init__(configFile)
+        super(NodeListGenerator, self).__init__()
         self.title = 'List of nodes'
         self.idTemplate = '            <td><a href="nodedetail.py?id=%(value)s"/>%(value)s</a></td>\n'
         self.fields = [['id','Id'],
                        ['name', 'IP'],
-                       ['max_cpu', 'Total CPU'],
-                       ['free_cpu', 'Free CPU'],
-                       ['max_mem', 'Total mem'],
-                       ['free_mem', 'Free mem'],
-                       ['running_vms', 'Running VMs'],
+                       ['template_totalcpu', 'Total CPU'],
+                       ['host_share_cpu_usage', 'Allocated CPU'],
+                       ['template_usedcpu', 'Used CPU'],
+                       ['template_freecpu', 'Free CPU'],
+                       ['template_totalmemory', 'Total mem'],
+                       ['template_freememory', 'Free mem'],
+                       ['template_disk_free', 'Used disk'],
+                       ['host_share_running_vms', 'Running VMs'],
                        ['state', 'State']]
 
     def _getData(self):

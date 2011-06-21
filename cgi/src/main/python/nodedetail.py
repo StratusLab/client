@@ -32,7 +32,7 @@ from stratuslab.cloud.one import OneHostState
 class NodeDetailGenerator(DetailedGenerator):
     
     def __init__(self, configFile):
-        super(NodeDetailGenerator, self).__init__(configFile)
+        super(NodeDetailGenerator, self).__init__()
         self.title = 'Node detail'
         self.fieldGroups = [['Host Information', [['id', 'Id'],
                                                   ['name', 'Name'],
@@ -40,26 +40,28 @@ class NodeDetailGenerator(DetailedGenerator):
                                                   ['im_mad', 'im_mad'],
                                                   ['vm_mad', 'vm_mad'],
                                                   ['tm_mad', 'tm_mad']]],
-                            ['Host Shares', [['max_mem', 'Max mem'],
-                                             ['used_mem', 'Used mem (real)'], 
-                                             ['mem_usage', 'Used mem (allocated)'], 
-                                             ['max_cpu', 'Max CPU'],
-                                             ['used_cpu', 'Used CPU (real)'], 
-                                             ['cpu_usage', 'Used CPU (allocated)'], 
-                                             ['running_vms', 'Running VMs']]],
-                            ['Monitoring Information', [['arch', 'Arch'], 
-                                                        ['cpuspeed', 'CPU speed'], 
-                                                        ['freecpu', 'Free CPU'], 
-                                                        ['free_mem', 'Free mem'], 
-                                                        ['hostname', 'Hostname'], 
-                                                        ['hypervisor', 'Hypervisor'], 
-                                                        ['modelname', 'Model'], 
-                                                        ['netrx', 'Netrx'], 
-                                                        ['nettx', 'Nnettx'], 
-                                                        ['totalcpu', 'Total CPU'], 
-                                                        ['totalmemory', 'Total mem'], 
-                                                        ['usedcpu', 'Used CPU'], 
-                                                        ['usedmemory', 'Used mem']]]
+                            ['Host Shares', [['host_share_max_mem', 'Max mem'],
+                                             ['host_share_used_mem', 'Used mem (real)'], 
+                                             ['host_share_mem_usage', 'Used mem (allocated)'], 
+                                             ['host_share_max_cpu', 'Max CPU'],
+                                             ['host_share_used_cpu', 'Used CPU (real)'], 
+                                             ['host_share_cpu_usage', 'Used CPU (allocated)'], 
+                                             ['host_share_running_vms', 'Running VMs']]],
+                            ['Monitoring Information', [['template_arch', 'Arch'], 
+                                                        ['template_cpuspeed', 'CPU speed'], 
+                                                        ['template_freecpu', 'Free CPU'], 
+                                                        ['template_free_mem', 'Free mem'], 
+                                                        ['template_hostname', 'Hostname'], 
+                                                        ['template_hypervisor', 'Hypervisor'], 
+                                                        ['template_modelname', 'Model'], 
+                                                        ['template_netrx', 'Netrx'], 
+                                                        ['template_nettx', 'Nnettx'], 
+                                                        ['template_totalcpu', 'Total CPU'], 
+                                                        ['template_totalmemory', 'Total mem'], 
+                                                        ['template_usedcpu', 'Used CPU'], 
+                                                        ['template_usedmemory', 'Used mem'],
+                                                        ['template_disk_free', 'Used Disk'],
+                                                        ]]
                             ]
     
     def _getData(self):

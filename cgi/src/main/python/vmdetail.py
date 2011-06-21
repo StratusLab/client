@@ -32,14 +32,30 @@ from stratuslab.cloud.one import OneVmState
 class VmDetailGenerator(DetailedGenerator):
     
     def __init__(self, configFile):
-        super(VmDetailGenerator, self).__init__(configFile)
+        super(VmDetailGenerator, self).__init__()
         self.title = 'Instance detail'
         self.fieldGroups = [['Virtual Machine Information', [['id', 'Id'],
                                                              ['deploy_id', 'Deployment id'],
                                                              ['state', 'State'],
                                                              ['stime', 'Start time'],
-                                                             ['etime', 'End time']]],
-                            ['Virtual Machine Monitoring', []]
+                                                             ['etime', 'End time'],
+                                                             ['history_hostname', 'Node'],
+                                                             ['template_context_public_key', 'PubKey'],
+                                                             ['template_cpu', 'vCPUs'],
+                                                             ['memory', 'Memory'],
+                                                             ['template_nic_ip', 'IP'],
+                                                             ['template_nic_network', 'Network'],
+                                                             ['template_disk_source', 'Disk Source'],
+                                                             ['template_disk_size', 'Disk Size'],
+                                                             ['template_disk_driver', 'Disk Driver'],
+                                                             ['template_disk_save', 'Save Disk'],
+                                                             ]
+        
+                            ],
+                            ['Virtual Machine Monitoring', [['cpu', 'CPU'],
+                                                            ['net_rx', 'Net RX'],
+                                                            ['net_tx', 'Net TX'],
+                                                            ]]
                            ]
     
     def _getData(self):
