@@ -2,7 +2,7 @@ from stratuslab import Exceptions
 
 INSTALLERS = ('yum', 'apt')
 
-yumOsList = ('centos', 'fedora')
+yumOsList = ('centos', 'fedora', 'sl', 'scientificlinux')
 aptOsList = ('ubuntu')
 
 def getInstallerBasedOnOs(os):
