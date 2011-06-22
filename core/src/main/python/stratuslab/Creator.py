@@ -677,7 +677,7 @@ EOF
             runlevelOneSericesUp = ('sshd', 'network', 'iptables', 'ip6tables')
 
             cmd = 'ls -1 /etc/rc1.d/K*'
-            _, services = self._sshCmdWithOutput(cmd)
+            _, services = self._sshCmdWithOutputQuiet(cmd)
 
             servicesToStop = []
             for s in services.split('\n'):
@@ -698,7 +698,7 @@ EOF
             cmd = 'dd if=/dev/%(main)s of=%(image)s bs=$((64*1024))' % \
                     {'main'  : self.mainDisk,
                      'image' : self.imageFile}
-            _, stat = self._sshCmdWithOutput(cmd)
+            _, stat = self._sshCmdWithOutputQuiet(cmd)
             self.printDetail('Statistics on image creation:\n%s' % stat)
 
             self.imageFileBundled = '%s.gz' % self.imageFile
@@ -749,7 +749,7 @@ EOF
         # get start sector of LVM partition (ID: 8e)
         cmd = "fdisk -lu %(imageFile)s 2>/dev/null|grep 8e|awk '{print $2}'" % \
                 {'imageFile': self.imageFile}
-        _, offsetInSectors = self._sshCmdWithOutput(cmd)
+        _, offsetInSectors = self._sshCmdWithOutputQuiet(cmd)
 
         # offset to the first logical volume
         peStartSectors = 384
@@ -779,7 +779,7 @@ EOF
     def _checksumFile(self, filename):
         for name, meta in self.checksums.items():
             checksumingCmd = '%s %s' % (meta['cmd'], filename)
-            rc, output = self._sshCmdWithOutput(checksumingCmd, self.vmAddress)
+            rc, output = self._sshCmdWithOutputQuiet(checksumingCmd)
             if rc != 0:
                 raise ExecutionException('Could not get %s checksum for image:\n%s\n%s' %
                                          (name, checksumingCmd, output))
@@ -807,6 +807,9 @@ EOF
 
     def _sshCmdWithOutputVerb(self, cmd, **kwargs):
         return self._sshCmdWithOutput(cmd, sshVerb=True, **kwargs)
+
+    def _sshCmdWithOutputQuiet(self, cmd, **kwargs):
+        return self._sshCmdWithOutput(cmd, sshQuiet=True, **kwargs)
 
     def _uploadImageAndManifest(self):
         self._printStep('Uploading image and manifest to appliance repository')
