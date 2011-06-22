@@ -145,6 +145,7 @@ class Policy(object):
         url = endpoint + '/' + identifierUri
         try:
             manifest = Util.wstring(url)
+            print "manifest=",manifest
         except urllib2.HTTPError:
             raise InputException('Failed to find metadata entry: %s' % url)                
         return manifest
