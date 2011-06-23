@@ -28,6 +28,7 @@ from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
     fileGetContent, filePutContent, scp, sshCmd
 import stratuslab.Util as Util
 from stratuslab.system.PackageInfo import PackageInfo
+import tempfile
 
 class BaseSystem(object):
 
@@ -1069,10 +1070,22 @@ group {
             rc, output = self._nodeShell(checkBridgeCmd, withOutput=True, shell=True)
             if rc == 0:
                 Util.printDetail('OK.')
+                self._persistRemoteBridgeConfig(self.nodeNetworkInterface, self.nodeBridgeName)
                 return
             else:
                 Util.printError('Bridge was not configured.\n%s' % output)
 
+    def _persistRemoteBridgeConfig(self):
+        pass
+    
+    def _writeToFilesRemote(self, listOfFileNameContentTuples):
+        tmpFilename = tempfile.mktemp()
+        for remoteFilename, content in listOfFileNameContentTuples:
+            Util.filePutContent(tmpFilename, content)
+            self._nodeCopy(tmpFilename, remoteFilename)
+        try:
+            os.unlink(tmpFilename)
+        except: pass
 
 FILE_IPFORWARD_HOT_ENABLE = '/proc/sys/net/ipv4/ip_forward'
 FILE_IPFORWARD_PERSIST = '/etc/sysctl.conf'

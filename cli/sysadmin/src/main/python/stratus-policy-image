@@ -41,17 +41,12 @@ class MainProgram(CommandBaseSysadmin):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] <identifier-uri> <policy-config>
+        usage = '''%prog [options] <identifier-endpoint> <policy-config>
         
-<identifier-uri>   Image identifier, corresponding to a unique entry (i.e. checksum/email/date)
+<identifier-endpoint>    Marketplace endpoint + Image identifier(example: http://appliances.stratuslab.eu/marketplace/metadata/GOaxJFdoEXvqAm9ArJgnZ0_ky6F)   
 <policy-config>    Policy configuration file'''
 
         self.parser.usage = usage
-
-        self.parser.add_option('-e', '--endpoint', dest='endpoint',
-                               help='URL of the root StratusLab Market-Place endpoint (default: %s)' % Downloader.ENDPOINT, 
-                               metavar='URL',
-                               default=Downloader.ENDPOINT)
 
         self.options, self.args = self.parser.parse_args()
 
@@ -68,9 +63,14 @@ class MainProgram(CommandBaseSysadmin):
         
         identifierUri = self.args[0]
         policyConfigFilename = self.args[1]
+        
+        
+        marketplaceEndpoint, imageId = identifierUri.rsplit('/', 1)
+        configHolder.set('endpoint', marketplaceEndpoint)
+
 
         policy = Policy(policyConfigFilename, configHolder)
-        policy.check(identifierUri)
+        policy.check(imageId)
         self.printDetail("Valid according to site policy")
 
 if __name__ == '__main__':

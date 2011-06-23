@@ -109,7 +109,8 @@ class Policy(object):
 
         metadatas = self._retrieveMetadataList()
         #Merketplace bug : Return an empty list, if XML file contains multiple toplevel (XML isn't valid) 
-        metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
+        #metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
+        metadataEntries = [metadatas]
         filtered0 = self._filter(metadataEntries, self.whiteListImages)
         if len(filtered0) == 0:
             sys.stderr.write(self._errorMessage())

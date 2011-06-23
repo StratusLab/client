@@ -9,10 +9,16 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.ConfigHolder import ConfigHolder
 
+USAGE = """Usage: %prog --get-element <ELEMENT> <marketplace image URL>
+<marketplace image URL> - a valid URL. (http://example.com/dir/imageID)"""
+
+parser = OptionParser(usage=USAGE)
+
+def _exitWithUsage():
+    print >> sys.stderr, parser.usage
+    raise SystemExit(1)
+
 def main():
-    usage = "Usage: %prog --get-element <ELEMENT> <marketplace image URL>"
-    
-    parser = OptionParser(usage=usage)
     
     parser.add_option('--get-element', dest='element', help='Element to get.',
         metavar='ELEMENT', default=None)
@@ -21,19 +27,22 @@ def main():
     try:
         imageEndpoint = args[0]
     except IndexError:
-        print parser.usage
-        sys.exit(1)
+        _exitWithUsage()
     
     if not options.element:
-        print parser.usage
-        sys.exit(1)
+        _exitWithUsage()
     else:
         element = options.element
-    
-    marketplaceEndpoint, imageId = imageEndpoint.rsplit('/', 1)
-    
+
     configHolder = ConfigHolder()
-    configHolder.set('endpoint', marketplaceEndpoint)
+    
+    try:
+        marketplaceEndpoint, imageId = imageEndpoint.rsplit('/', 1)
+    except ValueError:
+        _exitWithUsage()
+
+    configHolder = ConfigHolder()
+    configHolder.set('marketplaceEndpoint', marketplaceEndpoint)
     
     downloader = Downloader(configHolder)
     downloader.downloadManifestByImageId(imageId)
@@ -46,8 +55,4 @@ def main():
     print value
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception, ex:
-        print >> sys.stderr, str(ex)
-        sys.exit(1)
+    main()

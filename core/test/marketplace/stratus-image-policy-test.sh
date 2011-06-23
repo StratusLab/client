@@ -12,5 +12,5 @@
 #ID : GOaxJFdoEXvqAm9ArJgnZ0_ky6F
 #Image: http://appliances.stratuslab.eu/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz
 
-../../../cli/sysadmin/src/main/python/stratus-policy-image GOaxJFdoEXvqAm9ArJgnZ0_ky6F policy.cfg
+../../../cli/sysadmin/src/main/python/stratus-policy-image http://appliances.stratuslab.eu/marketplace/metadata/GOaxJFdoEXvqAm9ArJgnZ0_ky6F policy.cfg
 
