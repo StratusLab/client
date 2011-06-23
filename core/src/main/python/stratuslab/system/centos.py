@@ -263,7 +263,9 @@ NETMASK=%s
         except Exceptions.ConfigurationException, ex:
             Util.printWarning('Failed to build config for %s and %s.\n%s' % 
                               (iface, bridge, str(ex)))
-        self._writeToFilesRemote([(bridgeFile, bridgeConf), (ifaceFile, ifaceConf)])
+            return
+        else:
+            self._writeToFilesRemote([(bridgeFile, bridgeConf), (ifaceFile, ifaceConf)])
 
     @staticmethod
     def _buildBridgeAndIfaceConfig(ifaceConfOrig, iface, bridge):
