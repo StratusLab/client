@@ -23,6 +23,8 @@ import tarfile
 from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
 import stratuslab.Util as Util
+from stratuslab import Exceptions
+import re
 
 packageManagerReposConfDir = '/etc/yum.repos.d'
 installCmd = 'yum -y --nogpgcheck install'
@@ -236,7 +238,71 @@ NETMASK=%s
 """ % (device, ip, netmask)
         Util.filePutContent(deviceConf, data)
 
+    def _persistRemoteBridgeConfig(self, iface, bridge):
+        netScriptsDir = '/etc/sysconfig/network-scripts/'
+        ifaceFile = '%s/ifcfg-%s' % (netScriptsDir, iface)
+        bridgeFile = '%s/ifcfg-%s' % (netScriptsDir, bridge)
 
-    
+        if self._nodeShell('[ -f %s ]' % bridgeFile, shell=True) == 0:
+            Util.printWarning(('Bridge configuration already present (%s:%s).' % 
+                               (self.nodeAddr, bridgeFile)) + \
+                               ' Please update it manually if required.')
+            return
+
+        cmd = 'cat %s' % ifaceFile
+        rc, output = self._nodeShell(cmd, withOutput=True, shell=True)
+        if rc != 0:
+            Util.printWarning('Failed to get content of %s:%s:\n%s' % 
+                              (self.nodeAddr, ifaceFile, output))
+            return
+
+        ifaceConfOrig = output
+        try:
+            bridgeConf, ifaceConf = self._buildBridgeAndIfaceConfig(ifaceConfOrig,
+                                                                    iface, bridge)
+        except Exceptions.ConfigurationException, ex:
+            Util.printWarning('Failed to build config for %s and %s.\n%s' % 
+                              (iface, bridge, str(ex)))
+        self._writeToFilesRemote([(bridgeFile, bridgeConf), (ifaceFile, ifaceConf)])
+
+    @staticmethod
+    def _buildBridgeAndIfaceConfig(ifaceConfOrig, iface, bridge):
+        
+        res = re.search('(^BOOTPROTO.*)', ifaceConfOrig, re.M)
+        if not res:
+            raise Exceptions.ConfigurationException('BOOTPROTO not defined in %s config.' % iface)
+        else:
+            BOOTPROTO = res.group()
+
+        bridgeConf = """DEVICE=%s
+TYPE=Bridge
+ONBOOT=yes
+DELAY=0
+IPV6INIT=yes
+""" % bridge
+        
+        BOOTPROTO = BOOTPROTO.split('=')[1]
+        if BOOTPROTO == 'static':
+            # copy static conf from main interface
+            bridgeConf += "BOOTPROTO=static\n"
+            pat = '.*|'.join(['BROADCAST', 'IPADDR', 'NETMASK', 
+                              'NETWORK', 'GATEWAY']) + '.*'
+            matches = re.findall('^(%s)' % pat, ifaceConfOrig, re.M)
+            for match in matches:
+                bridgeConf += '%s\n' % match
+        else:
+            bridgeConf += "BOOTPROTO=%s\n" % BOOTPROTO
+
+        ifaceConf = """DEVICE=%s
+ONBOOT=yes
+BRIDGE=%s
+""" % (iface, bridge)
+
+        for key in ['IPV6INIT', 'HWADDR']:
+            res = re.search('(^%s.*)' % key, ifaceConfOrig, re.M)
+            if res:
+                ifaceConf += '%s\n' % res.group()
+        
+        return bridgeConf, ifaceConf
 
 system = CentOS()
