@@ -42,7 +42,7 @@ def main():
         _exitWithUsage()
 
     configHolder = ConfigHolder()
-    configHolder.set('endpoint', marketplaceEndpoint)
+    configHolder.set('marketplaceEndpoint', marketplaceEndpoint)
     
     downloader = Downloader(configHolder)
     downloader.downloadManifestByImageId(imageId)
