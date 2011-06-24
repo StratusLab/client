@@ -1,0 +1,16 @@
+class Testing(object):
+    def __init__(self):
+        self.a=[1,2,3,4,5,6,4,7,8,4]
+
+    def filter(self, a):
+        for i in a:
+            print "a(i)=",i
+            print "a.index(i)=",a.index(i)
+            if i==4:
+                a.remove(i)
+                print "a=",a
+                self.filter(a)
+        print "af=",a
+if __name__ == "__main__":
+    b=Testing()
+    b.filter(b.a)     
