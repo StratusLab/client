@@ -161,6 +161,9 @@ class BaseSystem(object):
         Util.printDetail('Waiting for ONE to finish starting')
         time.sleep(10)
 
+    def enableServiceOnBoot(self, service, level='3'):
+        return 0
+
     # -------------------------------------------
     #     ONE admin creation
     # -------------------------------------------
@@ -769,10 +772,14 @@ class BaseSystem(object):
 
         if not _isCertificateAuthority():
             Util.printDetail('Requested not to install CAs.')
-            return
-        
-        self._installCAs()
-        
+        else:
+            self._installCAs()
+
+        self._enableFetchCrl()
+
+    def _enableFetchCrl(self):
+        pass
+
     def _installCAs(self):
         packages = []
 

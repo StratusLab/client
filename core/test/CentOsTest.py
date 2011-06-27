@@ -23,7 +23,7 @@ from stratuslab.system.centos import CentOS
 
 class CentOsTest(unittest.TestCase):
 
-    def testGetBridgeAndIfaceConfigSticNetwork(self):
+    def testGetBridgeAndIfaceConfigStaticNetwork(self):
 
         centos = CentOS()
 

@@ -174,6 +174,13 @@ enabled=1
         cmd = '%s %s' % (queryPackageCmd, package)
         return cmd
 
+    def enableServiceOnBoot(self, service, level='3'):
+        cmd = ['chkconfig', '--level', str(level), service, 'on']
+        rc, output = self._executeWithOutput(cmd)
+        if rc != 0:
+            Util.printDetail(output)
+        return rc
+
     # -------------------------------------------
     #     Source build and installation methods
     # -------------------------------------------
@@ -306,5 +313,16 @@ BRIDGE=%s
                 ifaceConf += '%s\n' % res.group()
         
         return bridgeConf, ifaceConf
+
+
+    # -------------------------------------------
+    # Security
+    # -------------------------------------------
+    def _enableFetchCrl(self):
+
+        Util.printDetail('Enabling fetch-crl-cron.')
+        self.startService('fetch-crl-cron')
+        self.enableServiceOnBoot('fetch-crl-cron', '3')
+
 
 system = CentOS()
