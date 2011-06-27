@@ -62,6 +62,7 @@ class Policy(object):
         self.blackListImages = ['blackListImages']
         self.validateMetaData = []
         self.messageinfo = []
+        self.intersectionList = ['whiteListImages','blackListImages','whiteListChecksums','blackListChecksums']
         self.policyConfigFilename = policyConfigFilename
         configHolder.assign(self)
         self._loadConfig(self.policyConfigFilename)
@@ -103,14 +104,11 @@ class Policy(object):
     
     def check(self, identifierUri):
         if self._isActive():
-            print "validation process"
             self._validate(identifierUri)
         self._loadDom(self._downloadManifest(identifierUri))
 
         metadatas = self._retrieveMetadataList()
-        #Merketplace bug : Return an empty list, if XML file contains multiple toplevel (XML isn't valid) 
-        #metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
-        metadataEntries = [metadatas]
+        metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
         filtered0 = self._filter(metadataEntries, self.whiteListImages)
         if len(filtered0) == 0:
             sys.stderr.write(self._errorMessage())
@@ -136,7 +134,7 @@ class Policy(object):
             sys.stderr.write(self._errorMessage())
             raise ValidationException('Policy check Failed')
 
-        filtered5 = self._filter(filtered4, self.blackListChecksums)	
+        filtered5 = self._filter(filtered4, self.blackListChecksums)
         if len(filtered5) == 0:
             sys.stderr.write(self._errorMessage())
             raise ValidationException('Policy check Failed')
@@ -166,16 +164,23 @@ class Policy(object):
         return etree.fromstring(metadataEntries)
 
     def _extractIdentifier(self):
-        return self.manifest.findtext('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
+        return self.manifest.findtext('.//{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
         
     #filter: inputs: metadata list as element tree.
     #     remove unwanted element tree from metadata list
     #     return metadata list  
     
     def _filter(self, metadatas, whiteOrblackList):
-        for metadata in metadatas:
-            if not self._keep(metadata, whiteOrblackList):
-                metadatas.remove(metadata)
+        metadata_to_remove=[]
+        if whiteOrblackList[0] in self.intersectionList:
+            if not self._keep(metadatas[0], whiteOrblackList):
+                metadata_to_remove.extend(metadatas)
+        else:
+            for metadata in metadatas:
+                if not self._keep(metadata, whiteOrblackList):
+                    metadata_to_remove.append(metadata)
+        for metadata in metadata_to_remove:
+            metadatas.remove(metadata)
         return metadatas
 
     # keep: inputs: element tree
@@ -187,7 +192,6 @@ class Policy(object):
         emailendorser = metadata.findtext(xpathPrefix % 'endorser' + 'email')
         imageidentifier = metadata.findtext('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
         checksumimages = metadata.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://mp.stratuslab.eu/slreq#}checksum')
-        
         if (whiteOrblackList[0] == 'whiteListImages' and len(self.whiteListImages)>1):
             return self._whiteListImagesPlugin(imageidentifier)
         elif (whiteOrblackList[0] == 'blackListImages' and len(self.blackListImages)>1):
