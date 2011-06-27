@@ -319,6 +319,7 @@ BRIDGE=%s
     # Security
     # -------------------------------------------
     def _enableFetchCrl(self):
+
         Util.printDetail('Enabling fetch-crl-cron.')
         self.startService('fetch-crl-cron')
         self.enableServiceOnBoot('fetch-crl-cron', '3')
