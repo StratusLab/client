@@ -39,8 +39,8 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16], ['hostname',16])
-        self.vmInfoListAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16], ['hostname',16])
+        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
+        self.vmInfoListAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
 
         self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
@@ -85,7 +85,10 @@ class Monitor(Configurable):
         nodes = self.cloud.listHosts()
         correct_nodes = []
         for node in self._iterate(etree.fromstring(nodes)):
-            node.attribs['template_usedcpu'] = round(float(node.attribs['template_usedcpu']),2)
+            # FIXME: remove this later.
+            try:
+                node.attribs['template_usedcpu'] = round(float(node.attribs['template_usedcpu']),2)
+            except: pass
             correct_nodes.append(node)
         return correct_nodes
 
@@ -177,9 +180,13 @@ class Monitor(Configurable):
         self._adjustAttributeFields(_list, attrList)
 
     def _adjustAttributeFields(self, _list, attrList):
+#        for k,v in _list[0].attribs.items():
+#            print k,v
+#        raise SystemExit()
         if _list:
             for attr in attrList:
                 for i, attrVal in enumerate(getattr(self, attr)):
-                    lenMax = max(map(lambda x: len(getattr(x, attrVal[0])), _list))
+                    #print attrVal
+                    lenMax = max(map(lambda x: len(getattr(x, attrVal[0], '')), _list))
                     if lenMax >= getattr(self, attr)[i][1]:
                         getattr(self, attr)[i][1] = lenMax + 1
