@@ -32,7 +32,7 @@ from stratuslab.cloud.one import OneHostState
 class NodeDetailGenerator(DetailedGenerator):
     
     def __init__(self, configFile):
-        super(NodeDetailGenerator, self).__init__()
+        super(NodeDetailGenerator, self).__init__(configFile)
         self.title = 'Node detail'
         self.fieldGroups = [['Host Information', [['id', 'Id'],
                                                   ['name', 'Name'],

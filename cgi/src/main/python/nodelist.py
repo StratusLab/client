@@ -31,7 +31,7 @@ from stratuslab.cloud.one import OneHostState
 class NodeListGenerator(ListGenerator):
 
     def __init__(self, configFile):
-        super(NodeListGenerator, self).__init__()
+        super(NodeListGenerator, self).__init__(configFile)
         self.title = 'List of nodes'
         self.idTemplate = '            <td><a href="nodedetail.py?id=%(value)s"/>%(value)s</a></td>\n'
         self.fields = [['id','Id'],
