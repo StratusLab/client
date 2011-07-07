@@ -71,7 +71,7 @@ class MainProgram(Runnable):
                 action='callback', callback=self.diskSizeOptionCallback,
                 default=0, type='int')
 
-        self.parser.add_option('--persistent-disk', dest='UUID',
+        self.parser.add_option('--persistent-disk', dest='persistentDiskUUID',
                 help='persistent disk UUID',
                 default=None)
 
