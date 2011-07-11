@@ -21,6 +21,7 @@
 
 import json
 from stratuslab.HttpClient import HttpClient
+from urllib import urlencode
 
 class PersistentDisk(object):
     
@@ -35,12 +36,22 @@ class PersistentDisk(object):
         _, jsonDiskList = self.client.get(listVolUrl, accept='text/plain')
         return json.loads(jsonDiskList)
         
-    def createVolume(self, size, tag):
-        createVolumeUrl = '%s/create/?json' % self.serviceUri
-        createVolumeBody = 'size=%d\ntag=%s' % (size, tag)
-        ret = self.client.post(createVolumeUrl, createVolumeBody, "text/plain", "text/plain")
-        print ret
+    def createVolume(self, size, tag, visibility):
+        createVolumeUrl = '%s/disks/?json' % self.pdiskEndpoint
+        createVolumeBody = { 'size': size, 
+                             'tag': tag, 
+                             'visibility': self._getVisibilityFromBool(visibility)}
+        _, uuid = self.client.post(createVolumeUrl, urlencode(createVolumeBody), 
+                               'application/x-www-form-urlencoded')
+        return uuid
+    
+    def deleteVolume(self, uuid):
+        deleteVolumeUrl = '%s/disk/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
+        self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
         
     def _getPdiskEndpoint(self):
         config = self.config.configFileToDictWithFormattedKeys(self.config.configFile)
         return config['pdiskEndpoint']
+    
+    def _getVisibilityFromBool(self, visibility):
+        return visibility and 'public' or 'private'

@@ -35,7 +35,6 @@ class MainProgram(AuthnCommand):
     '''A command-line program to view the persistent disk.'''
 
     def __init__(self):
-        self.vmIds = []
         super(MainProgram, self).__init__()
 
     def parse(self):
