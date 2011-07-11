@@ -31,6 +31,7 @@ class HttpClient(object):
     def __init__(self, configHolder=ConfigHolder()):
         self.verboseLevel = None
         self.configHolder = configHolder
+        self.addCrendentialsHandling = False
         configHolder.assign(self)        
 
     def get(self,url,accept='application/xml'):
@@ -38,6 +39,12 @@ class HttpClient(object):
         
     def post(self,url,body=None,contentType='application/xml',accept='application/xml'):
         return self._httpCall(url,'POST',body,contentType,accept)
+    
+    def useCredentials(self, useCred):
+        self.addCrendentialsHandling = useCred
+        
+    def _addCredentials(self, http):
+        http.add_credentials(self.configHolder.username, self.configHolder.password)
     
     def _httpCall(self,url,method,body=None,contentType='application/xml',accept='application/xml',retry=True):
         
@@ -92,6 +99,8 @@ class HttpClient(object):
             headers['Content-Type'] = contentType
         if accept:
             headers['Accept'] = accept
+        if self.addCrendentialsHandling:
+            self._addCredentials(h)
         try:
             if len(headers):
                 resp, content = h.request(url, method, body, headers=headers)
