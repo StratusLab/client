@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Util import modulePath, printError
+from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.ConfigHolder import ConfigHolder
+
+
+class MainProgram(AuthnCommand):
+    '''A command-line program to create a persistent disk.'''
+
+    def __init__(self):
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        self.parser.usage = '%prog  [options]'
+
+        self.parser.description = '''Delete a persistent disk'''
+        
+        AuthnCommand.addCloudEndpointOptions(self.parser)
+
+        super(MainProgram, self).parse()
+
+        self.options, self.uuids = self.parser.parse_args()
+
+    def checkOptions(self):
+        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+        super(MainProgram, self).checkOptions()
+        self
+        self._checkUuid()
+    
+    def _getUuid(self):
+        if len(self.uuids) < 1:
+            printError('At least one disk UUID is required')
+    
+    def _checkUuid(self):
+        for uuid in self.uuids:
+            if not PersistentDisk.isValidUuid(uuid):
+                printError('Invalid UUID %s' % uuid)
+        
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        pdisk = PersistentDisk(configHolder)
+        for uuid in self.uuids:
+            volumeId = pdisk.deleteVolume(uuid)
+            print 'DELETED %s' % volumeId
+#            
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

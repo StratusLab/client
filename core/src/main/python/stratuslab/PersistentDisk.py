@@ -22,6 +22,7 @@
 import json
 from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
+from uuid import UUID
 
 class PersistentDisk(object):
     
@@ -46,12 +47,22 @@ class PersistentDisk(object):
         return uuid
     
     def deleteVolume(self, uuid):
-        deleteVolumeUrl = '%s/disk/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
-        self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
-        
+        deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
+        _, uuid = self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
+        return uuid
+
     def _getPdiskEndpoint(self):
         config = self.config.configFileToDictWithFormattedKeys(self.config.configFile)
         return config['pdiskEndpoint']
     
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
+        
+    @staticmethod
+    def isValidUuid(uuid):
+        try:
+            UUID(uuid)
+        except ValueError:
+            return False
+        return True
+        
