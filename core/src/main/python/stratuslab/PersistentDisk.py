@@ -30,15 +30,14 @@ class PersistentDisk(object):
         self.client = HttpClient(configHolder)
         self.client.useCredentials(True)
         self.config = configHolder
-        self.pdiskEndpoint = self._getPdiskEndpoint()
         
     def volumeList(self):
-        listVolUrl = '%s/disks/?json' % self.pdiskEndpoint
+        listVolUrl = '%s/disks/?json' % self.config.pdiskEndpoint
         _, jsonDiskList = self.client.get(listVolUrl, accept='text/plain')
         return json.loads(jsonDiskList)
         
     def createVolume(self, size, tag, visibility):
-        createVolumeUrl = '%s/disks/?json' % self.pdiskEndpoint
+        createVolumeUrl = '%s/disks/?json' % self.config.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
@@ -47,13 +46,9 @@ class PersistentDisk(object):
         return uuid
     
     def deleteVolume(self, uuid):
-        deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
+        deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.config.pdiskEndpoint, uuid)
         _, uuid = self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
         return uuid
-
-    def _getPdiskEndpoint(self):
-        config = self.config.configFileToDictWithFormattedKeys(self.config.configFile)
-        return config['pdiskEndpoint']
     
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'

@@ -39,19 +39,17 @@ class MainProgram(AuthnCommand):
 
     def parse(self):
         self.parser.usage = '%prog  [options]'
-
         self.parser.description = '''Delete a persistent disk'''
         
-        AuthnCommand.addCloudEndpointOptions(self.parser)
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
-        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
-        self
         self._checkUuid()
     
     def _getUuid(self):

@@ -64,6 +64,10 @@ class AuthnCommand(CommandBaseUser):
     @staticmethod
     def addCloudEndpointOptions(parser, defaultOptions=None):
         return CloudEndpoint.addOptions(parser, defaultOptions)
+    
+    @staticmethod
+    def addPDiskEndpointOptions(parser, defaultOptions=None):
+        return PDiskEndpoint.addOptions(parser, defaultOptions)
 
     def parse(self):
         defaultOptions = AuthnCommand.defaultRunOptions()
@@ -82,6 +86,9 @@ class AuthnCommand(CommandBaseUser):
 
     def checkCloudEndpointOptoins(self):
         return CloudEndpoint.checkOptions(self.options)
+    
+    def checkPDiskEndpointOptoins(self):
+        return PDiskEndpoint.checkOptions(self.options)
 
     def checkOptions(self):
         if not (self.checkUsernamePasswordOptions() or self.checkPemCertOptions()):
@@ -99,6 +106,12 @@ class AuthnCommand(CommandBaseUser):
     def checkCloudEndpointOptionsOnly(self):
         if not self.checkCloudEndpointOptoins():
             self.parser.error('Missing cloud endpoint. Please provide %s' % CloudEndpoint.optionString)
+
+    def checkPDiskEndpointOptionsOnly(self):
+        if not self.checkPDiskEndpointOptoins():
+            self.parser.error('Missing persistent disk endpoint. Please provide %s' 
+                              % PDiskEndpoint.optionString)
+
 
 class UsernamePassword(object):
     
@@ -226,4 +239,28 @@ class CloudEndpoint(object):
         if options.endpoint:
             return True
 
+        return False
+    
+    
+class PDiskEndpoint(object):
+    optionString = '--pdisk-endpoint'
+
+    @staticmethod
+    def options():
+        return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', '')}  
+
+    @staticmethod
+    def addOptions(parser, defaultOptions=None):
+        if not defaultOptions:
+            defaultOptions = PDiskEndpoint.options()
+
+        parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
+                          help='persistent disk storage endpoint address. \
+                          Default STRATUSLAB_PDISK_ENDPOINT',
+                          default=defaultOptions['pdiskEndpoint'])
+        
+    @staticmethod
+    def checkOptions(options):
+        if options.pdiskEndpoint:
+            return True
         return False

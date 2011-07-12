@@ -43,7 +43,6 @@ class MainProgram(AuthnCommand):
 
     def parse(self):
         self.parser.usage = '%prog  [options]'
-
         self.parser.description = '''Create a new persistent disk'''
         
         self.parser.add_option('-s', '--size', dest='volumeSize',
@@ -59,14 +58,14 @@ class MainProgram(AuthnCommand):
                       use it but can\'t delete it)',
                 action='store_true', default=False)
 
-        AuthnCommand.addCloudEndpointOptions(self.parser)
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
-        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
         self._checkVolumeSize()
         self._checkTagLength()

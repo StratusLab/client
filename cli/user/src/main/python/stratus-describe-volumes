@@ -38,20 +38,18 @@ class MainProgram(AuthnCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-
         self.parser.usage = '%prog  [volume_uid ...] [[--filter name=value] ...]'
-
         self.parser.description = '''List all available disk or only specified 
 for the current user (-u/--username).'''
 
-        AuthnCommand.addCloudEndpointOptions(self.parser)
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
-        AuthnCommand.checkCloudEndpointOptionsOnly(self)
+        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
         
     def doWork(self):
@@ -62,7 +60,7 @@ for the current user (-u/--username).'''
         
     def _printVolumes(self, volumes):
         if not len(volumes):
-            print 'No disk yet.'
+            print 'No disk yet'
         for disk in volumes:
             print ':: DISK %s' % disk['uuid']
             self._printDict(disk, ['uuid',])
