@@ -43,9 +43,11 @@ class MainProgram(AuthnCommand):
 for the current user (-u/--username).'''
         
         self.parser.add_option('-f', '--filter', dest='filters',
-                help='''Filter available disk with specified properties 
-e.g. --filter name1:value1 --filter name2:value2. This will only show  disk 
-that match the properties value. Every disk property can be used''', 
+                help='''Filter available disk with specified properties.
+Name are the one specified when describing disk properties. Values can be python
+regex pattern. 
+Example: --filter owner:john --filter tag:grid-* will show only john's disk 
+that have a tag matching the regex pattern.''', 
                 metavar='name:value', action='append', default=[])
 
         AuthnCommand.addPDiskEndpointOptions(self.parser)
@@ -83,7 +85,7 @@ that match the properties value. Every disk property can be used''',
         self._addUuidToFilters()
         for filter in self.options.filters:
             key = filter.split(':')[0]
-            value = ':'.join(filter.split(':')[1:])
+            value = ':'.join(filter.split(':')[1:]).lstrip().rstrip()
             if key in filters:
                 if value not in filters[key]: 
                     filters[key].append(value)

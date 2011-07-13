@@ -20,6 +20,7 @@
 #
 
 import json
+import re
 from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
 from uuid import UUID
@@ -58,9 +59,15 @@ class PersistentDisk(object):
         availableDisk = []
         for disk in disks:
             addDisk = True
-            for k, v in filters.items():
-                if disk.get(k, '') not in v:
+            for propertyName, searchedValue in filters.items():
+                diskProperty = disk.get(propertyName, None)
+                if not diskProperty:
                     addDisk = False
+                    break
+                for value in searchedValue:
+                    if not re.search(value, diskProperty):
+                        addDisk = False
+                        break
             if addDisk:
                 availableDisk.append(disk)
         return availableDisk
