@@ -38,7 +38,7 @@ class MainProgram(AuthnCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog  [options]'
+        self.parser.usage = '%prog volume_uid ... [options]'
         self.parser.description = '''Delete a persistent disk'''
         
         AuthnCommand.addPDiskEndpointOptions(self.parser)
