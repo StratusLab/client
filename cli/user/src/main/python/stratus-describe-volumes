@@ -80,6 +80,7 @@ that match the properties value. Every disk property can be used''',
     def _formatFilter(self):
         # produce {key:[value,]}
         filters = {}
+        self._addUuidToFilters()
         for filter in self.options.filters:
             key = filter.split(':')[0]
             value = ':'.join(filter.split(':')[1:])
@@ -90,7 +91,7 @@ that match the properties value. Every disk property can be used''',
                 filters[key] = [value,]
         return filters
                 
-    def _addUuidInFilters():
+    def _addUuidToFilters(self):
         for uuid in self.uuids:
             self.options.filters.append('uuid:%s' % uuid)
             
