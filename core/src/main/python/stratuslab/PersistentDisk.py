@@ -31,10 +31,11 @@ class PersistentDisk(object):
         self.client.useCredentials(True)
         self.config = configHolder
         
-    def volumeList(self):
+    def volumeList(self, filters={}):
         listVolUrl = '%s/disks/?json' % self.config.pdiskEndpoint
         _, jsonDiskList = self.client.get(listVolUrl, accept='text/plain')
-        return json.loads(jsonDiskList)
+        disks = json.loads(jsonDiskList)
+        return self._filterDisks(disks, filters)
         
     def createVolume(self, size, tag, visibility):
         createVolumeUrl = '%s/disks/?json' % self.config.pdiskEndpoint
@@ -52,6 +53,17 @@ class PersistentDisk(object):
     
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
+
+    def _filterDisks(self, disks, filters):
+        availableDisk = []
+        for disk in disks:
+            addDisk = True
+            for k, v in filters.items():
+                if disk.get(k, '') not in v:
+                    addDisk = False
+            if addDisk:
+                availableDisk.append(disk)
+        return availableDisk
         
     @staticmethod
     def isValidUuid(uuid):

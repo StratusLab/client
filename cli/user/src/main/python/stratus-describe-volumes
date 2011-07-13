@@ -41,12 +41,18 @@ class MainProgram(AuthnCommand):
         self.parser.usage = '%prog  [volume_uid ...] [[--filter name=value] ...]'
         self.parser.description = '''List all available disk or only specified 
 for the current user (-u/--username).'''
+        
+        self.parser.add_option('-f', '--filter', dest='filters',
+                help='''Filter available disk with specified properties 
+e.g. --filter name1:value1 --filter name2:value2. This will only show  disk 
+that match the properties value. Every disk property can be used''', 
+                metavar='name:value', action='append', default=[])
 
         AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
-        self.options, _ = self.parser.parse_args()
+        self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
         AuthnCommand.checkPDiskEndpointOptionsOnly(self)
@@ -55,12 +61,13 @@ for the current user (-u/--username).'''
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
-        volumes = pdisk.volumeList()
+        filters = self._formatFilter()
+        volumes = pdisk.volumeList(filters)
         self._printVolumes(volumes)
         
     def _printVolumes(self, volumes):
         if not len(volumes):
-            print 'No disk yet'
+            print 'No disk to show'
         for disk in volumes:
             print ':: DISK %s' % disk['uuid']
             self._printDict(disk, ['uuid',])
@@ -69,6 +76,23 @@ for the current user (-u/--username).'''
         for k, v in dict.items():
             if k not in excludeKey:
                 print '\t%s: %s' % (k, v)
+                
+    def _formatFilter(self):
+        # produce {key:[value,]}
+        filters = {}
+        for filter in self.options.filters:
+            key = filter.split(':')[0]
+            value = ':'.join(filter.split(':')[1:])
+            if key in filters:
+                if value not in filters[key]: 
+                    filters[key].append(value)
+            else:
+                filters[key] = [value,]
+        return filters
+                
+    def _addUuidInFilters():
+        for uuid in self.uuids:
+            self.options.filters.append('uuid:%s' % uuid)
             
 if __name__ == '__main__':
     try:
