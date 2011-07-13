@@ -42,7 +42,7 @@ class MainProgram(AuthnCommand):
         
 
     def parse(self):
-        self.parser.usage = '%prog  [options]'
+        self.parser.usage = '%prog [options]'
         self.parser.description = '''Create a new persistent disk'''
         
         self.parser.add_option('-s', '--size', dest='volumeSize',
@@ -53,10 +53,13 @@ class MainProgram(AuthnCommand):
                 help='Tag of the volume. Only for the user', metavar='NAME', 
                 default="")
         
+        self.parser.add_option('--private', dest='volumeVisibility',
+                help='''Set the disk as private (default). Only you can see, use 
+and delete the disk.''', action='store_false')
+        
         self.parser.add_option('--public', dest='volumeVisibility',
-                help='Set the disk visibility as public (any one can see it and \
-                      use it but can\'t delete it)',
-                action='store_true', default=False)
+                help='''Set the disk visibility as public. Any one can see it 
+and use it but can't delete it.''', action='store_true', default=False)
 
         AuthnCommand.addPDiskEndpointOptions(self.parser)
 
