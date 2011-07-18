@@ -41,6 +41,7 @@ import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
+from stratuslab.PersistentDisk import PersistentDisk
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -80,6 +81,7 @@ class Testor(unittest.TestCase):
         self._setSingleFieldFromEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
         self._setSingleFieldFromEnvVar('p12Certificate', 'STRATUSLAB_P12_CERTIFICATE')
         self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
+        self._setSingleFieldFromEnvVar('pdiskEndpoint', 'STRATUSLAB_PDISK_ENDPOINT')
         self._exportEndpointIfNotInEnv()
         self._setSingleFieldFromEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
 
@@ -146,9 +148,9 @@ class Testor(unittest.TestCase):
 
         print 'Current cpu quota: %s, starting as many +1' % self.quotaCpu
         try:
-            self._startVm(instanceNumber=int(self.quotaCpu)+1)
+            self._startVm(instanceNumber=int(self.quotaCpu) + 1)
         except OneException, ex:
-            message="Cpu quota exceeded (Quota: %s, Used: %s.0, asked: 1.0)." % (self.quotaCpu, self.quotaCpu)
+            message = "Cpu quota exceeded (Quota: %s, Used: %s.0, asked: 1.0)." % (self.quotaCpu, self.quotaCpu)
             self.assertTrue(message in ex.message, 'Quota not working, got %s expected %s' % (ex.message, message))
         else:
             self.fail('Quota not enforced')
@@ -194,7 +196,7 @@ class Testor(unittest.TestCase):
 
         return self.runner
 
-    def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None):
+    def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None, persistentDiskUUID=None):
         Util.generateSshKeyPair(self.sshKey)
 
         options = Runner.defaultRunOptions()
@@ -203,6 +205,7 @@ class Testor(unittest.TestCase):
         options['userPublicKeyFile'] = self.sshKeyPub
         options['verboseLevel'] = self.verboseLevel
         options['specificAddressRequest'] = requestedIpAddress
+        options['persistentDiskUUID'] = persistentDiskUUID
 
         if withLocalNetwork:
             options['isLocalIp'] = True
@@ -284,7 +287,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.set('apprepoUsername', self.apprepoUsername)
         configHolder.set('apprepoPassword', self.apprepoPassword)
-        configHolder.set('apprepoEndpoint',  self.apprepoEndpoint)
+        configHolder.set('apprepoEndpoint', self.apprepoEndpoint)
         configHolder.set('uploadOption', '')
         uploader = Uploader(manifest, configHolder)
         uploader.uploadFile(dummyFile, os.path.join('base', os.path.basename(dummyFile)))
@@ -345,7 +348,7 @@ class Testor(unittest.TestCase):
         creator = self._createCreator(self.imageIdCreateImage)
 
         newImage = creator.showName()
-        newImageUri = '%s/%s'%(creator.apprepoEndpoint, newImage)
+        newImageUri = '%s/%s' % (creator.apprepoEndpoint, newImage)
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
@@ -360,13 +363,13 @@ class Testor(unittest.TestCase):
 
         self.image = creator.targetImageUri
         self.oneUsername = self.username
-        self.proxyOneadminPassword =  self.password
+        self.proxyOneadminPassword = self.password
         self._runInstanceTest(cmdToRun='python -c "import dirq"')
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
     def _deleteImageAndManifestFromAppRepo(self, imageUri):
-        urlDir = imageUri.rsplit('/',1)[0] + '/'
+        urlDir = imageUri.rsplit('/', 1)[0] + '/'
 
         curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.apprepoUsername,
                                                         self.apprepoPassword)]
@@ -389,7 +392,7 @@ class Testor(unittest.TestCase):
         options['newInstalledSoftwareName'] = 'CentOS'
         options['newInstalledSoftwareVersion'] = '5.5'
         options['excludeFromCreatedImage'] = '/etc/resolve.conf,/usr/sbin/pppdump'
-        options['extraDiskSize'] = str(7*1024)
+        options['extraDiskSize'] = str(7 * 1024)
         options['scripts'] = '' # TODO: add some
         options['packages'] = 'python-dirq'
         options['extraOsReposUrls'] = 'http://download.fedora.redhat.com/pub/epel/5/i386/'
@@ -477,8 +480,8 @@ class Testor(unittest.TestCase):
         fh = urllib2.urlopen(url, timeout=5)
         page = fh.read()
 
-        self.failUnless(re.search(errorMessage, page, re.M), 
-                        "Error message '%s' for VM %s wasn't found at %s" %
+        self.failUnless(re.search(errorMessage, page, re.M),
+                        "Error message '%s' for VM %s wasn't found at %s" % 
                         (errorMessage, vmId, url))
 
     def _startStopVmAndGetVmInfo(self, image):
@@ -543,3 +546,94 @@ class Testor(unittest.TestCase):
     def _executeSuite(self, suite):
         testResult = unittest.TextTestRunner(verbosity=2).run(suite)
         self.assertTrue(testResult.wasSuccessful())
+        
+    def persistentDiskStorageTest(self):
+        '''Ensure that a disk can be created, written, stored and removed'''
+        
+        pdiskDevice = '/dev/hdc' # !!!! Configured for the default image (ttylinux)
+        pdiskMountPoint = '/mnt/pdisk-test'
+        testFile = '%s/pdisk.txt' % pdiskMountPoint
+        testFileCmp = '/tmp/pdisk.cmp'
+        testString = 'pdiskTest'
+        
+        Util.printAction('Creating a new persistent disk')
+        configHolder = Testor.configHolder.copy()
+        configHolder.username = Testor.configHolder.testUsername
+        configHolder.password = Testor.configHolder.testPassword
+        pdisk = PersistentDisk(configHolder)
+        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
+        
+        Util.printAction('Checking persistent disk exists')
+        filter = {'uuid': [diskUUID, ] }
+        disks = pdisk.volumeList(filter)
+        if len(disks) != 1:
+            self.fail('An error occurred while creating a persistent disk')
+        
+        runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+        self._formatDisk(runner, pdiskDevice)
+        self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
+        self._writeToFile(runner, testFile, testString)
+        self._umountPDiskAndStopVm(runner, pdiskDevice)
+        
+        runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+        self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
+        self._writeToFile(runner, testFileCmp, testString)
+        self._compareFiles(runner, testFile, testFileCmp)
+        self._umountPDiskAndStopVm(runner, pdiskDevice)      
+
+        Util.printAction('Removing persistent disk...')
+        # A logged iSCSI disk for a machine is not dettached when the machine is down.
+        # This behavior is required as there is no protection for the moment to disable
+        # mounting a same disk several time. 
+        # As a result, the smoke test can't delete the created disk for the test, so for
+        # now we will test the test deletion with another disk.
+        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
+        filter = {'uuid': [diskUUID, ] }
+        disks = pdisk.volumeList(filter)
+        if len(disks) != 1:
+            self.fail('An error occurred while creating a persistent disk')
+        pdisk.deleteVolume(diskUUID)
+        disks = pdisk.volumeList(filter)
+        if len(disks) != 0:
+            self.fail('The persistent disk seems to be still present')
+        
+        
+    def _startVmWithPDiskAndWaitUntilUp(self, pdisk):
+        runner = self._createRunner(persistentDiskUUID=pdisk)
+        vmIds = runner.runInstance()
+        if len(vmIds) < 1:
+            self.fail('An error occurred will starting a VM')
+        self.vmIds.extend(vmIds)
+        self._repeatCall(self._ping, runner)
+        self._repeatCall(self._loginViaSsh, runner, '/bin/true')
+        return runner
+    
+    def _umountPDiskAndStopVm(self, runner, pdiskDevice):
+        self._umountDisk(runner, pdiskDevice)
+        Util.printStep('Stopping VM...')
+        self._stopVm(runner)
+        self.vmIds = []
+    
+    def _formatDisk(self, runner, device):
+        Util.printStep('Formating device %s' % device)
+        mkfsScript = '/tmp/mkfs'
+        self._loginViaSsh(runner, 'echo "echo \'y\' | /sbin/mkfs.ext3 %s" > %s' 
+                                    % (device, mkfsScript))
+        self._loginViaSsh(runner, 'bash %s' % mkfsScript)
+        
+    def _mountDisk(self, runner, device, mountPoint):
+        Util.printStep('Mounting device %s in %s...' % (device, mountPoint))
+        self._loginViaSsh(runner, 'mkdir %s' % mountPoint)
+        self._loginViaSsh(runner, 'mount %s %s' % (device, mountPoint))
+    
+    def _umountDisk(self, runner, device):
+        Util.printStep('Unmounting device %s...' % device)
+        self._loginViaSsh(runner, 'umount %s' % device)
+
+    def _writeToFile(self, runner, filename, what):
+        Util.printStep('Writing content to %s...' % filename)
+        self._loginViaSsh(runner, 'echo "%s" > %s' % (what, filename))
+        
+    def _compareFiles(self, runner, file1, file2):
+        Util.printStep('Comparing %s and %s content...' % (file1, file2))
+        self._loginViaSsh(runner, 'diff %s %s' % (file1, file2))

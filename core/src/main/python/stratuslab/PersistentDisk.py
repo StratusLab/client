@@ -31,6 +31,7 @@ class PersistentDisk(object):
         self.client = HttpClient(configHolder)
         self.client.useCredentials(True)
         self.config = configHolder
+        self._checkEndpoint()
         
     def volumeList(self, filters={}):
         listVolUrl = '%s/disks/?json' % self.config.pdiskEndpoint
@@ -71,6 +72,13 @@ class PersistentDisk(object):
             if addDisk:
                 availableDisk.append(disk)
         return availableDisk
+    
+    def _checkEndpoint(self):
+        if self.config.pdiskEndpoint.endswith('/'):
+            self.config.pdiskEndpoint = self._removeTrailingSlash(self.config.pdiskEndpoint)
+            
+    def _removeTrailingSlash(self, string):
+        return string[:-1]
         
     @staticmethod
     def isValidUuid(uuid):
