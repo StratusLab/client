@@ -25,15 +25,17 @@ else
     TMCOMMON=$ONE_LOCATION/lib/mads/tm_common.sh
 fi
 
-. $TMCOMMON
-
-SRC_PATH=`arg_path $SRC`
-DST_PATH=`arg_path $DST`
-
-SRC_HOST=`arg_host $SRC`
-DST_HOST=`arg_host $DST`
+. $TMCOMMON                                                                                                                  
+                                                                                                                             
+SRC_PATH=`arg_path $SRC`                                                                                                     
+DST_PATH=`arg_path $DST`                                                                                                     
+                                                                                                                             
+SRC_HOST=`arg_host $SRC`                                                                                                     
+DST_HOST=`arg_host $DST`                                                                                                     
 EBS_PATH=/var/lib/one/ebs/
 SRC_FILE=$(basename $SRC_PATH)
+
+log_debug "SRC_FILE:$SRC_FILE"
 
 log_debug "$1 $2"
 log_debug "DST: $DST_PATH"
@@ -45,26 +47,40 @@ exec_and_log "$SSH $DST_HOST mkdir -p $DST_DIR" \
     "Error creating directory $DST_DIR"
 
 function _download_and_extract () {
+    SRC_FILE=$(basename $SRC)
     case $SRC in
     http://*.gz|https://*.gz)
         log "Downloading GZip archive $SRC"
-	if [ -e "/var/lib/one/ebs/cache/${SRC_FILE%.*}" ]; then
-		log_debug "Image already cached"
-		exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/${SRC_FILE%.*} $DST_PATH"
-	else
-		exec_and_log "download_and_extract $SRC $DST_PATH.gz $GUNZIP $DST_HOST" \
-          	  "Error downloading $SRC"
-	fi
-	;;
+        if [ -e "/var/lib/one/ebs/cache/${SRC_FILE%.*}" ]; then
+                log_debug "Image already cached"
+                exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/${SRC_FILE%.*} $DST_PATH"
+        else
+                exec_and_log "download_and_extract $SRC $DST_PATH.gz $GUNZIP $DST_HOST" \
+                  "Error downloading $SRC"
+        fi
+        ;;
 
     http://*.bz2|https://*.bz2)
         log "Downloading BZip2 archive $SRC"
-	if [ -e "/var/lib/one/ebs/cache/${SRC_FILE%.*}" ]; then
+        if [ -e "/var/lib/one/ebs/cache/${SRC_FILE%.*}" ]; then
                 log_debug "Image already cached"
                 exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/${SRC_FILE%.*} $DST_PATH"
         else
                 exec_and_log "download_and_extract $SRC $DST_PATH.bz2 $BUNZIP2 $DST_HOST" \
                   "Error downloading $SRC"
+        fi
+        ;;
+
+    http://*.qcow|https://*.qcow)
+        log "Downloading qcow unzipped $SRC"
+        if [ -e "/var/lib/one/ebs/cache/$SRC_FILE" ]; then
+                log_debug "Image already cached"
+                exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/$SRC_FILE $DST_PATH"
+        else
+                log "Downloading $SRC"
+                exec_and_log "$SSH $DST_HOST $CURL -k -o /var/lib/one/ebs/cache/$SRC_FILE $SRC" \
+                                "Error downloading $SRC"
+                exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/$SRC_FILE $DST_PATH"
         fi
         ;;
 
@@ -76,15 +92,16 @@ function _download_and_extract () {
             SRC=$LOCATION
             _download_and_extract
         else
-		if [ -e "/var/lib/one/ebs/cache/$SRC_FILE" ]; then
-                	log_debug "Image already cached"
-                	exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/$SRC_FILE $DST_PATH"
-        	else
-            		log "Downloading $SRC"
-            		exec_and_log "$SSH $DST_HOST $CURL -k -o /var/lib/one/ebs/cache/$SRC_FILE $SRC" \
-                		"Error downloading $SRC"
-			exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/$SRC_FILE $DST_PATH"	
-		fi
+                SRC_FILE=$(basename $SRC)
+                if [ -e "/var/lib/one/ebs/cache/$SRC_FILE" ]; then
+                        log_debug "Image already cached"
+                        exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/$SRC_FILE $DST_PATH"
+                else
+                        log "Downloading $SRC"
+                        exec_and_log "$SSH $DST_HOST $CURL -k -o /var/lib/one/ebs/cache/$SRC_FILE $SRC" \
+                                "Error downloading $SRC"
+                        exec_and_log "$SSH $DST_HOST qemu-img create -f qcow2 -b /var/lib/one/ebs/cache/$SRC_FILE $DST_PATH"
+                fi
         fi
         ;;
 
@@ -107,4 +124,3 @@ _download_and_extract
 if [ ! -L $DST_PATH ]; then
   exec_and_log "$SSH $DST_HOST chmod --quiet ug+w,o-rwx $DST_PATH"
 fi
-
