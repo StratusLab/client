@@ -35,6 +35,20 @@ class NFSStore():
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
         loghandler.setFormatter(formatter)
         self.my_logger.addHandler(loghandler)
+        
+    def sanity_check(self, values):
+        try:
+            volumes = self.utils.list_volumes(values)
+            
+            for volume in volumes:
+                if not volume['instance'] == 'None':
+                    host = commands.getoutput("onevm list | grep one-"+values['instance']+" | awk '{print $7}'")
+                    if host == "" :
+                        self.utils.volume_db_detached(volume)
+            return 
+        except:
+            self.my_logger.debug("Error in sanity check")
+            return 
     
     def attach(self, values):
         try:
@@ -111,7 +125,7 @@ class NFSStore():
             newvolume['device'] = 'None'
             newvolume['deleted'] = 'False'
 
-            stdoutput = commands.getoutput("qemu-img create -f qcow2 " + self.utils.store_dir + "/" + newvolume['volume_id'] + " " +  values['size'])
+            stdoutput = commands.getoutput("qemu-img create -f raw " + self.utils.store_dir + "/" + newvolume['volume_id'] + " " +  values['size'])
             self.utils.add_to_volume_db(newvolume)
             
             self.my_logger.debug("Creating image:" + stdoutput)
@@ -147,13 +161,16 @@ class NFSStore():
     
     def list(self, values):
         try:
+            ## Added sanity check for closed instances
+            self.sanity_check(values)
+            
             volumes = self.utils.list_volumes(values)
             return_str="| Volume ID | Access | Owner  | Attached | Shared | Instance | Device |\n"
             return_str+="----------------------------------------------------------------------\n"
             
             for volume in volumes:
                 if volume['deleted'] == 'False':
-                    return_str += " | " + volume['volume_id'] + " | " + volume['access'] + " | " + volume['user'] + " | " + volume['attached'] + " | "+ volume['shared'] + " | " +volume['instance'] + " | "+ volume['device'] + " |\n"
+                    return_str += "| " + volume['volume_id'] + " | " + volume['access'] + " | " + volume['user'] + " | " + volume['attached'] + " | "+ volume['shared'] + " | " +volume['instance'] + " | "+ volume['device'] + " |\n"
             return return_str
         except:
             return "Could not list volumes. Please notify the system administrator."
