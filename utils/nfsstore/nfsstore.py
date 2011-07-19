@@ -42,7 +42,7 @@ class NFSStore():
             
             for volume in volumes:
                 if not volume['instance'] == 'None':
-                    host = commands.getoutput("onevm list | grep one-"+values['instance']+" | awk '{print $7}'")
+                    host = commands.getoutput("onevm list | awk '{if ($1 == "+values['instance']+") print $7; }'")
                     if host == "" :
                         self.utils.volume_db_detached(volume)
             return 
@@ -63,7 +63,7 @@ class NFSStore():
             if not found:
                 return "Volume not found!"
             
-            host = commands.getoutput("onevm list | grep one-"+values['instance']+" | awk '{print $7}'")
+            host = commands.getoutput("onevm list | awk '{if ($1 == "+values['instance']+") print $7; }'")
             if host==None or host=="":
                 return "Could not find instance"
             
