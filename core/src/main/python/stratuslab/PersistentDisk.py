@@ -24,6 +24,7 @@ import re
 from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
 from uuid import UUID
+from stratuslab.Util import printError
 
 class PersistentDisk(object):
     
@@ -74,6 +75,8 @@ class PersistentDisk(object):
         return availableDisk
     
     def _checkEndpoint(self):
+        if not self.config.pdiskEndpoint.lstrip().rstrip().startswith('http'):
+            printError('No valid persistent disk endpoint found', 1, True)
         if self.config.pdiskEndpoint.endswith('/'):
             self.config.pdiskEndpoint = self._removeTrailingSlash(self.config.pdiskEndpoint)
             
