@@ -156,6 +156,7 @@ class PersistentDisk(object):
         pdiskDir = 'storage/pdisk'
         oneproxyDir = 'one-proxy'
         confLine = '<Arg>%s</Arg>'
+        configFile = '/opt/stratuslab/storage/pdisk/etc/jetty-jaas-stratuslab.xml'
         if not self.persistentDiskMergeAuthWithProxy:
             return
         if not self.system._remoteFileExists(loginConf % oneproxyDir):
@@ -163,9 +164,11 @@ class PersistentDisk(object):
                          'not able to find one-proxy configuration file.\n'
                          'Edit %s to do it.' % loginConf % pdiskDir)
             return
+        if 0 == self.system._nodeShell(['grep', '"%s"' % confLine % loginConf % oneproxyDir, configFile]):
+            return
         printStep('Merging pdisk and one-proxy auth configuration...')
         self.system._remoteAppendOrReplaceInFile(
-             '/opt/stratuslab/storage/pdisk/etc/jetty-jaas-stratuslab.xml',
+             configFile,
              confLine % loginConf % pdiskDir,
              confLine % loginConf % oneproxyDir)
             
