@@ -30,6 +30,7 @@ from stratuslab.Util import printError
 from stratuslab.Util import getTemplateDir
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
+from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.Registration import Registration
 from stratuslab import Defaults
 from stratuslab.installator.PolicyValidator import PolicyValidator
@@ -65,7 +66,7 @@ class BaseInstallator(object):
         self.options = configHolder.options
         self.config = configHolder.config
 
-        if self.nodeAddr:
+        if self.nodeAddr and not self.installPersistentDisk:
             printAction('Node(s) installation')
             self._runInstallNodes()
         elif self.appRepoAddr:
@@ -78,11 +79,13 @@ class BaseInstallator(object):
             self._runInstallWebMonitor()
             printStep('Installation completed')
             return
-
         elif self.installCloudia:
             printAction('Claudia installation')
             self._runInstallClaudia()
             return
+        elif self.installPersistentDisk:
+            printAction('Persistent disk storage installation')
+            self._runInstallPersistentDisk()
         else:
             printAction('Frontend installation')
             self._runInstallFrontend()
@@ -211,6 +214,14 @@ class BaseInstallator(object):
         self._configureRegistrationApplication()
         self._configureMarketPlacePolicyValidation()
         
+    def _runInstallPersistentDisk(self):
+        pdiskInstaller = PersistentDisk(self.configHolder)
+        # To only install (not configure) use installXXX method
+        if self.nodeAddr:
+            pdiskInstaller.runNode()
+        else:
+            pdiskInstaller.runFrontend()
+        
     def _installCAs(self):
         self.frontend.installCAs()
 
@@ -287,6 +298,13 @@ class BaseInstallator(object):
 
     def _configurePolicies(self):
         pass
+    
+    def _configurePersistentDisk(self):
+        pdiskInstaller = PersistentDisk(self.configHolder)
+        if self.nodeAddr:
+            pdiskInstaller.configureNode()
+        else:
+            pdiskInstaller.configureFrontend()
 
     def _addDefaultNetworks(self):
         pass
