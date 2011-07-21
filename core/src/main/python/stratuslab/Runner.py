@@ -41,7 +41,7 @@ class Runner(object):
   TYPE=fs ]'''
 
     PERSISTENT_DISK = '''DISK=[
-  SOURCE=pdisk:%(persistentDiskUUID)s,
+  SOURCE=pdisk:%(pdiskEndpoint)s:%(persistentDiskUUID)s,
   TARGET=hdc,
   TYPE=block ]'''
 

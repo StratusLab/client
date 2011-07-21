@@ -29,6 +29,7 @@ from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
+from stratuslab.AuthnCommand import AuthnCommand
 
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
@@ -96,6 +97,8 @@ class MainProgram(Runnable):
         self.parser.add_option('--vm-name', dest='vmName',
                 help='name of VM. If not given, a default name will be assigned by cloud layer.',
                 metavar='NAME', default=options['vmName'])
+        
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
