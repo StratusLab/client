@@ -55,6 +55,23 @@ class PersistentDisk(object):
         _, uuid = self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
         return uuid
     
+    def volumeExists(self, uuid):
+        filter = {'uuid': [uuid,]}
+        return len(self.volumeList(filter)) == 1
+    
+    def canHoldVolume(self, uuid):
+        holdVolumeUrl = '%s/disks/%s/?free' % (self.pdiskEndpoint, uuid)
+        _, free = self.client.post(holdVolumeUrl, contentType='application/x-www-form-urlencoded')
+        return free == 1
+        
+    def holdVolume(self, uuid):
+        holdVolumeUrl = '%s/disks/%s/?hold' % (self.pdiskEndpoint, uuid)
+        self.client.post(holdVolumeUrl, contentType='application/x-www-form-urlencoded')
+        
+    def releaseVolume(self, uuid):
+        releaseVolumeUrl = '%s/disks/%s/?hold' % (self.pdiskEndpoint, uuid)
+        self.client.post(releaseVolumeUrl, contentType='application/x-www-form-urlencoded')
+        
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
 

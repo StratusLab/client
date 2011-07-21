@@ -29,6 +29,7 @@ from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
+from stratuslab.PersistentDisk import PersistentDisk
 
 class Runner(object):
 
@@ -61,6 +62,7 @@ class Runner(object):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpoint(self.endpoint)
+        self.pdisk = PersistentDisk(configHolder)
 
         self.vm_image = image
 
@@ -111,10 +113,23 @@ class Runner(object):
             pass
 
     def _setPersistentDiskOptional(self):
+        self._checkPersistentDiskExists()
         try:
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
         except AttributeError:
-            pass
+            Util.printError('Unable to attach persistent disk', exitCode=1, exit=True)
+        # TODO: Uncomment when service ready
+#        if self.pdisk.canHoldVolume(self.persistentDiskUUID):
+#            self.pdisk.holdVolume(self.persistentDiskUUID)
+#        else:
+#            Util.printError('Unable to hold persistent disk as it is already used.', 
+#                            exitCode=1, exit=True)
+
+    def _checkPersistentDiskExists(self):
+        if not self.pdisk.volumeExists(self.persistentDiskUUID):
+            Util.printError('Unable to find persistent disk %s at %s' 
+                    % (self.persistentDiskUUID, self.pdiskEndpoint), 
+                    exitCode=1, exit=True)
 
     def _setReadonlyDiskOptional(self):
         if hasattr(self, 'readonlyDiskId') and self.readonlyDiskId:
