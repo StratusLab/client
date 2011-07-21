@@ -247,7 +247,8 @@ class PDiskEndpoint(object):
 
     @staticmethod
     def options():
-        return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', '')}  
+        return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', ''),
+                'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),}  
 
     @staticmethod
     def addOptions(parser, defaultOptions=None):
@@ -258,6 +259,9 @@ class PDiskEndpoint(object):
                           help='persistent disk storage endpoint address. \
                           Default STRATUSLAB_PDISK_ENDPOINT',
                           default=defaultOptions['pdiskEndpoint'])
+        parser.add_option('--pdisk-port', dest='pdiskPort',
+                          help='Alternate persistent disk storage endpoint port.', 
+                          metavar='PORT', default=defaultOptions['pdiskPort'], type='int')
         
     @staticmethod
     def checkOptions(options):

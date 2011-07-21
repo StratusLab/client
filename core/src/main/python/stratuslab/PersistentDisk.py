@@ -29,19 +29,20 @@ from stratuslab.Util import printError
 class PersistentDisk(object):
     
     def __init__(self, configHolder):
+        self.pdiskEndpoint = 'https://%(pdiskEndpoint)s:%(pdiskPort)d'
         self.client = HttpClient(configHolder)
         self.client.useCredentials(True)
         self.config = configHolder
-        self._checkEndpoint()
+        self._buildFQNEndpoint()
         
     def volumeList(self, filters={}):
-        listVolUrl = '%s/disks/?json' % self.config.pdiskEndpoint
+        listVolUrl = '%s/disks/?json' % self.pdiskEndpoint
         _, jsonDiskList = self.client.get(listVolUrl, accept='text/plain')
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
         
     def createVolume(self, size, tag, visibility):
-        createVolumeUrl = '%s/disks/?json' % self.config.pdiskEndpoint
+        createVolumeUrl = '%s/disks/?json' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
@@ -50,7 +51,7 @@ class PersistentDisk(object):
         return uuid
     
     def deleteVolume(self, uuid):
-        deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.config.pdiskEndpoint, uuid)
+        deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
         _, uuid = self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
         return uuid
     
@@ -74,12 +75,15 @@ class PersistentDisk(object):
                 availableDisk.append(disk)
         return availableDisk
     
+    def _buildFQNEndpoint(self):
+        self._checkEndpoint();
+        self.pdiskEndpoint = self.pdiskEndpoint % {'pdiskEndpoint': self.config.pdiskEndpoint,
+                                                   'pdiskPort': self.config.pdiskPort }
+        
     def _checkEndpoint(self):
-        if not self.config.pdiskEndpoint.lstrip().rstrip().startswith('http'):
-            printError('No valid persistent disk endpoint found', 1, True)
-        if self.config.pdiskEndpoint.endswith('/'):
-            self.config.pdiskEndpoint = self._removeTrailingSlash(self.config.pdiskEndpoint)
-            
+        if not self.config.pdiskEndpoint.lstrip().rstrip():
+            printError('No valid persistent disk endpoint found', exitCode=1, exit=True)
+                        
     def _removeTrailingSlash(self, string):
         return string[:-1]
         

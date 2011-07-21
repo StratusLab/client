@@ -39,6 +39,8 @@ marketplaceEndpoint = 'http://appliances.stratuslab.eu/marketplace/metadata'
 
 apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 
+pdiskPort = 8445
+
 ETC_DIR = '/etc/stratuslab/'
 SHARE_DIR = '/var/share/stratuslab/'
 TEMPLATE_DIR = path.join(SHARE_DIR, 'template')

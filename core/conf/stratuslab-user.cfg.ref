@@ -38,5 +38,5 @@ apprepo_password = password
 p12_password = password
 
 # Persistent disk storage service
-pdisk_endpoint = https://<pdisk.hostname>:8445/persistent-disk
-
+pdisk_endpoint = <pdisk.service.hostname>
+#pdiskPort = 8445
