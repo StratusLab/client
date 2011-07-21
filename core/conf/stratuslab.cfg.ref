@@ -160,6 +160,7 @@ certificate_authority_repo =
 
 [persistent-disks]
 persistent_disks = False
+# Location of the persistent disk storage service
 persistent_disk_ip = 127.0.0.1
 # iscsi and soon nfs
 persistent_disk_share = iscsi 
@@ -167,13 +168,13 @@ persistent_disk_share = iscsi
 persistent_disk_storage = lvm
 # Location of the disk for file storage. Not used with LVM
 persistent_disk_file_location = /tmp/pdisk 
-# Not used if LVM device already exists
+# Not used if LVM device already exists. Only used at install
 persistent_disk_physical_device = /dev/sdb
 # Not used with file disk
 persistent_disk_lvm_device = /dev/vg.02
-# Not used with file disk
+# Not used with file disk. Only used at install
 persistent_disk_lvm_pvcreate = /sbin/pvcreate 
-# Not used with file disk
+# Not used with file disk. Only used at install
 persistent_disk_lvm_vgcreate = /sbin/vgcreate
 # Not used with file disk
 persistent_disk_lvm_vgdisplay = /sbin/vgdisplay
@@ -186,9 +187,11 @@ persistent_disk_system = fedora
 persistent_disk_private_key = /root/.ssh/id_rsa 
 # Shall we configure to share same auth file with one-proxy? 
 # This imply to have one-proxy on the same machine 
+# Only used at install
 persistent_disk_merge_auth_with_proxy = false
 # Shall we start ZooKeeper with PDisk service? 
 # This imply to have zookeeper on the same machine 
+# Only used at install
 persistent_disk_autorun_zookeeper = true
 persistent_disk_zookeeper_addr = 127.0.0.1
 persistent_disk_zookeeper_port = 2181
