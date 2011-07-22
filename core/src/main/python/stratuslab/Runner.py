@@ -114,15 +114,15 @@ class Runner(object):
             pass
 
     def _setPersistentDiskOptional(self):
-        self._checkPersistentDiskExists()
         try:
+            self._checkPersistentDiskExists()
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
             available = self.pdisk.remainingUsersVolume(self.persistentDiskUUID)
             if self.instanceNumber > available:
                 Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
                                 % (available, self.instanceNumber))
         except AttributeError:
-            Util.printError('Unable to attach persistent disk')
+            pass
 
     def _checkPersistentDiskExists(self):
         if not self.pdisk.volumeExists(self.persistentDiskUUID):

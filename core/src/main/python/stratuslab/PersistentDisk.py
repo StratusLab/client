@@ -32,19 +32,24 @@ class PersistentDisk(object):
     USAGE_SEPARATOR = '#'
     
     def __init__(self, configHolder):
-        self.pdiskEndpoint = 'https://%(pdiskEndpoint)s:%(pdiskPort)d'
-        self.client = HttpClient(configHolder)
-        self.client.useCredentials(True)
+        self.structEndpoint = 'https://%(pdiskEndpoint)s:%(pdiskPort)d'
         self.config = configHolder
+        self.pdiskEndpoint = None
+        
+    def _initPDiskConnection(self):
+        self.client = HttpClient(self.config)
+        self.client.useCredentials(True)
         self._buildFQNEndpoint()
         
     def volumeList(self, filters={}):
+        self._initPDiskConnection()
         listVolUrl = '%s/disks/?json' % self.pdiskEndpoint
         _, jsonDiskList = self.client.get(listVolUrl, accept='text/plain')
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
         
     def createVolume(self, size, tag, visibility):
+        self._initPDiskConnection()
         createVolumeUrl = '%s/disks/?json' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
@@ -54,6 +59,7 @@ class PersistentDisk(object):
         return uuid
     
     def deleteVolume(self, uuid):
+        self._initPDiskConnection()
         deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
         _, uuid = self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
         return uuid
@@ -63,18 +69,21 @@ class PersistentDisk(object):
         return len(self.volumeList(filter)) == 1
     
     def remainingUsersVolume(self, uuid):
+        self._initPDiskConnection()
         volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
         volumeBody = {'available': 1}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return int(res)
         
     def attachVolumeRequest(self, uuid, cloudEndpoind, vmId):
+        self._initPDiskConnection()
         volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
         volumeBody = {'attach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return res == self.REQUEST_SUCCESS
         
     def detachVolumeRequest(self, cloudEndpoind, vmId):
+        self._initPDiskConnection()
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
         volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
@@ -101,8 +110,10 @@ class PersistentDisk(object):
         return availableDisk
     
     def _buildFQNEndpoint(self):
+        if self.pdiskEndpoint:
+            return
         self._checkEndpoint();
-        self.pdiskEndpoint = self.pdiskEndpoint % {'pdiskEndpoint': self.config.pdiskEndpoint,
+        self.pdiskEndpoint = self.structEndpoint % {'pdiskEndpoint': self.config.pdiskEndpoint,
                                                    'pdiskPort': self.config.pdiskPort }
         
     def _checkEndpoint(self):
