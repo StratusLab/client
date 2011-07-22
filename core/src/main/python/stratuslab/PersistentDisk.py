@@ -27,6 +27,9 @@ from uuid import UUID
 from stratuslab.Util import printError
 
 class PersistentDisk(object):
+    REQUEST_SUCCESS = '1'
+    REQUEST_FAILLED = '0'
+    USAGE_SEPARATOR = '#'
     
     def __init__(self, configHolder):
         self.pdiskEndpoint = 'https://%(pdiskEndpoint)s:%(pdiskPort)d'
@@ -59,18 +62,23 @@ class PersistentDisk(object):
         filter = {'uuid': [uuid,]}
         return len(self.volumeList(filter)) == 1
     
-    def canHoldVolume(self, uuid):
-        holdVolumeUrl = '%s/disks/%s/?free' % (self.pdiskEndpoint, uuid)
-        _, free = self.client.post(holdVolumeUrl, contentType='application/x-www-form-urlencoded')
-        return free == 1
+    def remainingUsersVolume(self, uuid):
+        volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
+        volumeBody = {'available': 1}
+        _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
+        return int(res)
         
-    def holdVolume(self, uuid):
-        holdVolumeUrl = '%s/disks/%s/?hold' % (self.pdiskEndpoint, uuid)
-        self.client.post(holdVolumeUrl, contentType='application/x-www-form-urlencoded')
+    def attachVolumeRequest(self, uuid, cloudEndpoind, vmId):
+        volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
+        volumeBody = {'attach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
+        _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
+        return res == self.REQUEST_SUCCESS
         
-    def releaseVolume(self, uuid):
-        releaseVolumeUrl = '%s/disks/%s/?hold' % (self.pdiskEndpoint, uuid)
-        self.client.post(releaseVolumeUrl, contentType='application/x-www-form-urlencoded')
+    def detachVolumeRequest(self, cloudEndpoind, vmId):
+        volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
+        volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
+        _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
+        return (res == self.REQUEST_SUCCESS) and res or None
         
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'

@@ -49,6 +49,7 @@ class MainProgram(AuthnCommand):
                 default=None)
 
         AuthnCommand.addCloudEndpointOptions(self.parser)
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
