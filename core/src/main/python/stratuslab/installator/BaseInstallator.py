@@ -133,6 +133,9 @@ class BaseInstallator(object):
 
         printStep('Adding node to cloud')
         self._addCloudNode()
+        
+        if self.persistentDisk:
+            self._runInstallPersistentDisk()
 
         if self.hypervisor == 'xen':
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
@@ -213,6 +216,9 @@ class BaseInstallator(object):
 
         self._configureRegistrationApplication()
         self._configureMarketPlacePolicyValidation()
+        
+        if self.persistentDisk:
+            self._runInstallPersistentDisk()
         
     def _runInstallPersistentDisk(self):
         pdiskInstaller = PersistentDisk(self.configHolder)
