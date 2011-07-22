@@ -206,6 +206,8 @@ class Testor(unittest.TestCase):
         options['verboseLevel'] = self.verboseLevel
         options['specificAddressRequest'] = requestedIpAddress
         options['persistentDiskUUID'] = persistentDiskUUID
+        options['pdiskEndpoint'] = self.pdiskEndpoint
+        options['pdiskPort'] = self.pdiskPort
 
         if withLocalNetwork:
             options['isLocalIp'] = True
@@ -564,16 +566,26 @@ class Testor(unittest.TestCase):
         diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
         
         Util.printAction('Checking persistent disk exists')
-        filter = {'uuid': [diskUUID, ] }
-        disks = pdisk.volumeList(filter)
-        if len(disks) != 1:
+        if not pdisk.volumeExists(diskUUID):
             self.fail('An error occurred while creating a persistent disk')
+            
         
+        availableUserBeforeStart = pdisk.remainingUsersVolume(diskUUID)
         runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+        availableUserAfterStart = pdisk.remainingUsersVolume(diskUUID)
+        
+        if availableUserAfterStart != (availableUserBeforeStart-1):
+            self.fail('Available users on persistent disk have to decrease by one')
+        
         self._formatDisk(runner, pdiskDevice)
         self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
         self._writeToFile(runner, testFile, testString)
         self._umountPDiskAndStopVm(runner, pdiskDevice)
+        
+        availableUserAfterStop = pdisk.remainingUsersVolume(diskUUID)
+        
+        if availableUserAfterStop != availableUserBeforeStart:
+            self.fail('Available users on persistent disk have to be the same as when VM has started')
         
         runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
         self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
@@ -582,20 +594,10 @@ class Testor(unittest.TestCase):
         self._umountPDiskAndStopVm(runner, pdiskDevice)      
 
         Util.printAction('Removing persistent disk...')
-        # A logged iSCSI disk for a machine is not dettached when the machine is down.
-        # This behavior is required as there is no protection for the moment to disable
-        # mounting a same disk several time. 
-        # As a result, the smoke test can't delete the created disk for the test, so for
-        # now we will test the test deletion with another disk.
-        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
-        filter = {'uuid': [diskUUID, ] }
-        disks = pdisk.volumeList(filter)
-        if len(disks) != 1:
-            self.fail('An error occurred while creating a persistent disk')
         pdisk.deleteVolume(diskUUID)
-        disks = pdisk.volumeList(filter)
-        if len(disks) != 0:
-            self.fail('The persistent disk seems to be still present')
+
+        if pdisk.volumeExists(diskUUID):
+            self.fail('The persistent disk is still present')
         
         
     def _startVmWithPDiskAndWaitUntilUp(self, pdisk):

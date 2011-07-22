@@ -31,6 +31,7 @@ class AuthnCommand(CommandBaseUser):
         options.update(AuthnCommand.userNamePasswordOptions())
         options.update(AuthnCommand.certPemOptions())
         options.update(AuthnCommand.certP12Options())
+        options.update(AuthnCommand.pdiskOptions())
         return options
 
     @staticmethod
@@ -48,6 +49,10 @@ class AuthnCommand(CommandBaseUser):
     @staticmethod
     def cloudEndpointOptions():
         return CloudEndpoint.options()
+    
+    @staticmethod
+    def pdiskOptions():
+        return PDiskEndpoint.options()
 
     @staticmethod
     def addUsernamePasswordOptions(parser, defaultOptions=None):
