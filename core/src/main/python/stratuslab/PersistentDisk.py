@@ -83,6 +83,9 @@ class PersistentDisk(object):
         return res == self.REQUEST_SUCCESS
         
     def detachVolumeRequest(self, cloudEndpoind, vmId):
+        # If no endpoint set assume there is nothing to do
+        if not self.config.pdiskEndpoint:
+            return
         self._initPDiskConnection()
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
         volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
