@@ -52,7 +52,7 @@ class Testor(unittest.TestCase):
 
     def setUp(self):
         self.vmIds = []
-        self.image = 'http://appliances.stratuslab.org/images/base/ttylinux-9.7-i486-base/1.2/ttylinux-9.7-i486-base-1.2.img.gz'
+        self.image = 'http://appliances.stratuslab.eu/images/base/ttylinux-9.7-i486-base/1.3/ttylinux-9.7-i486-base-1.3.img.gz'
 
     def tearDown(self):
         pass
