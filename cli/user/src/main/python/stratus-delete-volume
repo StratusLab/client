@@ -50,6 +50,7 @@ class MainProgram(AuthnCommand):
     def checkOptions(self):
         AuthnCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
+        self._getUuid()
         self._checkUuid()
     
     def _getUuid(self):
