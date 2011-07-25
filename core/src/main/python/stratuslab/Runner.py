@@ -115,6 +115,8 @@ class Runner(object):
 
     def _setPersistentDiskOptional(self):
         try:
+            if not self.persistentDiskUUID:
+                return
             self._checkPersistentDiskExists()
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
             available = self.pdisk.remainingUsersVolume(self.persistentDiskUUID)
