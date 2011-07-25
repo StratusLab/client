@@ -98,12 +98,17 @@ class Cluster(object):
             self._master_vmid=master_vmid
             self._is_heterogeneous=True
 
-    def create_machine_file(self, hostlist, filename):
+    def create_machine_file(self, hostlist, filename, isForMPI=False):
         mf = open(filename, "w")
+
         for host in hostlist:
-            mf.write(host.public_ip + " slots=" + str(host.cores) + "\n")
+            if isForMPI:
+                additionalInfo = " slots=" + str(host.cores)
+            else:
+                additionalInfo = ""
+
+            mf.write(host.public_ip + additionalInfo + "\n")
         mf.close()
-        
 
     def doAddPackages(self, ssh):
         printStep('Installing additional software packages')
@@ -122,10 +127,21 @@ class Cluster(object):
             target = self.hosts
         else:
             target = worker_nodes
-        self.create_machine_file(target, "/tmp/machinefile")
+            
+        self.create_machine_file(target, "/tmp/machinefile", isForMPI=True)
         ssh.copy_file_to_hosts(self.hosts, "/tmp/machinefile", "/tmp")
         os.unlink("/tmp/machinefile")
 
+    def doPrepareNodeList(self, ssh, worker_nodes):
+        target = []
+        if self.include_master:
+            target = self.hosts
+        else:
+            target = worker_nodes
+
+        self.create_machine_file(target, "/tmp/cluster_nodelist")
+        ssh.copy_file_to_hosts(self.hosts, "/tmp/cluster_nodelist", "/tmp")
+        os.unlink("/tmp/cluster_nodelist")
 
     def doPrepareNFSSharedFolder(self, ssh, master_node, worker_nodes):
         printStep('Preparing NFS shared folder')
@@ -142,7 +158,7 @@ class Cluster(object):
         ssh.run_remote_command(worker_nodes, "mount " + master_node.public_ip + ":" + self.shared_folder + " " + self.shared_folder)
 
 
-    def doSetupSSHHostBasedCluster(self, ssh, host):
+    def doSetupSSHHostBasedCluster(self, ssh):
         printStep('Configuring passwordless host-based ssh authentication')
         ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config'")
         ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\" >> /etc/ssh/sshd_config'")
@@ -151,38 +167,46 @@ class Cluster(object):
         ssh.run_remote_command(self.hosts, "service sshd restart")
         for host in self.hosts:
             ssh.run_remote_command(self.hosts, "'ssh-keyscan -t rsa " + host.public_dns + " >> /etc/ssh/ssh_known_hosts'")
+            ssh.run_remote_command(self.hosts, "'echo " + host.public_dns + " root >> /root/.shosts'")
 
-
-    def doCreateClusterUser(self, ssh, host, master_node):
+    def doCreateClusterUser(self, ssh, master_node):
         printStep('Creating additional user')
         master_only = []
         master_only.append(master_node)
         ssh.run_remote_command(self.hosts, "useradd -m " + self.cluster_user)
-        ssh.run_remote_command(master_only, "mkdir /home/" + self.cluster_user + "/.ssh")
-        ssh.run_remote_command(master_only, " \"ssh-keygen -q -t rsa -N '' -f /home/" + self.cluster_user + "/.ssh/id_rsa \"")
-        ssh.run_remote_command(master_only, "cp /home/" + self.cluster_user + "/.ssh/id_rsa.pub /home/" + self.cluster_user + "/.ssh/authorized_keys")
-        ssh.run_remote_command(master_only, "chown -R " + self.cluster_user + ":" + self.cluster_user + " /home/" + self.cluster_user + "/.ssh")
+        ssh.run_remote_command(master_only, ' "su - ' + self.cluster_user + " -c 'ssh-keygen -q -t rsa -N " + '\\"\\"' " -f ~/.ssh/id_rsa' " + '"')
+        ssh.run_remote_command(master_only, ' "su - ' + self.cluster_user + " -c 'cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys' " + '"')
+
+        #if self.shared_folder !="home":
+        #    for host in self.hosts:
+        #        ssh.run_remote_command(master_only, "scp -r /home/"+ self.cluster_user+"/.ssh " + host.public_ip + ":/home/" + self.cluster_user)
+
         if self.ssh_hostbased:
             for host in self.hosts:
-                ssh.run_remote_command(self.hosts, "'echo " + host.public_dns + " " + self.cluster_user + " >> /home/" + self.cluster_user + "/.shosts'")
+                ssh.run_remote_command(self.hosts,  ' "su - ' + self.cluster_user + " -c 'echo " + host.public_dns + " " + self.cluster_user + " >> ~/.shosts'" +'"')
 
 
-    def doUpdateEnvironmentVariables(self, ssh):
+    def doUpdateEnvironmentVariables(self, ssh, master_node):
         printStep('Updating environment variables')
         counter = 0
         for node in self.hosts:
             target = []
             target.append(node)
             ssh.run_remote_command(target, "'echo export STRATUS_NC=" + str(counter) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUS_MASTER=" + master_node.public_dns + " >> /etc/profile'")
             counter += 1
 
 
-    def doUpdateHostsFile(self, ssh):
+    def doUpdateHostsFile(self, ssh, master_node, worker_nodes):
         printStep('Updating hosts file')
         ssh.run_remote_command(self.hosts, " 'echo  >> /etc/hosts'")
         ssh.run_remote_command(self.hosts, " 'echo \"# Cluster nodes\" >> /etc/hosts'")
-        for host in self.hosts:
-            ssh.run_remote_command(self.hosts, " 'echo " + host.public_ip + " " + host.public_dns + " >> /etc/hosts'")
+        ssh.run_remote_command(self.hosts, " 'echo " + master_node.public_ip + " " + master_node.public_dns + " " + "master >> /etc/hosts'")
+
+        counter=0
+        for host in worker_nodes:
+            ssh.run_remote_command(self.hosts, " 'echo " + host.public_ip + " " + host.public_dns + " worker-"+ str(counter)+" >> /etc/hosts'")
+            counter+=1
 
     def deploy(self):
         ssh = SSHUtil(self._runner.userPrivateKeyFile, self.cluster_admin)
@@ -274,17 +298,20 @@ class Cluster(object):
             self.doPrepareNFSSharedFolder(ssh, master_node, worker_nodes)
         
         if self.ssh_hostbased:
-            self.doSetupSSHHostBasedCluster(ssh, host)
+            self.doSetupSSHHostBasedCluster(ssh)
             
         if self.cluster_user:
             # Create a new user and prepare the environments for password-less ssh
-            self.doCreateClusterUser(ssh, host, master_node)
+            self.doCreateClusterUser(ssh, master_node)
                     
         # Update /etc/profile with StratusLab specific environment variables
-        self.doUpdateEnvironmentVariables(ssh)
+        self.doUpdateEnvironmentVariables(ssh, master_node)
+
+        # Store the list of cluster nodes in a file under /tmp
+        self.doPrepareNodeList(ssh, worker_nodes)
         
         # Update the /etc/hosts file for all hosts
-        self.doUpdateHostsFile(ssh)
+        self.doUpdateHostsFile(ssh, master_node, worker_nodes)
 
         return 0
             
