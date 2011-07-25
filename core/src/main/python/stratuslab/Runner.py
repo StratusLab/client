@@ -386,7 +386,7 @@ class Runner(object):
             _ids = self._loadVmIdsFromFile()
         for id in _ids:
             self.cloud.vmKill(int(id))
-            diskUuid = self.pdisk.detachVolumeRequest(self.endpoind, int(id))
+            diskUuid = self.pdisk.detachVolumeRequest(self.endpoint, int(id))
             if diskUuid:
                 self.printDetail('Persistent disk %s detached' % diskUuid)
             else:
