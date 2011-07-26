@@ -48,4 +48,6 @@ class CloudInfo(object):
         _parentHierachy = parentHierachy[:]
         _parentHierachy.append(element.tag)
         return _parentHierachy
-    
+
+    def getAttributes(self):
+        return self.attribs

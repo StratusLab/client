@@ -29,6 +29,7 @@ from stratuslab.Util import modulePath
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.Monitor import Monitor
 from stratuslab.ConfigHolder import ConfigHolder
+import stratuslab.Util as Util
 
 
 class MainProgram(AuthnCommand):
@@ -61,7 +62,10 @@ to the user (-u/--username).'''
         monitor = Monitor(configHolder)
         if self.vmIds:
             list = monitor.vmDetail(self.vmIds)
-            monitor.printVmDetails(list)
+            if len(list) == 1 and self.verboseLevel > Util.DETAILED_VERBOSE_LEVEL:
+                monitor.printVmAllAttributes(list)
+            else:
+                monitor.printVmDetails(list)
         else:
             list = monitor.listVms()
             monitor.printVmList(list)
