@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2011, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Util import modulePath, printError
+from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.ConfigHolder import ConfigHolder
+
+
+class MainProgram(AuthnCommand):
+    '''A command-line program to create a persistent disk.'''
+
+    def __init__(self):
+        self.VOLUME_SIZE_MIN = 1
+        self.VOLUME_SIZE_MAX = 1024
+        self.TAG_LENGTH_MAX = 40
+        super(MainProgram, self).__init__()
+        
+
+    def parse(self):
+        self.parser.usage = '%prog [options]'
+        self.parser.description = '''Create a new persistent disk'''
+        
+        self.parser.add_option('-s', '--size', dest='volumeSize',
+                help='Size of the volume in GiBs', metavar='SIZE',
+                default=0, type='int')
+        
+        self.parser.add_option('-t', '--tag', dest='volumeTag',
+                help='Tag of the volume. Only for the user', metavar='NAME', 
+                default="")
+        
+        self.parser.add_option('--private', dest='volumeVisibility',
+                help='''Set the disk as private (default). Only you can see, use 
+and delete the disk.''', action='store_false')
+        
+        self.parser.add_option('--public', dest='volumeVisibility',
+                help='''Set the disk visibility as public. Any one can see it 
+and use it but can't delete it.''', action='store_true', default=False)
+
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
+
+        super(MainProgram, self).parse()
+
+        self.options, _ = self.parser.parse_args()
+
+    def checkOptions(self):
+        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
+        super(MainProgram, self).checkOptions()
+        self._checkVolumeSize()
+        self._checkTagLength()
+        
+    def _checkVolumeSize(self):
+        if self.options.volumeSize < self.VOLUME_SIZE_MIN or self.options.volumeSize > self.VOLUME_SIZE_MAX:
+            printError('Volume size must be a vqlid integer between %d and %d' % 
+                       (self.VOLUME_SIZE_MIN, self.VOLUME_SIZE_MAX))
+        
+    def _checkTagLength(self):
+        if len(self.options.volumeTag) > self.TAG_LENGTH_MAX:
+            printError('Tag have to be less than %d characters' % self.TAG_LENGTH_MAX)
+        
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__)
+        pdisk = PersistentDisk(configHolder)
+        volumeId = pdisk.createVolume(self.options.volumeSize,
+                                      self.options.volumeTag,
+                                      self.options.volumeVisibility)
+        print 'DISK %s' % volumeId
+#            
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

@@ -28,7 +28,8 @@ import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
 from stratuslab import Defaults
-from stratuslab.AuthnCommand import CloudEndpoint
+from stratuslab.AuthnCommand import CloudEndpoint, PDiskEndpoint
+from stratuslab.PersistentDisk import PersistentDisk
 
 class Runner(object):
 
@@ -40,8 +41,9 @@ class Runner(object):
   TARGET=hdc,
   TYPE=fs ]'''
 
+    # Don't hard code disk target to allow multiple pdisk attachment
     PERSISTENT_DISK = '''DISK=[
-  SOURCE=pdisk:%(persistentDiskUUID)s,
+  SOURCE=pdisk:%(pdiskEndpoint)s:%(persistentDiskUUID)s,
   TARGET=hdc,
   TYPE=block ]'''
 
@@ -56,7 +58,7 @@ class Runner(object):
         if image == '':
             raise ValueError('Image ID or full image endpoint should be provided.')
         self.vm_image = image
-
+        self.persistentDiskUUID = None
         self.quiet = False
         self.instanceNumber = 1
         configHolder.assign(self)
@@ -65,6 +67,7 @@ class Runner(object):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.cloud.setEndpoint(self.endpoint)
+        self.pdisk = PersistentDisk(configHolder)
 
 
         self._initAttributes()
@@ -116,9 +119,21 @@ class Runner(object):
 
     def _setPersistentDiskOptional(self):
         try:
+            if not self.persistentDiskUUID:
+                return
+            self._checkPersistentDiskExists()
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
+            available = self.pdisk.remainingUsersVolume(self.persistentDiskUUID)
+            if self.instanceNumber > available:
+                Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
+                                % (available, self.instanceNumber))
         except AttributeError:
             pass
+
+    def _checkPersistentDiskExists(self):
+        if not self.pdisk.volumeExists(self.persistentDiskUUID):
+            Util.printError('Unable to find persistent disk %s at %s' 
+                    % (self.persistentDiskUUID, self.pdiskEndpoint))
 
     def _setReadonlyDiskOptional(self):
         if hasattr(self, 'readonlyDiskId') and self.readonlyDiskId:
@@ -186,6 +201,8 @@ class Runner(object):
                 'isPrivateIp': False,
                 'extraContextFile': '',
                 'extraContextData': '',
+                'pdiskEndpoint': PDiskEndpoint.options().get('pdiskEndpoint', ''),
+                'pdiskPort': PDiskEndpoint.options().get('pdiskPort', ''),
                 
                 # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
                 #        Network in not starting unless VNC is defined. Weird yeh...? 8-/
@@ -340,6 +357,10 @@ class Runner(object):
             else:
                 self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
             self.instancesDetail.append({'id': vmId, 'ip': ip, 'networkName': networkName})
+            if self.persistentDiskUUID:
+                if not self.pdisk.attachVolumeRequest(self.persistentDiskUUID, self.endpoint, vmId):
+                    Util.printError('Unable to attach persistent disk %s on VM %s' 
+                                    % (self.persistentDiskUUID, vmId), exit=False)
 
         self._saveVmIds()
 
@@ -369,6 +390,11 @@ class Runner(object):
             _ids = self._loadVmIdsFromFile()
         for id in _ids:
             self.cloud.vmKill(int(id))
+            diskUuid = self.pdisk.detachVolumeRequest(self.endpoint, int(id))
+            if diskUuid:
+                self.printDetail('Persistent disk %s detached' % diskUuid)
+            else:
+                self.printDetail('No persistent disk detached')
         plural = (len(_ids) > 1 and 's') or ''
         self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
 

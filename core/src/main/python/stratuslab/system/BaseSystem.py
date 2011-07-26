@@ -539,6 +539,9 @@ class BaseSystem(object):
 
     def _remoteChmod(self, path, mode):
         return self._nodeShell('chmod %o %s' % (mode, path))
+    
+    def _remoteFileExists(self, path):
+        return self._nodeShell('ls %s' % path, sshQuiet=True) == 0
 
     # -------------------------------------------
     #     General

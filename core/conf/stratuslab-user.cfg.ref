@@ -36,3 +36,7 @@ apprepo_password = password
 
 #p12_certificate = <home>/.globus/usercert.p12
 p12_password = password
+
+# Persistent disk storage service
+pdisk_endpoint = <pdisk.service.hostname>
+#pdiskPort = 8445

@@ -19,10 +19,7 @@
 # limitations under the License.
 #
 
-import os
 import sys
-import time
-import socket
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -32,7 +29,7 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 from stratuslab.Cluster import Cluster
-
+from stratuslab.AuthnCommand import AuthnCommand
 
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
@@ -59,12 +56,12 @@ class MainProgram(Runnable):
         
         self.parser.add_option('--mpi-machine-file', dest='mpi_machine_file', action='store_true',
                 help='Defines that a machinefile should be prepared for MPI, listing all available ' \
-                'workers and their respective number of cores (slot value)',
+                'workers and their respective number of cores (slot value). (Default=False)',
                 default=False)
         
         self.parser.add_option('--include-master', dest='include_master', action='store_true',
-                help='Defines that the master node should be considered as part of the worker nodes',
-                default=False)
+                help='Defines that the master node should be considered as part of the worker nodes. (Default=True)',
+                default=True)
                 
         self.parser.add_option('--add-packages', dest='add_packages', action='store',
                 help='Provide comma separated list of additional packages that you wish to install',
@@ -87,43 +84,47 @@ class MainProgram(Runnable):
                 help='number of machines to start (default 1) for the cluster', metavar='INT',
                 default=options['instanceNumber'], type='int')
 
-        self.parser.add_option('--local-ip', dest='isLocalIp', action='store_true',
-                help='By default, worker virtual machines are assigned a public IP address. ' \
-                'With this option, a local address is provided, which means that it ' \
-                'not be reachable from the outside, but will be reachable from other ' \
-                'instances in the same data-center. In this case the frontend node will have ' \
-                'both a public and a local ip to access the worker nodes',
-                default=False)
-
-        self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
-                help='By default, worker virtual machines are assigned a public IP address. ' \
-                'With this option, a private address is provided, which means that it ' \
-                'not be reachable anywhere. This is useful for instances that initiate '\
-                'the connection to other machinces. In this case the frontend node will have' \
-                'both a private and public ip',
-                default=False)
 
         self.parser.add_option('--save', dest='saveDisk', action='store_true',
                 help='save image after VM shutdown',
                 default=False)
 
         self.parser.add_option('-o', '--output', dest='outVmIdsFile',
-                help='save vm-ids to a file', metavar='FILE',
+                help='save vm-id to a file', metavar='FILE',
                 default=None)
 
-        self.parser.add_option('--extra-disk', dest='extraDiskSize',
-                help='extra data disk size in GB', metavar='INT',
+        self.parser.add_option('--volatile-disk', dest='extraDiskSize',
+                help='volatile data disk size in GB', metavar='INT',
                 action='callback', callback=self.diskSizeOptionCallback,
                 default=0, type='int')
 
+        self.parser.add_option('--persistent-disk', dest='persistentDiskUUID',
+                help='persistent disk UUID',
+                default=None)
+
+        self.parser.add_option('--readonly-disk', dest='readonlyDiskId',
+                help='marketplace readonly disk image ID',
+                default=None, metavar='MARKETPLACEID')
+
         self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
-                help='launch instances from an image in qcow2 disk format. This option requires ',
+                help='launch instance from an image in qcow2 disk format. This option requires ',
                 action='store_true',
                 default=False)
 
         self.parser.add_option('--address', dest='specificAddressRequest',
-                help='request a specific ip address for the frontend',
+                help='request a specific ip address',
                 metavar='IP', default=None)
+
+        self.parser.add_option('--no-check-image-url', dest='noCheckImageUrl',
+                help='Do not check image availability.',
+                action='store_true',
+                default=False)
+
+        self.parser.add_option('--vm-name', dest='vmName',
+                help='name of VM. If not given, a default name will be assigned by cloud layer.',
+                metavar='NAME', default=options['vmName'])
+
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
         
         super(MainProgram, self).parse()
 

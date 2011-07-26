@@ -95,6 +95,7 @@ class MainProgram(CommandBase):
         Uploader.buildAppRepoOptionsParser(self.parser)
 
         AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
+        AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         self.options, self.tests = self.parser.parse_args()
 

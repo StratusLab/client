@@ -35,9 +35,11 @@ p12Directory = _globusDirectory
 p12CertificateFile = 'usercert.p12'
 p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
 
-marketplaceEndpoint = 'http://appliances.stratuslab.eu/marketplace/metadata'
+marketplaceEndpoint = 'http://appliances.stratuslab.eu:8081/metadata'
 
 apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
+
+pdiskPort = 8445
 
 ETC_DIR = '/etc/stratuslab/'
 SHARE_DIR = '/var/share/stratuslab/'
