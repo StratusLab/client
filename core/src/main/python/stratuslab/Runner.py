@@ -55,6 +55,7 @@ class Runner(object):
   DRIVER="raw" ]'''
 
     def __init__(self, image, configHolder):
+        self.persistentDiskUUID = None
         self.quiet = False
         self.instanceNumber = 1
         configHolder.assign(self)
