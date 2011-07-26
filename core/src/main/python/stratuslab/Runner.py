@@ -55,6 +55,9 @@ class Runner(object):
   DRIVER="raw" ]'''
 
     def __init__(self, image, configHolder):
+        if image == '':
+            raise ValueError('Image ID or full image endpoint should be provided.')
+        self.vm_image = image
         self.persistentDiskUUID = None
         self.quiet = False
         self.instanceNumber = 1
@@ -66,7 +69,6 @@ class Runner(object):
         self.cloud.setEndpoint(self.endpoint)
         self.pdisk = PersistentDisk(configHolder)
 
-        self.vm_image = image
 
         self._initAttributes()
         
@@ -84,6 +86,7 @@ class Runner(object):
         self.extra_context = ''
         self.graphics = ''
         self.vmIds = []
+        self.diskImageFormat = None
         self.disk_driver = None
 
         self._setUserKeyIfDefined()

@@ -135,6 +135,14 @@ class Monitor(Configurable):
         for item in list:
             self._printInfo(item, self.vmInfoDetailAttributes)
 
+    def printVmAllAttributes(self, vmInfoList):
+        for vmInfo in vmInfoList:
+            vmAttributes = vmInfo.getAttributes()
+            sys.stdout.write('%s\n' % ('-'*25))
+            sys.stdout.write('%s (all attributes)\n' % vmAttributes['id'])
+            for k in sorted(vmAttributes.keys()):
+                sys.stdout.write('  %s = %s\n' % (k, vmAttributes[k]))
+
     def _printInfoHeader(self, headerAttributes):
         Util.printEmphasisStart()
         try:

@@ -81,7 +81,9 @@ class MainProgram(Runnable):
                 default=None, metavar='MARKETPLACEID')
 
         self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
-                help='launch instance from an image in qcow2 disk format. This option requires ',
+                help='launch instance from an image in qcow2 disk format. Only ' \
+                'used when image is provided as URL. When image is given by ID, disk ' \
+                'format is inferred from the image metadata.',
                 action='store_true',
                 default=False)
 
@@ -90,7 +92,7 @@ class MainProgram(Runnable):
                 metavar='IP', default=None)
 
         self.parser.add_option('--no-check-image-url', dest='noCheckImageUrl',
-                help='Do not check image availability.',
+                help='Do not check image availability. Image availability is ',
                 action='store_true',
                 default=False)
 
