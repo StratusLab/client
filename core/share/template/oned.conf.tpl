@@ -308,8 +308,8 @@ VM_HOOK = [
 VM_HOOK = [
     name      = "pdisk",
     on        = "DONE",
-    command   = "/var/share/stratuslab/creation/detach-pdisk-hook.sh",
-    arguments = "$VMID" ]
+    command   = "/var/share/stratuslab/creation/pdisk-registrar.py",
+    arguments = "-d $VMID" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------- Hook Examples --------------------------------
