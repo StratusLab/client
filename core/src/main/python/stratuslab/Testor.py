@@ -42,6 +42,7 @@ import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.Util import sleep
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -592,6 +593,14 @@ class Testor(unittest.TestCase):
         self._writeToFile(runner, testFileCmp, testString)
         self._compareFiles(runner, testFile, testFileCmp)
         self._umountPDiskAndStopVm(runner, pdiskDevice)      
+
+        # Wait for the hook to be executed
+        sleep(10)
+
+        availableUserAfterStop = pdisk.remainingUsersVolume(diskUUID)
+        
+        if availableUserAfterStop != availableUserBeforeStart:
+            self.fail('Available users on persistent disk have to be the same as when VM has started')
 
         Util.printAction('Removing persistent disk...')
         pdisk.deleteVolume(diskUUID)
