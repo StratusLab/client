@@ -89,7 +89,7 @@ class PersistentDisk(object):
         # Try if we can connect to pdisk service
         try:
             self._initPDiskConnection()
-            self.client.get(self.pdiskEndpoint)
+            self.client.get('%s?json' % self.pdiskEndpoint)
         except Exception:
             return
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
