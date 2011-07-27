@@ -391,7 +391,7 @@ class Runner(object):
         for id in _ids:
             self.cloud.vmKill(int(id))
             diskUuid = self.pdisk.detachVolumeRequest(self.endpoint, int(id))
-            if diskUuid:
+            if diskUuid != '0':
                 self.printDetail('Persistent disk %s detached' % diskUuid)
             else:
                 self.printDetail('No persistent disk detached')

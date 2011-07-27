@@ -88,14 +88,14 @@ class PersistentDisk(object):
             return
         # Try if we can connect to pdisk service
         try:
-            self.client.get(self.endpoint)
+            self._initPDiskConnection()
+            self.client.get(self.pdiskEndpoint)
         except Exception:
             return
-        self._initPDiskConnection()
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
         volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
-        return (res == self.REQUEST_SUCCESS) and res or None
+        return res
         
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
