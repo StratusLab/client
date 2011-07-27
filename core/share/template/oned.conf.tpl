@@ -308,7 +308,7 @@ VM_HOOK = [
 VM_HOOK = [
     name      = "pdisk",
     on        = "DONE",
-    command   = "/var/share/stratuslab/creation/pdisk-registrar.py",
+    command   = "/usr/bin/python /var/share/stratuslab/creation/pdisk-registrar.py",
     arguments = "-d $VMID" ]
 #-------------------------------------------------------------------------------
 
