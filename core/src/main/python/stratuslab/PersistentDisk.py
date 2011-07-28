@@ -25,6 +25,7 @@ from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
 from uuid import UUID
 from stratuslab.Util import printError
+from socket import gethostbyname, gaierror
 
 class PersistentDisk(object):
     REQUEST_SUCCESS = '1'
@@ -78,6 +79,7 @@ class PersistentDisk(object):
     def attachVolumeRequest(self, uuid, cloudEndpoind, vmId):
         self._initPDiskConnection()
         volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
+        cloudEndpoind = self.getIpFromHostname(cloudEndpoind)
         volumeBody = {'attach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return res == self.REQUEST_SUCCESS
@@ -93,6 +95,7 @@ class PersistentDisk(object):
         except Exception:
             return
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
+        cloudEndpoind = self.getIpFromHostname(cloudEndpoind)
         volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return res
@@ -122,7 +125,7 @@ class PersistentDisk(object):
             return
         self._checkEndpoint();
         self.pdiskEndpoint = self.structEndpoint % {'pdiskEndpoint': self.config.pdiskEndpoint,
-                                                   'pdiskPort': self.config.pdiskPort }
+                                                    'pdiskPort': self.config.pdiskPort }
         
     def _checkEndpoint(self):
         if not self.config.pdiskEndpoint.lstrip().rstrip():
@@ -130,6 +133,16 @@ class PersistentDisk(object):
                         
     def _removeTrailingSlash(self, string):
         return string[:-1]
+    
+    @staticmethod
+    def getIpFromHostname(hostname):
+        endpoint = ''
+        try:
+            endpoint = gethostbyname(hostname)
+        except gaierror:
+            printError('Unable to translate endpoint %s to it IP address' % hostname, 
+                       exitCode=1, exit=True)
+        return endpoint
         
     @staticmethod
     def isValidUuid(uuid):
