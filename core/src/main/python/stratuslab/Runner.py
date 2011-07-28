@@ -43,7 +43,7 @@ class Runner(object):
 
     # Don't hard code disk target to allow multiple pdisk attachment
     PERSISTENT_DISK = '''DISK=[
-  SOURCE=pdisk:%(pdiskEndpointIp)s:%(persistentDiskUUID)s,
+  SOURCE=pdisk:%(pdiskEndpointHostname)s:%(persistentDiskUUID)s,
   TARGET=hdc,
   TYPE=block ]'''
 
@@ -122,7 +122,7 @@ class Runner(object):
             if not self.persistentDiskUUID:
                 return
             self._checkPersistentDiskExists()
-            self.pdiskEndpointIp = PersistentDisk.getIpFromHostname(self.pdiskEndpoint)
+            self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
             available = self.pdisk.remainingUsersVolume(self.persistentDiskUUID)
             if self.instanceNumber > available:

@@ -25,7 +25,7 @@ from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
 from uuid import UUID
 from stratuslab.Util import printError
-from socket import gethostbyname, gaierror
+from socket import gethostbyaddr
 
 class PersistentDisk(object):
     REQUEST_SUCCESS = '1'
@@ -79,7 +79,7 @@ class PersistentDisk(object):
     def attachVolumeRequest(self, uuid, cloudEndpoind, vmId):
         self._initPDiskConnection()
         volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
-        cloudEndpoind = self.getIpFromHostname(cloudEndpoind)
+        cloudEndpoind = self.getFQNHostname(cloudEndpoind)
         volumeBody = {'attach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return res == self.REQUEST_SUCCESS
@@ -95,7 +95,7 @@ class PersistentDisk(object):
         except Exception:
             return
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
-        cloudEndpoind = self.getIpFromHostname(cloudEndpoind)
+        cloudEndpoind = self.getFQNHostname(cloudEndpoind)
         volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return res
@@ -135,11 +135,11 @@ class PersistentDisk(object):
         return string[:-1]
     
     @staticmethod
-    def getIpFromHostname(hostname):
+    def getFQNHostname(hostname):
         endpoint = ''
         try:
-            endpoint = gethostbyname(hostname)
-        except gaierror:
+            endpoint = gethostbyaddr(hostname)[0]
+        except Exception:
             printError('Unable to translate endpoint %s to it IP address' % hostname, 
                        exitCode=1, exit=True)
         return endpoint
