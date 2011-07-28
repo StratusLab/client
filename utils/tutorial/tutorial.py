@@ -172,7 +172,9 @@ class Tutorial:
             self._execute(["stratus-kill-instance", str(vmId)])
         
     def getVmState(self, vmId):
-        return self.stratusDescribeInstance(vmId).split('\n')[1].split(' ')[1]
+        stateLessThanHundred = self.stratusDescribeInstance(vmId).split('\n')[1].split(' ')[2]
+        stateMoreThanHundred = self.stratusDescribeInstance(vmId).split('\n')[1].split(' ')[1]
+        return stateLessThanHundred or stateMoreThanHundred
 
     def waitVmRunningOrTimeout(self, vmId):
         start = time.time()
