@@ -143,7 +143,6 @@ class PersistentDisk(object):
         self._overrideConfig('disk.store.lvm.create', self.persistentDiskLvmCreate)
         self._overrideConfig('disk.store.lvm.remove', self.persistentDiskLvmRemove)
         self._overrideConfig('disk.store.zookeeper.address', self.persistentDiskZookeeperAddr)
-        self._overrideConfig('disk.store.zookeeper.port', self.persistentDiskZookeeperPort)
         
     def _setAutorunZookeeper(self):
         # By default script auto run
