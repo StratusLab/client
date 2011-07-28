@@ -67,7 +67,7 @@ class PersistentDisk(object):
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
-        self._service('pdisk', 'restart')
+        self._service('pdisk', 'start')
         
     def configureFrontend(self):
         self._writeConfig()
