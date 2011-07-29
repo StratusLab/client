@@ -110,7 +110,7 @@ class PersistentDisk(object):
         
     def _service(self, service, action):
         printStep("Trying to %s %s service..." % (action, service))
-        self.system._nodeShell('/etc/init.d/%s %s' % (service, action), pseudoTTY=True)
+        self.system._nodeShell('/etc/init.d/%s %s' % (service, action))
         
     def _overrideConfig(self, key, value):
         self._overrideValueInFile(key, value, self.pdiskConfigFile)    
