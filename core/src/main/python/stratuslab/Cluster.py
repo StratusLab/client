@@ -163,6 +163,7 @@ class Cluster(object):
         ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config'")
         ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\" >> /etc/ssh/sshd_config'")
         ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\" >> /etc/ssh/ssh_config'")
+        ssh.run_remote_command(self.hosts, "'echo \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config'")
         ssh.run_remote_command(self.hosts, "'echo \"EnableSSHKeysign yes\" >> /etc/ssh/ssh_config'")
         ssh.run_remote_command(self.hosts, "service sshd restart")
         for host in self.hosts:
