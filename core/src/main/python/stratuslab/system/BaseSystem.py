@@ -292,14 +292,14 @@ class BaseSystem(object):
 
     def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
         self.createDirsCmd(mountPoint)
-        self.appendOrReplaceInFileCmd('/etc/exports',
-                                      mountPoint, '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' %
+        self.appendOrReplaceInFileCmd('/etc/exports', '%s .*' % mountPoint, 
+                                      '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' %
                                       (mountPoint, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
 
     def configureExistingNfsShare(self, shareLocation, mountPoint):
         self.createDirsCmd(mountPoint)
-        self.appendOrReplaceInFileCmd('/etc/fstab', shareLocation,
+        self.appendOrReplaceInFileCmd('/etc/fstab', '%s .*' % shareLocation,
                                       '%s %s nfs soft,intr,rsize=32768,wsize=32768,rw 0 0' % (
                                       shareLocation, mountPoint))
         self.executeCmd(['mount', '-a'])

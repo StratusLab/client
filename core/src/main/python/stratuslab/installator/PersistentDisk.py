@@ -20,6 +20,7 @@
 
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printStep, printWarning
+from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 
 class PersistentDisk(object):
 
@@ -34,23 +35,18 @@ class PersistentDisk(object):
         self.packages = { 'frontend': {
                             'pdisk': ['pdisk-server', ],
                             'iscsi': ['scsi-target-utils', ],
-#                            'nfs': [],
+                            'nfs': ['nfs-utils', 'nfs-utils-lib'],
                             'lvm': ['lvm2', ],
                             'file': [], 
                         }, 
                          'node': {
                             'pdisk': ['pdisk-host', ],
                             'iscsi': ['iscsi-initiator-utils', ],
-#                            'nfs': [],
+                            'nfs': ['nfs-utils', 'nfs-utils-lib'],
                             'lvm': [],
                             'file': [],
                        },
         }
-        # Services to be started on frontend
-        self.services = { 'pdisk': 'pdisk-server',
-                          'iscsi': 'tgtd',
-#                          'nfs': '', 
-        } 
 
         self.pdiskConfigFile = '/etc/stratuslab/pdisk.cfg'
         
@@ -74,6 +70,8 @@ class PersistentDisk(object):
         self._setAutorunZookeeper()
         self._mergeAuthWithProxy()
         self._service('pdisk', 'restart')
+        if self.persistentDiskShare == 'nfs':
+            return
         if self.persistentDiskStorage == 'lvm':
             self._createLvmGroup()
         else:
@@ -90,11 +88,20 @@ class PersistentDisk(object):
         
     def configureNode(self):
         self._configureNodeSudo()
+        self._configureNodeScripts()
         
     def _configureNodeSudo(self):
+        printStep('Configuring sudo rights...')
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
              '%s ALL = NOPASSWD: /sbin/iscsiadm' % self.oneUsername,
              '%s ALL = NOPASSWD: /sbin/iscsiadm' % self.oneUsername)
+        
+    def _configureNodeScripts(self):
+        printStep('Configuring node script...')
+        self._overrideValueInFile('SHARE_TYPE', self.persistentDiskShare,
+                                  '/etc/stratuslab/pdisk-host.cfg')
+        self._overrideValueInFile('NFS_LOCATION', self.persistentDiskNfsMountPoint,
+                                  '/etc/stratuslab/pdisk-host.cfg')
         
     def _installPackages(self, section):
         if self.packages:
@@ -104,9 +111,13 @@ class PersistentDisk(object):
             self.system.installNodePackages(self.packages[self.profile][section])
             
     def _commonInstallActions(self):
+        self.system.workOnNode()
         self._installPackages('pdisk')
         self._installPackages(self.persistentDiskShare)
-        self._installPackages(self.persistentDiskStorage)
+        if self.persistentDiskShare == 'nfs':
+            self._configureNfsServer()
+        else:
+            self._installPackages(self.persistentDiskStorage)
         
     def _service(self, service, action):
         printStep("Trying to %s %s service..." % (action, service))
@@ -136,9 +147,10 @@ class PersistentDisk(object):
         
     def _writeConfig(self):
         printStep('Writting configuration...')
-        self._overrideConfig('disk.store.type', self.persistentDiskStorage)
         self._overrideConfig('disk.store.share', self.persistentDiskShare)
-        self._overrideConfig('disk.store.file.location', self.persistentDiskFileLocation)
+        self._overrideConfig('disk.store.nfs.location', self.persistentDiskNfsMountPoint)
+        self._overrideConfig('disk.store.iscsi.type', self.persistentDiskStorage)
+        self._overrideConfig('disk.store.iscsi.file.location', self.persistentDiskFileLocation)
         self._overrideConfig('disk.store.lvm.device', self.persistentDiskLvmDevice)
         self._overrideConfig('disk.store.lvm.create', self.persistentDiskLvmCreate)
         self._overrideConfig('disk.store.lvm.remove', self.persistentDiskLvmRemove)
@@ -158,6 +170,7 @@ class PersistentDisk(object):
         configFile = '/opt/stratuslab/storage/pdisk/etc/jetty-jaas-stratuslab.xml'
         if not self.persistentDiskMergeAuthWithProxy:
             return
+        printStep('Merging pdisk and one-proxy auth configuration...')
         if not self.system._remoteFileExists(loginConf % oneproxyDir):
             printWarning('Not merging login configuration with one proxy, '
                          'not able to find one-proxy configuration file.\n'
@@ -165,11 +178,26 @@ class PersistentDisk(object):
             return
         if 0 == self.system._nodeShell(['grep', '"%s"' % confLine % loginConf % oneproxyDir, configFile]):
             return
-        printStep('Merging pdisk and one-proxy auth configuration...')
         self.system._remoteAppendOrReplaceInFile(
              configFile,
              confLine % loginConf % pdiskDir,
              confLine % loginConf % oneproxyDir)
+        
+    def _configureNfsServer(self):
+        printStep('Configuring NFS sharing...')
+        if self._nfsShareAlreadyExists():
+            self.system.configureExistingNfsShare(self.persistentDiskExistingNfs, 
+                                                  self.persistentDiskNfsMountPoint)
+        elif self.profile == 'node':
+            self.system.configureExistingNfsShare('%s:%s' % (PDiskClient.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint), 
+                                                  self.persistentDiskNfsMountPoint)
+        else:
+            self.system.configureNewNfsServer(self.persistentDiskNfsMountPoint,
+                                              self.networkAddr,
+                                              self.networkMask)
+
+    def _nfsShareAlreadyExists(self):
+        return not (self.persistentDiskExistingNfs == '')
             
             
             
