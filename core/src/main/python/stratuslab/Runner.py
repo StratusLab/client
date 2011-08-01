@@ -188,35 +188,34 @@ class Runner(object):
 
         _sshPublicKey = os.getenv('STRATUSLAB_KEY', Defaults.sshPublicKeyLocation)
         _sshPrivateKey = _sshPublicKey.strip('.pub')
-        return {'userPublicKeyFile': _sshPublicKey,
-                'userPrivateKeyFile': _sshPrivateKey,
-                'endpoint': CloudEndpoint.options().get('endpoint', ''),
-                'instanceNumber': 1,
-                'instanceType': 'm1.small',
-                'vmTemplatePath': Runner.getTemplatePath(),
-                'rawData': '',
-                'vmKernel': '',
-                'vmRamdisk': '',
-                'vmName': '',
-                'isLocalIp': False,
-                'isPrivateIp': False,
-                'extraContextFile': '',
-                'extraContextData': '',
-                'pdiskEndpoint': PDiskEndpoint.options().get('pdiskEndpoint', ''),
-                'pdiskPort': PDiskEndpoint.options().get('pdiskPort', ''),
-                
-                # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
-                #        Network in not starting unless VNC is defined. Weird yeh...? 8-/
-                'vncPort': '-1',
-                #'vncPort': None,
-                
-                'vncListen': '',
-                'specificAddressRequest': None,
-                'diskFormat': 'raw',
-                'saveDisk': 'no',
-                'inVmIdsFile': None,
-                'outVmIdsFile': None,
-                'noCheckImageUrl': False }
+        defaultOp = {'userPublicKeyFile': _sshPublicKey,
+                    'userPrivateKeyFile': _sshPrivateKey,
+                    'instanceNumber': 1,
+                    'instanceType': 'm1.small',
+                    'vmTemplatePath': Runner.getTemplatePath(),
+                    'rawData': '',
+                    'vmKernel': '',
+                    'vmRamdisk': '',
+                    'vmName': '',
+                    'isLocalIp': False,
+                    'isPrivateIp': False,
+                    'extraContextFile': '',
+                    'extraContextData': '',
+                    # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
+                    #        Network in not starting unless VNC is defined. Weird yeh...? 8-/
+                    'vncPort': '-1',
+                    #'vncPort': None,
+                    
+                    'vncListen': '',
+                    'specificAddressRequest': None,
+                    'diskFormat': 'raw',
+                    'saveDisk': 'no',
+                    'inVmIdsFile': None,
+                    'outVmIdsFile': None,
+                    'noCheckImageUrl': False }
+        defaultOp.extend(CloudEndpoint.options())
+        defaultOp.extend(PDiskEndpoint.options())
+        return defaultOp
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = fileGetContent(template)

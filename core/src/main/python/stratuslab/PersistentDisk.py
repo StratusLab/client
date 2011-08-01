@@ -39,7 +39,7 @@ class PersistentDisk(object):
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.config)
-        self.client.useCredentials(True)
+        self._addCredentials()
         self._buildFQNEndpoint()
         
     def volumeList(self, filters={}):
@@ -88,17 +88,21 @@ class PersistentDisk(object):
         # If no endpoint set, assume there is nothing to do
         if not self.config.pdiskEndpoint:
             return
-        # Try if we can connect to pdisk service
-        try:
-            self._initPDiskConnection()
-            self.client.get('%s?json' % self.pdiskEndpoint)
-        except Exception:
+        if not self._checkServiceStatus():
             return
         volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
         cloudEndpoind = self.getFQNHostname(cloudEndpoind)
         volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
         _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
         return res
+    
+    def _checkServiceStatus(self):
+        try:
+            self._initPDiskConnection()
+            self.client.get('%s?json' % self.pdiskEndpoint)
+            return True
+        except Exception:
+            return False
         
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
@@ -124,8 +128,7 @@ class PersistentDisk(object):
         if self.pdiskEndpoint:
             return
         self._checkEndpoint();
-        self.pdiskEndpoint = self.structEndpoint % {'pdiskEndpoint': self.config.pdiskEndpoint,
-                                                    'pdiskPort': self.config.pdiskPort }
+        self.pdiskEndpoint = self.structEndpoint % self.config.options
         
     def _checkEndpoint(self):
         if not self.config.pdiskEndpoint.lstrip().rstrip():
@@ -133,6 +136,11 @@ class PersistentDisk(object):
                         
     def _removeTrailingSlash(self, string):
         return string[:-1]
+    
+    def _addCredentials(self):
+        user = self.config.options.get('pdiskUsername', '') or self.config.username
+        password = self.config.options.get('pdiskPassword', '') or self.config.password
+        self.client.addCredentials(user, password)
     
     @staticmethod
     def getFQNHostname(hostname):
