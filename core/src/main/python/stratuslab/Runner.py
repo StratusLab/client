@@ -213,8 +213,8 @@ class Runner(object):
                     'inVmIdsFile': None,
                     'outVmIdsFile': None,
                     'noCheckImageUrl': False }
-        defaultOp.extend(CloudEndpoint.options())
-        defaultOp.extend(PDiskEndpoint.options())
+        defaultOp.update(CloudEndpoint.options())
+        defaultOp.update(PDiskEndpoint.options())
         return defaultOp
 
     def _buildVmTemplate(self, template):
