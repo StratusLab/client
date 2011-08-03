@@ -857,6 +857,9 @@ EOF
         return self.targetManifestUri
         #return self.manifestObject.identifier
 
+    def getVmId(self):
+        return self.vmId
+
 class CreatorBaseListener(object):
 
     def __init__(self, verbose=False):
