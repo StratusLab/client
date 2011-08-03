@@ -33,6 +33,7 @@ class HttpClient(object):
         self.configHolder = configHolder
         self.crendentials = {}
         self.certificates = {}
+        self.handleResponse = True
         configHolder.assign(self)        
 
     def get(self,url,accept='application/xml'):
@@ -41,11 +42,20 @@ class HttpClient(object):
     def post(self,url,body=None,contentType='application/xml',accept='application/xml'):
         return self._httpCall(url,'POST',body,contentType,accept)
     
+    def delete(self,url,body=None,contentType='application/x-www-form-urlencoded',accept='application/xml'):
+        return self._httpCall(url,'DELETE',body,contentType,accept)
+    
+    def head(self,url):
+        return self._httpCall(url,'HEAD')
+    
     def addCredentials(self, username, password):
         self.crendentials[username] = password
         
     def addCertificate(self, key, cert):
         self.certificates[key] = cert
+        
+    def setHandleResponse(self, handle):
+        self.handleResponse = handle
         
     def _addCredentials(self, http):
         for u, p in self.crendentials.items():
@@ -118,8 +128,9 @@ class HttpClient(object):
         except httplib.BadStatusLine:
             raise NetworkException('Error: BadStatusLine contacting: ' + url)
         
-        _handleResponse(resp, content)
-        
+        if self.handleResponse:
+            _handleResponse(resp, content)
+
         return resp, content
 
     def _printDetail(self, message):

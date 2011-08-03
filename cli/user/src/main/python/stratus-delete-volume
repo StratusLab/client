@@ -66,8 +66,13 @@ class MainProgram(AuthnCommand):
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:
-            volumeId = pdisk.deleteVolume(uuid)
-            print 'DELETED %s' % volumeId
+            try:
+                volumeId = pdisk.deleteVolume(uuid)
+                print 'DELETED %s' % volumeId
+            except AttributeError:
+                printError('Persistent disk endpoint unavailable')
+            except Exception, e:
+                printError('Service error: %s' % e)
 #            
 if __name__ == '__main__':
     try:

@@ -39,70 +39,68 @@ class PersistentDisk(object):
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.config)
+        self.client.setHandleResponse(False)
         self._addCredentials()
         self._buildFQNEndpoint()
         
-    def volumeList(self, filters={}):
+    def describeVolumes(self, filters={}):
         self._initPDiskConnection()
-        listVolUrl = '%s/disks/?json' % self.pdiskEndpoint
-        _, jsonDiskList = self.client.get(listVolUrl, accept='text/plain')
+        listVolUrl = '%s/api/disks' % self.pdiskEndpoint
+        headers, jsonDiskList = self.client.get(listVolUrl)
+        self._raiseOnErrors(headers, jsonDiskList)
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/disks/?json' % self.pdiskEndpoint
+        createVolumeUrl = '%s/api/create' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
-        _, uuid = self.client.post(createVolumeUrl, urlencode(createVolumeBody), 
+        headers, uuid = self.client.post(createVolumeUrl, urlencode(createVolumeBody), 
                                'application/x-www-form-urlencoded')
-        return uuid
+        if headers.status == 201:
+            return self._getUuidFromJson(uuid)
+        self._raiseOnErrors(headers, uuid)
     
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
-        deleteVolumeUrl = '%s/disks/%s/?json&method=delete' % (self.pdiskEndpoint, uuid)
-        _, uuid = self.client.post(deleteVolumeUrl, contentType='application/x-www-form-urlencoded')
-        return uuid
+        deleteVolumeUrl = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
+        headers, uuid = self.client.delete(deleteVolumeUrl)
+        self._raiseOnErrors(headers, uuid)
+        return self._getUuidFromJson(uuid)
     
     def volumeExists(self, uuid):
-        filter = {'uuid': [uuid,]}
-        return len(self.volumeList(filter)) == 1
-    
-    def remainingUsersVolume(self, uuid):
         self._initPDiskConnection()
-        volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
-        volumeBody = {'available': 1}
-        _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
-        return int(res)
-        
-    def attachVolumeRequest(self, uuid, cloudEndpoind, vmId):
-        self._initPDiskConnection()
-        volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
-        cloudEndpoind = self.getFQNHostname(cloudEndpoind)
-        volumeBody = {'attach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
-        _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
-        return res == self.REQUEST_SUCCESS
-        
-    def detachVolumeRequest(self, cloudEndpoind, vmId):
-        # If no endpoint set, assume there is nothing to do
-        if not self.config.pdiskEndpoint:
-            return
-        if not self._checkServiceStatus():
-            return
-        volumeUrl = '%s/disks/?method=delete' % self.pdiskEndpoint
-        cloudEndpoind = self.getFQNHostname(cloudEndpoind)
-        volumeBody = {'detach': '%s%s%s' % (cloudEndpoind, self.USAGE_SEPARATOR, vmId)}
-        _, res = self.client.post(volumeUrl, urlencode(volumeBody), 'application/x-www-form-urlencoded')
-        return res
+        url = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
+        headers, _ = self.client.head(url)
+        return headers.status == 200
     
-    def _checkServiceStatus(self):
+    def getVolumeUsers(self, uuid):
+        self._initPDiskConnection()
+        volumeUrl = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
+        headers, content = self.client.get(volumeUrl)
+        self._raiseOnErrors(headers, content)
+        return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
+    
+    def serviceAvailable(self):
         try:
             self._initPDiskConnection()
-            self.client.get('%s?json' % self.pdiskEndpoint)
-            return True
+            header, _ = self.client.head('%s' % self.pdiskEndpoint)
+            if header.status == 200:
+                return True
+            return False
         except Exception:
             return False
+        
+    def _raiseOnErrors(self, headers, content):
+        if headers.status in (400, 411):
+            raise Exception('.\n'.join(json.loads(content)['message']))
+        if headers.status != 200:
+            raise Exception(headers.reason)
+    
+    def _getUuidFromJson(self, jsonUuid):
+        return json.loads(jsonUuid)['uuid']
         
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'

@@ -43,7 +43,7 @@ class Runner(object):
 
     # Don't hard code disk target to allow multiple pdisk attachment
     PERSISTENT_DISK = '''DISK=[
-  SOURCE=pdisk:%(pdiskEndpointHostname)s:%(persistentDiskUUID)s,
+  SOURCE=pdisk:%(pdiskEndpointHostname)s:%(pdiskPort)s:%(persistentDiskUUID)s,
   TARGET=hdc,
   TYPE=block ]'''
 
@@ -121,20 +121,14 @@ class Runner(object):
         try:
             if not self.persistentDiskUUID:
                 return
-            self._checkPersistentDiskExists()
             self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
-            available = self.pdisk.remainingUsersVolume(self.persistentDiskUUID)
+            available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
                 Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
                                 % (available, self.instanceNumber))
-        except AttributeError:
-            pass
-
-    def _checkPersistentDiskExists(self):
-        if not self.pdisk.volumeExists(self.persistentDiskUUID):
-            Util.printError('Unable to find persistent disk %s at %s' 
-                    % (self.persistentDiskUUID, self.pdiskEndpoint))
+        except Exception, e:
+            Util.printError(e)
 
     def _setReadonlyDiskOptional(self):
         if hasattr(self, 'readonlyDiskId') and self.readonlyDiskId:
@@ -357,11 +351,6 @@ class Runner(object):
             else:
                 self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
             self.instancesDetail.append({'id': vmId, 'ip': ip, 'networkName': networkName})
-            if self.persistentDiskUUID:
-                if not self.pdisk.attachVolumeRequest(self.persistentDiskUUID, self.endpoint, vmId):
-                    Util.printError('Unable to attach persistent disk %s on VM %s' 
-                                    % (self.persistentDiskUUID, vmId), exit=False)
-
         self._saveVmIds()
 
         self.printStep('Done!')
@@ -390,11 +379,6 @@ class Runner(object):
             _ids = self._loadVmIdsFromFile()
         for id in _ids:
             self.cloud.vmKill(int(id))
-            diskUuid = self.pdisk.detachVolumeRequest(self.endpoint, int(id))
-            if diskUuid != '0':
-                self.printDetail('Persistent disk %s detached' % diskUuid)
-            else:
-                self.printDetail('No persistent disk detached')
         plural = (len(_ids) > 1 and 's') or ''
         self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
 

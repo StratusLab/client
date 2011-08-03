@@ -25,7 +25,7 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
+from stratuslab.Util import modulePath, printError
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
@@ -64,8 +64,13 @@ that have a tag matching the regex pattern.''',
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
         filters = self._formatFilter()
-        volumes = pdisk.volumeList(filters)
-        self._printVolumes(volumes)
+        try:
+            volumes = pdisk.describeVolumes(filters)
+            self._printVolumes(volumes)
+        except AttributeError:
+            printError('Persistent disk endpoint unavailable')
+        except Exception, e:
+            printError('Service error: %s' % e)
         
     def _printVolumes(self, volumes):
         if not len(volumes):
