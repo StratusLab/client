@@ -473,8 +473,7 @@ class Creator(object):
     def _updateManifestForLocation(self):
         newLocation = '%s/%s' % (self.apprepoEndpoint, 
                                  self._constructRemoteImageName())
-        if newLocation not in self.manifestObject.locations:
-            self.manifestObject.locations.append(newLocation)
+        self.manifestObject.locations = [newLocation]
 
     def _saveManifest(self):
         fd, self.manifestLocalFileName = tempfile.mkstemp('.xml')
