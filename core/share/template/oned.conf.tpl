@@ -308,8 +308,9 @@ VM_HOOK = [
 VM_HOOK = [
     name      = "pdisk",
     on        = "DONE",
-    command   = "/usr/bin/python /var/share/stratuslab/creation/pdisk-registrar.py",
-    arguments = "-d $VMID" ]
+    remote    = "yes",
+    command   = "/usr/sbin/detach-persistent-disk.sh",
+    arguments = "$DISK[SOURCE, TYPE=\"block\"]" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------- Hook Examples --------------------------------
