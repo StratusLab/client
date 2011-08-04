@@ -583,6 +583,9 @@ class Testor(unittest.TestCase):
             self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
             self._writeToFile(runner, testFile, testString)
             self._umountPDiskAndStopVm(runner, pdiskDevice)
+            
+            # Wait for the hook to be executed
+            sleep(5)
 
             availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
             
