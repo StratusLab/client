@@ -300,19 +300,6 @@ VM_HOOK = [
     arguments = "$VMID" ]
 #-------------------------------------------------------------------------------
 
-
-#---------------------------- Persistent disk Hook -----------------------------
-# This hook is used to handle image saving and overwriting when virtual machines
-# reach the DONE state after being shutdown.
-
-VM_HOOK = [
-    name      = "pdisk",
-    on        = "DONE",
-    remote    = "yes",
-    command   = "/usr/sbin/detach-persistent-disk.sh",
-    arguments = "$DISK[SOURCE, TYPE=\"block\"]" ]
-#-------------------------------------------------------------------------------
-
 #-------------------------------- Hook Examples --------------------------------
 #VM_HOOK = [
 #    name      = "dhcp",
