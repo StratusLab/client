@@ -127,6 +127,8 @@ class Runner(object):
             if self.instanceNumber > available:
                 Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
                                 % (available, self.instanceNumber))
+        except AttributeError:
+            Util.printError('Persistent disk service unavailable')
         except Exception, e:
             Util.printError(e)
 
