@@ -93,8 +93,8 @@ class PersistentDisk(object):
     def _configureNodeSudo(self):
         printStep('Configuring sudo rights...')
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
-             '%s ALL = NOPASSWD: /sbin/iscsiadm' % self.oneUsername,
-             '%s ALL = NOPASSWD: /sbin/iscsiadm' % self.oneUsername)
+             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof' % self.oneUsername,
+             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof' % self.oneUsername)
         
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
