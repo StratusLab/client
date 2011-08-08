@@ -49,6 +49,7 @@ class PersistentDisk(object):
         }
 
         self.pdiskConfigFile = '/etc/stratuslab/pdisk.cfg'
+        self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
         
     def runFrontend(self):
         self.installFrontend()
@@ -63,6 +64,7 @@ class PersistentDisk(object):
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
+        self._copyClodeNodeKey()
         self._service('pdisk', 'start')
         
     def configureFrontend(self):
@@ -93,8 +95,8 @@ class PersistentDisk(object):
     def _configureNodeSudo(self):
         printStep('Configuring sudo rights...')
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
-             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof' % self.oneUsername,
-             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof' % self.oneUsername)
+             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername,
+             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername)
         
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
@@ -145,6 +147,9 @@ class PersistentDisk(object):
         printStep('Creating disk store directory...')
         self.system._remoteCreateDirs(self.persistentDiskFileLocation)
         
+    def _copyClodeNodeKey(self):
+        self.system.copyCmd(self.persistentDiskCloudNodeKey, self.cloudNodeKey)
+        
     def _writeConfig(self):
         printStep('Writting configuration...')
         self._overrideConfig('disk.store.share', self.persistentDiskShare)
@@ -155,6 +160,9 @@ class PersistentDisk(object):
         self._overrideConfig('disk.store.lvm.create', self.persistentDiskLvmCreate)
         self._overrideConfig('disk.store.lvm.remove', self.persistentDiskLvmRemove)
         self._overrideConfig('disk.store.zookeeper.address', self.persistentDiskZookeeperAddr)
+        self._overrideConfig('disk.store.cloud.node.admin', self.oneUsername)
+        self._overrideConfig('disk.store.cloud.node.ssh_keyfile', self.cloudNodeKey)
+        self._overrideConfig('disk.store.cloud.node.vm_dir', self.persistentDiskCloudVmDir)
         
     def _setAutorunZookeeper(self):
         # By default script auto run
