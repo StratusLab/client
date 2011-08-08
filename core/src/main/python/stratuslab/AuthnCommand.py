@@ -254,8 +254,8 @@ class PDiskEndpoint(object):
     def options():
         return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', ''),
                 'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),
-                'pdiskUsername' : os.getenv('STRATUSLAB_PDISK_USERNAME', os.getenv('STRATUSLAB_USERNAME', '')),
-                'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', os.getenv('STRATUSLAB_PASSWORD', '')) }  
+                'pdiskUsername' : os.getenv('STRATUSLAB_PDISK_USERNAME', UsernamePassword.options().get('username')),
+                'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', UsernamePassword.options().get('password')) }  
 
     @staticmethod
     def addOptions(parser, defaultOptions=None):
