@@ -28,9 +28,6 @@ from stratuslab.Util import printError
 from socket import gethostbyaddr
 
 class PersistentDisk(object):
-    REQUEST_SUCCESS = '1'
-    REQUEST_FAILLED = '0'
-    USAGE_SEPARATOR = '#'
     
     def __init__(self, configHolder):
         self.structEndpoint = 'https://%(pdiskEndpoint)s:%(pdiskPort)d'
