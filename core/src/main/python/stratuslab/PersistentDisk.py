@@ -83,6 +83,25 @@ class PersistentDisk(object):
         self._raiseOnErrors(headers, content)
         return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
     
+    def hotAttach(self, node, vmId, uuid):
+        self._initPDiskConnection()
+        url = '%s/api/hotattach/%s' % (self.pdiskEndpoint, uuid)
+        body = {'node': node,
+                'vm_id': vmId }
+        headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
+        self._raiseOnErrors(headers, content)
+        target = '/dev/vd%s' % chr(ord('a') + len(json.loads(content)['uuid']) - 1)
+        return target
+    
+    def hotDetach(self, node, vmId, uuid):
+        self._initPDiskConnection()
+        url = '%s/api/hotdetach/%s' % (self.pdiskEndpoint, uuid)
+        body = {'node': node,
+                'vm_id': vmId }
+        headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
+        self._raiseOnErrors(headers, content)
+        return json.loads(content)['uuid']
+    
     def serviceAvailable(self):
         try:
             self._initPDiskConnection()

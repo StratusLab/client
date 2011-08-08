@@ -25,75 +25,72 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import modulePath, printError
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Authn import AuthnFactory
+from stratuslab.Exceptions import OneException
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to create a persistent disk.'''
+    '''A command-line program to attach a persistent disk.'''
 
     def __init__(self):
-        self.VOLUME_SIZE_MIN = 1
-        self.VOLUME_SIZE_MAX = 1024
-        self.TAG_LENGTH_MAX = 40
         super(MainProgram, self).__init__()
-
+        
     def parse(self):
-        self.parser.usage = '%prog [options]'
-        self.parser.description = '''Create a new persistent disk'''
+        self.parser.usage = '%prog volume_uuid ... [options]'
+        self.parser.description = '''Attach a persistent disk to a running VM'''
         
-        self.parser.add_option('-s', '--size', dest='volumeSize',
-                help='Size of the volume in GiBs', metavar='SIZE',
+        self.parser.add_option('-i', '--instance', dest='instance',
+                help='The ID of the instance to which the volume attaches', metavar='VM_ID',
                 default=0, type='int')
-        
-        self.parser.add_option('-t', '--tag', dest='volumeTag',
-                help='Tag of the volume. Only for the user', metavar='NAME', 
-                default="")
-        
-        self.parser.add_option('--private', dest='volumeVisibility',
-                help='''Set the disk as private (default). Only you can see, use 
-and delete the disk.''', action='store_false')
-        
-        self.parser.add_option('--public', dest='volumeVisibility',
-                help='''Set the disk visibility as public. Any one can see it 
-and use it but can't delete it.''', action='store_true', default=False)
 
         AuthnCommand.addPDiskEndpointOptions(self.parser)
+        AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
-
-        self.options, _ = self.parser.parse_args()
+        
+        self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
         AuthnCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
-        self._checkVolumeSize()
-        self._checkTagLength()
-        
-    def _checkVolumeSize(self):
-        if self.options.volumeSize < self.VOLUME_SIZE_MIN or self.options.volumeSize > self.VOLUME_SIZE_MAX:
-            printError('Volume size must be a vqlid integer between %d and %d' % 
-                       (self.VOLUME_SIZE_MIN, self.VOLUME_SIZE_MAX))
-        
-    def _checkTagLength(self):
-        if len(self.options.volumeTag) > self.TAG_LENGTH_MAX:
-            printError('Tag have to be less than %d characters' % self.TAG_LENGTH_MAX)
+        if not self.uuids:
+            printError('Please provide at least on persistent disk UUID to attach')
+        if not self.options.instance:
+            printError('Please provide a VM ID on which to attach disk')
+        try:
+            self._setupCloudConnection()
+            if not self.options.cloud.isVmRunning(self.options.instance):
+                printError('VM %s is not in running state' % self.options.instance)
+            self.node = self.options.cloud.getVmNode(self.options.instance)
+        except OneException, e: 
+            printError(e)
+            
+    def _setupCloudConnection(self):
+        credentials = AuthnFactory.getCredentials(self.options)
+        self.options.cloud = CloudConnectorFactory.getCloud(credentials)
+        self.options.cloud.setEndpoint(self.options.endpoint)
         
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
         try:
-            volumeId = pdisk.createVolume(self.options.volumeSize,
-                                          self.options.volumeTag,
-                                          self.options.volumeVisibility)
-            print 'DISK %s' % volumeId
+            for uuid in self.uuids:
+                free, _ = pdisk.getVolumeUsers(uuid)
+                if free < 1:
+                    printError('DISK %s: Disk not available\n' % uuid, exit=False)
+                else:
+                    target = pdisk.hotAttach(self.node, self.options.instance, uuid)
+                    print 'DISK %s: Should be attached on %s' % (uuid, target)
         except AttributeError:
             printError('Persistent disk endpoint unavailable')
         except Exception, e:
             printError('Service error: %s' % e)
-#            
+
 if __name__ == '__main__':
     try:
         MainProgram()

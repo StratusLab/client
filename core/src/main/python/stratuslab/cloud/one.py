@@ -128,7 +128,15 @@ class OneConnector(object):
         xml = etree.fromstring(info)
         self._addStateSummary(xml)
         return etree.tostring(xml)
-
+    
+    def getVmNode(self, vmId):
+        info = self._vmInfo(vmId)
+        xml = etree.fromstring(info)
+        return xml.find('HISTORY/HOSTNAME').text
+    
+    def isVmRunning(self, vmId):
+        return str(self._getVmStateSummary(vmId)) == 'Running'
+    
     def _getOneVmStateFromXml(self, xml):
         stateElement = self._getStateElement(xml)
         state = int(stateElement.text)
