@@ -355,5 +355,6 @@ if __name__ == "__main__":
         print '### ABORTING ON ERROR ###'
         print e.message
         tutorial.stratusKillInstance(tutorial.vmId)
+        sys.exit(1)
     
 
