@@ -558,7 +558,6 @@ class Testor(unittest.TestCase):
         '''Ensure that a disk can be created, written, stored and removed'''
         
         pdiskDevice = '/dev/hdc' # !!!! Configured for the default image (ttylinux)
-        hotDevice = '/dev/vda'
         pdiskMountPoint = '/mnt/pdisk-test'
         testFile = '%s/pdisk.txt' % pdiskMountPoint
         testFileCmp = '/tmp/pdisk.cmp'
@@ -702,7 +701,7 @@ class Testor(unittest.TestCase):
         self._stopVm(runner)
         self.vmIds = []
         # Wait for the pdisk hook to be executed
-        sleep(5)
+        sleep(10)
     
     def _formatDisk(self, runner, device):
         Util.printStep('Formating device %s' % device)
