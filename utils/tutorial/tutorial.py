@@ -65,6 +65,8 @@ class Tutorial:
         self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
         self._setSingleFieldFromEnvVar('endpoint', 'STRATUSLAB_ENDPOINT')
         self._setSingleFieldFromEnvVar('pdiskEndpoint', 'STRATUSLAB_PDISK_ENDPOINT')
+        self._setSingleFieldFromEnvVar('pdiskUsername', 'STRATUSLAB_PDISK_USERNAME')
+        self._setSingleFieldFromEnvVar('pdiskPassword', 'STRATUSLAB_PDISK_PASSWORD')
 
     def _setSingleFieldFromEnvVar(self, field, env):
         setattr(self, field, os.environ.get(env, ''))
@@ -257,12 +259,13 @@ class Tutorial:
         return query
 
     def run(self):
+        
         ##########
         self.printAction("Defined attributes")
         ##########
         
         self.printAttributes()
-    
+        
         ##########
         self.printAction("Generating a SSH key pair")
         ##########
@@ -318,7 +321,7 @@ class Tutorial:
            
         self.printStep("Killing VM")
         self.stratusKillInstance(self.vmId)
-        
+         
         #########
         self.printAction("Persistent disk storage test")
         #########
@@ -337,14 +340,18 @@ class Tutorial:
            
         self.printStep("Killing VM")
         self.stratusKillInstance(self.vmId)
+        time.sleep(5)
         
         self.printStep("Removing persistent disk")
         uuid = self.stratusDeleteVolume(uuid)
         self.stratusDescribeVolumes(uuid)
     
-        self.printAction("Claudia test")
-        self.printStep("Executing claudia unit-test")
-        self.testClaudia("stratus-test", "claudiaTest", "demo", "ds1", self.claudiaOvfEndpoint)
+        ##########
+        #self.printAction("Claudia test")
+        #########
+
+        #self.printStep("Executing claudia unit-test")
+        #self.testClaudia("stratus-test", "claudiaTest", "demo", "ds1", self.claudiaOvfEndpoint)
 
 
 if __name__ == "__main__":
@@ -353,7 +360,7 @@ if __name__ == "__main__":
         tutorial.run()
     except Exception, e:
         print '### ABORTING ON ERROR ###'
-        print e.message
+        print e
         tutorial.stratusKillInstance(tutorial.vmId)
         sys.exit(1)
     
