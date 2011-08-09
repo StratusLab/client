@@ -277,7 +277,7 @@ class PDiskEndpoint(object):
         parser.add_option('--pdisk-password', dest='pdiskPassword',
                           help='Persistent disk service password. \
                           Default STRATUSLAB_PDISK_PASSWORD, then your cloud password', 
-                          metavar='NAME', default=defaultOptions['pdiskUsername'])
+                          metavar='NAME', default=defaultOptions['pdiskPassword'])
         
     @staticmethod
     def checkOptions(options):
