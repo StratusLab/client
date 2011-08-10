@@ -87,8 +87,7 @@ class PersistentDisk(object):
                 'vm_id': vmId }
         headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
         self._raiseOnErrors(headers, content)
-        target = '/dev/vd%s' % chr(ord('a') + len(json.loads(content)['uuid']) - 1)
-        return target
+        return json.loads(content)['target']
     
     def hotDetach(self, node, vmId, uuid):
         self._initPDiskConnection()
@@ -97,7 +96,7 @@ class PersistentDisk(object):
                 'vm_id': vmId }
         headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
         self._raiseOnErrors(headers, content)
-        return json.loads(content)['uuid']
+        return json.loads(content)['target']
     
     def serviceAvailable(self):
         try:

@@ -85,7 +85,7 @@ class MainProgram(AuthnCommand):
                     printError('DISK %s: Disk not available\n' % uuid, exit=False)
                 else:
                     target = pdisk.hotAttach(self.node, self.options.instance, uuid)
-                    print 'DISK %s: Should be attached on %s' % (uuid, target)
+                    print 'ATTACHED %s in VM %s on /dev/%s' % (uuid, self.options.instance, target)
         except AttributeError:
             printError('Persistent disk endpoint unavailable')
         except Exception, e:

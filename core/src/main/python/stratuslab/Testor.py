@@ -615,8 +615,7 @@ class Testor(unittest.TestCase):
     def persistentDiskStorageHotplugTest(self):
         '''Ensure that a disk hot-plugged to a VM and then hot-unplugged'''
         
-        pdiskDevice1 = '/dev/vda'
-        pdiskDevice2 = '/dev/vdb'
+        pdiskDevice = '/dev/%s'
         pdiskMountPoint = '/mnt/pdisk-test'
         testFile = '%s/pdisk.txt' % pdiskMountPoint
         testFileCmp = '/tmp/pdisk.cmp'
@@ -644,16 +643,16 @@ class Testor(unittest.TestCase):
             printStep('Attaching pdisk to VM')
             
             availableUserBeforeAttach, _ = pdisk.getVolumeUsers(diskUUID)
-            pdisk.hotAttach(node, vmId, diskUUID)
+            device = pdisk.hotAttach(node, vmId, diskUUID)
             availableUserAfterAttach, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterAttach != (availableUserBeforeAttach-1):
                 self.fail('Available users on persistent disk have to decrease by one')
             
-            self._formatDisk(runner, pdiskDevice1)
-            self._mountDisk(runner, pdiskDevice1, pdiskMountPoint)
+            self._formatDisk(runner, pdiskDevice % device)
+            self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
             self._writeToFile(runner, testFile, testString)
-            self._umountDisk(runner, pdiskDevice1)
+            self._umountDisk(runner, pdiskDevice % device)
             
             printStep('Detaching pdisk of VM')
             pdisk.hotDetach(node, vmId, diskUUID)
@@ -664,12 +663,12 @@ class Testor(unittest.TestCase):
                 self.fail('Available users on persistent disk have to be the same as when VM has started')
             
             printStep('Re-attaching pdisk to VM')
-            pdisk.hotAttach(node, vmId, diskUUID)
+            device = pdisk.hotAttach(node, vmId, diskUUID)
             
-            self._mountDisk(runner, pdiskDevice2, pdiskMountPoint)
+            self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
             self._writeToFile(runner, testFileCmp, testString)
             self._compareFiles(runner, testFile, testFileCmp)
-            self._umountPDiskAndStopVm(runner, pdiskDevice2)
+            self._umountPDiskAndStopVm(runner, pdiskDevice % device)
             
             availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
             

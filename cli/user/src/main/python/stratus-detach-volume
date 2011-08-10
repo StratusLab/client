@@ -79,8 +79,8 @@ class MainProgram(AuthnCommand):
         try:
             for uuid in self.uuids:
                 try:
-                    pdisk.hotDetach(self.node, self.options.instance, uuid)
-                    print 'DETACHED %s' % uuid
+                    target = pdisk.hotDetach(self.node, self.options.instance, uuid)
+                    print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
                 except Exception, e:
                     printError('DISK %s: %s' % (uuid, e), exit=False)
         except AttributeError:
