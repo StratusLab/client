@@ -473,8 +473,7 @@ class Creator(object):
     def _updateManifestForLocation(self):
         newLocation = '%s/%s' % (self.apprepoEndpoint, 
                                  self._constructRemoteImageName())
-        if newLocation not in self.manifestObject.locations:
-            self.manifestObject.locations.append(newLocation)
+        self.manifestObject.locations = [newLocation]
 
     def _saveManifest(self):
         fd, self.manifestLocalFileName = tempfile.mkstemp('.xml')
@@ -857,6 +856,9 @@ EOF
         # FIXME: return ID when manifest gets uploaded to Marketplace
         return self.targetManifestUri
         #return self.manifestObject.identifier
+
+    def getVmId(self):
+        return self.vmId
 
 class CreatorBaseListener(object):
 
