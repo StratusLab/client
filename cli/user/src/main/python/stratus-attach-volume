@@ -25,83 +25,72 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import modulePath, printError
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Authn import AuthnFactory
+from stratuslab.Exceptions import OneException
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to view the persistent disk.'''
+    '''A command-line program to attach a persistent disk.'''
 
     def __init__(self):
         super(MainProgram, self).__init__()
-
-    def parse(self):
-        self.parser.usage = '%prog  [volume_uid ...] [[--filter name=value] ...]'
-        self.parser.description = '''List all available disk or only specified 
-for the current user (-u/--username).'''
         
-        self.parser.add_option('-f', '--filter', dest='filters',
-                help='''Filter available disk with specified properties.
-Name are the one specified when describing disk properties. Values can be python
-regex pattern. 
-Example: --filter owner:john --filter tag:grid-* will show only john's disk 
-that have a tag matching the regex pattern.''', 
-                metavar='name:value', action='append', default=[])
+    def parse(self):
+        self.parser.usage = '%prog volume_uuid ... [options]'
+        self.parser.description = '''Attach a persistent disk to a running VM'''
+        
+        self.parser.add_option('-i', '--instance', dest='instance',
+                help='The ID of the instance to which the volume attaches', metavar='VM_ID',
+                default=0, type='int')
 
         AuthnCommand.addPDiskEndpointOptions(self.parser)
+        AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
-
+        
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
         AuthnCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
+        if not self.uuids:
+            printError('Please provide at least on persistent disk UUID to attach')
+        if not self.options.instance:
+            printError('Please provide a VM ID on which to attach disk')
+        try:
+            self._setupCloudConnection()
+            if not self.options.cloud.isVmRunning(self.options.instance):
+                printError('VM %s is not in running state' % self.options.instance)
+            self.node = self.options.cloud.getVmNode(self.options.instance)
+        except OneException, e: 
+            printError(e)
+            
+    def _setupCloudConnection(self):
+        credentials = AuthnFactory.getCredentials(self.options)
+        self.options.cloud = CloudConnectorFactory.getCloud(credentials)
+        self.options.cloud.setEndpoint(self.options.endpoint)
         
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
-        filters = self._formatFilter()
         try:
-            volumes = pdisk.describeVolumes(filters)
-            self._printVolumes(volumes)
+            for uuid in self.uuids:
+                free, _ = pdisk.getVolumeUsers(uuid)
+                if free < 1:
+                    printError('DISK %s: Disk not available\n' % uuid, exit=False)
+                else:
+                    target = pdisk.hotAttach(self.node, self.options.instance, uuid)
+                    print 'DISK %s: Should be attached on %s' % (uuid, target)
         except AttributeError:
             printError('Persistent disk endpoint unavailable')
         except Exception, e:
             printError('Service error: %s' % e)
-        
-    def _printVolumes(self, volumes):
-        if not len(volumes):
-            print 'No disk to show'
-        for disk in volumes:
-            print ':: DISK %s' % disk['uuid']
-            self._printDict(disk, ['uuid',])
-            
-    def _printDict(self, dict, excludeKey=[]):
-        for k, v in dict.items():
-            if k not in excludeKey:
-                print '\t%s: %s' % (k, v)
-                
-    def _formatFilter(self):
-        # produce {key:[value,]}
-        filters = {}
-        self._addUuidToFilters()
-        for filter in self.options.filters:
-            key = filter.split(':')[0]
-            value = ':'.join(filter.split(':')[1:]).lstrip().rstrip()
-            if key in filters:
-                if value not in filters[key]: 
-                    filters[key].append(value)
-            else:
-                filters[key] = [value,]
-        return filters
-                
-    def _addUuidToFilters(self):
-        for uuid in self.uuids:
-            self.options.filters.append('uuid:%s' % uuid)
-            
+
 if __name__ == '__main__':
     try:
         MainProgram()

@@ -253,20 +253,31 @@ class PDiskEndpoint(object):
     @staticmethod
     def options():
         return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', ''),
-                'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),}  
+                'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),
+                'pdiskUsername' : os.getenv('STRATUSLAB_PDISK_USERNAME', UsernamePassword.options().get('username')),
+                'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', UsernamePassword.options().get('password')) }  
 
     @staticmethod
     def addOptions(parser, defaultOptions=None):
         if not defaultOptions:
             defaultOptions = PDiskEndpoint.options()
-
+        
+        # TODO: Add certificate support
         parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
-                          help='persistent disk storage endpoint address. \
+                          help='Persistent disk service endpoint. \
                           Default STRATUSLAB_PDISK_ENDPOINT',
                           default=defaultOptions['pdiskEndpoint'])
         parser.add_option('--pdisk-port', dest='pdiskPort',
                           help='Alternate persistent disk storage endpoint port.', 
                           metavar='PORT', default=defaultOptions['pdiskPort'], type='int')
+        parser.add_option('--pdisk-username', dest='pdiskUsername',
+                          help='Persistent disk service username. \
+                          Default STRATUSLAB_PDISK_USERNAME, then your cloud username', 
+                          metavar='NAME', default=defaultOptions['pdiskUsername'])
+        parser.add_option('--pdisk-password', dest='pdiskPassword',
+                          help='Persistent disk service password. \
+                          Default STRATUSLAB_PDISK_PASSWORD, then your cloud password', 
+                          metavar='NAME', default=defaultOptions['pdiskPassword'])
         
     @staticmethod
     def checkOptions(options):

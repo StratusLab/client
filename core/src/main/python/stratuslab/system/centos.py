@@ -217,7 +217,7 @@ enabled=1
 
     def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
         super(CentOS, self).configureNewNfsServer(mountPoint, networkAddr, networkMask)
-        self._execute(['service', 'nfs', 'start'])
+        self.executeCmd(['service', 'nfs', 'start'])
 
     # -------------------------------------------
     #     Hypervisor related methods

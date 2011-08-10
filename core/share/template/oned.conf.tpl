@@ -300,18 +300,6 @@ VM_HOOK = [
     arguments = "$VMID" ]
 #-------------------------------------------------------------------------------
 
-
-#---------------------------- Persistent disk Hook -----------------------------
-# This hook is used to handle image saving and overwriting when virtual machines
-# reach the DONE state after being shutdown.
-
-VM_HOOK = [
-    name      = "pdisk",
-    on        = "DONE",
-    command   = "/var/share/stratuslab/creation/detach-pdisk-hook.sh",
-    arguments = "$VMID" ]
-#-------------------------------------------------------------------------------
-
 #-------------------------------- Hook Examples --------------------------------
 #VM_HOOK = [
 #    name      = "dhcp",

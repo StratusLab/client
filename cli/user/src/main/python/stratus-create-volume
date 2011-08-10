@@ -39,7 +39,6 @@ class MainProgram(AuthnCommand):
         self.VOLUME_SIZE_MAX = 1024
         self.TAG_LENGTH_MAX = 40
         super(MainProgram, self).__init__()
-        
 
     def parse(self):
         self.parser.usage = '%prog [options]'
@@ -85,10 +84,15 @@ and use it but can't delete it.''', action='store_true', default=False)
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
-        volumeId = pdisk.createVolume(self.options.volumeSize,
-                                      self.options.volumeTag,
-                                      self.options.volumeVisibility)
-        print 'DISK %s' % volumeId
+        try:
+            volumeId = pdisk.createVolume(self.options.volumeSize,
+                                          self.options.volumeTag,
+                                          self.options.volumeVisibility)
+            print 'DISK %s' % volumeId
+        except AttributeError:
+            printError('Persistent disk endpoint unavailable')
+        except Exception, e:
+            printError('Service error: %s' % e)
 #            
 if __name__ == '__main__':
     try:
