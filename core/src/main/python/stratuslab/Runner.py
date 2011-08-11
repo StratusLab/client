@@ -54,6 +54,13 @@ class Runner(object):
   TARGET=hdc,
   DRIVER="raw" ]'''
 
+    NOTIFICATION = '''NOTIFICATION = [
+  HOST="{0}",
+  VHOST="{1}",
+  USER="{2}",
+  PASSWORD="{3}",
+  QUEUE="{4}" ]'''
+
     def __init__(self, image, configHolder):
         if image == '':
             raise ValueError('Image ID or full image endpoint should be provided.')
@@ -227,6 +234,7 @@ class Runner(object):
         self._manageRawData()
         self._manageExtraContext()
         self._manageVnc()
+        self._manageNotifications()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -325,6 +333,16 @@ class Runner(object):
             vncInfo.append('type = "vnc"')
 
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
+
+    def _formatRecipient(self, recipient):
+        # fields are: 'host', 'vhost', 'user', 'pass', 'queue'
+        # badly formatted inputs are silently ignored
+        values = recipient.split(',')
+        return Runner.NOTIFICATION.format(*values) if (len(values)==5) else ''
+
+    def _manageNotifications(self):
+        notificationInfo = map(self._formatRecipient, self.msgRecipients)
+        self.notifications = ('\n'.join(notificationInfo))
 
     def runInstance(self):
         self._checkImageExists(self.vm_image)
