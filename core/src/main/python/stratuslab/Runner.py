@@ -95,6 +95,7 @@ class Runner(object):
         self.vmIds = []
         self.diskImageFormat = None
         self.disk_driver = None
+        self.msgRecipients = []
 
         self._setUserKeyIfDefined()
         self._setSaveDisk()
