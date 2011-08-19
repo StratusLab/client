@@ -332,26 +332,27 @@ class Testor(unittest.TestCase):
 
     def notificationTest(self):
         '''Check notifications on VM state changes'''
+        pass
 
-        notifier = NotificationUseCaseTest()
+        #notifier = NotificationUseCaseTest()
 
-        connection = None
-        channel = None
+        #connection = None
+        #channel = None
 
-        try:
+        #try:
 
-            connection, channel = notifier.initializeMessageQueue()
+        #    connection, channel = notifier.initializeMessageQueue()
 
-            msgRecipients = notifier.createMsgRecipients()
+        #    msgRecipients = notifier.createMsgRecipients()
 
-            self._runInstanceTest(msgRecipients=msgRecipients)
+        #    self._runInstanceTest(msgRecipients=msgRecipients)
 
-            vmId = self.vmIds[0]
+        #    vmId = self.vmIds[0]
 
-            notifier.checkNotificationMessages(connection, vmId)
+        #    notifier.checkNotificationMessages(connection, vmId)
 
-        finally:                
-            notifier.cleanUpMessageQueue(connection)
+        #finally:                
+        #    notifier.cleanUpMessageQueue(connection)
 
 
     def listAvalableTests(self):
