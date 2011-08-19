@@ -167,8 +167,8 @@ class Testor(unittest.TestCase):
                 except ValueError:
                     print "WARNING: Test '%s' not in a list of defined tests." % test
 
-    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun='/bin/true'):
-        runner = self._startVm(withLocalNetwork)
+    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun='/bin/true', msgRecipients=None):
+        runner = self._startVm(withLocalNetwork=withLocalNetwork, msgRecipients=msgRecipients)
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner, cmdToRun)
         self._stopVm(runner)
@@ -180,11 +180,14 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n' * 3)
         return log
 
-    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1, noCheckImageUrl=False):
+    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1, noCheckImageUrl=False, msgRecipients=None):
         self.runner = self._createRunner(withLocalNetwork, requestedIpAddress)
         self.runner.instanceNumber = instanceNumber
 
         self.runner.noCheckImageUrl = noCheckImageUrl
+
+        if not msgRecipients:
+            self.runner.msgRecipients = msgRecipients
 
         vmIds = self.runner.runInstance()
         self.vmIds.extend(vmIds)
@@ -325,6 +328,31 @@ class Testor(unittest.TestCase):
         self.assertEqual(hostname, info.name)
         registrar.deregister(hostname)
         self.assertRaises(Exception, monitor.nodeDetail, [id])
+
+
+    def notificationTest(self):
+        '''Check notifications on VM state changes'''
+
+        notifier = NotificationUseCaseTest()
+
+        connection = None
+        channel = None
+
+        try:
+
+            connection, channel = notifier.initializeMessageQueue()
+
+            msgRecipients = notifier.createMsgRecipients()
+
+            self._runInstanceTest(msgRecipients=msgRecipients)
+
+            vmId = self.vmIds[0]
+
+            notifier.checkNotificationMessages(connection, vmId)
+
+        finally:                
+            notifier.cleanUpMessageQueue(connection)
+
 
     def listAvalableTests(self):
         print 'Available tests:'
