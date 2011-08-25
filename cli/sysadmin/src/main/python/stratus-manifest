@@ -33,7 +33,7 @@ def main():
         _exitWithUsage()
     else:
         if re.search('\.(img|qco|qcow|qcow2)(\.gz|\.bz2)?$', imageEndpoint):
-            _exitWithUsage('ERROR: An image URL was giveni not MarketPlace image URL.')
+            _exitWithUsage('ERROR: An image URL was given is not MarketPlace image URL.')
 
     if not options.element:
         _exitWithUsage()
