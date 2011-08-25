@@ -38,3 +38,5 @@ public_key = "%(public_key)s",
 %(extra_context)s
 target = "hdd"
 ]
+
+%(notifications)s

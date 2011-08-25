@@ -167,8 +167,8 @@ class Testor(unittest.TestCase):
                 except ValueError:
                     print "WARNING: Test '%s' not in a list of defined tests." % test
 
-    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun='/bin/true'):
-        runner = self._startVm(withLocalNetwork)
+    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun='/bin/true', msgRecipients=None):
+        runner = self._startVm(withLocalNetwork=withLocalNetwork, msgRecipients=msgRecipients)
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner, cmdToRun)
         self._stopVm(runner)
@@ -180,11 +180,14 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n' * 3)
         return log
 
-    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1, noCheckImageUrl=False):
+    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1, noCheckImageUrl=False, msgRecipients=None):
         self.runner = self._createRunner(withLocalNetwork, requestedIpAddress)
         self.runner.instanceNumber = instanceNumber
 
         self.runner.noCheckImageUrl = noCheckImageUrl
+
+        if not msgRecipients:
+            self.runner.msgRecipients = msgRecipients
 
         vmIds = self.runner.runInstance()
         self.vmIds.extend(vmIds)
@@ -325,6 +328,32 @@ class Testor(unittest.TestCase):
         self.assertEqual(hostname, info.name)
         registrar.deregister(hostname)
         self.assertRaises(Exception, monitor.nodeDetail, [id])
+
+
+    def notificationTest(self):
+        '''Check notifications on VM state changes'''
+        pass
+
+        #notifier = NotificationUseCaseTest()
+
+        #connection = None
+        #channel = None
+
+        #try:
+
+        #    connection, channel = notifier.initializeMessageQueue()
+
+        #    msgRecipients = notifier.createMsgRecipients()
+
+        #    self._runInstanceTest(msgRecipients=msgRecipients)
+
+        #    vmId = self.vmIds[0]
+
+        #    notifier.checkNotificationMessages(connection, vmId)
+
+        #finally:                
+        #    notifier.cleanUpMessageQueue(connection)
+
 
     def listAvalableTests(self):
         print 'Available tests:'
@@ -615,8 +644,7 @@ class Testor(unittest.TestCase):
     def persistentDiskStorageHotplugTest(self):
         '''Ensure that a disk hot-plugged to a VM and then hot-unplugged'''
         
-        pdiskDevice1 = '/dev/vda'
-        pdiskDevice2 = '/dev/vdb'
+        pdiskDevice = '/dev/%s'
         pdiskMountPoint = '/mnt/pdisk-test'
         testFile = '%s/pdisk.txt' % pdiskMountPoint
         testFileCmp = '/tmp/pdisk.cmp'
@@ -644,16 +672,16 @@ class Testor(unittest.TestCase):
             printStep('Attaching pdisk to VM')
             
             availableUserBeforeAttach, _ = pdisk.getVolumeUsers(diskUUID)
-            pdisk.hotAttach(node, vmId, diskUUID)
+            device = pdisk.hotAttach(node, vmId, diskUUID)
             availableUserAfterAttach, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterAttach != (availableUserBeforeAttach-1):
                 self.fail('Available users on persistent disk have to decrease by one')
             
-            self._formatDisk(runner, pdiskDevice1)
-            self._mountDisk(runner, pdiskDevice1, pdiskMountPoint)
+            self._formatDisk(runner, pdiskDevice % device)
+            self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
             self._writeToFile(runner, testFile, testString)
-            self._umountDisk(runner, pdiskDevice1)
+            self._umountDisk(runner, pdiskDevice % device)
             
             printStep('Detaching pdisk of VM')
             pdisk.hotDetach(node, vmId, diskUUID)
@@ -664,12 +692,12 @@ class Testor(unittest.TestCase):
                 self.fail('Available users on persistent disk have to be the same as when VM has started')
             
             printStep('Re-attaching pdisk to VM')
-            pdisk.hotAttach(node, vmId, diskUUID)
+            device = pdisk.hotAttach(node, vmId, diskUUID)
             
-            self._mountDisk(runner, pdiskDevice2, pdiskMountPoint)
+            self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
             self._writeToFile(runner, testFileCmp, testString)
             self._compareFiles(runner, testFile, testFileCmp)
-            self._umountPDiskAndStopVm(runner, pdiskDevice2)
+            self._umountPDiskAndStopVm(runner, pdiskDevice % device)
             
             availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
             

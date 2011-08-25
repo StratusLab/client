@@ -100,6 +100,10 @@ class MainProgram(Runnable):
                 help='name of VM. If not given, a default name will be assigned by cloud layer.',
                 metavar='NAME', default=options['vmName'])
         
+        self.parser.add_option('--notify', dest='msgRecipients', action='append',
+                help='recipient coordinates (host,vhost,user,pass,queue)',
+                default=[])
+
         AuthnCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()

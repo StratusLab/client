@@ -35,7 +35,7 @@
       <id>build-deb</id>
       <activation>
         <file>
-          <exists>/usr/bin/fakeroot</exists>
+          <exists>/usr/bin/alien</exists>
         </file>
       </activation>
       <modules>
