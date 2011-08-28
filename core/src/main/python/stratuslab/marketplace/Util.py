@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 import os
+import re
 
 from stratuslab import Defaults
 
