@@ -27,10 +27,9 @@ from stratuslab.Exceptions import InputException
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab import Defaults
 from stratuslab import Util
+from Util import Util as MarketplaceUtil
 
 class Uploader(object):
-
-    ENVVAR_MARKETPLACE_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
 
     def __init__(self, configHolder = ConfigHolder()):
         self.confHolder = configHolder
@@ -40,16 +39,13 @@ class Uploader(object):
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] <metadata-file>'''
 
-        parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s. %s' % \
-                    (Defaults.marketplaceEndpoint, Uploader.ENVVAR_MARKETPLACE_ENDPOINT),
-                default=None)
+        MarketplaceUtil.addEndpointOption(parser)
+
 
     @staticmethod
     def checkUploadOptions(options, parser):
-        if not options.marketplaceEndpoint:
-            options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, Defaults.marketplaceEndpoint)
-        options.marketplaceEndpoint = re.sub(r"/*$", '', options.marketplaceEndpoint)
+        MarketplaceUtil.checkEndpointOption(options)
+
 
     def upload(self, manifestFilename):
         client = HttpClient()
@@ -61,8 +57,11 @@ class Uploader(object):
         info = ManifestInfo(self.confHolder)
         info.parseManifest(manifest)
         
-        url = '%s/%s' % (self.marketplaceEndpoint, info.identifier)
+        url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, info.identifier)
         client.post(url, manifest)
 
-        finalUrl = '%s/%s/%s/%s' % (self.marketplaceEndpoint, info.identifier, info.email, info.created)
+        finalUrl = MarketplaceUtil.metadataCompleteUrl(self.marketplaceEndpoint, 
+                                                       info.identifier, 
+                                                       info.email, 
+                                                       info.created)
         print finalUrl

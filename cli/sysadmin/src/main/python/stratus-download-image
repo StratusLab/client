@@ -32,8 +32,10 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab import Defaults
 
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
+
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to download machine and disk images from a StratusLab Market-Place.'''
+    '''A command-line program to download machine and disk images from a StratusLab Marketplace.'''
 
     def __init__(self):
         self.uri = None
@@ -46,10 +48,7 @@ class MainProgram(CommandBaseSysadmin):
         
         self.parser.usage = usage
 
-        self.parser.add_option('-e', '--endpoint', dest='endpoint',
-                               help='URL of the root StratusLab Market-Place endpoint (default: %s)' % Defaults.marketplaceEndpoint, 
-                               metavar='URL',
-                               default=Defaults.marketplaceEndpoint)
+        MarketplaceUtil.addEndpointOption(self.parser)
 
         self.parser.add_option('-o', '--output', dest='localImageFilename',
                                help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME, 
@@ -57,6 +56,8 @@ class MainProgram(CommandBaseSysadmin):
                                default=Downloader.LOCAL_IMAGE_FILENAME)
 
         self.options, self.args = self.parser.parse_args()
+
+        MarketplaceUtil.checkEndpointOption(self.options)
 
         self.checkArgumentsLength()
 
@@ -71,8 +72,8 @@ class MainProgram(CommandBaseSysadmin):
         
         self.uri = self.args[0]
 
-        downloder = Downloader(configHolder)
-        imageFilename = downloder.download(self.uri)
+        downloader = Downloader(configHolder)
+        imageFilename = downloader.download(self.uri)
         self.printDetail('Downloaded image to: %s' % imageFilename)
 
 if __name__ == '__main__':
