@@ -216,7 +216,8 @@ class Runner(object):
                     'saveDisk': 'no',
                     'inVmIdsFile': None,
                     'outVmIdsFile': None,
-                    'noCheckImageUrl': False }
+                    'noCheckImageUrl': False,
+                    'msgRecipients' : [] }
         defaultOp.update(CloudEndpoint.options())
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
