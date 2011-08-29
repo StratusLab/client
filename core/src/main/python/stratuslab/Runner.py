@@ -343,8 +343,11 @@ class Runner(object):
         return Runner.NOTIFICATION.format(*values) if (len(values)==5) else ''
 
     def _manageNotifications(self):
-        notificationInfo = map(self._formatRecipient, self.msgRecipients)
-        self.notifications = ('\n'.join(notificationInfo))
+        if self.msgRecipients:
+            notificationInfo = map(self._formatRecipient, self.msgRecipients)
+            self.notifications = ('\n'.join(notificationInfo))
+        else:
+            self.notifications = ''
 
     def runInstance(self):
         self._checkImageExists(self.vm_image)
