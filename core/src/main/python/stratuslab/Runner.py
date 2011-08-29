@@ -106,6 +106,12 @@ class Runner(object):
 
     def _setDiskImageFormat(self):
         useQcowDiskFormat = getattr(self, 'useQcowDiskFormat', False)
+        # if image ID was provided extract disk driver type from manifest
+        if self.vm_image:
+            if not useQcowDiskFormat and not Image.isImageUrl(self.vm_image):
+                image = Image(self.configHolder)
+                self.disk_driver = image.getImageFormatByImageId(self.vm_image)
+                return
         self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
 
     def _setUserKeyIfDefined(self):
@@ -432,7 +438,7 @@ class Runner(object):
         imageObject.checkImageExists(image)
 
     def _prependMarketplaceUrlIfImageId(self, image):
-        if Image.re_compressedImageUrl.match(image):
+        if Image.re_imageUrl.match(image):
             return image
 
         imageId = image

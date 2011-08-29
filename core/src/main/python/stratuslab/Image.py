@@ -25,7 +25,7 @@ import stratuslab.Util as Util
 
 class Image(object):
     
-    re_compressedImageUrl = re.compile('http[s]?://.*\.(gz|bz2)$')
+    re_imageUrl = re.compile('http[s]?://.*\.(img|qco|qcow|qcow2)\.?(gz|bz2)?$')
 
     def __init__(self, configHolder):
         configHolder.assign(self)
@@ -36,12 +36,23 @@ class Image(object):
     def checkImageExists(self, image):
         """image - URL or image ID"""
 
-        if self.re_compressedImageUrl.match(image):
+        if Image.isImageUrl(image):
             imageUrl = image
             self._checkImageByUrl(imageUrl)
         else:
             imageId = image
             self._checkImageByIdInMarketplace(imageId)
+
+    @staticmethod
+    def isImageUrl(imageReference):
+        return Image.re_imageUrl.match(imageReference)
+
+    def getImageFormatByImageId(self, imageId):
+        if Image.isImageUrl(imageId):
+            raise Exceptions.ValidationException('Image ID was expected. Given %s' % imageId)
+        if not self.downloader:
+            self._createDownloader()
+        return self.downloader.getImageElementValue('format', imageId)
             
     def _checkImageByUrl(self, imageUrl):
         try:
