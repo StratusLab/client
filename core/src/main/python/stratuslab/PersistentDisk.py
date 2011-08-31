@@ -59,7 +59,7 @@ class PersistentDisk(object):
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/create' % self.pdiskEndpoint
+        createVolumeUrl = '%s/disks' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
