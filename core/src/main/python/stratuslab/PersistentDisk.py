@@ -71,7 +71,7 @@ class PersistentDisk(object):
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
         deleteVolumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
-        headers, uuid = self.client.delete(deleteVolumeUrl)
+        headers, uuid = self.client.delete(deleteVolumeUrl, accept="application/json")
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
     
