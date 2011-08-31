@@ -43,6 +43,12 @@ class PersistentDisk(object):
     def _getJson(self, url):
         return self.client.get(url, accept="application/json")
         
+    def _postJson(self, url, body, contentType):
+        return self.client.post(url, 
+                                body, 
+                                contentType='application/x-www-form-urlencoded', 
+                                accept="application/json")
+        
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
         listVolUrl = '%s/disks' % self.pdiskEndpoint
@@ -53,26 +59,25 @@ class PersistentDisk(object):
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/api/create' % self.pdiskEndpoint
+        createVolumeUrl = '%s/create' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
-        headers, uuid = self.client.post(createVolumeUrl, urlencode(createVolumeBody), 
-                               'application/x-www-form-urlencoded')
+        headers, uuid = self._postJson(createVolumeUrl, urlencode(createVolumeBody))
         if headers.status == 201:
             return self._getUuidFromJson(uuid)
         self._raiseOnErrors(headers, uuid)
     
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
-        deleteVolumeUrl = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
+        deleteVolumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
         headers, uuid = self.client.delete(deleteVolumeUrl)
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
     
     def volumeExists(self, uuid):
         self._initPDiskConnection()
-        url = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
         headers, _ = self.client.head(url)
         return headers.status == 200
     
@@ -88,7 +93,7 @@ class PersistentDisk(object):
         url = '%s/api/hotattach/%s' % (self.pdiskEndpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
-        headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
+        headers, content = self._postJson(url, urlencode(body))
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
     
@@ -97,7 +102,7 @@ class PersistentDisk(object):
         url = '%s/api/hotdetach/%s' % (self.pdiskEndpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
-        headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
+        headers, content = self._postJson(url, urlencode(body))
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
     
