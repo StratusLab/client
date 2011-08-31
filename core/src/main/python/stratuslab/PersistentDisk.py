@@ -39,11 +39,14 @@ class PersistentDisk(object):
         self.client.setHandleResponse(False)
         self._addCredentials()
         self._buildFQNEndpoint()
+
+    def _getJson(self, url):
+        return self.client.get(url, accept="application/json")
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
-        listVolUrl = '%s/api/disks' % self.pdiskEndpoint
-        headers, jsonDiskList = self.client.get(listVolUrl)
+        listVolUrl = '%s/disks' % self.pdiskEndpoint
+        headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
@@ -75,8 +78,8 @@ class PersistentDisk(object):
     
     def getVolumeUsers(self, uuid):
         self._initPDiskConnection()
-        volumeUrl = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
-        headers, content = self.client.get(volumeUrl)
+        volumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
+        headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
         return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
     
