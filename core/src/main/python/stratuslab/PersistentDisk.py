@@ -43,10 +43,10 @@ class PersistentDisk(object):
     def _getJson(self, url):
         return self.client.get(url, accept="application/json")
         
-    def _postJson(self, url, body, contentType):
+    def _postJson(self, url, body, contentType='application/x-www-form-urlencoded'):
         return self.client.post(url, 
                                 body, 
-                                contentType='application/x-www-form-urlencoded', 
+                                contentType, 
                                 accept="application/json")
         
     def describeVolumes(self, filters={}):
