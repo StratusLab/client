@@ -35,7 +35,7 @@ p12Directory = _globusDirectory
 p12CertificateFile = 'usercert.p12'
 p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
 
-marketplaceEndpoint = 'http://marketplace.stratuslab.eu/metadata'
+marketplaceEndpoint = 'http://marketplace.stratuslab.eu'
 
 apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 
