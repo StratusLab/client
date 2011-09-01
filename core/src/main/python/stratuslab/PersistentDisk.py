@@ -40,7 +40,7 @@ class PersistentDisk(object):
         self._addCredentials()
         self._buildFQNEndpoint()
 
-    def _getJson(self, url):
+    Def _getJson(self, url):
         return self.client.get(url, accept="application/json")
         
     def _postJson(self, url, body, contentType='application/x-www-form-urlencoded'):
@@ -90,7 +90,7 @@ class PersistentDisk(object):
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/api/hotattach/%s' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s/mounts' % (self.pdiskEndpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
         headers, content = self._postJson(url, urlencode(body))
@@ -99,10 +99,8 @@ class PersistentDisk(object):
     
     def hotDetach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/api/hotdetach/%s' % (self.pdiskEndpoint, uuid)
-        body = {'node': node,
-                'vm_id': vmId }
-        headers, content = self._postJson(url, urlencode(body))
+        url = '%s/disks/%s/%s-%s' % (self.pdiskEndpoint, uuid, vmId, node)
+        headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
     
