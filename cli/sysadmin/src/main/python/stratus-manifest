@@ -4,6 +4,7 @@ import re
 import os
 import sys
 from optparse import OptionParser
+import stratuslab.Util as Util
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -43,7 +44,8 @@ def main():
     configHolder = ConfigHolder()
     
     try:
-        marketplaceEndpoint, imageId = imageEndpoint.rsplit('/', 1)
+        _uri, imageId = imageEndpoint.rsplit('/', 1)
+        marketplaceEndpoint = Util.getProtoHostnamePortFromUri(_uri)
     except ValueError:
         _exitWithUsage()
 
