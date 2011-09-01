@@ -34,6 +34,8 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import InputException
 from stratuslab.Exceptions import ValidationException
 
+from Util import Util as MarketplaceUtil
+
 etree = Util.importETree()
 
 class Downloader(object):
@@ -56,7 +58,7 @@ class Downloader(object):
     def _getManifest(self, imageId, tempMetadataFilename):
         """Return manifest as ManifestInfo object.
         """
-        url = self.constructManifestUrl(imageId)
+        url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, imageId)
         try:
             return self.__getManifest(url, tempMetadataFilename)
         except:
@@ -147,11 +149,6 @@ class Downloader(object):
         os.remove(tempMetadataFilename)
 
         return self.localImageFilename
-
-    def constructManifestUrl(self, uri):
-        endpoint = Util.constructEndPoint(self.marketplaceEndpoint, 'http', '80', 'images')
-        url = endpoint + '/' + uri
-        return url
 
     def _loadDom(self, filename):
         file = open(filename).read()

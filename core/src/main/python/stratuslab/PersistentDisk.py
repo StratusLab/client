@@ -39,44 +39,52 @@ class PersistentDisk(object):
         self.client.setHandleResponse(False)
         self._addCredentials()
         self._buildFQNEndpoint()
+
+    def _getJson(self, url):
+        return self.client.get(url, accept="application/json")
+        
+    def _postJson(self, url, body, contentType='application/x-www-form-urlencoded'):
+        return self.client.post(url, 
+                                body, 
+                                contentType, 
+                                accept="application/json")
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
-        listVolUrl = '%s/api/disks' % self.pdiskEndpoint
-        headers, jsonDiskList = self.client.get(listVolUrl)
+        listVolUrl = '%s/disks' % self.pdiskEndpoint
+        headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/api/create' % self.pdiskEndpoint
+        createVolumeUrl = '%s/disks' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
-        headers, uuid = self.client.post(createVolumeUrl, urlencode(createVolumeBody), 
-                               'application/x-www-form-urlencoded')
+        headers, uuid = self._postJson(createVolumeUrl, urlencode(createVolumeBody))
         if headers.status == 201:
             return self._getUuidFromJson(uuid)
         self._raiseOnErrors(headers, uuid)
     
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
-        deleteVolumeUrl = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
-        headers, uuid = self.client.delete(deleteVolumeUrl)
+        deleteVolumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
+        headers, uuid = self.client.delete(deleteVolumeUrl, accept="application/json")
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
     
     def volumeExists(self, uuid):
         self._initPDiskConnection()
-        url = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
         headers, _ = self.client.head(url)
         return headers.status == 200
     
     def getVolumeUsers(self, uuid):
         self._initPDiskConnection()
-        volumeUrl = '%s/api/disks/%s' % (self.pdiskEndpoint, uuid)
-        headers, content = self.client.get(volumeUrl)
+        volumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
+        headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
         return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
     
@@ -85,7 +93,7 @@ class PersistentDisk(object):
         url = '%s/api/hotattach/%s' % (self.pdiskEndpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
-        headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
+        headers, content = self._postJson(url, urlencode(body))
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
     
@@ -94,7 +102,7 @@ class PersistentDisk(object):
         url = '%s/api/hotdetach/%s' % (self.pdiskEndpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
-        headers, content = self.client.post(url, urlencode(body), 'application/x-www-form-urlencoded')
+        headers, content = self._postJson(url, urlencode(body))
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
     

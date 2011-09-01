@@ -24,7 +24,7 @@ password = password
 #pem_certificate = <home>/.globus/usercert.pem
 
 # Marketplace
-#marketplace_endpoint = http://appliances.stratuslab.eu/marketplace/metadata
+#marketplace_endpoint = http://marketplace.stratuslab.eu
 
 # Appliance repository
 #apprepo_endpoint = http://appliances.stratuslab.org/images

@@ -43,7 +43,7 @@ class MainProgram(CommandBaseSysadmin):
     def parse(self):
         usage = '''%prog [options] <identifier-endpoint> <policy-config>
         
-<identifier-endpoint>    Marketplace endpoint + Image identifier(example: http://appliances.stratuslab.eu/marketplace/metadata/GOaxJFdoEXvqAm9ArJgnZ0_ky6F)   
+<identifier-endpoint>    Marketplace endpoint + Image identifier(example: http://marketplace.stratuslab.eu/metadata/GOaxJFdoEXvqAm9ArJgnZ0_ky6F)   
 <policy-config>    Policy configuration file'''
 
         self.parser.usage = usage

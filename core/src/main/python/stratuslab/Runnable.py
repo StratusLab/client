@@ -26,6 +26,8 @@ from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
 from stratuslab import Defaults
 
+from marketplace.Util import Util as MarketplaceUtil
+
 class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
 
@@ -73,10 +75,7 @@ class Runnable(AuthnCommand):
                 help='IP to listen on',
                 default=defaultOptions['vncListen'])
 
-        self.parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s. %s' % (Defaults.marketplaceEndpoint,
-                                                                Uploader.ENVVAR_MARKETPLACE_ENDPOINT),
-                default=None)
+        MarketplaceUtil.addEndpointOption(self.parser)
 
         AuthnCommand.addCloudEndpointOptions(self.parser)
 
@@ -112,9 +111,7 @@ class Runnable(AuthnCommand):
         if self.options.vncListen and not Util.validateIp(self.options.vncListen):
             self.parser.error('VNC listen IP is not valid')
 
-        if not self.options.marketplaceEndpoint:
-            self.options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, 
-                                                         Defaults.marketplaceEndpoint) 
+        MarketplaceUtil.checkEndpointOption(self.options)
 
         super(Runnable, self).checkOptions()
 

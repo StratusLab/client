@@ -32,13 +32,13 @@ from ConfigHolder import ConfigHolder
 from Compressor import Compressor
 
 from stratuslab import Defaults
+from marketplace.Util import Util as MarketplaceUtil
 import marketplace.Uploader
 
 etree = Util.importETree()
 
 class Uploader(object):
 
-    ENVVAR_MARKETPLACE_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
     ENVVAR_APPREPO_ENDPOINT = 'STRATUSLAB_APPREPO_ENDPOINT'
     
     APPREPO_FILENAMESTRUCTURE_ELEMENTS = ('type', 'os', 'arch', 'version', 'osversion', 'compression')
@@ -75,15 +75,12 @@ class Uploader(object):
                 help='Also upload the metadata file to the marketplace',
                 default=False, action='store_true')
 
-        parser.add_option('--marketplace-endpoint', dest='marketplaceEndpoint',
-                help='Market place endpoint. Default %s. %s' % \
-                    (Defaults.marketplaceEndpoint, Uploader.ENVVAR_MARKETPLACE_ENDPOINT),
-                default=None)
-
         parser.add_option('--marketplace-only', dest='withMarketPlaceOnly',
                 help='Only upload the metadata file to the marketplace, don\'t upload the image to the appliances repository',
                 action='store_true',
                 default=False)
+
+        MarketplaceUtil.addEndpointOption(parser)
 
         Uploader.buildAppRepoOptionsParser(parser)
 
@@ -108,8 +105,8 @@ class Uploader(object):
 
         if options.marketplaceEndpoint:
             options.withMarketPlace = True
-        if not options.marketplaceEndpoint:
-            options.marketplaceEndpoint = os.getenv(Uploader.ENVVAR_MARKETPLACE_ENDPOINT, Defaults.marketplaceEndpoint)                    
+
+        MarketplaceUtil.checkEndpointOption(options)
 
         if options.withMarketPlaceOnly:
             options.withMarketPlace = True
