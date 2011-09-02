@@ -53,5 +53,7 @@
 
         <dcterms:publisher>%(publisher)s</dcterms:publisher>
 
+        <slterms:deprecated>%(deprecated)s</slterms:deprecated>
+
     </rdf:Description>
 </rdf:RDF>
