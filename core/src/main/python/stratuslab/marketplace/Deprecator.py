@@ -42,7 +42,11 @@ class Deprecator(object):
         P12Certificate.addOptions(parser)
 
         parser.add_option('--email', dest='email',
-                help='email address if not in certificate',
+                help='email address of endorser of metadata entry',
+                default='')
+
+        parser.add_option('--created', dest='created',
+                help='date of metadata entry to be deprecated, latest entry will be deprecated if not provided',
                 default='')
 
         parser.add_option('--reason', dest='reason',
@@ -54,7 +58,10 @@ class Deprecator(object):
         MarketplaceUtil.checkEndpointOption(options)
 
         if not P12Certificate.checkOptions(options):
-            self.parser.error('Missing credentials. Please provide %s' % P12Certificate.optionString)
+            parser.error('Missing credentials. Please provide %s' % P12Certificate.optionString)
+
+        if not options.email:
+            parser.error('Missing email address. Please provide email of endorser')
 
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
@@ -70,6 +77,10 @@ class Deprecator(object):
         tempMetadataFilename = tempfile.mktemp()
         tempDeprecatedMetadataFilename = tempfile.mktemp()
         try:
+            imageURI = imageId + '/' + self.email
+            if len(self.created) != 0:
+                imageURI = imageURI + '/' + self.created
+
             self.manifestObject = self.downloader._getManifest(imageId, tempMetadataFilename)
             self.manifestObject.__dict__.update({'deprecated':self._getDeprecatedAsXml()})
             manifestText = self.manifestObject.build()
