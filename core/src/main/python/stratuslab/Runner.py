@@ -156,6 +156,7 @@ class Runner(object):
     def getInstanceType():
         types = {
             # name      :   (cpu, ram, swap)
+            't1.micro'  :   (1, 128, 512),
             'm1.small'  :   (1, 128, 1024),
             'c1.medium' :   (1, 256, 1024),
             'm1.large'  :   (2, 512, 1024),
