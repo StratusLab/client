@@ -51,7 +51,7 @@ class PersistentDisk(object):
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
-        listVolUrl = '%s/disks' % self.pdiskEndpoint
+        listVolUrl = '%s/disks/' % self.pdiskEndpoint
         headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
         disks = json.loads(jsonDiskList)
@@ -59,7 +59,7 @@ class PersistentDisk(object):
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/disks' % self.pdiskEndpoint
+        createVolumeUrl = '%s/disks/' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
