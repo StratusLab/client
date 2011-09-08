@@ -30,6 +30,7 @@ from stratuslab.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint, PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
+from marketplace.Util import Util as MarketplaceUtil
 
 class Runner(object):
 
@@ -224,7 +225,8 @@ class Runner(object):
                     'inVmIdsFile': None,
                     'outVmIdsFile': None,
                     'noCheckImageUrl': False,
-                    'msgRecipients' : [] }
+                    'msgRecipients' : [],
+                    'marketplaceEndpoint' : Defaults.marketplaceEndpoint }
         defaultOp.update(CloudEndpoint.options())
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
@@ -443,8 +445,7 @@ class Runner(object):
         imageObject.checkImageExists(image)
 
     def _prependMarketplaceUrlIfImageId(self, image):
-        if Image.re_imageUrl.match(image):
+        if Image.re_imageId.match(image):
+            return MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, image)
+        else:
             return image
-
-        imageId = image
-        return '%s/%s' % (self.marketplaceEndpoint, imageId)
