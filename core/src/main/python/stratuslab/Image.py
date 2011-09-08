@@ -26,6 +26,7 @@ import stratuslab.Util as Util
 class Image(object):
     
     re_imageUrl = re.compile('http[s]?://.*\.(img|qco|qcow|qcow2)\.?(gz|bz2)?$')
+    re_imageId = re.compile('^[A-Za-z0-9_-]{27}$')
 
     def __init__(self, configHolder):
         configHolder.assign(self)
@@ -46,6 +47,10 @@ class Image(object):
     @staticmethod
     def isImageUrl(imageReference):
         return Image.re_imageUrl.match(imageReference)
+
+    @staticmethod
+    def isImageId(imageReference):
+        return Image.re_imageId.match(imageReference)
 
     def getImageFormatByImageId(self, imageId):
         if Image.isImageUrl(imageId):

@@ -108,7 +108,7 @@ class Runner(object):
         useQcowDiskFormat = getattr(self, 'useQcowDiskFormat', False)
         # if image ID was provided extract disk driver type from manifest
         if self.vm_image:
-            if not useQcowDiskFormat and not Image.isImageUrl(self.vm_image):
+            if not useQcowDiskFormat and Image.isImageId(self.vm_image):
                 image = Image(self.configHolder)
                 self.disk_driver = image.getImageFormatByImageId(self.vm_image)
                 return

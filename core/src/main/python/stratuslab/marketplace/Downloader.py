@@ -81,7 +81,7 @@ class Downloader(object):
         
         try:
             manifestInfo.parseManifestFromFile(tempMetadataFilename)
-        except SyntaxError, ex:
+        except ExecutionException, ex:
             raise InputException('Error parsing the metadata corresponding to url %s, with detail %s' % (url, ex))
         return manifestInfo
 
