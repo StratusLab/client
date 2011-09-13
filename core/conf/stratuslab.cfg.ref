@@ -255,3 +255,6 @@ registration_mail_reply_user =
 registration_mail_password =
 registration_mail_ssl = True
 registration_mail_debug = True
+
+[caching]
+caching = False
