@@ -52,6 +52,7 @@
         <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
 
         <dcterms:publisher>%(publisher)s</dcterms:publisher>
+        %(deprecated)s
 
     </rdf:Description>
 </rdf:RDF>

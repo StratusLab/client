@@ -530,6 +530,12 @@ def getProtoFromUri(uri):
 def getProtoHostnameFromUri(uri):
     return ''.join(parseUri(uri)[:2])
 
+def getProtoHostnamePortFromUri(uri):
+    groups = parseUri(uri)
+    protoHost = ''.join(groups[:2])
+    port = (groups[2] and ':%s'%groups[2]) or ''
+    return protoHost + port
+
 def getTimeInIso8601():
     "Return current time in iso8601 format."
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()))

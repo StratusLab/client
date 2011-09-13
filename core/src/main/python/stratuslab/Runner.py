@@ -30,6 +30,7 @@ from stratuslab.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint, PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
+from marketplace.Util import Util as MarketplaceUtil
 
 class Runner(object):
 
@@ -106,6 +107,12 @@ class Runner(object):
 
     def _setDiskImageFormat(self):
         useQcowDiskFormat = getattr(self, 'useQcowDiskFormat', False)
+        # if image ID was provided extract disk driver type from manifest
+        if self.vm_image:
+            if not useQcowDiskFormat and Image.isImageId(self.vm_image):
+                image = Image(self.configHolder)
+                self.disk_driver = image.getImageFormatByImageId(self.vm_image)
+                return
         self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
 
     def _setUserKeyIfDefined(self):
@@ -150,6 +157,7 @@ class Runner(object):
     def getInstanceType():
         types = {
             # name      :   (cpu, ram, swap)
+            't1.micro'  :   (1, 128, 512),
             'm1.small'  :   (1, 128, 1024),
             'c1.medium' :   (1, 256, 1024),
             'm1.large'  :   (2, 512, 1024),
@@ -217,7 +225,8 @@ class Runner(object):
                     'inVmIdsFile': None,
                     'outVmIdsFile': None,
                     'noCheckImageUrl': False,
-                    'msgRecipients' : [] }
+                    'msgRecipients' : [],
+                    'marketplaceEndpoint' : Defaults.marketplaceEndpoint }
         defaultOp.update(CloudEndpoint.options())
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
@@ -436,8 +445,7 @@ class Runner(object):
         imageObject.checkImageExists(image)
 
     def _prependMarketplaceUrlIfImageId(self, image):
-        if Image.re_compressedImageUrl.match(image):
+        if Image.re_imageId.match(image):
+            return MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, image)
+        else:
             return image
-
-        imageId = image
-        return '%s/%s' % (self.marketplaceEndpoint, imageId)

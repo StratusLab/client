@@ -68,6 +68,8 @@ class ManifestInfo(object):
         self.comment = ''
         self.filename = '' # filename of compressed image (old manifest)
 
+        self.deprecated = ''
+
         self.locations = [] # list of image URIs
         self.locations_xml = '<slterms:location>%(location)s</slterms:location>'
 

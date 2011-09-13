@@ -9,13 +9,14 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.ConfigHolder import ConfigHolder
+import stratuslab.Util as Util
 
 USAGE = """Usage: %prog --get-element <ELEMENT> <marketplace image URL>
 <marketplace image URL> - a valid URL. (http://example.com/dir/imageID)"""
 
 parser = OptionParser(usage=USAGE)
 
-def _exitWithUsage(msg):
+def _exitWithUsage(msg=''):
     if msg:
         print >> sys.stderr, msg
     print >> sys.stderr, parser.usage
@@ -43,7 +44,8 @@ def main():
     configHolder = ConfigHolder()
     
     try:
-        marketplaceEndpoint, imageId = imageEndpoint.rsplit('/', 1)
+        _uri, imageId = imageEndpoint.rsplit('/', 1)
+        marketplaceEndpoint = Util.getProtoHostnamePortFromUri(_uri)
     except ValueError:
         _exitWithUsage()
 
