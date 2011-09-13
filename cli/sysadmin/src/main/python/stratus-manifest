@@ -16,7 +16,7 @@ USAGE = """Usage: %prog --get-element <ELEMENT> <marketplace image URL>
 
 parser = OptionParser(usage=USAGE)
 
-def _exitWithUsage(msg):
+def _exitWithUsage(msg=''):
     if msg:
         print >> sys.stderr, msg
     print >> sys.stderr, parser.usage
