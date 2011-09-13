@@ -99,7 +99,7 @@ class PersistentDisk(object):
     
     def hotDetach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s/%s-%s' % (self.pdiskEndpoint, uuid, vmId, node)
+        url = '%s/disks/%s/mounts/%s-%s' % (self.pdiskEndpoint, uuid, vmId, node)
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
