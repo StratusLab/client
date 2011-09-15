@@ -739,7 +739,7 @@ class Testor(unittest.TestCase):
         self._stopVm(runner)
         self.vmIds = []
         # Wait for the pdisk hook to be executed
-        sleep(10)
+        sleep(20)
     
     def _formatDisk(self, runner, device):
         Util.printStep('Formating device %s' % device)

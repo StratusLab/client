@@ -32,9 +32,9 @@ from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.Registration import Registration
-from stratuslab import Defaults
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
+from stratuslab.installator.CachingConfigurator import CachingConfigurator
 
 class BaseInstallator(object):
 
@@ -55,6 +55,8 @@ class BaseInstallator(object):
         self.onedTpl = os.path.join(getTemplateDir(), 'oned.conf.tpl')
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
+        self.validateMetadata = False
+        self.caching = False
 
     def runInstall(self, configHolder):
         # TODO: fix the logs for apprepo installs
@@ -208,6 +210,10 @@ class BaseInstallator(object):
         printStep('Applying local policies')
         self._configurePolicies()
 
+        self._configureMarketPlacePolicyValidation()
+        
+        self._configureCaching()
+
         printStep('Starting cloud')
         self._startCloudSystem()
 
@@ -215,8 +221,7 @@ class BaseInstallator(object):
         self._addDefaultNetworks()
 
         self._configureRegistrationApplication()
-        self._configureMarketPlacePolicyValidation()
-        
+
         if self.persistentDisk:
             self._runInstallPersistentDisk()
         
@@ -272,12 +277,23 @@ class BaseInstallator(object):
         self.frontend.configureCloudProxyService()
 
     def _configureRegistrationApplication(self):
-        if(self.registration):
+        if self._isTrue(self.registration):
             Registration(self.configHolder).run()
 
     def _configureMarketPlacePolicyValidation(self):
-        if(self.validateMetadata):
+        if self._isTrue(self.validateMetadata):
             PolicyValidator(self.configHolder).run()
+        else:
+            PolicyValidator(self.configHolder).resetOneConfig()
+
+    def _configureCaching(self):
+        if self._isTrue(self.caching):
+            CachingConfigurator(self.configHolder).run()
+        else:
+            CachingConfigurator(self.configHolder).resetOneConfig()
+
+    def _isTrue(self, value):
+        return (value == 'True' or value == True) or False
 
     def _configureFireWall(self):
         self.frontend.configureFireWall()
