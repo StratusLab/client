@@ -24,6 +24,7 @@ import time
 import unittest
 import urllib2
 import re
+import os
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
@@ -57,7 +58,13 @@ class Testor(unittest.TestCase):
         self.ubuntuImg = 'http://appliances.stratuslab.eu/images/base/ubuntu-10.04-amd64-base/1.3/ubuntu-10.04-amd64-base-1.3.img.gz'
 
     def tearDown(self):
-        pass
+        self._unlinkFiles([self.sshKey, self.sshKeyPub])
+
+    def _unlinkFiles(self, filesList):
+        for f in filesList:
+            try:
+                os.unlink(f)
+            except: pass
 
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)
@@ -676,7 +683,8 @@ class Testor(unittest.TestCase):
             availableUserAfterAttach, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterAttach != (availableUserBeforeAttach-1):
-                self.fail('Available users on persistent disk have to decrease by one')
+                self.fail('Available users on persistent disk have to decrease by one; before=%s, after=%s' % 
+                          (availableUserBeforeAttach, availableUserAfterAttach))
             
             self._formatDisk(runner, pdiskDevice % device)
             self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
@@ -689,7 +697,8 @@ class Testor(unittest.TestCase):
             availableUserAfterDetach, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterDetach != availableUserBeforeAttach:
-                self.fail('Available users on persistent disk have to be the same as when VM has started')
+                self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' %
+                          (availableUserBeforeAttach, availableUserAfterDetach))
             
             printStep('Re-attaching pdisk to VM')
             device = pdisk.hotAttach(node, vmId, diskUUID)
@@ -702,7 +711,8 @@ class Testor(unittest.TestCase):
             availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterStop != availableUserBeforeAttach:
-                self.fail('Available users on persistent disk have to be the same as when VM has started')
+                self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' % 
+                          (availableUserBeforeAttach, availableUserAfterStop))
             
             Util.printAction('Removing persistent disk...')
             pdisk.deleteVolume(diskUUID)
@@ -717,7 +727,7 @@ class Testor(unittest.TestCase):
         runner = self._createRunner(persistentDiskUUID=pdisk, image=image)
         vmIds = runner.runInstance()
         if len(vmIds) < 1:
-            self.fail('An error occurred will starting a VM')
+            self.fail('An error occurred while starting a VM')
         self.vmIds.extend(vmIds)
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner, '/bin/true')
@@ -729,7 +739,7 @@ class Testor(unittest.TestCase):
         self._stopVm(runner)
         self.vmIds = []
         # Wait for the pdisk hook to be executed
-        sleep(10)
+        sleep(20)
     
     def _formatDisk(self, runner, device):
         Util.printStep('Formating device %s' % device)

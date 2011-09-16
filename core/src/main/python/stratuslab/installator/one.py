@@ -24,13 +24,14 @@ from stratuslab.Util import fileGetContent
 import stratuslab.Util as Util
 from stratuslab.Exceptions import OneException
 from stratuslab import Defaults
+from stratuslab.installator.OneDefaults import OneDefaults
 
 class OneInstallator(BaseInstallator):
     
     def __init__(self):
         super(OneInstallator, self).__init__()
-        self.cloudConfDir = '/etc/one/'
-        self.cloudConfFile = self.cloudConfDir + 'oned.conf'
+        self.cloudConfDir = OneDefaults.CLOUD_CONF_DIR
+        self.cloudConfFile = OneDefaults.CLOUD_CONF_FILE
 
     def _addCloudNode(self):
         return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)

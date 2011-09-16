@@ -24,12 +24,14 @@ from stratuslab import Util
 from stratuslab import Defaults
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.installator.OneDefaults import OneDefaults
 
 class PolicyValidator(object):
     
     TEMPLATE_CFG = os.path.join(Util.getTemplateDir(), 'policy.cfg.tpl')
     CONFIG = os.path.join(Defaults.ETC_DIR, Policy.POLICY_CFG) 
     CONFIG_SAV = CONFIG + '.sav'
+    ONE_SCRIPTS_CONFIGS = [os.path.join(OneDefaults.CLOUD_CONF_DIR,'tm_ssh/tm_ssh.conf')]
 
     def __init__(self, configHolder=ConfigHolder()):
         configHolder.assign(self)
@@ -38,6 +40,8 @@ class PolicyValidator(object):
         self._configure()
         
     def _configure(self):
+        self._addPolicyToOneConfig()
+
         if self._backupConfigFileExists():
             Util.printWarning("Policy validation backup file %s already exists, skipping configuration" % PolicyValidator.CONFIG_SAV)
             return
@@ -49,6 +53,25 @@ class PolicyValidator(object):
         Util.filePutContent(PolicyValidator.CONFIG,
                             Util.fileGetContent(PolicyValidator.TEMPLATE_CFG) % self.__dict__)
 
+    def resetOneConfig(self):
+        Util.printStep('Reseting ONE extension policy configuration')
+        # Hack... try twice so that we don't mask the script for caching
+        sedCmdsPart = ['s/tm_clone_policy.sh/tm_clone.sh/g ',
+                       's/tm_clone_policy_caching.sh/tm_clone_caching.sh/g ']
+        self._updateOneConfig(sedCmdsPart)
+
+    def _addPolicyToOneConfig(self):
+        Util.printStep('Updating ONE extension policy configuration')
+        # Hack... try twice so that we don't mask the script for caching
+        sedCmdsPart = ['s/tm_clone.sh/tm_clone_policy.sh/g ',
+                       's/tm_clone_caching.sh/tm_clone_policy_caching.sh/g']
+        self._updateOneConfig(sedCmdsPart)
+
+    def _updateOneConfig(self, sedCmdsPart):
+        for config in PolicyValidator.ONE_SCRIPTS_CONFIGS:
+            cmd = 'sed -i ' + ' '.join(["-e '" + part + "'" for part in sedCmdsPart]) + ' ' + config
+            self._execute(cmd)
+
     def _backupConfigFileExists(self):
         return os.path.exists(PolicyValidator.CONFIG_SAV)
     
@@ -56,4 +79,5 @@ class PolicyValidator(object):
         if os.path.exists(PolicyValidator.CONFIG):
             shutil.move(PolicyValidator.CONFIG, PolicyValidator.CONFIG_SAV)
     
-    
+    def _execute(self, cmd):
+        return Util.execute(cmd, shell=True)

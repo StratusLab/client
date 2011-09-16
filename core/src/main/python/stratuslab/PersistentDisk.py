@@ -51,7 +51,7 @@ class PersistentDisk(object):
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
-        listVolUrl = '%s/disks' % self.pdiskEndpoint
+        listVolUrl = '%s/disks/' % self.pdiskEndpoint
         headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
         disks = json.loads(jsonDiskList)
@@ -59,7 +59,7 @@ class PersistentDisk(object):
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/disks' % self.pdiskEndpoint
+        createVolumeUrl = '%s/disks/' % self.pdiskEndpoint
         createVolumeBody = { 'size': size, 
                              'tag': tag, 
                              'visibility': self._getVisibilityFromBool(visibility)}
@@ -70,27 +70,27 @@ class PersistentDisk(object):
     
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
-        deleteVolumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
+        deleteVolumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
         headers, uuid = self.client.delete(deleteVolumeUrl, accept="application/json")
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
     
     def volumeExists(self, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
         headers, _ = self.client.head(url)
         return headers.status == 200
     
     def getVolumeUsers(self, uuid):
         self._initPDiskConnection()
-        volumeUrl = '%s/disks/%s' % (self.pdiskEndpoint, uuid)
+        volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
         return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s/mounts' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s/mounts/' % (self.pdiskEndpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
         headers, content = self._postJson(url, urlencode(body))
@@ -99,7 +99,7 @@ class PersistentDisk(object):
     
     def hotDetach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s/%s-%s' % (self.pdiskEndpoint, uuid, vmId, node)
+        url = '%s/disks/%s/mounts/%s-%s' % (self.pdiskEndpoint, uuid, vmId, node)
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
