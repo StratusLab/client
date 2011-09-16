@@ -109,6 +109,10 @@
 
 	  <buildarch>noarch</buildarch>
 
+    <requires>
+      <require>python-ldap</require>
+    </requires>
+
 	  <mappings>
 	    <mapping>
 	      <directory>/usr/bin/</directory>
