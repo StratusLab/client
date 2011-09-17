@@ -27,6 +27,7 @@ import stratuslab.Util as Util
 from ManifestInfo import ManifestInfo
 from Exceptions import InputException
 from Exceptions import NetworkException
+from Exceptions import ExecutionException
 from Signator import Signator
 from ConfigHolder import ConfigHolder
 from Compressor import Compressor
@@ -207,7 +208,9 @@ class Uploader(object):
     def _signManifest(self):
         configHolder = ConfigHolder(self.__dict__)
         signator = Signator(self.manifestFile, configHolder)
-        signator.sign()
+        rc = signator.sign()
+        if rc:
+            raise ExecutionException('Failed to sign manifest.')
         self.manifestFile = signator.outputManifestFile
 
     def _uploadManifest(self):
