@@ -24,6 +24,7 @@ import time
 import unittest
 import urllib2
 import re
+import os
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
@@ -57,7 +58,13 @@ class Testor(unittest.TestCase):
         self.ubuntuImg = 'http://appliances.stratuslab.eu/images/base/ubuntu-10.04-amd64-base/1.3/ubuntu-10.04-amd64-base-1.3.img.gz'
 
     def tearDown(self):
-        pass
+        self._unlinkFiles([self.sshKey, self.sshKeyPub])
+
+    def _unlinkFiles(self, filesList):
+        for f in filesList:
+            try:
+                os.unlink(f)
+            except: pass
 
     def __init__(self, methodName='dummy'):
         super(Testor, self).__init__(methodName)

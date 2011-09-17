@@ -55,3 +55,7 @@ class Util(object):
     @staticmethod
     def metadataCompleteUrl(endpoint, identifier, email, created):
         return '%s/metadata/%s/%s/%s' % (endpoint, identifier, email, created)
+
+    @staticmethod
+    def metadataEndpointUrl(endpoint):
+        return '%s/metadata' % endpoint
