@@ -161,6 +161,7 @@ class Uploader(object):
         self.compression = ''
         self.repoStructure = ''
         self.repoFilename = ''
+        self.applianceUri = ''
 
         if not hasattr(self, 'remoteImage'):
             self.remoteImage = False
@@ -184,6 +185,9 @@ class Uploader(object):
             Util.printStep('Uploading appliance')
             self._uploadAppliance()
 
+            Util.printStep('Updating manifest')
+            self._updateManifest()
+
             Util.printStep('Signing manifest')
             self._signManifest()
 
@@ -197,13 +201,15 @@ class Uploader(object):
         print '\n\t%s' % '\n\t'.join(self.uploadedFile)
 
     def _uploadAppliance(self):
-        applianceUri = '%s/%s' % (self.repoStructure, self.repoFilename)
+        self.applianceUri = '%s/%s' % (self.repoStructure, self.repoFilename)
         if self.remoteImage:
-            self.uploadFileFromRemoteServer(self.appliance, applianceUri)
+            self.uploadFileFromRemoteServer(self.appliance, self.applianceUri)
         else:
-            self.uploadFile(self.appliance, applianceUri)
+            self.uploadFile(self.appliance, self.applianceUri)
 
-        self._addLocationToManifest('%s/%s' % (self.apprepoEndpoint, applianceUri))
+    def _updateManifest(self):
+        self._addLocationToManifest('%s/%s' % (self.apprepoEndpoint, 
+                                               self.applianceUri))
 
     def _signManifest(self):
         configHolder = ConfigHolder(self.__dict__)
@@ -383,40 +389,12 @@ class Uploader(object):
         self._addCompressionFormatToManifest()
 
     def _addCompressionFormatToManifest(self):
-        # TODO: extract _addToManifest()
-        xml = etree.ElementTree()
-        docElement = xml.parse(self.manifestFile)
-
-        compressionElem = xml.find('.//{%s}compression' % ManifestInfo.NS_DCTERMS)
-        if compressionElem and compressionElem.text != None:
-            Util.printWarning("compression already defined in the manifest file with value: " + compressionElem.text)
-        else:
-            compressionElem = etree.Element('{%s}compression' % ManifestInfo.NS_DCTERMS)
-            descriptionElement = docElement.find('.//{%s}Description' % ManifestInfo.NS_RDF)
-            descriptionElement.append(compressionElem)
-
-        compressionElem.text = self.compressionFormat
-        xml.write(self.manifestFile)
+        ManifestInfo.addElementToManifestFile(self.manifestFile, 
+                                          'compression', self.compressionFormat)
 
     def _addLocationToManifest(self, applianceUri):
-        # TODO: extract _addToManifest()
-        xml = etree.ElementTree()
-        docElement = xml.parse(self.manifestFile)
-
-        locationElem = xml.find('.//{%s}location' % ManifestInfo.NS_SLTERMS)
-
-        if locationElem and locationElem.text != None:
-            Util.printWarning("<location> already defined in the manifest file with value: " +
-                        locationElem.text)
-        else:
-            locationElem = etree.Element('{%s}location' % ManifestInfo.NS_SLTERMS)
-            descriptionElement = docElement.find('.//{%s}Description' % ManifestInfo.NS_RDF)
-            descriptionElement.append(locationElem)
-
-        locationElem.text = applianceUri
-        xml.write(self.manifestFile)
+        ManifestInfo.addElementToManifestFile(self.manifestFile, 'location', applianceUri)
 
     def _uploadMarketPlaceManifest(self):
         uploader = marketplace.Uploader.Uploader(self.configHolder)
         uploader.upload(self.manifestFile)
-        

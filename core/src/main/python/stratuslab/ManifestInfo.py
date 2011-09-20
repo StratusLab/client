@@ -108,6 +108,33 @@ class ManifestInfo(object):
                              ('comment','description',NS_DCTERMS,None),
                              ('version','version',NS_SLTERMS,None))
 
+    @staticmethod
+    def addElementToManifest(root, elementName, value):
+        elems = root.findall('.//{%s}%s' % (ManifestInfo.NS_SLTERMS, elementName))
+
+        if elems:
+            # Check if already present. If yes, do nothing.
+            for elem in elems:
+                if elem.text and elem.text == value:
+                    Util.printWarning("Element '%s' with value '%s' already defined in the manifest. Skipping addition of the element." % \
+                                      (elementName, elem.text))
+                    return
+
+        elem = etree.Element('{%s}%s' % (ManifestInfo.NS_SLTERMS, elementName))
+        elem.text = value
+
+        descriptionElement = root.find('.//{%s}Description' % ManifestInfo.NS_RDF)
+        descriptionElement.append(elem)
+
+    @staticmethod
+    def addElementToManifestFile(manifestfile, elementName, value):
+        """TODO: check if given element is a valid one according to schema."""
+        root = etree.ElementTree(file=manifestfile)
+
+        ManifestInfo.addElementToManifest(root, elementName, value)
+
+        root.write(manifestfile)
+
     def parseManifest(self, manifest):
         try:
             xml = etree.fromstring(manifest)
