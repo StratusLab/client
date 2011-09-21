@@ -152,7 +152,7 @@ class CommandBaseUser(CommandBase):
 
         The following key/attribute/env.var. naming is assumed:
 
-         configuraion file | class attribute | environment variable
+         configuration file | class attribute | environment variable
          ----------------- + --------------- + --------------------
          p12_certificate   | p12Certificate  | STRATUSLAB_P12_CERTIFICATE
         """
