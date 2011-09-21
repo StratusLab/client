@@ -69,9 +69,10 @@ class BaseInstallator(object):
         self.options = configHolder.options
         self.config = configHolder.config
 
-        if self.nodeAddr and not self.installPersistentDisk:
+        if self.nodeAddr:
             printAction('Node(s) installation')
             self._runInstallNodes()
+            return
         elif self.appRepoAddr:
             printAction('Appliance Repository installation')
             self._runInstallAppRepo()
@@ -86,9 +87,6 @@ class BaseInstallator(object):
             printAction('Claudia installation')
             self._runInstallClaudia()
             return
-        elif self.installPersistentDisk:
-            printAction('Persistent disk storage installation')
-            self._runInstallPersistentDisk()
         else:
             printAction('Frontend installation')
             self._runInstallFrontend()
@@ -137,8 +135,8 @@ class BaseInstallator(object):
         printStep('Adding node to cloud')
         self._addCloudNode()
         
-        if self.persistentDisk:
-            self._runInstallPersistentDisk()
+        if self._isTrue(self.persistentDisk):
+            self._runInstallNodePersistentDisk()
 
         if self.hypervisor == 'xen':
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
@@ -165,7 +163,6 @@ class BaseInstallator(object):
     def _runInstallAppRepo(self):
         appRepo = AppRepo(self.configHolder)
         appRepo.run()
-
 
     def _runInstallWebMonitor(self):
         webMonitor = WebMonitor(self.configHolder)
@@ -223,16 +220,18 @@ class BaseInstallator(object):
 
         self._configureRegistrationApplication()
 
-        if self.persistentDisk:
-            self._runInstallPersistentDisk()
+        if self._isTrue(self.persistentDisk):
+            self._runInstallFrontEndPersistentDisk()
         
-    def _runInstallPersistentDisk(self):
+    def _runInstallFrontEndPersistentDisk(self):
+        printAction('Persistent disk storage installation')
         pdiskInstaller = PersistentDisk(self.configHolder)
-        # To only install (not configure) use installXXX method
-        if self.nodeAddr:
-            pdiskInstaller.runNode()
-        else:
-            pdiskInstaller.runFrontend()
+        pdiskInstaller.runFrontend()
+        
+    def _runInstallNodePersistentDisk(self):
+        printAction('Persistent disk storage installation')
+        pdiskInstaller = PersistentDisk(self.configHolder)
+        pdiskInstaller.runNode()
         
     def _installCAs(self):
         self.frontend.installCAs()
