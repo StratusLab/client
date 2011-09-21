@@ -35,6 +35,7 @@ from stratuslab.installator.Registration import Registration
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.CachingConfigurator import CachingConfigurator
+from stratuslab import Util
 
 class BaseInstallator(object):
 
@@ -293,7 +294,7 @@ class BaseInstallator(object):
             CachingConfigurator(self.configHolder).resetOneConfig()
 
     def _isTrue(self, value):
-        return (value == 'True' or value == True) or False
+        return Util.isTrueConfVal(value)
 
     def _configureFireWall(self):
         self.frontend.configureFireWall()
