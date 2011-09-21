@@ -32,7 +32,7 @@ apprepo_username = username
 apprepo_password = password
 
 # SSH public key
-#key = <home>/.ssh/id_rsa.pub
+#user_public_key_file = <home>/.ssh/id_rsa.pub
 
 #p12_certificate = <home>/.globus/usercert.p12
 p12_password = password
