@@ -25,7 +25,6 @@ from stratuslab.Util import execute
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 import stratuslab.system.SystemFactory as SystemFactory
-from stratuslab import Defaults
 
 class AppRepo(Configurable):
     '''Perform local installation of an Appliance Repository'''
@@ -33,12 +32,13 @@ class AppRepo(Configurable):
     def __init__(self, configHolder):
         super(AppRepo, self).__init__(configHolder)
         self.configHolder = configHolder
+        self.useLdap = Util.isTrueConfVal(self.appRepoUseLdap)
 
     def verify(self):
-        if self.appRepoUseLdap and not self.appRepoLdapPasswd:
+        if self.useLdap and not self.appRepoLdapPasswd:
             raise ConfigurationException('LDAP authentication selected but no password for server specified')
 
-        if not self.appRepoUseLdap and not self.appRepoHttpdPasswdFile:
+        if not self.useLdap and not self.appRepoHttpdPasswdFile:
             raise ConfigurationException('No password file specified')
 
     def run(self):
@@ -73,7 +73,7 @@ class AppRepo(Configurable):
  
     def _setupWebDav(self):
         self.printDetail('Creating webdav configuration')        
-        if (self.appRepoUseLdap):
+        if self.useLdap:
             httpdConf = fileGetContent(os.path.join(Util.getTemplateDir(), 'webdav-ldap.conf.tpl'))
             httpdConf = httpdConf % {'imageDir': self.appRepoImageDir,
                                      'ldapSSL': self._getLdapCertString(),
