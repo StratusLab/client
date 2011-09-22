@@ -19,15 +19,17 @@
 #
 
 import os
-import re
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.HttpClient import HttpClient
-from stratuslab.Exceptions import InputException
+from stratuslab.Exceptions import InputException, ClientException,\
+    ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
-from stratuslab import Defaults
-from stratuslab import Util
 from Util import Util as MarketplaceUtil
+
+from stratuslab.Util import importETree
+
+etree = importETree()
 
 class Uploader(object):
 
@@ -58,7 +60,14 @@ class Uploader(object):
         info.parseManifest(manifest)
         
         url = MarketplaceUtil.metadataEndpointUrl(self.marketplaceEndpoint)
-        client.post(url, manifest)
+        try:
+            client.post(url, manifest)
+        except ClientException, ex:
+            error = ''
+            try:
+                error = etree.fromstring(ex.content).text
+            except: pass
+            raise ExecutionException("Failed to upload: %s: %s" % (ex.reason, error))
 
         finalUrl = MarketplaceUtil.metadataCompleteUrl(self.marketplaceEndpoint, 
                                                        info.identifier, 

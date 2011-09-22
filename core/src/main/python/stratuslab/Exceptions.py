@@ -36,7 +36,9 @@ class ExecutionException(Exception):
     pass
 
 class ClientException(Exception):
-    pass
+    def __init__(self, reason, content=''):
+        self.reason = reason
+        self.content = content
 
 class ServerException(Exception):
     pass
