@@ -37,7 +37,7 @@ modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__
 systemsDir = '%s/stratuslab/system' % modulePath
 varLibDir = '/var/lib/stratuslab/python'
 defaultConfigFile = Defaults.ETC_DIR + 'stratuslab.cfg'
-defaultConfigFileUser = os.path.join(os.path.expanduser('~'), '.stratuslab', 'stratuslab-user.cfg')
+defaultConfigFileUser = os.path.join(Defaults.userHome, '.stratuslab', 'stratuslab-user.cfg')
 manifestExt = '.xml'
 cliLineSplitChar = '#'
 
