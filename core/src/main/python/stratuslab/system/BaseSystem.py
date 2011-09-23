@@ -812,13 +812,14 @@ class BaseSystem(object):
     def configureDhcpServer(self):
 
         def _dhcpDefined():
-            return Util.isTrueConfVal(getattr(self, 'dhcp', False))
-        def _noDhcpNetTypesDefined():
-            return not any([Util.isFalseConfVal(getattr(self, self._assembleDhcpAttributeName(v), False))
+            return Util.isTrueConfVal(getattr(self, 'dhcp', 'False'))
+        def _dhcpNetTypesDefined():
+            return any([Util.isTrueConfVal(getattr(self, self._assembleDhcpAttributeName(v), 'False'))
                                                 for v in self.NET_TYPES_DHCP])
+
         if not _dhcpDefined():
             return
-        elif _noDhcpNetTypesDefined():
+        elif not _dhcpNetTypesDefined():
             return
 
         Util.printStep('Configuring DHCP service')
