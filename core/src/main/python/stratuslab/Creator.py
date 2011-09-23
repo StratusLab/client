@@ -50,6 +50,7 @@ from stratuslab.ManifestInfo import ManifestIdentifier
 from stratuslab.Image import Image
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.system import Systems
+from stratuslab import Defaults
 
 class Creator(object):
 
@@ -123,8 +124,7 @@ class Creator(object):
         self.appRepoFilename = '#os#-#osversion#-#arch#-#type#-#version#.img.#compression#'
 
         self.userPublicKeyFile = self.options.get('userPublicKeyFile',
-                                                  '%s/.ssh/id_rsa.pub' %
-                                                    os.path.expanduser("~"))
+                                                  Defaults.sshPublicKeyLocation)
         self.userPrivateKeyFile = self.userPublicKeyFile.strip('.pub')
 
         self.mainDisk = ''
