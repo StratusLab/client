@@ -21,9 +21,6 @@ import os
 import re
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.Util import cliLineSplitChar
-from stratuslab.Util import fileGetContent
-from stratuslab.Util import modulePath
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
