@@ -151,7 +151,7 @@ class PersistentDisk(object):
         self.system.copyCmd(self.persistentDiskCloudNodeKey, self.cloudNodeKey)
         
     def _writeConfig(self):
-        printStep('Writting configuration...')
+        printStep('Writing configuration...')
         self._overrideConfig('disk.store.share', self.persistentDiskShare)
         self._overrideConfig('disk.store.nfs.location', self.persistentDiskNfsMountPoint)
         self._overrideConfig('disk.store.iscsi.type', self.persistentDiskStorage)
