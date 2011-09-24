@@ -21,10 +21,8 @@ import os
 import sys
 
 from stratuslab.Runner import Runner
-from stratuslab.Uploader import Uploader
 from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
-from stratuslab import Defaults
 
 from marketplace.Util import Util as MarketplaceUtil
 
@@ -74,6 +72,10 @@ class Runnable(AuthnCommand):
         self.parser.add_option('--vnc-listen', dest='vncListen', metavar='ADDRESS',
                 help='IP to listen on',
                 default=defaultOptions['vncListen'])
+
+        self.parser.add_option('--vm-template-file', dest='vmTemplateFile', metavar='FILE',
+                help='VM template file. Default %s' % defaultOptions['vmTemplateFile'],
+                default=defaultOptions['vmTemplateFile'])
 
         MarketplaceUtil.addEndpointOption(self.parser)
 

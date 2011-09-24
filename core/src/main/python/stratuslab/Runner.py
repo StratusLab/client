@@ -179,12 +179,12 @@ class Runner(object):
     @staticmethod
     def getTemplatePath(instance=None):
         vmTemplate = ''
-        if instance and hasattr(instance, 'vmTemplatePath'):
-            vmTemplate = instance.vmTemplatePath
+        if instance and hasattr(instance, 'vmTemplateFile'):
+            vmTemplate = instance.vmTemplateFile
         if not os.path.exists(vmTemplate):
             vmTemplate = os.path.join(Defaults.SHARE_DIR +'vm/schema.one')
         if not os.path.exists(vmTemplate):
-            vmTemplate = '%s/../../../share/vm/schema.one' % modulePath
+            vmTemplate = '%s/../../../share/vm/schema.one' % Util.modulePath
         return vmTemplate
 
     @staticmethod
@@ -204,17 +204,18 @@ class Runner(object):
                     'userPrivateKeyFile': _sshPrivateKey,
                     'instanceNumber': 1,
                     'instanceType': 'm1.small',
-                    'vmTemplatePath': Runner.getTemplatePath(),
+                    'vmTemplateFile': Runner.getTemplatePath(),
                     'rawData': '',
                     'vmKernel': '',
                     'vmRamdisk': '',
                     'vmName': '',
+                    'vmCpu':'1',
                     'isLocalIp': False,
                     'isPrivateIp': False,
                     'extraContextFile': '',
                     'extraContextData': '',
                     # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
-                    #        Network in not starting unless VNC is defined. Weird yeh...? 8-/
+                    #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
                     'vncPort': '-1',
                     #'vncPort': None,
                     
@@ -310,7 +311,7 @@ class Runner(object):
             contextElems.extend(contextFileData.split('\n'))
 
         if self.extraContextData:
-            contextElems.extend(self.extraContextData.split(cliLineSplitChar))
+            contextElems.extend(self.extraContextData.split(Util.cliLineSplitChar))
 
         for line in contextElems:
             if len(line) == 0:
@@ -364,7 +365,7 @@ class Runner(object):
 
         self.printAction('Starting machine(s)')
 
-        vmTpl = self._buildVmTemplate(self.vmTemplatePath)
+        vmTpl = self._buildVmTemplate(self.vmTemplateFile)
 
         plurial = { True: 'machines',
                     False: 'machine' }
