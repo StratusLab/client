@@ -167,7 +167,7 @@ class PersistentDisk(object):
         try:
             endpoint = gethostbyaddr(hostname)[0]
         except Exception:
-            printError('Unable to translate endpoint %s to it IP address' % hostname, 
+            printError('Unable to translate endpoint "%s" to an IP address' % hostname, 
                        exitCode=1, exit=True)
         return endpoint
         
