@@ -59,6 +59,8 @@ class Runner(object):
   PASSWORD="{3}",
   QUEUE="{4}" ]'''
 
+    defaultInstanceType = 'm1.small'
+
     def __init__(self, image, configHolder):
         if image == '':
             raise ValueError('Image ID or full image endpoint should be provided.')
@@ -82,6 +84,7 @@ class Runner(object):
     def _initAttributes(self):
         # VM template parameters initialization
         self.vm_cpu = 0
+        self.vm_vcpu = 0
         self.vm_ram = 0
         self.vm_swap = 0
         self.vm_nic = ''
@@ -200,13 +203,13 @@ class Runner(object):
         defaultOp = {'userPublicKeyFile': _sshPublicKey,
                     'userPrivateKeyFile': _sshPrivateKey,
                     'instanceNumber': 1,
-                    'instanceType': 'm1.small',
+                    'instanceType': Runner.defaultInstanceType,
                     'vmTemplateFile': Runner.getTemplatePath(),
                     'rawData': '',
                     'vmKernel': '',
                     'vmRamdisk': '',
                     'vmName': '',
-                    'vmCpu':'1',
+                    'vmCpuAmount': None,
                     'isLocalIp': False,
                     'isPrivateIp': False,
                     'extraContextFile': '',
@@ -230,8 +233,12 @@ class Runner(object):
         return defaultOp
 
     def _buildVmTemplate(self, template):
-        baseVmTemplate = fileGetContent(template)
+        baseVmTemplate = Util.fileGetContent(template)
         self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
+        self.vm_vcpu = self.vm_cpu
+
+        if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
+            self.vm_cpu = self.vmCpuAmount
 
         if self.vmName:
             self.vm_name = 'NAME = "%s"' % self.vmName
@@ -361,6 +368,8 @@ class Runner(object):
         self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
 
         self.printAction('Starting machine(s)')
+
+        self.printDetail('Using VM template file: %s' % self.vmTemplateFile)
 
         vmTpl = self._buildVmTemplate(self.vmTemplateFile)
 

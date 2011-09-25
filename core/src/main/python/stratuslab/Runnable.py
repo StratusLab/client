@@ -77,6 +77,12 @@ class Runnable(AuthnCommand):
                 help='VM template file. Default %s' % defaultOptions['vmTemplateFile'],
                 default=defaultOptions['vmTemplateFile'])
 
+        self.parser.add_option('--vm-cpu-amount', dest='vmCpuAmount', metavar='CPU', type='float',
+                help='Percentage of CPU divided by 100 required for the Virtual Machine. '
+                     'Half a processor is written 0.5. No default. If not provided, CPU value from '
+                     'predefined instance types is used.',
+                default=defaultOptions['vmCpuAmount'])
+
         MarketplaceUtil.addEndpointOption(self.parser)
 
         AuthnCommand.addCloudEndpointOptions(self.parser)
