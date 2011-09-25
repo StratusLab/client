@@ -27,6 +27,7 @@ class Image(object):
     
     re_imageUrl = re.compile('http[s]?://.*\.(img|qco|qcow|qcow2)\.?(gz|bz2)?$')
     re_imageId = re.compile('^[A-Za-z0-9_-]{27}$')
+    re_diskId = re.compile('^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 
     def __init__(self, configHolder):
         configHolder.assign(self)
@@ -35,14 +36,21 @@ class Image(object):
         self.downloader = None
     
     def checkImageExists(self, image):
-        """image - URL or image ID"""
+        """image - URL, image ID, or disk ID"""
 
-        if Image.isImageUrl(image):
+        if Image.isImageId(image):
+            imageId = image
+            self._checkImageByIdInMarketplace(imageId)
+        elif Image.isDiskId(image):
+            # Don't check whether the disk image is 
+            # available as this requires authentication.
+            return True
+        elif Image.isImageUrl(image):
             imageUrl = image
             self._checkImageByUrl(imageUrl)
         else:
-            imageId = image
-            self._checkImageByIdInMarketplace(imageId)
+            # Unknown image reference.
+            raise Exceptions.ValidationException('Image reference must be a URL, image ID or disk ID:  %s' % image)
 
     @staticmethod
     def isImageUrl(imageReference):
@@ -51,6 +59,10 @@ class Image(object):
     @staticmethod
     def isImageId(imageReference):
         return Image.re_imageId.match(imageReference)
+
+    @staticmethod
+    def isDiskId(imageReference):
+        return Image.re_diskId.match(imageReference)
 
     def getImageFormatByImageId(self, imageId):
         if Image.isImageUrl(imageId):

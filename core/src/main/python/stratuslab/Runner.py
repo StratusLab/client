@@ -360,7 +360,11 @@ class Runner(object):
 
     def runInstance(self):
         self._checkImageExists(self.vm_image)
+
         self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
+
+        self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
+        self.vm_image = self._createDiskUrlIfDiskId(self.vm_image)
 
         self.printAction('Starting machine(s)')
 
@@ -445,7 +449,13 @@ class Runner(object):
         imageObject.checkImageExists(image)
 
     def _prependMarketplaceUrlIfImageId(self, image):
-        if Image.re_imageId.match(image):
+        if Image.isImageId(image):
             return MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, image)
+        else:
+            return image
+
+    def _createDiskUrlIfDiskId(self, image):
+        if Image.isDiskId(image):
+            return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
         else:
             return image
