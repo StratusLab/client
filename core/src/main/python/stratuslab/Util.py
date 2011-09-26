@@ -320,7 +320,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
         sshCmd.append('-i')
         sshCmd.append(sshKey)
 
-    for keyAppend in [('sshVerb', '-v'), ('sshQuiet', '-q'), ('pseudoTTY', '-t -t')]:
+    for keyAppend in [('sshVerb', '-v'), ('sshQuiet', '-q'), ('pseudoTTY', '-t')]:
         _appendToSshCommandFromKwargs(*keyAppend)
 
     sshCmd.append('%s@%s' % (user, host))
