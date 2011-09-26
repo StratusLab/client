@@ -21,9 +21,6 @@ import os
 import re
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.Util import cliLineSplitChar
-from stratuslab.Util import fileGetContent
-from stratuslab.Util import modulePath
 import stratuslab.Util as Util
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
@@ -62,6 +59,8 @@ class Runner(object):
   PASSWORD="{3}",
   QUEUE="{4}" ]'''
 
+    defaultInstanceType = 'm1.small'
+
     def __init__(self, image, configHolder):
         if image == '':
             raise ValueError('Image ID or full image endpoint should be provided.')
@@ -85,6 +84,7 @@ class Runner(object):
     def _initAttributes(self):
         # VM template parameters initialization
         self.vm_cpu = 0
+        self.vm_vcpu = 0
         self.vm_ram = 0
         self.vm_swap = 0
         self.vm_nic = ''
@@ -179,12 +179,12 @@ class Runner(object):
     @staticmethod
     def getTemplatePath(instance=None):
         vmTemplate = ''
-        if instance and hasattr(instance, 'vmTemplatePath'):
-            vmTemplate = instance.vmTemplatePath
+        if instance and hasattr(instance, 'vmTemplateFile'):
+            vmTemplate = instance.vmTemplateFile
         if not os.path.exists(vmTemplate):
             vmTemplate = os.path.join(Defaults.SHARE_DIR +'vm/schema.one')
         if not os.path.exists(vmTemplate):
-            vmTemplate = '%s/../../../share/vm/schema.one' % modulePath
+            vmTemplate = '%s/../../../share/vm/schema.one' % Util.modulePath
         return vmTemplate
 
     @staticmethod
@@ -203,18 +203,19 @@ class Runner(object):
         defaultOp = {'userPublicKeyFile': _sshPublicKey,
                     'userPrivateKeyFile': _sshPrivateKey,
                     'instanceNumber': 1,
-                    'instanceType': 'm1.small',
-                    'vmTemplatePath': Runner.getTemplatePath(),
+                    'instanceType': Runner.defaultInstanceType,
+                    'vmTemplateFile': Runner.getTemplatePath(),
                     'rawData': '',
                     'vmKernel': '',
                     'vmRamdisk': '',
                     'vmName': '',
+                    'vmCpuAmount': None,
                     'isLocalIp': False,
                     'isPrivateIp': False,
                     'extraContextFile': '',
                     'extraContextData': '',
                     # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
-                    #        Network in not starting unless VNC is defined. Weird yeh...? 8-/
+                    #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
                     'vncPort': '-1',
                     #'vncPort': None,
                     
@@ -232,8 +233,12 @@ class Runner(object):
         return defaultOp
 
     def _buildVmTemplate(self, template):
-        baseVmTemplate = fileGetContent(template)
+        baseVmTemplate = Util.fileGetContent(template)
         self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
+        self.vm_vcpu = self.vm_cpu
+
+        if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
+            self.vm_cpu = self.vmCpuAmount
 
         if self.vmName:
             self.vm_name = 'NAME = "%s"' % self.vmName
@@ -310,7 +315,7 @@ class Runner(object):
             contextElems.extend(contextFileData.split('\n'))
 
         if self.extraContextData:
-            contextElems.extend(self.extraContextData.split(cliLineSplitChar))
+            contextElems.extend(self.extraContextData.split(Util.cliLineSplitChar))
 
         for line in contextElems:
             if len(line) == 0:
@@ -367,7 +372,9 @@ class Runner(object):
 
         self.printAction('Starting machine(s)')
 
-        vmTpl = self._buildVmTemplate(self.vmTemplatePath)
+        self.printDetail('Using VM template file: %s' % self.vmTemplateFile)
+
+        vmTpl = self._buildVmTemplate(self.vmTemplateFile)
 
         plurial = { True: 'machines',
                     False: 'machine' }

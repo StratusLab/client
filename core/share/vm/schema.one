@@ -1,7 +1,7 @@
 # ---- Stratuslab VM template ----
 
 CPU    = %(vm_cpu)s
-VCPU    = %(vm_cpu)s
+VCPU    = %(vm_vcpu)s
 MEMORY = %(vm_ram)s
 RANK = "- RUNNING_VMS"
 %(vm_name)s
