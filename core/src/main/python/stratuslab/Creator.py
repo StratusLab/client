@@ -601,7 +601,8 @@ deb %(name)s
             return scriptPathRemote, args
 
         def _executeRemoteScript(scriptPathRemote, args=''):
-            rc = self._sshCmd('%s %s' % (scriptPathRemote, args), throwOnError=False)
+            rc = self._sshCmd('%s %s' % (scriptPathRemote, args), throwOnError=False,
+                              pseudoTTY=True)
             if rc != 0:
                 self._printError('An error occurred while executing script %s' % script)
 
@@ -626,7 +627,7 @@ deb %(name)s
                 self._printError('An error occurred while uploading recipe')
             self._sshCmdWithOutput('chmod 0755 %s' % scriptPath)
     
-            rc = self._sshCmd(scriptPath, throwOnError=False)
+            rc = self._sshCmd(scriptPath, throwOnError=False, pseudoTTY=True)
             if rc != 0:
                 self._printError('An error occurred while executing user recipe.')
         finally:
