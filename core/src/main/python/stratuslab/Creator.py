@@ -613,7 +613,7 @@ deb %(name)s
         self._printStep('Executing user recipe')
 
         if len(self.recipe) == 0:
-            self.printDetail('No scripts to execute')
+            self.printDetail('No recipe to execute')
             return
 
         fd, recipeFile = tempfile.mkstemp()
