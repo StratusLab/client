@@ -1,7 +1,7 @@
 Alias /images "%(imageDir)s/eu/stratuslab/appliances"
 
 %(ldapSSL)s
-  <Directory /images>
+  <Directory "%(imageDir)s">
         Dav On
         Options +Indexes
         IndexOptions FancyIndexing

@@ -1,6 +1,6 @@
 Alias /images "%(imageDir)s/eu/stratuslab/appliances"
 
-  <Directory /images>
+  <Directory "%(imageDir)s">
         Dav On
         Options +Indexes
         IndexOptions FancyIndexing
