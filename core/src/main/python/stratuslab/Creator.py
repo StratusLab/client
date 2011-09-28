@@ -731,7 +731,7 @@ EOF
         if self.os == 'centos':
             self.mainDisk  = 'hda'
             self.extraDisk = 'hdc'
-        elif self.os == 'ubuntu':
+        elif self.os in ['ubuntu', 'fedora', 'sles']:
             self.mainDisk  = 'sda'
             self.extraDisk = 'sdc'
 
