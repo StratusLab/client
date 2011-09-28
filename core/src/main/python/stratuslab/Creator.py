@@ -746,22 +746,55 @@ EOF
         cmd = 'mkdir -p %s' % imageFileMntDir
         self._sshCmdWithOutput(cmd)
 
-        # get start sector of LVM partition (ID: 8e)
+        # start sector of LVM partition (ID: 8e)
         cmd = "fdisk -lu %(imageFile)s 2>/dev/null|grep 8e|awk '{print $2}'" % \
                 {'imageFile': self.imageFile}
-        _, offsetInSectors = self._sshCmdWithOutputQuiet(cmd)
+        _, exstendedPartStartSectors = self._sshCmdWithOutputQuiet(cmd)
+        extendedPartStartBytes = int(exstendedPartStartSectors) * 512
 
-        # offset to the first logical volume
-        peStartSectors = 384
-        peStartBytes = peStartSectors * 512
-        offsetInBytes = '%i' % (int(offsetInSectors) * 512 + peStartBytes)
-
-        # mount first logical volume
+        # mount extended partition assuming this is not a Volume Group
+        offsetBytes = extendedPartStartBytes
         cmd = "mount -o loop,offset=%(offset)s %(imageFile)s %(mntDir)s" % \
-                {'offset'   : offsetInBytes,
+                {'offset'   : offsetBytes,
                  'imageFile': self.imageFile,
                  'mntDir'   : imageFileMntDir}
-        self._sshCmdWithOutput(cmd)
+        rc, output = self._sshCmdWithOutput(cmd, throwOnError=False)
+
+        if rc != 0:
+            # treat it as LVM
+            if re.search('LVM.*member', output):
+                # LV name assuming it contains 'root'
+                rootPartitionName = 'root'
+                cmd = "lvdisplay -c | grep -i %s | awk -F: '{print $1}'" % rootPartitionName
+                _, lvName = self._sshCmdWithOutputQuiet(cmd)
+                lvName = lvName.strip()
+                if not lvName:
+                    raise ExecutionException('Failed to determine full name of Logical Volume with root partition.')
+
+                # offset to the first logical volume (start of physical extent)
+                cmd = 'pvs --noheadings -o pe_start --units b'
+                _, peStartBytes = self._sshCmdWithOutputQuiet(cmd)
+                peStartBytes = int(peStartBytes.strip().strip('B'))
+
+                # Physical Extent number of start of segment
+                cmd = "pvs --noheadings -o lv_name,pvseg_start | grep -i %s | awk '{print $2}'" % rootPartitionName
+                _, lvStartExtents  = self._sshCmdWithOutputQuiet(cmd)
+                lvStartExtents = int(lvStartExtents)
+                # size of a physical extent
+                cmd = "lvs --noheadings -o vg_extent_size --units b %s" % lvName
+                _, extentSizeBytes = self._sshCmdWithOutputQuiet(cmd)
+                extentSizeBytes = int(extentSizeBytes.strip().strip('B'))
+
+                offsetBytes = '%i' % (extendedPartStartBytes + peStartBytes + (lvStartExtents * extentSizeBytes))
+
+                # mount first logical volume
+                cmd = "mount -o loop,offset=%(offset)s %(imageFile)s %(mntDir)s" % \
+                        {'offset'   : offsetBytes,
+                         'imageFile': self.imageFile,
+                         'mntDir'   : imageFileMntDir}
+                self._sshCmdWithOutput(cmd)
+            else:
+                raise ExecutionException("Failed mounting new image file: %s" % output)
 
     def _umountOnRemote(self, dir):
         cmd = 'umount %s' % dir
