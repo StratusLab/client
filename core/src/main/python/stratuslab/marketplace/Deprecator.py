@@ -32,6 +32,8 @@ from stratuslab.marketplace.Downloader import Downloader
 
 from Util import Util as MarketplaceUtil
 
+etree = Util.importETree()
+
 class Deprecator(object):
 
     @staticmethod
@@ -65,11 +67,9 @@ class Deprecator(object):
 
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
-        self.deprecated_xml = '<slterms:deprecated>%(reason)s</slterms:deprecated>'
 
         configHolder.assign(self)
 
-        self.manifestObject = None
         self.uploader = Uploader(configHolder)
         self.downloader = Downloader(configHolder)
 
@@ -81,10 +81,27 @@ class Deprecator(object):
             if len(self.created) != 0:
                 imageURI = imageURI + '/' + self.created
 
-            self.manifestObject = self.downloader._getManifest(imageId, tempMetadataFilename)
-            self.manifestObject.__dict__.update({'deprecated':self._getDeprecatedAsXml()})
-            manifestText = self.manifestObject.build()
-            file(tempDeprecatedMetadataFilename, 'w').write(manifestText)
+            # Get metadata file
+            self.downloader._getManifest(imageURI, tempMetadataFilename)
+
+            # Strip signature
+            xml = etree.ElementTree(file=tempMetadataFilename)
+            root = xml.getroot()
+            descriptionElement = root.find('.//{%s}Description' % ManifestInfo.NS_RDF)
+
+            signatureElement = root.find('.//{%s}Signature' % 'http://www.w3.org/2000/09/xmldsig#')
+            signatureElement.getparent().remove(signatureElement)
+
+            xml._setroot(descriptionElement.getparent())
+
+            # Add deprecated entry
+            elem = etree.Element('{%s}%s' % (ManifestInfo.NS_SLTERMS, 'deprecated'))
+            elem.text = self.reason
+            descriptionElement.append(elem)
+
+            xml.write(tempDeprecatedMetadataFilename, standalone=False, encoding="utf-8", xml_declaration=True)
+
+            # Sign and upload
             signator = Signator(tempDeprecatedMetadataFilename, self.configHolder)
             isError = signator.sign()
             self.uploader.upload(tempDeprecatedMetadataFilename)
@@ -95,7 +112,3 @@ class Deprecator(object):
                 os.unlink(tempDeprecatedMetadataFilename+'.orig')
             except:
                 pass
-
-    def _getDeprecatedAsXml(self):
-        joint = '\n        '
-        return joint.join([copy.copy(self.deprecated_xml) % {'reason':self.reason}])
