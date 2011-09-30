@@ -673,7 +673,7 @@ EOF
 
         def stopServices():
             # don't stop those services
-            runlevelOneSericesUp = ('sshd', 'network', 'iptables', 'ip6tables')
+            runlevelOneSericesUp = ('sshd', 'network', 'iptables', 'ip6tables', 'acpid')
 
             cmd = 'ls -1 /etc/rc1.d/K*'
             _, services = self._sshCmdWithOutputQuiet(cmd)
