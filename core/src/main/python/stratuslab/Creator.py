@@ -776,7 +776,7 @@ EOF
                 peStartBytes = int(peStartBytes.strip().strip('B'))
 
                 # Physical Extent number of start of segment
-                cmd = "pvs --noheadings -o lv_name,pvseg_start | grep -i %s | awk '{print $2}'" % rootPartitionName
+                cmd = "pvs --noheadings -o lv_name,pvseg_start | grep -E -i %s | awk '{print $2}'" % rootPartitionName
                 _, lvStartExtents  = self._sshCmdWithOutputQuiet(cmd)
                 lvStartExtents = int(lvStartExtents)
                 # size of a physical extent
