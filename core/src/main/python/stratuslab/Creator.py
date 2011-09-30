@@ -761,10 +761,10 @@ EOF
 
         if rc != 0:
             # treat it as LVM
-            if re.search('LVM.*member', output):
-                # LV name assuming it contains 'root'
-                rootPartitionName = 'root'
-                cmd = "lvdisplay -c | grep -i %s | awk -F: '{print $1}'" % rootPartitionName
+            if re.search('LVM.*member', output, re.M):
+                # LV name assuming it contains 'root' and hack for CentOS images
+                rootPartitionName = '"root|LogVol00"'
+                cmd = "lvdisplay -c | grep -E -i %s | awk -F: '{print $1}'" % rootPartitionName
                 _, lvName = self._sshCmdWithOutputQuiet(cmd)
                 lvName = lvName.strip()
                 if not lvName:
@@ -786,12 +786,26 @@ EOF
 
                 offsetBytes = '%i' % (extendedPartStartBytes + peStartBytes + (lvStartExtents * extentSizeBytes))
 
-                # mount first logical volume
+                # mount logical volume
                 cmd = "mount -o loop,offset=%(offset)s %(imageFile)s %(mntDir)s" % \
                         {'offset'   : offsetBytes,
                          'imageFile': self.imageFile,
                          'mntDir'   : imageFileMntDir}
                 self._sshCmdWithOutput(cmd)
+            elif re.search('you must specify the filesystem type', output, re.M):
+                # Try twice with extra offset at 1Byte increment.
+                for extraOffset in range(1,3):
+                    cmd = "mount -o loop,offset=%(offset)s %(imageFile)s %(mntDir)s" % \
+                            {'offset'   : offsetBytes + extraOffset,
+                             'imageFile': self.imageFile,
+                             'mntDir'   : imageFileMntDir}
+                    try:
+                        rc, output = self._sshCmdWithOutput(cmd)
+                    except ExecutionException:
+                        pass
+                    else:
+                        return
+                raise ExecutionException("Failed mounting new image file: %s" % output)
             else:
                 raise ExecutionException("Failed mounting new image file: %s" % output)
 
