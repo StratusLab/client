@@ -760,8 +760,8 @@ EOF
         rc, output = self._sshCmdWithOutput(cmd, throwOnError=False)
 
         if rc != 0:
-            # treat it as LVM
-            if re.search('LVM.*member', output, re.M):
+            # treat it as LVM: if error message indicates that or if lvs command available.
+            if re.search('LVM.*member', output, re.M) or (self._sshCmd("lvs", throwOnError=False) == 0):
                 # LV name assuming it contains 'root' and hack for CentOS images
                 rootPartitionName = '"root|LogVol00"'
                 cmd = "lvdisplay -c | grep -E -i %s | awk -F: '{print $1}'" % rootPartitionName
