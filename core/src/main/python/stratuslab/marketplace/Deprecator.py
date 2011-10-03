@@ -87,19 +87,24 @@ class Deprecator(object):
             # Strip signature
             xml = etree.ElementTree(file=tempMetadataFilename)
             root = xml.getroot()
+            rootElement = root.find('.//{%s}RDF' % ManifestInfo.NS_RDF)
+
             descriptionElement = root.find('.//{%s}Description' % ManifestInfo.NS_RDF)
+            descriptionElement.remove(descriptionElement.find('.//{%s}endorsement' % ManifestInfo.NS_SLREQ))
+            endorsement = etree.Element('{%s}%s' % (ManifestInfo.NS_SLREQ, 'endorsement'), parseType="Resource")
+            descriptionElement.append(endorsement)
 
             signatureElement = root.find('.//{%s}Signature' % 'http://www.w3.org/2000/09/xmldsig#')
-            signatureElement.getparent().remove(signatureElement)
+            rootElement.remove(signatureElement)
 
-            xml._setroot(descriptionElement.getparent())
+            xml._setroot(rootElement)
 
             # Add deprecated entry
             elem = etree.Element('{%s}%s' % (ManifestInfo.NS_SLTERMS, 'deprecated'))
             elem.text = self.reason
             descriptionElement.append(elem)
 
-            xml.write(tempDeprecatedMetadataFilename, standalone=False, encoding="utf-8", xml_declaration=True)
+            xml.write(tempDeprecatedMetadataFilename)
 
             # Sign and upload
             signator = Signator(tempDeprecatedMetadataFilename, self.configHolder)
