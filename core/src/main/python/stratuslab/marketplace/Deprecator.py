@@ -87,14 +87,18 @@ class Deprecator(object):
             # Strip signature
             xml = etree.ElementTree(file=tempMetadataFilename)
             root = xml.getroot()
-            rootElement = root.find('.//{%s}RDF' % ManifestInfo.NS_RDF)
 
-            descriptionElement = root.find('.//{%s}Description' % ManifestInfo.NS_RDF)
+            if (root.tag == "metadata"):
+                rootElement = root.find('.//{%s}RDF' % ManifestInfo.NS_RDF)
+            else:
+                rootElement = root
+
+            descriptionElement = rootElement.find('.//{%s}Description' % ManifestInfo.NS_RDF)
             descriptionElement.remove(descriptionElement.find('.//{%s}endorsement' % ManifestInfo.NS_SLREQ))
             endorsement = etree.Element('{%s}%s' % (ManifestInfo.NS_SLREQ, 'endorsement'), parseType="Resource")
             descriptionElement.append(endorsement)
 
-            signatureElement = root.find('.//{%s}Signature' % 'http://www.w3.org/2000/09/xmldsig#')
+            signatureElement = rootElement.find('.//{%s}Signature' % 'http://www.w3.org/2000/09/xmldsig#')
             rootElement.remove(signatureElement)
 
             xml._setroot(rootElement)
