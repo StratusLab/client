@@ -79,6 +79,6 @@ class Server():
 if __name__ == '__main__':
     from werkzeug.serving import run_simple
     server = Server()
-    server.read_passwords("/etc/stratuslab/one-proxy/login-pswd.properties")
-    server.read_passwords("/etc/stratuslab/one-proxy/login-cert.properties")
+    server.read_passwords("/etc/stratuslab/authn/login-pswd.properties")
+    server.read_passwords("/etc/stratuslab/authn/login-cert.properties")
     run_simple(server.utils.ip, int(server.utils.port), server.application)

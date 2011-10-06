@@ -24,7 +24,7 @@ See the provided file volumes.properties.
 
 Limitations
 -----------
-* It reuses the passwords defined in /etc/stratuslab/one-proxy/login*.properties.
+* It reuses the passwords defined in /etc/stratuslab/authn/login*.properties.
 Currently, there is no certificate verification, so access is granted only on the 
 basis of the correct CN (should be fixed)
 
