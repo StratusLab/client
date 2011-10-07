@@ -23,6 +23,8 @@ from Exceptions import ExecutionException
 
 class Compressor(object):
 
+    compressionFormats = ('gz', 'bz2')
+
     @staticmethod
     def compress(filename):
         pass
