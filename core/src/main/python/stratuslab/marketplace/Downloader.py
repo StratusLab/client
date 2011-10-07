@@ -55,14 +55,14 @@ class Downloader(object):
         self.localImageFilename = os.path.abspath(self.localImageFilename)
         self.manifestObject = None
 
-    def _getManifest(self, imageId, tempMetadataFilename):
+    def _getManifest(self, resourceUri, tempMetadataFilename):
         """Return manifest as ManifestInfo object.
         """
-        url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, imageId)
+        url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, resourceUri)
         try:
             return self.__getManifest(url, tempMetadataFilename)
         except:
-            print "Failed to get manifest for image: %s" % imageId
+            print "Failed to get manifest for resource uri: %s" % resourceUri
             raise
 
     def __getManifest(self, url, tempMetadataFilename):
@@ -85,15 +85,15 @@ class Downloader(object):
             raise InputException('Error parsing the metadata corresponding to url %s, with detail %s' % (url, ex))
         return manifestInfo
 
-    def getImageLocations(self, imageId=''):
-        return self.getImageElementValue('locations', imageId)
+    def getImageLocations(self, resourceUri=''):
+        return self.getImageElementValue('locations', resourceUri)
 
-    def getImageVersion(self, imageId=''):
-        return self.getImageElementValue('version', imageId)
+    def getImageVersion(self, resourceUri=''):
+        return self.getImageElementValue('version', resourceUri)
 
-    def getImageElementValue(self, element, imageId=''):
-        if imageId:
-            self._checkManifestAndImageId(imageId)
+    def getImageElementValue(self, element, resourceUri=''):
+        if resourceUri:
+            self._checkManifestAndImageId(resourceUri)
         elementNorm = normalizeManifestElementForClassAttr(element)
         try:
             return getattr(self.manifestObject, elementNorm)
@@ -101,14 +101,14 @@ class Downloader(object):
             raise ExecutionException("Couldn't get '%s' element (normalized to '%s') from manifest. %s" % 
                                      (element, elementNorm, str(ex)))
 
-    def _checkManifestAndImageId(self, imageId):
+    def _checkManifestAndImageId(self, resourceUri):
         if not self.manifestObject:
-            self.downloadManifestByImageId(imageId)
-        if imageId != self.manifestObject.identifier:
+            self.downloadManifestByImageResourceUri(resourceUri)
+        if resourceUri != self.manifestObject.identifier:
             raise InputException('Given image ID [%s] does not match to downloaded [%s]' % 
-                                    (imageId, self.manifestObject.identifier))
+                                    (resourceUri, self.manifestObject.identifier))
 
-    def downloadManifestByImageId(self, imageId):
+    def downloadManifestByImageResourceUri(self, imageId):
         tempMetadataFilename = tempfile.mktemp()
         try:
             self.manifestObject = self._getManifest(imageId, tempMetadataFilename)
@@ -119,6 +119,8 @@ class Downloader(object):
                 pass
 
     def download(self, uri):
+        '''uri is the full resource uri uniquely identifying
+           a single manifest entry'''
         tempMetadataFilename = tempfile.mktemp()
 
         manifestInfo = self._getManifest(uri, tempMetadataFilename)
@@ -135,7 +137,7 @@ class Downloader(object):
                 pass
 
         if not os.path.exists(tempImageFilename):
-            raise InputException('Failed to find image matching metadata: %s' % uri)
+            raise InputException('Failed to find image matching image resource uri: %s' % uri)
 
         self._verifySignature(tempImageFilename, tempMetadataFilename)
 
