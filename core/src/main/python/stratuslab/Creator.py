@@ -410,7 +410,7 @@ class Creator(object):
         configHolder = self.configHolder.copy()
         
         downloader = Downloader(configHolder)
-        downloader.downloadManifestByImageId(self.image)
+        downloader.downloadManifestByImageResourceUri(self.image)
         self.manifestObject = downloader.manifestObject
         self.manifest = self.manifestObject.tostring()
 

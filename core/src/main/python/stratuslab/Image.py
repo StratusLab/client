@@ -95,7 +95,7 @@ class Image(object):
         """Return list of locations."""
         if not self.downloader:
             self._createDownloader()
-        self.downloader.downloadManifestByImageId(imageId)
+        self.downloader.downloadManifestByImageResourceUri(imageId)
         return self.downloader.getImageLocations()
 
     def _createDownloader(self):
