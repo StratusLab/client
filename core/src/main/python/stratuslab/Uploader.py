@@ -45,16 +45,6 @@ class Uploader(object):
     APPREPO_FILENAMESTRUCTURE_ELEMENTS = ('type', 'os', 'arch', 'version', 'osversion', 'compression')
 
     @staticmethod
-    def availableCompressionFormat(printIt=False):
-        list = ('gz', 'bz2') # TODO: refactor - move out from here
-
-        if printIt:
-            print 'Available compression format: %s' % ', '.join(list)
-            sys.exit(0)
-        else:
-            return list
-
-    @staticmethod
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] <metadata-file>'''
 
@@ -113,7 +103,7 @@ class Uploader(object):
             options.withMarketPlace = True
             return
 
-        if options.compressionFormat not in Uploader.availableCompressionFormat():
+        if options.compressionFormat not in Compressor.compressionFormats:
             parser.error('Unknown compression format')
         
         Uploader.checkAppRepoOptions(options, parser)

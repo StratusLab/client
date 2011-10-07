@@ -168,7 +168,7 @@ class Downloader(object):
     def _extractCompressionExtension(self, url):
         compression = url.split('.')[-1]
 
-        if compression in ('gz', 'bz2'):
+        if compression in Compressor.compressionFormats:
             return '.' + compression
         else:
             return ''
