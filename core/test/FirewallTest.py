@@ -19,15 +19,12 @@
 #
 import unittest
 import re
-import os
-import sys
 import commands
 
 import stratuslab.system.BaseSystem as system
 from stratuslab.system.BaseSystem import BaseSystem as Firewall
 from stratuslab.system.BaseSystem import enableIpForwarding
 import tempfile
-import shutil
 
 class FirewallTest(unittest.TestCase):
 
