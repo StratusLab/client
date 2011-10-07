@@ -70,7 +70,7 @@ class PersistentDisk(object):
     def configureFrontend(self):
         self._writeConfig()
         self._setAutorunZookeeper()
-        self._mergeAuthWithProxy()
+        # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
         self._service('pdisk', 'restart')
         if self.persistentDiskShare == 'nfs':
             return
