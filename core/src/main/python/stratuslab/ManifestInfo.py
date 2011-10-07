@@ -141,6 +141,10 @@ class ManifestInfo(object):
         except SyntaxError, ex:
             raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' % 
                                      (str(ex), manifest))
+        
+        return self.parseManifestFromXml(xml)
+
+    def parseManifestFromXml(self, xml):
 
         # skip endorsement element
 
