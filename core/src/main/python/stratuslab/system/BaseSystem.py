@@ -626,28 +626,28 @@ class BaseSystem(object):
     def _configureNetworkInterface(self, device, ip, netmask):
         pass
 
-    def configureFireWall(self):
+    def configureFirewall(self):
         self._loadNetfilterModules()
 
-        self._configureFireWallForProxy()
-        self._configureFireWallNat()
-        self._persistFireWallRules()
+        self._configureFirewallForProxy()
+        self._configureFirewallNat()
+        self._persistFirewallRules()
 
-    def _configureFireWallForProxy(self):
+    def _configureFirewallForProxy(self):
         port = str(self.onePort)
         rules = ({'table':'filter',
                   'rule' :'-A INPUT -s 127.0.0.1 -p tcp -m tcp --dport %s -j ACCEPT' % port},
                  {'table':'filter',
                   'rule' :'-A INPUT -p tcp -m tcp --dport %s -j REJECT --reject-with icmp-port-unreachable' % port})
 
-        if not self._isSetFireWallRulesAll(rules):
-            self._setFireWallRulesAll(rules)
+        if not self._isSetFirewallRulesAll(rules):
+            self._setFirewallRulesAll(rules)
 
-    def _configureFireWallNat(self):
+    def _configureFirewallNat(self):
         if self.nat.lower() in ['false', 'no', 'off', '0', '']:
             return None
 
-        self._configureFireWallNatNetworking()
+        self._configureFirewallNatNetworking()
 
         networkWithMask = '%s/%s' % (self.natNetwork, self.natNetmask)
         rules = ({'table':'nat',
@@ -657,10 +657,10 @@ class BaseSystem(object):
                   {'table':'filter',
                    'rule':'-A FORWARD -d %s -j ACCEPT' % networkWithMask})
 
-        if not self._isSetFireWallRulesAll(rules):
-            self._setFireWallRulesAll(rules)
+        if not self._isSetFirewallRulesAll(rules):
+            self._setFirewallRulesAll(rules)
 
-    def _configureFireWallNatNetworking(self):
+    def _configureFirewallNatNetworking(self):
         self._enableIpForwarding()
 
         device = self.natNetworkInterface
@@ -691,8 +691,8 @@ class BaseSystem(object):
         Util.printDetail('Starting network interface %s.' % device)
         self.executeCmd(['ifup', device])
 
-    def _persistFireWallRules(self):
-        self._saveFireWallRules(self.FILE_FIREWALL_RULES)
+    def _persistFirewallRules(self):
+        self._saveFirewallRules(self.FILE_FIREWALL_RULES)
 
 
     def _loadNetfilterModules(self):
@@ -703,7 +703,7 @@ class BaseSystem(object):
             self.executeCmd(cmd.split(), stdout=devNull)
         devNull.close()
 
-    def _saveFireWallRules(self, filename):
+    def _saveFirewallRules(self, filename):
         # back-up
         self.executeCmd(('cp -fp %s %s.LAST'%((filename,)*2)).split(' '))
 
@@ -712,16 +712,16 @@ class BaseSystem(object):
         filePutContent(filename, output)
         os.chmod(filename, 0600)
 
-    def _isSetFireWallRulesAll(self, rules):
+    def _isSetFirewallRulesAll(self, rules):
         tables = dict.fromkeys([r.get('table', self.DEFAULT_FIREWALL_TABLE)
                                                         for r in rules]).keys()
-        currentRules = self._getFireWallRulesPerTable(tables)
+        currentRules = self._getFirewallRulesPerTable(tables)
         for ruleSpec in rules:
-            if not self._isSetFireWallRule(currentRules, ruleSpec):
+            if not self._isSetFirewallRule(currentRules, ruleSpec):
                 return False
         return True
 
-    def _getFireWallRulesPerTable(self, tables=IP_TABLES_LIST):
+    def _getFirewallRulesPerTable(self, tables=IP_TABLES_LIST):
         rules = {}
         for table in tables:
             rc, output = self.executeCmdWithOutput(('iptables-save -t %s' %
@@ -732,7 +732,7 @@ class BaseSystem(object):
             rules.update({table:output})
         return rules
 
-    def _isSetFireWallRule(self, currentRules, ruleSpec):
+    def _isSetFirewallRule(self, currentRules, ruleSpec):
         rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
         rulesInTable = currentRules[table]
 
@@ -740,23 +740,23 @@ class BaseSystem(object):
             return True
         return False
 
-    def _setFireWallRulesAll(self, rules):
-        self._deleteFireWallRulesAllGiven(rules)
+    def _setFirewallRulesAll(self, rules):
+        self._deleteFirewallRulesAllGiven(rules)
 
         for ruleSpec in rules:
-            self._setFireWallRule(ruleSpec)
+            self._setFirewallRule(ruleSpec)
 
-    def _deleteFireWallRulesAllGiven(self, rules):
+    def _deleteFirewallRulesAllGiven(self, rules):
         for ruleSpec in rules:
-            self._deleteFireWallRule(ruleSpec)
+            self._deleteFirewallRule(ruleSpec)
 
-    def _deleteFireWallRule(self, ruleSpec):
+    def _deleteFirewallRule(self, ruleSpec):
         rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
         rule = '-D %s' % rule[3:] # remove action; leave chain and rule
 
         self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))
 
-    def _setFireWallRule(self, ruleSpec):
+    def _setFirewallRule(self, ruleSpec):
         rule, table = self._getRuleAndTableFromRuleSpec(ruleSpec)
 
         self.executeCmd(('iptables -t %s %s' % (table,rule)).split(' '))
