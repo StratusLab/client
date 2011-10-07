@@ -22,6 +22,9 @@ import unittest
 
 from stratuslab.ManifestInfo import ManifestInfo, ManifestIdentifier
 from stratuslab.Exceptions import ExecutionException
+from stratuslab.Util import importETree
+
+etree = importETree()
 
 class ManifestInfoTest(unittest.TestCase):
 
@@ -212,6 +215,19 @@ class ManifestInfoTest(unittest.TestCase):
         
         self.failUnlessEqual(info1.locations, info2.locations, 
                              "Lists of locations don't match. Serialization failed.")
+
+    def testNonEmtpyLocations(self):
+        info = ManifestInfo()
+        info.template = self.template
+        info.locations = ['location.foo']
+        manifest = info.tostring()
+
+        dom = etree.fromstring(manifest)
+        locations = dom.findall('.//{%s}location' % ManifestInfo.NS_SLTERMS)
+        location = getattr(locations[0], 'text', '')
+
+        self.failUnlessEqual('location.foo', location,
+                             "Failure in setting location element on ManifestInfo.")
 
 class ManifestIdentifierTest(unittest.TestCase):
 

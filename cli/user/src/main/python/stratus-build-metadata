@@ -28,6 +28,8 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageFormats
 from stratuslab.Creator import Creator
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Compressor import Compressor
+import stratuslab.Util as Util
 
 class MainProgram(CommandBase):
     '''A command-line program to generate manifest.'''
@@ -77,6 +79,14 @@ class MainProgram(CommandBase):
                 help='Hypervisor (e.g. kvm, xen). Default: kvm',
                 default='kvm', metavar='NAME')
 
+        self.parser.add_option('--location', dest='locations',
+                help='Physical location of the image.',
+                default=[], metavar='URI')
+
+        self.parser.add_option('--compression', dest='compression',
+                help='Image compression format. One of: %s' % ', '.join(Compressor.compressionFormats) ,
+                default='', metavar='EXT')
+
         self.parser.add_option('--comment', dest='comment',
                 help='Comment to append to the manifest file',
                 default='', metavar='TEXT')
@@ -113,6 +123,17 @@ class MainProgram(CommandBase):
 
         if not os.path.isfile(self.image):
             self.parser.error('Image does not exist: ' + self.image)
+
+        if not self.options.locations:
+            self.options.__dict__.update({'locations': []})
+            Util.printWarning("Image physical location (URL) was not provided. "
+                              "You'll have to set it manually in the resulting manifest.")
+        else:
+            self.options.__dict__.update({'locations': [self.options.__dict__['locations']]})
+
+        if not self.options.compression:
+            Util.printWarning("Image compression was not provided. "
+                              "You'll have to set it manually in the resulting manifest.")
 
     def doWork(self):
         self._calculateCheckSums()
