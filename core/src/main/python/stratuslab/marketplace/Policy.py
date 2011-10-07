@@ -109,35 +109,24 @@ class Policy(object):
 
         metadatas = self._retrieveMetadataList()
         metadataEntries = metadatas.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
-        filtered0 = self._filter(metadataEntries, self.whiteListImages)
-        if len(filtered0) == 0:
-            sys.stderr.write(self._errorMessage())
-            raise ValidationException('Policy check Failed')
 
-        filtered1 = self._filter(filtered0, self.blackListImages)
-        if len(filtered1) == 0:
-            sys.stderr.write(self._errorMessage())
-            raise ValidationException('Policy check Failed')
+        filterList = [self.whiteListImages,
+                      self.blackListImages,
+                      self.whiteListEndorsers,
+                      self.blackListEndorsers,
+                      self.whiteListChecksums,
+                      self.blackListChecksums]
+        
+        remainingMetadataEntries = metadataEntries
+        
+        for list in filterList:
+            remainingMetadataEntries = self._filter(remainingMetadataEntries, list)
+            if len(remainingMetadataEntries) == 0:
+                sys.stderr.write(self._errorMessage())
+                raise ValidationException('Policy check Failed')
+        
+        return remainingMetadataEntries
 
-        filtered2 = self._filter(filtered1, self.whiteListEndorsers)
-        if len(filtered2) == 0:
-            sys.stderr.write(self._errorMessage())
-            raise ValidationException('Policy check Failed')
- 
-        filtered3 = self._filter(filtered2, self.blackListEndorsers)
-        if len(filtered3) == 0:
-            sys.stderr.write(self._errorMessage())
-            raise ValidationException('Policy check Failed')
-      
-        filtered4 = self._filter(filtered3, self.whiteListChecksums)
-        if len(filtered4) == 0:
-            sys.stderr.write(self._errorMessage())
-            raise ValidationException('Policy check Failed')
-
-        filtered5 = self._filter(filtered4, self.blackListChecksums)
-        if len(filtered5) == 0:
-            sys.stderr.write(self._errorMessage())
-            raise ValidationException('Policy check Failed')
 
     def _downloadManifest(self, identifierUri):
         endpoint = Util.constructEndPoint(self.endpoint, 'http', '80', 'images')
@@ -170,14 +159,14 @@ class Policy(object):
     #     remove unwanted element tree from metadata list
     #     return metadata list  
     
-    def _filter(self, metadatas, whiteOrblackList):
+    def _filter(self, metadatas, whiteOrBlackList):
         metadata_to_remove=[]
-        if whiteOrblackList[0] in self.intersectionList:
-            if not self._keep(metadatas[0], whiteOrblackList):
+        if whiteOrBlackList[0] in self.intersectionList:
+            if not self._keep(metadatas[0], whiteOrBlackList):
                 metadata_to_remove.extend(metadatas)
         else:
             for metadata in metadatas:
-                if not self._keep(metadata, whiteOrblackList):
+                if not self._keep(metadata, whiteOrBlackList):
                     metadata_to_remove.append(metadata)
         for metadata in metadata_to_remove:
             metadatas.remove(metadata)
@@ -189,9 +178,12 @@ class Policy(object):
 
     def _keep(self, metadata, whiteOrblackList):
         xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
+
+        # TODO: refactor this using the ManifestInfo class
         emailendorser = metadata.findtext(xpathPrefix % 'endorser' + 'email')
         imageidentifier = metadata.findtext('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
         checksumimages = metadata.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://mp.stratuslab.eu/slreq#}checksum')
+
         if (whiteOrblackList[0] == 'whiteListImages' and len(self.whiteListImages)>1):
             return self._whiteListImagesPlugin(imageidentifier)
         elif (whiteOrblackList[0] == 'blackListImages' and len(self.blackListImages)>1):
@@ -205,7 +197,7 @@ class Policy(object):
         elif (whiteOrblackList[0] == 'blackListChecksums' and len(self.blackListChecksums)>1):
             return self._blackListChecksumsPlugin(checksumimages)
         else:
-            print"Warning : no policy %s defined" %whiteOrblackList[0]
+            print"Warning : no policy %s defined" % whiteOrblackList[0]
             return True      
 
     def _whiteListEndorsersPlugin(self, emailendorser):
@@ -248,7 +240,7 @@ class Policy(object):
             return False
 
     def _whiteListImagesPlugin(self, imageidentifier):
-        if (imageidentifier in self.whiteListImages):
+        if imageidentifier in self.whiteListImages:
             print "image identifier %s is whitelisted" %imageidentifier
             return True
         else:
@@ -256,7 +248,7 @@ class Policy(object):
             return False
 
     def _blackListImagesPlugin(self, imageidentifier):
-        if (imageidentifier not in self.blackListImages):
+        if imageidentifier not in self.blackListImages:
             print "image identifier %s is not blacklisted" %imageidentifier
             return True
         else:
