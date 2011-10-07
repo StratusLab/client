@@ -46,7 +46,7 @@ class MainProgram(AuthnCommand):
         
         self.parser.add_option('-s', '--size', dest='volumeSize',
                 help='Size of the volume in GiBs', metavar='SIZE',
-                default=0, type='int')
+                default=None, type='int')
         
         self.parser.add_option('-t', '--tag', dest='volumeTag',
                 help='Tag of the volume. Only for the user', metavar='NAME', 
@@ -73,8 +73,11 @@ and use it but can't delete it.''', action='store_true', default=False)
         self._checkTagLength()
         
     def _checkVolumeSize(self):
+        if self.options.volumeSize is None:
+            printError('Missing mandatory -s/--size option')
+            
         if self.options.volumeSize < self.VOLUME_SIZE_MIN or self.options.volumeSize > self.VOLUME_SIZE_MAX:
-            printError('Volume size must be a vqlid integer between %d and %d' % 
+            printError('Volume size must be a valid integer between %d and %d' % 
                        (self.VOLUME_SIZE_MIN, self.VOLUME_SIZE_MAX))
         
     def _checkTagLength(self):
