@@ -771,7 +771,7 @@ EOF
                     raise ExecutionException('Failed to determine full name of Logical Volume with root partition.')
 
                 # offset to the first logical volume (start of physical extent)
-                cmd = 'pvs --noheadings -o pe_start --units b'
+                cmd = 'pvs --noheadings -o pe_start --units b 2>/dev/null'
                 _, peStartBytes = self._sshCmdWithOutputQuiet(cmd)
                 peStartBytes = int(peStartBytes.strip().strip('B'))
 
