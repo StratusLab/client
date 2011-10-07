@@ -20,12 +20,14 @@
 import re
 
 from stratuslab.marketplace.Downloader import Downloader
+from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
 import stratuslab.Util as Util
 
 class Image(object):
     
-    re_imageUrl = re.compile('http[s]?://.*\.(img|qco|qcow|qcow2)\.?(gz|bz2)?$')
+    re_imageUrl = re.compile('(ftp|http)[s]?://.*\.(img|qco|qcow|qcow2)(\.%s)?$' % 
+                             '|\.'.join(Compressor.compressionFormats))
     re_imageId = re.compile('^[A-Za-z0-9_-]{27}$')
     re_diskId = re.compile('^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 
