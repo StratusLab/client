@@ -9,6 +9,7 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Image import Image 
 import stratuslab.Util as Util
 
 USAGE = """Usage: %prog --get-element <ELEMENT> <marketplace image URL>
@@ -33,7 +34,7 @@ def main():
     except IndexError:
         _exitWithUsage()
     else:
-        if re.search('\.(img|qco|qcow|qcow2)(\.gz|\.bz2)?$', imageEndpoint):
+        if Image.re_imageUrl.match(imageEndpoint):
             _exitWithUsage('ERROR: An image URL was given is not MarketPlace image URL.')
 
     if not options.element:
