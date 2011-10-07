@@ -26,9 +26,7 @@ import urllib2
 import random
 from random import sample
 from string import ascii_lowercase
-from Exceptions import ExecutionException
-from Compressor import Compressor
-from stratuslab.Exceptions import ValidationException
+from stratuslab.Exceptions import ExecutionException, ValidationException
 import Defaults
 
 defaultRepoConfigSection = 'stratuslab_repo'
@@ -543,9 +541,6 @@ def getTimeInIso8601():
 def toTimeInIso8601(_time):
     "Convert int or float to time in iso8601 format."
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_time))
-
-def inflate(filename):
-    return Compressor.inflate(filename)
 
 def isTrueConfVal(var):
     return (str(var).lower() in ['true', 'yes', 'on', '1']) or False
