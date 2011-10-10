@@ -58,8 +58,15 @@ class ConfigHolder(object):
         dict = {}
         for section in config.sections():
             for k,v in config.items(section):
-                dict[k] = v
+                _v = v
+                if '\n' in v:
+                    _v = ConfigHolder._convertToMultiLineValue(v)
+                dict[k] = _v
         return dict
+
+    @staticmethod
+    def _convertToMultiLineValue(value):
+        return ' ' + '\n '.join(filter(None, value.split('\n')))
 
     @staticmethod
     def parseConfig(configFileName):
