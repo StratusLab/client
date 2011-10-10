@@ -22,19 +22,17 @@ import shutil
 import tempfile
 import urllib2
 import hashlib
-from stratuslab.ManifestInfo import _normalizeForInstanceAttribute as normalizeManifestElementForClassAttr
 
 from stratuslab import Util
 from stratuslab import Defaults
-from stratuslab.Exceptions import ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
-from stratuslab.Signator import Signator
 from stratuslab.Compressor import Compressor
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import InputException
-from stratuslab.Exceptions import ValidationException
 
-from Util import Util as MarketplaceUtil
+from stratuslab.marketplace.ImageValidator import ImageValidator
+from stratuslab.marketplace.ManifestValidator import ManifestValidator
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 etree = Util.importETree()
 
@@ -55,76 +53,50 @@ class Downloader(object):
         self.localImageFilename = os.path.abspath(self.localImageFilename)
         self.manifestObject = None
 
-    def _getManifest(self, resourceUri, tempMetadataFilename):
-        """Return manifest as ManifestInfo object.
-        """
-        url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, resourceUri)
-        try:
-            return self.__getManifest(url, tempMetadataFilename)
-        except:
-            print "Failed to get manifest for resource uri: %s" % resourceUri
-            raise
+    def getManifestInfo(self, resourceUri):
+        return ManifestDownloader().getManifestInfo(resourceUri)
 
-    def __getManifest(self, url, tempMetadataFilename):
-        """Return manifest as ManifestInfo object.
-        """
-        errorMessage = 'Failed to find metadata entry: %s' % url
-        try:
-            self._download(url, tempMetadataFilename)
-        except urllib2.HTTPError:
-            raise InputException(errorMessage)
-        
-        if not os.path.exists(tempMetadataFilename):
-            raise InputException(errorMessage)
-
-        manifestInfo = ManifestInfo(self.configHolder)
-        
-        try:
-            manifestInfo.parseManifestFromFile(tempMetadataFilename)
-        except ExecutionException, ex:
-            raise InputException('Error parsing the metadata corresponding to url %s, with detail %s' % (url, ex))
-        return manifestInfo
-
+    def getManifestAsFile(self, resourceUri, tempMetadataFilename):
+        '''Download to tempMetadataFilename manifest.
+        '''
+        ManifestDownloader().getManifestAsFile(resourceUri, tempMetadataFilename)
+    
     def getImageLocations(self, resourceUri=''):
-        return self.getImageElementValue('locations', resourceUri)
+        return ManifestDownloader().getImageElementValue('locations', resourceUri)
 
     def getImageVersion(self, resourceUri=''):
-        return self.getImageElementValue('version', resourceUri)
+        return ManifestDownloader().getImageElementValue('version', resourceUri)
 
     def getImageElementValue(self, element, resourceUri=''):
-        if resourceUri:
-            self._checkManifestAndImageId(resourceUri)
-        elementNorm = normalizeManifestElementForClassAttr(element)
-        try:
-            return getattr(self.manifestObject, elementNorm)
-        except AttributeError, ex:
-            raise ExecutionException("Couldn't get '%s' element (normalized to '%s') from manifest. %s" % 
-                                     (element, elementNorm, str(ex)))
-
-    def _checkManifestAndImageId(self, resourceUri):
-        if not self.manifestObject:
-            self.downloadManifestByImageResourceUri(resourceUri)
-        if resourceUri != self.manifestObject.identifier:
-            raise InputException('Given image ID [%s] does not match to downloaded [%s]' % 
-                                    (resourceUri, self.manifestObject.identifier))
+        return ManifestDownloader().getImageElementValue(element, resourceUri)
 
     def downloadManifestByImageResourceUri(self, imageId):
-        tempMetadataFilename = tempfile.mktemp()
-        try:
-            self.manifestObject = self._getManifest(imageId, tempMetadataFilename)
-        finally:
-            try:
-                os.unlink(tempMetadataFilename)
-            except:
-                pass
+        self.manifestObject = self.getManifest(imageId)
 
     def download(self, uri):
         '''uri is the full resource uri uniquely identifying
            a single manifest entry'''
         tempMetadataFilename = tempfile.mktemp()
+        self.getManifestAsFile(uri, tempMetadataFilename)
+        manifestInfo = ManifestInfo(self.configHolder)
 
-        manifestInfo = self._getManifest(uri, tempMetadataFilename)
+        tempImageFilename = self._downloadFromLocations(manifestInfo)
+        self._verifySignature(tempImageFilename, tempMetadataFilename)
 
+        tempImageFilename = self._inflateImage(tempImageFilename)
+        if not os.path.exists(tempImageFilename):
+            raise InputException('Failed to find image matching image resource uri: %s' % uri)
+
+        self._verifyHash(tempImageFilename, manifestInfo.sha1)
+
+        shutil.copy2(tempImageFilename, self.localImageFilename)
+
+        os.remove(tempImageFilename)
+        os.remove(tempMetadataFilename)
+
+        return self.localImageFilename
+
+    def _downloadFromLocations(self, manifestInfo):
         tempImageFilename = ''
         for location in manifestInfo.locations:
             self._printDetail('Looking for image: %s' % location)
@@ -136,26 +108,7 @@ class Downloader(object):
             except:
                 pass
 
-        if not os.path.exists(tempImageFilename):
-            raise InputException('Failed to find image matching image resource uri: %s' % uri)
-
-        self._verifySignature(tempImageFilename, tempMetadataFilename)
-
-        tempImageFilename = self._inflateImage(tempImageFilename)
-
-        self._verifyHash(tempImageFilename, manifestInfo.sha1)
-
-        shutil.copy2(tempImageFilename, self.localImageFilename)
-
-        os.remove(tempImageFilename)
-        os.remove(tempMetadataFilename)
-
-        return self.localImageFilename
-
-    def _loadDom(self, filename):
-        file = open(filename).read()
-        dom = etree.fromstring(file)
-        return dom
+        return tempImageFilename
 
     def _downloadImage(self, url):
         compressionExtension = self._extractCompressionExtension(url)
@@ -175,17 +128,8 @@ class Downloader(object):
         else:
             return ''
 
-    def _download(self, url, localFilename):
-        try:
-            return Util.wget(url, localFilename)
-        except urllib2.URLError, ex:
-            raise InputException('Failed to download: %s, with detail: %s' % (url, str(ex)))
-
     def _verifySignature(self, imageFilename, metadataFilename):
-        signator = Signator(metadataFilename, self.configHolder)
-        res = signator.validate()
-        if res:
-            raise ExecutionException('Failed to validate metadata file')
+        ManifestValidator().verifySignature(imageFilename, metadataFilename)
 
     def _inflateImage(self, imageFilename):
         extension = self._extractCompressionExtension(imageFilename)
@@ -198,15 +142,7 @@ class Downloader(object):
         return inflatedFilename
 
     def _verifyHash(self, imageFilename, hashFromManifest):
-
-        data = open(imageFilename).read()
-        sha1 = hashlib.sha1()
-        sha1.update(data)
-
-        imageHash = sha1.hexdigest()
-
-        if imageHash != hashFromManifest:
-            raise ValidationException('Manifest hash code different from downloaded image: image=%s, matadata=%s' % (imageHash, hashFromManifest))
+        ImageValidator().verifyHash(imageFilename, hashFromManifest)
 
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, 1)
