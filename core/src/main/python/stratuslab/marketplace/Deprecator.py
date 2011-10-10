@@ -31,6 +31,7 @@ from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.marketplace.Downloader import Downloader
 
 from Util import Util as MarketplaceUtil
+from stratuslab.Exceptions import ExecutionException
 
 etree = Util.importETree()
 
@@ -111,7 +112,11 @@ class Deprecator(object):
 
             # Sign and upload
             signator = Signator(tempDeprecatedMetadataFilename, self.configHolder)
+
             isError = signator.sign()
+            if isError:
+                raise ExecutionException('Error signing new manifest')
+            
             self.uploader.upload(tempDeprecatedMetadataFilename)
         finally:
             try:
