@@ -40,7 +40,6 @@ class PolicyValidator(object):
         self._configure()
         
     def _configure(self):
-        self._addPolicyToOneConfig()
 
         if self._backupConfigFileExists():
             Util.printWarning("Policy validation backup file %s already exists, skipping configuration" % PolicyValidator.CONFIG_SAV)
@@ -58,13 +57,6 @@ class PolicyValidator(object):
         # Hack... try twice so that we don't mask the script for caching
         sedCmdsPart = ['s/tm_clone_policy.sh/tm_clone.sh/g ',
                        's/tm_clone_policy_caching.sh/tm_clone_caching.sh/g ']
-        self._updateOneConfig(sedCmdsPart)
-
-    def _addPolicyToOneConfig(self):
-        Util.printStep('Updating ONE extension policy configuration')
-        # Hack... try twice so that we don't mask the script for caching
-        sedCmdsPart = ['s/tm_clone.sh/tm_clone_policy.sh/g ',
-                       's/tm_clone_caching.sh/tm_clone_policy_caching.sh/g']
         self._updateOneConfig(sedCmdsPart)
 
     def _updateOneConfig(self, sedCmdsPart):
