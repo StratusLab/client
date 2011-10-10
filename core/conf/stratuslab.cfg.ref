@@ -135,10 +135,15 @@ proxy_oneadmin_password = oneadmin
 [policy]
 quota_cpu = 20
 quota_memory = 1GB
-# Metadata validation policy, comma separated
-validate_metadata = True
+# Values can be added as multi-line entries:
+# E.g.
+# blacklistendorsers =
+#  hacker@hackerounies.net
+#  not_nice@badboys.org
+# Notice the space required before each multi-line entry
 whitelistendorsers =
 whitelistimages =
+whitelistchecksums =
 blacklistimages =
 blacklistendorsers =
 blacklistchecksums =
