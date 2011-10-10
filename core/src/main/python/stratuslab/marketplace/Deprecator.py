@@ -71,10 +71,9 @@ class Deprecator(object):
         configHolder.assign(self)
 
         self.uploader = Uploader(configHolder)
-        self.downloader = Downloader(configHolder)
+        self.manifestDownloader = Downloader(configHolder)
 
     def deprecate(self, imageId):
-        tempMetadataFilename = tempfile.mktemp()
         tempDeprecatedMetadataFilename = tempfile.mktemp()
         try:
             imageURI = imageId + '/' + self.email
@@ -82,7 +81,7 @@ class Deprecator(object):
                 imageURI = imageURI + '/' + self.created
 
             # Get metadata file
-            self.downloader._getManifest(imageURI, tempMetadataFilename)
+            tempMetadataFilename = self.manifestDownloader.getManifestAsFile(imageURI)
 
             # Strip signature
             xml = etree.ElementTree(file=tempMetadataFilename)
