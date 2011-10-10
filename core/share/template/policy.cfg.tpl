@@ -1,17 +1,14 @@
-[whitelistendorsers]
-group1 = %(whitelistendorsers)s
+[endorsers]
+whitelistendorsers=%(whitelistendorsers)s
 
-[whitelistimages]
-group1 = %(whitelistimages)s
+blacklistendorsers=%(blacklistendorsers)s
 
-[blacklistimages]
-group1 = %(blacklistimages)s
+[images]
+whitelistimages=%(whitelistimages)s
 
-[blacklistendorsers]
-group1 = %(blacklistendorsers)s
+blacklistimages=%(blacklistimages)s
 
-[blacklistchecksums]
-group1 = %(blacklistchecksums)s
+[checksums]
+whitelistchecksums=%(whitelistchecksums)s
 
-[validatemetadatafile]
-activate=%(validateMetadata)s
+blacklistchecksums=%(blacklistchecksums)s
