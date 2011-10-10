@@ -64,10 +64,8 @@ class MainProgram(CommandBaseSysadmin):
         identifierUri = self.args[0]
         policyConfigFilename = self.args[1]
         
-        
         marketplaceEndpoint, imageId = identifierUri.rsplit('/', 1)
         configHolder.set('endpoint', marketplaceEndpoint)
-
 
         policy = Policy(policyConfigFilename, configHolder)
         policy.check(imageId)
