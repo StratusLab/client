@@ -136,6 +136,7 @@ class ManifestInfo(object):
         root.write(manifestfile)
 
     def parseManifest(self, manifest):
+
         try:
             xml = etree.fromstring(manifest)
         except SyntaxError, ex:
@@ -146,7 +147,8 @@ class ManifestInfo(object):
 
     def parseManifestFromXml(self, xml):
 
-        # skip endorsement element
+        xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
+        self.endorser = xml.findtext(xpathPrefix % 'endorser' + 'email')
 
         # required by Schema attributes
         for elem,ns in [('identifier',NS_DCTERMS), ('bytes',NS_SLREQ)]:
