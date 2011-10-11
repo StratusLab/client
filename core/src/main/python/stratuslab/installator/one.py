@@ -46,7 +46,7 @@ class OneInstallator(BaseInstallator):
             for vnet in self.defaultRangedNetworks:
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
         except OneException:
-            Util.printWarning('Coulnd\'t create virtual networks, already present?')
+            Util.printWarning('Couldn\'t create virtual networks, already present?')
 
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(os.path.join(Defaults.SHARE_DIR, 'vnet/fixed.net'))
