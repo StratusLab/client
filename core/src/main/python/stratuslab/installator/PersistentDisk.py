@@ -55,7 +55,7 @@ class PersistentDisk(object):
         self.pdiskHostConfigFile = '/etc/stratuslab/pdisk-host.cfg'
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
         self.pdiskUsername = 'pdisk'
-        self.pdiskPassword = _randomPassword()
+        self.pdiskPassword = self._randomPassword()
         
     def runFrontend(self):
         self.installFrontend()
