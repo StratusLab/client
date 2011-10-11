@@ -18,9 +18,11 @@
 # limitations under the License.
 #
 
+import string
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printStep, printWarning
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
+from random import choice
 
 class PersistentDisk(object):
 
@@ -48,8 +50,12 @@ class PersistentDisk(object):
                        },
         }
 
+        self.authnConfigFile = '/etc/stratuslab/authn/login-pswd.properties'
         self.pdiskConfigFile = '/etc/stratuslab/pdisk.cfg'
+        self.pdiskHostConfigFile = '/etc/stratuslab/pdisk-host.cfg'
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
+        self.pdiskUsername = 'pdisk'
+        self.pdiskPassword = _randomPassword()
         
     def runFrontend(self):
         self.installFrontend()
@@ -64,12 +70,13 @@ class PersistentDisk(object):
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
-        self._copyClodeNodeKey()
+        self._copyCloudNodeKey()
         self._service('pdisk', 'start')
         
     def configureFrontend(self):
         self._writeConfig()
         self._setAutorunZookeeper()
+        self._setPdiskUserAndPassword()
         # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
         self._service('pdisk', 'restart')
         if self.persistentDiskShare == 'nfs':
@@ -101,9 +108,13 @@ class PersistentDisk(object):
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
         self._overrideValueInFile('SHARE_TYPE', self.persistentDiskShare,
-                                  '/etc/stratuslab/pdisk-host.cfg')
+                                  self.pdiskHostConfigFile)
         self._overrideValueInFile('NFS_LOCATION', self.persistentDiskNfsMountPoint,
-                                  '/etc/stratuslab/pdisk-host.cfg')
+                                  self.pdiskHostConfigFile)
+        self._overrideValueInFile('PDISK_USER', self.pdiskUsername,
+                                  self.pdiskHostConfigFile)
+        self._overrideValueInFile('PDISK_PSWD', self.pdiskPassword,
+                                  self.pdiskHostConfigFile)
         
     def _installPackages(self, section):
         if self.packages:
@@ -111,6 +122,9 @@ class PersistentDisk(object):
                       % (self.profile, section, 
                          ', '.join(self.packages[self.profile][section])))
             self.system.installNodePackages(self.packages[self.profile][section])
+
+    def _randomPassword(length=12, chars=string.letters+string.digits):
+        return ''.join([choice(chars) for i in range(length)])
             
     def _commonInstallActions(self):
         self.system.workOnNode()
@@ -147,7 +161,7 @@ class PersistentDisk(object):
         printStep('Creating disk store directory...')
         self.system._remoteCreateDirs(self.persistentDiskFileLocation)
         
-    def _copyClodeNodeKey(self):
+    def _copyCloudNodeKey(self):
         self.system.copyCmd(self.persistentDiskCloudNodeKey, self.cloudNodeKey)
         
     def _writeConfig(self):
@@ -169,6 +183,11 @@ class PersistentDisk(object):
         if not self.persistentDiskAutorunZookeeper:
             printStep('Setting Zookeeper to run with pdisk...')
             self._overrideValueInFile('persistentDisk', 0, '/etc/init.d/pdisk')
+
+    def _setPdiskUserAndPassword(self):
+        self._overrideValueInFile('%s=' % (self.pdiskUsername), 
+                                  '%s,cloud-access' % (self.pdiskPassword), 
+                                  self.authnConfigFile)
             
     def _mergeAuthWithProxy(self):
         loginConf = '/etc/stratuslab/%s/login.conf'

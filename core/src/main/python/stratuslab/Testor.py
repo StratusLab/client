@@ -617,7 +617,8 @@ class Testor(unittest.TestCase):
             availableUserAfterStart, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterStart != (availableUserBeforeStart-1):
-                self.fail('Available users on persistent disk have to decrease by one')
+                self.fail('Available users on persistent disk have to decrease by one (%s, %s)' % 
+                          (availableUserBeforeStart, availableUserAfterStart))
         
             self._formatDisk(runner, pdiskDevice)
             self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
