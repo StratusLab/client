@@ -96,14 +96,20 @@ class Runner(object):
         self.vmIds = []
         self.diskImageFormat = None
         self.disk_driver = None
-        self.msgRecipients = []
 
+        self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
         self._setExtraDiskOptional()
         self._setPersistentDiskOptional()
         self._setReadonlyDiskOptional()
         self._setDiskImageFormat()
+
+    def _setMsgRecipients(self):
+        try:
+            self.msgRecipients
+        except AttributeError:
+            self.msgRecipients = []
 
     def _setDiskImageFormat(self):
         useQcowDiskFormat = getattr(self, 'useQcowDiskFormat', False)
