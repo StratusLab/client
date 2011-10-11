@@ -87,6 +87,7 @@ class Creator(object):
         self.packages = ''
 
         self.scripts = ''
+        self.prerecipe = ''
         self.recipe = ''
 
         self.verboseLevel = ''
@@ -258,9 +259,10 @@ class Creator(object):
 
     def buildNodeIncrement(self):
 
+        self._executePrerecipe()
         self._installPackages()
-        self._executeScripts()
         self._executeRecipe()
+        self._executeScripts()
 
         self._createImage()
 
@@ -608,6 +610,15 @@ deb %(name)s
         scriptPathRemote, args = _uploadScript(script)
         _executeRemoteScript(scriptPathRemote, args)
 
+    def _executePrerecipe(self):
+        self._printStep('Executing user prerecipe')
+
+        if len(self.prerecipe) == 0:
+            self.printDetail('No prerecipe to execute')
+            return
+
+        self._uploadAndExecuteRemoteRecipe(self.prerecipe)
+
     def _executeRecipe(self):
         self._printStep('Executing user recipe')
 
@@ -615,9 +626,13 @@ deb %(name)s
             self.printDetail('No recipe to execute')
             return
 
+        self._uploadAndExecuteRemoteRecipe(self.recipe)
+
+    def _uploadAndExecuteRemoteRecipe(self, script):
+
         fd, recipeFile = tempfile.mkstemp()
         try:
-            os.write(fd, self.recipe)
+            os.write(fd, script)
             os.close(fd)
             os.chmod(recipeFile, 0755)
             scriptPath = '/tmp/%s' % os.path.basename(recipeFile)
