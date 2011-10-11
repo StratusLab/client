@@ -19,8 +19,10 @@
 #
 
 import string
+import os
+import re
 from stratuslab.system import SystemFactory
-from stratuslab.Util import printStep, printWarning
+from stratuslab.Util import printStep, printWarning, fileGetContent
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from random import choice
 
@@ -55,7 +57,7 @@ class PersistentDisk(object):
         self.pdiskHostConfigFile = '/etc/stratuslab/pdisk-host.cfg'
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
         self.pdiskUsername = 'pdisk'
-        self.pdiskPassword = self._randomPassword()
+        self.pdiskPassword = self._extractPdiskPassword()
         
     def runFrontend(self):
         self.installFrontend()
@@ -147,6 +149,25 @@ class PersistentDisk(object):
         replace = key + '=' + value
         self.system._remoteAppendOrReplaceInFile(fileName, search, replace)
         
+    def _extractPdiskPassword(self):
+
+        pswd = self._randomPassword()
+    
+        if not os.path.isfile(self.authnConfigFile):
+            lines = []
+        else:
+            fileContent = fileGetContent(self.authnConfigFile)
+            lines = fileContent.split('\n')
+        
+        pattern = '^\s*%s\s*=\s*([\w-]+)(?:\s*,.*)?$' % (self.pdiskUsername)
+        search = re.compile(pattern)
+
+        for line in lines:
+            if search.match(line):
+                pswd = search.findall(line)[0]
+            
+        return pswd
+
     def _createLvmGroup(self):
         if 0 == self.system._nodeShell('%s %s' 
               % (self.persistentDiskLvmVgdisplay, self.persistentDiskLvmDevice)):
