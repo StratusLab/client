@@ -123,7 +123,7 @@ class PersistentDisk(object):
                          ', '.join(self.packages[self.profile][section])))
             self.system.installNodePackages(self.packages[self.profile][section])
 
-    def _randomPassword(length=12, chars=string.letters+string.digits):
+    def _randomPassword(self, length=12, chars=string.letters+string.digits):
         return ''.join([choice(chars) for i in range(length)])
             
     def _commonInstallActions(self):
