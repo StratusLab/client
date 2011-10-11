@@ -2,7 +2,7 @@ import unittest
 import os
 from xml.etree.ElementTree import ElementTree
 from stratuslab.marketplace.Policy import Policy
-from mock import Mock
+from mock.mock import Mock
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 class PolicyTest(unittest.TestCase):
