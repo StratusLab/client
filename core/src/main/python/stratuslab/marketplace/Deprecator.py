@@ -76,13 +76,14 @@ class Deprecator(object):
 
     def deprecate(self, imageId):
         tempDeprecatedMetadataFilename = tempfile.mktemp()
+        tempMetadataFilename = tempfile.mktemp()
         try:
             imageURI = imageId + '/' + self.email
             if len(self.created) != 0:
                 imageURI = imageURI + '/' + self.created
 
             # Get metadata file
-            tempMetadataFilename = self.manifestDownloader.getManifestAsFile(imageURI)
+            self.manifestDownloader.getManifestAsFile(imageURI, tempMetadataFilename)
 
             # Strip signature
             xml = etree.ElementTree(file=tempMetadataFilename)
