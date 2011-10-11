@@ -19,15 +19,12 @@
 #
 import unittest
 import re
-import os
-import sys
 import commands
 
 import stratuslab.system.BaseSystem as system
 from stratuslab.system.BaseSystem import BaseSystem as Firewall
 from stratuslab.system.BaseSystem import enableIpForwarding
 import tempfile
-import shutil
 
 class FirewallTest(unittest.TestCase):
 
@@ -49,13 +46,13 @@ class FirewallTest(unittest.TestCase):
         self.assertEquals(rule, 'foo')
         self.assertEquals(table, 'bar')
 
-    def testSetDeleteFireWallRule(self):
+    def testSetDeleteFirewallRule(self):
         ruleSpec = {'rule':'-A INPUT -p udp -m udp --dport 65534 -j ACCEPT'}
 
-        self.firewall._setFireWallRule(ruleSpec)
+        self.firewall._setFirewallRule(ruleSpec)
         self.assertTrue(self._isIptablesRuleSet(ruleSpec['rule'], 'filter'))
 
-        self.firewall._deleteFireWallRule(ruleSpec)
+        self.firewall._deleteFirewallRule(ruleSpec)
         self.assertTrue(not self._isIptablesRuleSet(ruleSpec['rule'], 'filter'))
 
     def _isIptablesRuleSet(self, rule, table):

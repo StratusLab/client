@@ -190,7 +190,7 @@ class BaseInstallator(object):
         self._configureCloudProxyService()
 
         printStep('Configuring firewall')
-        self._configureFireWall()
+        self._configureFirewall()
 
         self._configureDhcpServer()
 
@@ -290,8 +290,8 @@ class BaseInstallator(object):
     def _isTrue(self, value):
         return Util.isTrueConfVal(value)
 
-    def _configureFireWall(self):
-        self.frontend.configureFireWall()
+    def _configureFirewall(self):
+        self.frontend.configureFirewall()
 
     def _configureDhcpServer(self):
         self.frontend.configureDhcpServer()

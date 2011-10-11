@@ -93,8 +93,8 @@ class Image(object):
                              (imageId, str(imageLocations)))
 
     def _getImageLocationsByImageId(self, imageId):
-        """Return list of locations."""
-        self.manifestDownloader.downloadManifestByImageResourceUri(imageId)
+        '''Return list of locations.'''
+        self.manifestDownloader.downloadManifestByImageId(imageId)
         return self.manifestDownloader.getImageLocations()
 
     def printDetail(self, msg):
