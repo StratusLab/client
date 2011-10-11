@@ -24,26 +24,23 @@ class PolicyValidatorTest(unittest.TestCase):
 
         policyCfg = ConfigHolder.parseConfig(PolicyValidator.CONFIG)
         
-        sectionName = 'validatemetadatafile'
-        self.assertEquals('True', policyCfg.get(sectionName, 'activate'))
-
-        sectionNames = ('whitelistendorsers', 
-                        'whitelistimages', 
-                        'blacklistimages', 
-                        'blacklistendorsers', 
-                        'blacklistchecksums')
+        sectionNames = ('endorsers', 
+                        'images', 
+                        'checksums')
 
         for sectionName in sectionNames:
-            self.assertEquals('%(section)sv1, %(section)sv2' % {'section': sectionName}, 
-                              policyCfg.get(sectionName, 'group1'))
+            self.assertEquals('whitelist%(section)sv1, whitelist%(section)sv2' % {'section': sectionName}, 
+                              policyCfg.get(sectionName, 'whitelist' + sectionName))
+            self.assertEquals('blacklist%(section)sv1, blacklist%(section)sv2' % {'section': sectionName}, 
+                              policyCfg.get(sectionName, 'blacklist' + sectionName))
 
         self.assertTrue(os.path.exists(PolicyValidator.CONFIG_SAV))
 
     def _createConfiguration(self):
         configHolder = ConfigHolder(config={
-                                    'validate_metadata': True,
                                     'whitelistendorsers': 'whitelistendorsersv1, whitelistendorsersv2',
                                     'whitelistimages': 'whitelistimagesv1, whitelistimagesv2',
+                                    'whitelistchecksums': 'whitelistchecksumsv1, whitelistchecksumsv2',
                                     'blacklistimages': 'blacklistimagesv1, blacklistimagesv2',
                                     'blacklistendorsers': 'blacklistendorsersv1, blacklistendorsersv2',
                                     'blacklistchecksums': 'blacklistchecksumsv1, blacklistchecksumsv2',

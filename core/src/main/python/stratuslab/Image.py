@@ -19,10 +19,10 @@
 #
 import re
 
-from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
 import stratuslab.Util as Util
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 class Image(object):
     
@@ -35,7 +35,11 @@ class Image(object):
         configHolder.assign(self)
         self.configHolder = configHolder
 
-        self.downloader = None
+        self.manifestDownloader = self._createDownloader()
+
+    def _createDownloader(self):
+        configHolder = self.configHolder.copy()
+        return ManifestDownloader(configHolder)
     
     def checkImageExists(self, image):
         """image - URL, image ID, or disk ID"""
@@ -69,9 +73,7 @@ class Image(object):
     def getImageFormatByImageId(self, imageId):
         if Image.isImageUrl(imageId):
             raise Exceptions.ValidationException('Image ID was expected. Given %s' % imageId)
-        if not self.downloader:
-            self._createDownloader()
-        return self.downloader.getImageElementValue('format', imageId)
+        return self.manifestDownloader.getImageElementValue('format', imageId)
             
     def _checkImageByUrl(self, imageUrl):
         try:
@@ -83,7 +85,6 @@ class Image(object):
             self.printDetail('Image available: %s' % imageUrl)
 
     def _checkImageByIdInMarketplace(self, imageId):
-        self._createDownloader()
         imageLocations = self._getImageLocationsByImageId(imageId)
         if not imageLocations:
             raise Exceptions.ValidationException('Image location(s) are not set in manifest for the image with ID %s' % imageId)
@@ -92,16 +93,9 @@ class Image(object):
                              (imageId, str(imageLocations)))
 
     def _getImageLocationsByImageId(self, imageId):
-        """Return list of locations."""
-        if not self.downloader:
-            self._createDownloader()
-        self.downloader.downloadManifestByImageId(imageId)
-        return self.downloader.getImageLocations()
-
-    def _createDownloader(self):
-        if not self.downloader:
-            configHolder = self.configHolder.copy()
-            self.downloader = Downloader(configHolder)
+        '''Return list of locations.'''
+        self.manifestDownloader.downloadManifestByImageId(imageId)
+        return self.manifestDownloader.getImageLocations()
 
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)

@@ -136,13 +136,19 @@ class ManifestInfo(object):
         root.write(manifestfile)
 
     def parseManifest(self, manifest):
+
         try:
             xml = etree.fromstring(manifest)
         except SyntaxError, ex:
             raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' % 
                                      (str(ex), manifest))
+        
+        return self.parseManifestFromXml(xml)
 
-        # skip endorsement element
+    def parseManifestFromXml(self, xml):
+
+        xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
+        self.endorser = xml.findtext(xpathPrefix % 'endorser' + 'email')
 
         # required by Schema attributes
         for elem,ns in [('identifier',NS_DCTERMS), ('bytes',NS_SLREQ)]:

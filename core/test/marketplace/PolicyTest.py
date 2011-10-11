@@ -2,35 +2,38 @@ import unittest
 import os
 from xml.etree.ElementTree import ElementTree
 from stratuslab.marketplace.Policy import Policy
-from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Exceptions import ValidationException
+from mock import Mock
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 class PolicyTest(unittest.TestCase):
     
-    def testFilter(self):
-        xmltree = ElementTree()
-        xmltree.parse(os.path.dirname(__file__) + "/valid-full.xml")
+    def testFilterWithTwoEntriesOnlyOneValid(self):
+        xml = ElementTree()
+        xml.parse(os.path.dirname(__file__) + "/valid-multiple-entries.xml")
         
-        metadataEntries = xmltree.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
-        configHolder = ConfigHolder()
-        policy = Policy(os.path.dirname(__file__) + "/policy.cfg", configHolder)
-        filtered1 = policy._filter(metadataEntries, policy.whiteListEndorsers)
-        if len(filtered1) == 0:
-                raise ValidationException('Failed policy check')
-        print len(filtered1)
+        manifests = ManifestDownloader()._extractManifestInfos(xml)
 
-        filtered2 = policy._filter(filtered1, policy.blackListChecksums)
-        if len(filtered2) == 0:
-                raise ValidationException('Failed policy check')
-        print len(filtered2)
+        Policy.POLICY_CFG = os.path.dirname(__file__) + "/policy.cfg"
+        policy = Policy()
+        policy._downloadManifests = Mock(return_value=manifests)
 
-    def testActivate(self):
-        policy = Policy(os.path.dirname(__file__) + "/policy.cfg")
-        policy.validateMetaData = ['no']
-        self.assertFalse(policy._isActive())
-        policy.validateMetaData = ['yes']
-        self.assertTrue(policy._isActive())
+        filteredManifestList = policy.check(manifests[0].identifier)
 
+        self.assertEquals(1, len(filteredManifestList))
+
+    def testFilterWithOneEntryAndValid(self):
+        xml = ElementTree()
+        xml.parse(os.path.dirname(__file__) + "/valid-single-entry.xml")
+        
+        manifests = ManifestDownloader()._extractManifestInfos(xml)
+
+        Policy.POLICY_CFG = os.path.dirname(__file__) + "/policy.cfg"
+        policy = Policy()
+        policy._downloadManifests = Mock(return_value=manifests)
+
+        filteredManifestList = policy.check(manifests[0].identifier)
+
+        self.assertEquals(1, len(filteredManifestList))
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,64 +4,81 @@ import re
 import os
 import sys
 from optparse import OptionParser
+from stratuslab.CommandBase import CommandBaseSysadmin
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.marketplace.Downloader import Downloader
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Image import Image 
 import stratuslab.Util as Util
 
-USAGE = """Usage: %prog --get-element <ELEMENT> <marketplace image URL>
-<marketplace image URL> - a valid URL. (http://example.com/dir/imageID)"""
+class MainProgram(CommandBaseSysadmin):
+    '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
 
-parser = OptionParser(usage=USAGE)
+    def __init__(self):
+        super(MainProgram, self).__init__()
+        self.marketplaceEndpoint
+        self.imageId = None
+        self.element
 
-def _exitWithUsage(msg=''):
-    if msg:
-        print >> sys.stderr, msg
-    print >> sys.stderr, parser.usage
-    raise SystemExit(1)
+    def parse(self):
+        usage = '''Usage: %prog --get-element <ELEMENT> <marketplace image URL>
 
-def main():
+<marketplace image URL> - a valid URL. (http://example.com/dir/imageID)'''
+
+        self.parser.usage = usage
+
+        self.parser.add_option('-e', '--get-element', dest='element', help='Element to get.',
+            metavar='ELEMENT', default=None)
+
+        MarketplaceUtil.addEndpointOption(self.parser)
+
+        self.options, self.args = self.parser.parse_args()
+
+        MarketplaceUtil.checkEndpointOption(self.options)
+        
+        try:
+            imageEndpoint = self.args[0]
+        except IndexError:
+            self.usageExitTooFewArguments()
+        else:
+            if Image.re_imageUrl.match(imageEndpoint):
+                self.parser.error('Invalid Marketplace image URL')
     
-    parser.add_option('--get-element', dest='element', help='Element to get.',
-        metavar='ELEMENT', default=None)
-    options, args = parser.parse_args()
+        try:
+            uri, self.imageId = imageEndpoint.rsplit('/', 1)
+            self.marketplaceEndpoint = Util.getProtoHostnamePortFromUri(uri)
+        except ValueError:
+            self.marketplaceEndpoint = self.options.marketplaceEndpoint
+            self.imageId = imageEndpoint
+
+        if not self.options.element:
+            self.parser.error('Missing mandatory -e/--get-element option')
+        else:
+            self.element = self.options.element
     
+    
+    def doWork(self):
+
+        configHolder = ConfigHolder()
+        configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
+        
+        downloader = ManifestDownloader(configHolder)
+        downloader.downloadManifestByImageId(self.imageId)
+        
+        if self.element == 'locations':
+            value = '\n'.join([location for location in downloader.getImageLocations()])
+        elif self.element == 'location':
+            value = downloader.getImageLocations()
+            value = value[0]
+        else:
+            value = downloader.getImageElementValue(self.element)
+        print value
+
+if __name__ == '__main__':
     try:
-        imageEndpoint = args[0]
-    except IndexError:
-        _exitWithUsage()
-    else:
-        if Image.re_imageUrl.match(imageEndpoint):
-            _exitWithUsage('ERROR: An image URL was given is not MarketPlace image URL.')
-
-    if not options.element:
-        _exitWithUsage()
-    else:
-        element = options.element
-
-    configHolder = ConfigHolder()
-    
-    try:
-        _uri, imageId = imageEndpoint.rsplit('/', 1)
-        marketplaceEndpoint = Util.getProtoHostnamePortFromUri(_uri)
-    except ValueError:
-        _exitWithUsage()
-
-    configHolder = ConfigHolder()
-    configHolder.set('marketplaceEndpoint', marketplaceEndpoint)
-    
-    downloader = Downloader(configHolder)
-    downloader.downloadManifestByImageId(imageId)
-    
-    if element == 'location':
-        value = downloader.getImageLocations()
-        value = value[0]
-    else:
-        value = downloader.getImageElementValue(element)
-    print value
-
-if __name__ == "__main__":
-    main()
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

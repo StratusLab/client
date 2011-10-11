@@ -300,6 +300,29 @@ VM_HOOK = [
     arguments = "$VMID" ]
 #-------------------------------------------------------------------------------
 
+#------------------------------ Notification Hooks -----------------------------
+
+VM_HOOK= [
+    name      = "create",
+    arguments = "$VMID CREATE",
+    command   = "/usr/share/one/hooks/notify.rb",
+    on        = "CREATE",
+    remote    = "NO" ]
+
+VM_HOOK= [
+    name      = "running",
+    arguments = "$VMID RUNNING",
+    command   = "/usr/share/one/hooks/notify.rb",
+    on        = "RUNNING",
+    remote    = "NO" ]
+
+VM_HOOK= [
+    name      = "done",
+    arguments = "$VMID DONE",
+    command   = "/usr/share/one/hooks/notify.rb",
+    on        = "DONE",
+    remote    = "NO" ]
+
 #-------------------------------- Hook Examples --------------------------------
 #VM_HOOK = [
 #    name      = "dhcp",

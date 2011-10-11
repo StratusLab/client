@@ -56,7 +56,6 @@ class BaseInstallator(object):
         self.onedTpl = os.path.join(getTemplateDir(), 'oned.conf.tpl')
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
-        self.validateMetadata = False
         self.caching = False
 
     def runInstall(self, configHolder):
@@ -178,7 +177,6 @@ class BaseInstallator(object):
         self._setCloud()
 
         self._setFrontend()
-
         printStep('Installing CAs')
         self._installCAs()
 
@@ -281,10 +279,7 @@ class BaseInstallator(object):
             Registration(self.configHolder).run()
 
     def _configureMarketPlacePolicyValidation(self):
-        if self._isTrue(self.validateMetadata):
-            PolicyValidator(self.configHolder).run()
-        else:
-            PolicyValidator(self.configHolder).resetOneConfig()
+        PolicyValidator(self.configHolder).run()
 
     def _configureCaching(self):
         if self._isTrue(self.caching):

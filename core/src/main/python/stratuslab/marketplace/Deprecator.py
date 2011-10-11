@@ -31,6 +31,7 @@ from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.marketplace.Downloader import Downloader
 
 from Util import Util as MarketplaceUtil
+from stratuslab.Exceptions import ExecutionException
 
 etree = Util.importETree()
 
@@ -71,10 +72,9 @@ class Deprecator(object):
         configHolder.assign(self)
 
         self.uploader = Uploader(configHolder)
-        self.downloader = Downloader(configHolder)
+        self.manifestDownloader = Downloader(configHolder)
 
     def deprecate(self, imageId):
-        tempMetadataFilename = tempfile.mktemp()
         tempDeprecatedMetadataFilename = tempfile.mktemp()
         try:
             imageURI = imageId + '/' + self.email
@@ -82,7 +82,7 @@ class Deprecator(object):
                 imageURI = imageURI + '/' + self.created
 
             # Get metadata file
-            self.downloader._getManifest(imageURI, tempMetadataFilename)
+            tempMetadataFilename = self.manifestDownloader.getManifestAsFile(imageURI)
 
             # Strip signature
             xml = etree.ElementTree(file=tempMetadataFilename)
@@ -112,7 +112,11 @@ class Deprecator(object):
 
             # Sign and upload
             signator = Signator(tempDeprecatedMetadataFilename, self.configHolder)
+
             isError = signator.sign()
+            if isError:
+                raise ExecutionException('Error signing new manifest')
+            
             self.uploader.upload(tempDeprecatedMetadataFilename)
         finally:
             try:
