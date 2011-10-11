@@ -37,6 +37,7 @@ class ManifestDownloader(object):
 
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
+        self.manifestObject = None
         self.endpoint = ManifestDownloader.ENDPOINT
         configHolder.assign(self)
 
