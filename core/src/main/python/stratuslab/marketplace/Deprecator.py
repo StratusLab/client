@@ -28,10 +28,10 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import P12Certificate
 
 from stratuslab.marketplace.Uploader import Uploader
-from stratuslab.marketplace.Downloader import Downloader
 
 from Util import Util as MarketplaceUtil
 from stratuslab.Exceptions import ExecutionException
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 etree = Util.importETree()
 
@@ -72,7 +72,7 @@ class Deprecator(object):
         configHolder.assign(self)
 
         self.uploader = Uploader(configHolder)
-        self.manifestDownloader = Downloader(configHolder)
+        self.manifestDownloader = ManifestDownloader(configHolder)
 
     def deprecate(self, imageId):
         tempDeprecatedMetadataFilename = tempfile.mktemp()
