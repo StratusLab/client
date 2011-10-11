@@ -185,7 +185,7 @@ class PersistentDisk(object):
             self._overrideValueInFile('persistentDisk', 0, '/etc/init.d/pdisk')
 
     def _setPdiskUserAndPassword(self):
-        self._overrideValueInFile('%s=' % (self.pdiskUsername), 
+        self._overrideValueInFile(self.pdiskUsername, 
                                   '%s,cloud-access' % (self.pdiskPassword), 
                                   self.authnConfigFile)
             
