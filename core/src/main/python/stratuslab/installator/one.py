@@ -34,7 +34,15 @@ class OneInstallator(BaseInstallator):
         self.cloudConfFile = OneDefaults.CLOUD_CONF_FILE
 
     def _addCloudNode(self):
-        return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+        # This just assumes that a node can't be added because it exists
+        # already.  A better implementation would check to see if it 
+        # really does exists and if so, returns the existing node id.
+        try:
+            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+        except OneException:
+            Util.printWarning('Couldn\'t add host, already present?')
+            # The id is actually ignored, so this should be ok.
+            return -1
         
     def _removeCloudNode(self, id):
         self.cloud.hostRemove(id)
