@@ -790,7 +790,7 @@ class BaseSystem(object):
             caPackages = map(lambda x: x.strip(), 
                              self.certificateAuthorityPackages.split(','))
             packages.extend(caPackages)
-            repoConf = '\n'.join([line.strip() for line in self.certificateAuthorityRepo.strip().split('|')])
+            repoConf = '\n'.join([line.strip() for line in self.certificateAuthorityRepo.strip().split('\n')])
             repoName = self.caRepoName
             for package in packages:
                 self._updatePackageAndRepoInfo(package, repoName, repoConf)
