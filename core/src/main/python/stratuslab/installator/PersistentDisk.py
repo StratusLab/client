@@ -106,6 +106,9 @@ class PersistentDisk(object):
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
              '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername,
              '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername)
+        self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
+             'Defaults:%s !requiretty' % self.oneUsername,
+             'Defaults:%s !requiretty' % self.oneUsername)
         
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
