@@ -413,6 +413,7 @@ class Creator(object):
         
         downloader = ManifestDownloader(configHolder)
         self.manifestObject = downloader.getManifestInfo(self.image)
+        self.manifest = self.manifestObject.tostring()
 
     def __setAttributesFromManifest(self):
         self._setOsFromManifest()
