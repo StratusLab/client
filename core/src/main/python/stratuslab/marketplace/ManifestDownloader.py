@@ -65,23 +65,13 @@ class ManifestDownloader(object):
         return manifests        
 
     def getManifestInfo(self, resourceUri):
-        tempFilename = tempfile.mktemp()
-        try:
-            return self._getManifest(resourceUri, tempFilename)
-        finally:
-            try:
-                os.unlink(tempFilename)
-            except:
-                pass
+        '''Return manifest as ManifestInfo object.
+        '''
+        return self._getManifest(resourceUri)
             
     def getManifestAsFile(self, uri, filename):
         url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, uri)
         self._downloadAsFile(url, filename)
-
-    def getManifest(self, resourceUri):
-        '''Return manifest as ManifestInfo object.
-        '''
-        return self._getManifest(resourceUri)
 
     def _getManifest(self, resourceUri):
         url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, resourceUri)
