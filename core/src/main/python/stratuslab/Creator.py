@@ -48,9 +48,9 @@ from stratuslab.Uploader import Uploader
 from stratuslab.Signator import Signator
 from stratuslab.ManifestInfo import ManifestIdentifier
 from stratuslab.Image import Image
-from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.system import Systems
 from stratuslab import Defaults
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 class Creator(object):
 
@@ -411,9 +411,9 @@ class Creator(object):
         
         configHolder = self.configHolder.copy()
         
-        downloader = Downloader(configHolder)
-        downloader.downloadManifestByImageResourceUri(self.image)
-        self.manifestObject = downloader.manifestObject
+        downloader = ManifestDownloader(configHolder)
+        # TODO: do we need both manifest types as class members?
+        self.manifestObject = downloader.getManifestInfo(self.image)
         self.manifest = self.manifestObject.tostring()
 
     def __setAttributesFromManifest(self):
