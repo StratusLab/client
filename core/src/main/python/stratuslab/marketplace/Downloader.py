@@ -32,7 +32,6 @@ from stratuslab.Exceptions import InputException
 
 from stratuslab.marketplace.ImageValidator import ImageValidator
 from stratuslab.marketplace.ManifestValidator import ManifestValidator
-from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 etree = Util.importETree()
 
@@ -52,26 +51,6 @@ class Downloader(object):
         
         self.localImageFilename = os.path.abspath(self.localImageFilename)
         self.manifestObject = None
-
-    def getManifestInfo(self, resourceUri):
-        return ManifestDownloader().getManifestInfo(resourceUri)
-
-    def getManifestAsFile(self, resourceUri, tempMetadataFilename):
-        '''Download to tempMetadataFilename manifest.
-        '''
-        ManifestDownloader().getManifestAsFile(resourceUri, tempMetadataFilename)
-    
-    def getImageLocations(self, resourceUri=''):
-        return ManifestDownloader().getImageElementValue('locations', resourceUri)
-
-    def getImageVersion(self, resourceUri=''):
-        return ManifestDownloader().getImageElementValue('version', resourceUri)
-
-    def getImageElementValue(self, element, resourceUri=''):
-        return ManifestDownloader().getImageElementValue(element, resourceUri)
-
-    def downloadManifestByImageResourceUri(self, imageId):
-        self.manifestObject = self.getManifest(imageId)
 
     def download(self, uri):
         '''uri is the full resource uri uniquely identifying
