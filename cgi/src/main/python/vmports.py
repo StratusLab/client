@@ -71,6 +71,9 @@ class PortTranslationService(object):
         self._sendJson(rawPorts)
 
 if __name__ == '__main__':
-    service = PortTranslationService()
+    configFile = ''
+    if (len(sys.argv) > 1):
+        configFile = sys.argv[1]
+    service = PortTranslationService(configFile)
     service.run()
 
