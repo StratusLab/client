@@ -47,6 +47,10 @@ class MainProgram(AuthnCommand):
         self.parser.add_option('-i', '--input', dest='inVmIdsFile',
                 help='file containing line separated vm-ids', metavar='FILE',
                 default=None)
+        self.parser.add_option('--shutdown', dest='vmShutdown',
+                help='Attempt VM shutdown. VM should support ACPI. '
+                'Without the option VM is forcefully terminated.',
+                default=False, action='store_true')
 
         AuthnCommand.addCloudEndpointOptions(self.parser)
 
