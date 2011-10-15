@@ -77,12 +77,11 @@ class Runner(object):
         self.cloud.setEndpoint(self.endpoint)
         self.pdisk = PersistentDisk(configHolder)
 
-
-        self._initAttributes()
+        self._initVmAttributes()
         
         self.instancesDetail = []
 
-    def _initAttributes(self):
+    def _initVmAttributes(self):
         # VM template parameters initialization
         self.vm_cpu = 0
         self.vm_vcpu = 0
