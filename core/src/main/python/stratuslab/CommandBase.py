@@ -22,6 +22,7 @@ import sys
 import os
 from optparse import OptionParser
 import xmlrpclib
+import json
 
 import stratuslab.Util as Util
 from stratuslab.VersionChecker import VersionChecker
@@ -76,7 +77,11 @@ class CommandBase(object):
         except socket.gaierror, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exception, ex:
-            self.raiseOrDisplayError(ex)
+            msg = str(ex)
+            if getattr(ex, 'mediaType', None):
+                error = json.loads(ex.content)
+                msg = 'Error: %s (code %d)' % (error['message'], error['code'])
+            self.raiseOrDisplayError(msg)
 
     def _checkPythonVersionAndRaise(self):
         try:

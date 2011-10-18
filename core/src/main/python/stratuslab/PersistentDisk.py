@@ -30,12 +30,22 @@ from socket import gethostbyaddr
 class PersistentDisk(object):
     
     def __init__(self, configHolder):
-        self.structEndpoint = 'https://%(pdiskEndpoint)s:%(pdiskPort)d'
-        self.config = configHolder
-        self.pdiskEndpoint = None
+        self.pdiskHostname = None
+        self.pdiskProtocol = None
+        self.pdiskPort = None
+        self.pdiskUsername = None
+        self.pdiskPassword = None
+        self.username = None
+        self.password = None
+        
+        self.endpoint = None
+
+        self.structEndpoint = '%(pdiskProtocol)s://%(pdiskEndpoint)s:%(pdiskPort)d'
+        self.configHolder = configHolder
+        self.configHolder.assign(self)
         
     def _initPDiskConnection(self):
-        self.client = HttpClient(self.config)
+        self.client = HttpClient(self.configHolder)
         self.client.setHandleResponse(False)
         self._addCredentials()
         self._buildFQNEndpoint()
@@ -43,54 +53,75 @@ class PersistentDisk(object):
     def _getJson(self, url):
         return self.client.get(url, accept="application/json")
         
-    def _postJson(self, url, body, contentType='application/x-www-form-urlencoded'):
-        return self.client.post(url, 
-                                body, 
+    def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
+        return self.client.post(url,
+                                body,
                                 contentType, 
                                 accept="application/json")
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
-        listVolUrl = '%s/disks/' % self.pdiskEndpoint
+        listVolUrl = '%s/disks/' % self.endpoint
         headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
+        jsonDiskList = jsonDiskList.replace('\\','')
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
-        createVolumeUrl = '%s/disks/' % self.pdiskEndpoint
-        createVolumeBody = { 'size': size, 
-                             'tag': tag, 
-                             'visibility': self._getVisibilityFromBool(visibility)}
-        headers, uuid = self._postJson(createVolumeUrl, urlencode(createVolumeBody))
+        url = '%s/disks/' % self.endpoint
+        body = {'size': size, 
+                'tag': tag, 
+                'visibility': self._getVisibilityFromBool(visibility)}
+        headers, uuid = self._postJson(url, urlencode(body))
         if headers.status == 201:
             return self._getUuidFromJson(uuid)
         self._raiseOnErrors(headers, uuid)
+
+    def createCowVolume(self, uuid):
+        # TODO: add iscow check
+        self._initPDiskConnection()
+        self.client.setHandleResponse(True)
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        try:
+            _, content = self._postJson(url)
+        except Exception, ex:
+            ex.mediaType = 'json'
+            raise
+        return self._getUuidFromJson(content)
+    
+    def rebaseVolume(self, uuid):
+        # TODO: add iscow check
+        self._initPDiskConnection()
+        self.client.setHandleResponse(True)
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        _, content = self._postJson(url)
+        return self._getUuidFromJson(content)
     
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
-        deleteVolumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
-        headers, uuid = self.client.delete(deleteVolumeUrl, accept="application/json")
+        url = '%s/disks/%s/' % (self.endpoint, uuid)
+        headers, uuid = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
     
     def volumeExists(self, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, _ = self.client.head(url)
         return headers.status == 200
     
     def getVolumeUsers(self, uuid):
         self._initPDiskConnection()
-        volumeUrl = '%s/disks/%s/' % (self.pdiskEndpoint, uuid)
+        volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
         return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s/mounts/' % (self.pdiskEndpoint, uuid)
+        url = '%s/disks/%s/mounts/' % (self.endpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
         headers, content = self._postJson(url, urlencode(body))
@@ -99,7 +130,7 @@ class PersistentDisk(object):
     
     def hotDetach(self, node, vmId, uuid):
         self._initPDiskConnection()
-        url = '%s/disks/%s/mounts/%s-%s' % (self.pdiskEndpoint, uuid, vmId, node)
+        url = '%s/disks/%s/mounts/%s-%s' % (self.endpoint, uuid, vmId, node)
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
@@ -107,7 +138,7 @@ class PersistentDisk(object):
     def serviceAvailable(self):
         try:
             self._initPDiskConnection()
-            header, _ = self.client.head('%s' % self.pdiskEndpoint)
+            header, _ = self.client.head('%s' % self.endpoint)
             if header.status == 200:
                 return True
             return False
@@ -116,13 +147,13 @@ class PersistentDisk(object):
         
     def _raiseOnErrors(self, headers, content):
         if headers.status in (400, 411):
-            raise Exception('.\n'.join(json.loads(content)['message']))
+            raise Exception(json.loads(content)['message'])
         if headers.status != 200:
             raise Exception(headers.reason)
     
     def _getUuidFromJson(self, jsonUuid):
         return json.loads(jsonUuid)['uuid']
-        
+                
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
 
@@ -144,21 +175,13 @@ class PersistentDisk(object):
         return availableDisk
     
     def _buildFQNEndpoint(self):
-        if self.pdiskEndpoint:
+        if self.endpoint:
             return
-        self._checkEndpoint();
-        self.pdiskEndpoint = self.structEndpoint % self.config.options
+        self.endpoint = self.structEndpoint % self.__dict__
         
-    def _checkEndpoint(self):
-        if not self.config.pdiskEndpoint.lstrip().rstrip():
-            printError('No valid persistent disk endpoint found', exitCode=1, exit=True)
-                        
-    def _removeTrailingSlash(self, string):
-        return string[:-1]
-    
     def _addCredentials(self):
-        user = self.config.options.get('pdiskUsername', '') or self.config.username
-        password = self.config.options.get('pdiskPassword', '') or self.config.password
+        user = self.pdiskUsername or self.username
+        password = self.pdiskPassword or self.password
         self.client.addCredentials(user, password)
     
     @staticmethod
@@ -167,8 +190,8 @@ class PersistentDisk(object):
         try:
             endpoint = gethostbyaddr(hostname)[0]
         except Exception:
-            printError('Unable to translate endpoint "%s" to an IP address' % hostname, 
-                       exitCode=1, exit=True)
+            printError('Unable to translate endpoint "%s" to an IP address' % hostname,
+                       exit=False)
         return endpoint
         
     @staticmethod

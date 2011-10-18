@@ -253,6 +253,7 @@ class PDiskEndpoint(object):
     @staticmethod
     def options():
         return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', ''),
+                'pdiskProtocol' : os.getenv('STRATUSLAB_PDISK_PROTOCOL', Defaults.pdiskProtocol),
                 'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),
                 'pdiskUsername' : os.getenv('STRATUSLAB_PDISK_USERNAME', UsernamePassword.options().get('username')),
                 'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', UsernamePassword.options().get('password')) }  
@@ -263,6 +264,10 @@ class PDiskEndpoint(object):
             defaultOptions = PDiskEndpoint.options()
         
         # TODO: Add certificate support
+        parser.add_option('--pdisk-protocol', dest='pdiskProtocol',
+                          help='Persistent disk service endpoint. \
+                          Default STRATUSLAB_PDISK_ENDPOINT or %s.' % defaultOptions['pdiskProtocol'],
+                          metavar='PROTOCOL', default=defaultOptions['pdiskEndpoint'])
         parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
                           help='Persistent disk service endpoint. \
                           Default STRATUSLAB_PDISK_ENDPOINT',

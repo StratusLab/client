@@ -129,7 +129,11 @@ class HttpClient(object):
             raise NetworkException('Error: BadStatusLine contacting: ' + url)
         
         if self.handleResponse:
-            _handleResponse(resp, content)
+            try:
+                _handleResponse(resp, content)
+            except Exception, ex:
+                ex.mediaType = headers['Accept']
+                raise
 
         return resp, content
 
