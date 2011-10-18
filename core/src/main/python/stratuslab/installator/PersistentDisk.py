@@ -23,6 +23,7 @@ import os
 import re
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printStep, printWarning, fileGetContent
+import stratuslab.Util as Util
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from random import choice
 
@@ -85,6 +86,7 @@ class PersistentDisk(object):
             return
         if self.persistentDiskStorage == 'lvm':
             self._createLvmGroup()
+            self._fixUdevForLvmMonitoring()
         else:
             self._createFileHddDirectory()
     
@@ -249,6 +251,20 @@ class PersistentDisk(object):
 
     def _nfsShareAlreadyExists(self):
         return not (self.persistentDiskExistingNfs == '')
-            
-            
-            
+
+    def _fixUdevForLvmMonitoring(self):
+        """See the issue: https://bugzilla.redhat.com/show_bug.cgi?id=577798#c5
+        1. Modify 80-udisks.rules
+        2. Install a cron job to modify 80-udisks.rules file to safeguard against
+           udev package updates.
+        """
+        fileName = '/lib/udev/rules.d/80-udisks.rules'
+        search = 'KERNEL=="dm-*", OPTIONS+="watch"'
+        replace = '#KERNEL=="dm-*", OPTIONS+="watch"'
+        Util.appendOrReplaceInFile(fileName, search, replace)
+
+        self.system.restartService('udev')
+
+        data = """*/15 * * * * root sed -i -e 's/^KERNEL==\"dm-\*\", OPTIONS+=\"watch\"/%s/' %s""" % \
+                (replace, fileName)
+        Util.filePutContent('/etc/cron.d/fix-udev-for-lvm-monitoring.cron', data)
