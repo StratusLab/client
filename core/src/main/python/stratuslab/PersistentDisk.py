@@ -94,6 +94,7 @@ class PersistentDisk(object):
     def rebaseVolume(self, uuid):
         # TODO: add iscow check
         self._initPDiskConnection()
+        self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         _, content = self._postJson(url)
         return self._getUuidFromJson(content)
