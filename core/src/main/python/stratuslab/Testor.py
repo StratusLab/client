@@ -602,6 +602,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.username = Testor.configHolder.testUsername
         configHolder.password = Testor.configHolder.testPassword
+        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         
         try:
@@ -661,6 +662,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.username = Testor.configHolder.testUsername
         configHolder.password = Testor.configHolder.testPassword
+        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         
         try:    
