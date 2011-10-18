@@ -56,6 +56,10 @@ class MainProgram(AuthnCommand):
                 help='Create a copy on write volume based on this uuid', metavar='UUID', 
                 default=None)
         
+        self.parser.add_option('--rebase', dest='rebaseUuid',
+                help='Rebase the CoW volume', metavar='UUID', 
+                default=None)
+        
         self.parser.add_option('--private', dest='volumeVisibility',
                 help='''Set the disk as private (default). Only you can see, use 
 and delete the disk.''', action='store_false')
@@ -77,7 +81,7 @@ and use it but can't delete it.''', action='store_true', default=False)
         self._checkTagLength()
         
     def _checkVolumeSize(self):
-        if self.options.originUuid:
+        if self.options.originUuid or self.options.rebaseUuid:
             return
         
         if not self.options.volumeSize:
@@ -97,6 +101,8 @@ and use it but can't delete it.''', action='store_true', default=False)
 
         if self.options.originUuid:
             volumeId = pdisk.createCowVolume(self.options.originUuid)
+        elif self.options.rebaseUuid:
+            volumeId = pdisk.rebaseVolume(self.options.rebaseUuid)
         else:
             volumeId = pdisk.createVolume(self.options.volumeSize,
                                           self.options.volumeTag,
