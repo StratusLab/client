@@ -164,7 +164,7 @@ class ManifestInfoTest(unittest.TestCase):
     def testUpdateManifest(self):
 
         info = ManifestInfo()
-        info.template = self.template
+        info._template = self.template
         info.parseManifest(ManifestInfoTest.manifestDcFull)
 
         self.assertEquals('machine', info.type)
@@ -180,12 +180,12 @@ class ManifestInfoTest(unittest.TestCase):
     def testMissingElements(self):
 
         info = ManifestInfo()
-        info.template = self.template
+        info._template = self.template
         self.failUnlessRaises(ExecutionException, info.parseManifest, 
                               ManifestInfoTest.manifestDcMissingElemsMandatory)
 
         info = ManifestInfo()
-        info.template = self.template
+        info._template = self.template
         self.failUnlessRaises(ExecutionException, info.parseManifest, 
                               ManifestInfoTest.manifestDcMissingElems)
 
@@ -206,7 +206,7 @@ class ManifestInfoTest(unittest.TestCase):
 
     def testTostringWithListOfLocations(self):
         info1 = ManifestInfo()
-        info1.template = self.template
+        info1._template = self.template
         info1.parseManifest(self.rdfFull1)
         manifest = info1.tostring()
         
@@ -218,7 +218,7 @@ class ManifestInfoTest(unittest.TestCase):
 
     def testNonEmtpyLocations(self):
         info = ManifestInfo()
-        info.template = self.template
+        info._template = self.template
         info.locations = ['location.foo']
         manifest = info.tostring()
 

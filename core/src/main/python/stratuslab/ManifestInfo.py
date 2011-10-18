@@ -71,7 +71,7 @@ class ManifestInfo(object):
         self.deprecated = ''
 
         self.locations = [] # list of image URIs
-        self.locations_xml = '<slterms:location>%(location)s</slterms:location>'
+        self._locations_xml = '<slterms:location>%(location)s</slterms:location>'
 
         self.kind = '' # image kind: machine, disk
 
@@ -95,9 +95,9 @@ class ManifestInfo(object):
 
         self.user = self.creator
 
-        self.template = os.path.join(os.path.join(Util.getTemplateDir(), 'manifest.xml.tpl'))
+        self._template = os.path.join(os.path.join(Util.getTemplateDir(), 'manifest.xml.tpl'))
 
-        self.attrsAndNamespaces = \
+        self._attrsAndNamespaces = \
                             (('type','type',NS_DCTERMS,None),
                              ('created','created',NS_DCTERMS,None),
                              ('valid','valid',NS_DCTERMS,None),
@@ -169,7 +169,7 @@ class ManifestInfo(object):
             setattr(self, checkSumType, checkSumValue)
 
         # attributes from integration XML template
-        for attrObj,elemXml,ns,default in self.attrsAndNamespaces:
+        for attrObj,elemXml,ns,default in self._attrsAndNamespaces:
             try:
                 attrVal = getattr(xml.find('.//{%s}%s' % (ns, elemXml)), 'text')
             except AttributeError:
@@ -223,16 +223,16 @@ class ManifestInfo(object):
         return self.tostring()
 
     def tostring(self):
-        template = open(self.template).read()
+        template = open(self._template).read()
         self._updateLocationsXml()
         return template % self.__dict__
 
     def _updateLocationsXml(self):
-        self.locations_xml = self._getLocationsAsXml()
+        self._locations_xml = self._getLocationsAsXml()
 
     def _getLocationsAsXml(self):
         joint = '\n        '
-        return joint.join([copy.copy(self.locations_xml) % {'location':location} 
+        return joint.join([copy.copy(self._locations_xml) % {'location':location} 
                            for location in self.locations])
 
     def __str__(self):

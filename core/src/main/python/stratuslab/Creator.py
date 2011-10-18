@@ -412,7 +412,6 @@ class Creator(object):
         configHolder = self.configHolder.copy()
         
         downloader = ManifestDownloader(configHolder)
-        # TODO: do we need both manifest types as class members?
         self.manifestObject = downloader.getManifestInfo(self.image)
         self.manifest = self.manifestObject.tostring()
 
