@@ -52,6 +52,10 @@ class MainProgram(AuthnCommand):
                 help='Tag of the volume. Only for the user', metavar='NAME', 
                 default="")
         
+        self.parser.add_option('--cow', dest='originUuid',
+                help='Create a copy on write volume based on this uuid', metavar='UUID', 
+                default=None)
+        
         self.parser.add_option('--private', dest='volumeVisibility',
                 help='''Set the disk as private (default). Only you can see, use 
 and delete the disk.''', action='store_false')
@@ -73,7 +77,10 @@ and use it but can't delete it.''', action='store_true', default=False)
         self._checkTagLength()
         
     def _checkVolumeSize(self):
-        if self.options.volumeSize is None:
+        if self.options.originUuid:
+            return
+        
+        if not self.options.volumeSize:
             printError('Missing mandatory -s/--size option')
             
         if self.options.volumeSize < self.VOLUME_SIZE_MIN or self.options.volumeSize > self.VOLUME_SIZE_MAX:
@@ -87,15 +94,14 @@ and use it but can't delete it.''', action='store_true', default=False)
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
-        try:
+
+        if self.options.originUuid:
+            volumeId = pdisk.createCowVolume(self.options.originUuid)
+        else:
             volumeId = pdisk.createVolume(self.options.volumeSize,
                                           self.options.volumeTag,
                                           self.options.volumeVisibility)
-            print 'DISK %s' % volumeId
-        except AttributeError:
-            printError('Persistent disk endpoint unavailable')
-        except Exception, e:
-            printError('Service error: %s' % e)
+        print 'DISK %s' % volumeId
 #            
 if __name__ == '__main__':
     try:
