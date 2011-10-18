@@ -40,6 +40,7 @@ marketplaceEndpoint = 'http://marketplace.stratuslab.eu'
 apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 
 pdiskPort = 8445
+pdiskProtocol = 'https'
 
 ETC_DIR = '/etc/stratuslab/'
 SHARE_DIR = '/var/share/stratuslab/'
