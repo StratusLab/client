@@ -51,20 +51,21 @@ class PersistentDisk(object):
         self._buildFQNEndpoint()
 
     def _getJson(self, url):
-        return self.client.get(url, accept="application/json")
+        headers, content = self.client.get(url, accept="application/json")
+        return headers, content.replace('\\','')
         
     def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
-        return self.client.post(url,
+        headers, content = self.client.post(url,
                                 body,
                                 contentType, 
                                 accept="application/json")
+        return headers, content.replace('\\','')
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
         listVolUrl = '%s/disks/' % self.endpoint
         headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
-        jsonDiskList = jsonDiskList.replace('\\','')
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
         
