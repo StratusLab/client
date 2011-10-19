@@ -223,6 +223,7 @@ class Testor(unittest.TestCase):
         options['persistentDiskUUID'] = persistentDiskUUID
         options['pdiskEndpoint'] = self.pdiskEndpoint
         options['pdiskPort'] = self.pdiskPort
+        options['pdiskProtocol'] = self.pdiskProtocol
 
         if withLocalNetwork:
             options['isLocalIp'] = True
