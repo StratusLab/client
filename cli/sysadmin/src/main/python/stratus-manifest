@@ -15,7 +15,7 @@ from stratuslab.Image import Image
 import stratuslab.Util as Util
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
+    '''A command-line program to extract information from Marketplace manifest.'''
 
     def __init__(self):
         super(MainProgram, self).__init__()
