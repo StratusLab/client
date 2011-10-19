@@ -68,6 +68,7 @@ class Runner(object):
         self.persistentDiskUUID = None
         self.quiet = False
         self.instanceNumber = 1
+        self.vmShutdown = False
         configHolder.assign(self)
         self.configHolder = configHolder
 
@@ -76,12 +77,11 @@ class Runner(object):
         self.cloud.setEndpoint(self.endpoint)
         self.pdisk = PersistentDisk(configHolder)
 
-
-        self._initAttributes()
+        self._initVmAttributes()
         
         self.instancesDetail = []
 
-    def _initAttributes(self):
+    def _initVmAttributes(self):
         # VM template parameters initialization
         self.vm_cpu = 0
         self.vm_vcpu = 0
@@ -428,7 +428,12 @@ class Runner(object):
         if self.inVmIdsFile:
             _ids = self._loadVmIdsFromFile()
         for id in _ids:
-            self.cloud.vmKill(int(id))
+            if self.vmShutdown == True:
+                self.printDetail('Sending Shutdown request for instance %s.' % id)
+                self.cloud.vmStop(int(id))
+            else:
+                self.printDetail('Sending Kill request for instance %s.' % id)
+                self.cloud.vmKill(int(id))
         plural = (len(_ids) > 1 and 's') or ''
         self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
 

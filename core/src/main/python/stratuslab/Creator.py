@@ -168,7 +168,11 @@ class Creator(object):
 
         chksumsResults = {}
         for chksum, cmd in chksumCmds.items():
-            output = commands.getoutput(cmd + ' ' + filename)
+            _cmd = cmd + ' ' + filename
+            rc, output = commands.getstatusoutput(_cmd)
+            if rc != 0:
+                raise ExecutionException("Failed to checksum. %s\n%s" % (_cmd, 
+                                                                         output))
             chksumsResults[chksum] = output.split(' ')[0]
 
         return chksumsResults
