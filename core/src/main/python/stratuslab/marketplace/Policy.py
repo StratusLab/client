@@ -30,20 +30,16 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 class Filter(object):
     
-    def __init__(self, messages):
+    def __init__(self, messages, config):
         self.filterItems = []
         self.messages = messages
         self.successMessage = None
         self.failedMessage = None
+        self.config = config
 
     def _loadConfig(self, sectionName, configParameterName):
-        configFile = Policy.POLICY_CFG
-        if not os.path.exists(configFile):
-            raise InputException("Can't find policy configuration file: %s" % configFile)
-        config = ConfigParser.ConfigParser()
-        config.read(configFile)
         try:
-            rawFilterItems = config.get(sectionName, configParameterName)
+            rawFilterItems = self.config.get(sectionName, configParameterName)
             self.filterItems = filter(None,[item.strip() for item in rawFilterItems.split('\n')])
         except ConfigParser.NoOptionError:
             pass
@@ -86,8 +82,8 @@ class WhiteListBaseFilter(Filter):
 
 class WhiteListEndorsersFilter(WhiteListBaseFilter):
     
-    def __init__(self, messages):
-        super(WhiteListEndorsersFilter, self).__init__(messages)
+    def __init__(self, messages, config):
+        super(WhiteListEndorsersFilter, self).__init__(messages, config)
         self._loadConfig('endorsers', 'whitelistendorsers')
         self.successMessage = 'email endorser %s is whitelisted, keeping entry'
         self.failedMessage = 'email endorser %s is not whitelisted, removing corresponding entry'
@@ -98,8 +94,8 @@ class WhiteListEndorsersFilter(WhiteListBaseFilter):
 
 class BlackListEndorsersFilter(BlackListBaseFilter):
     
-    def __init__(self, messages):
-        super(BlackListEndorsersFilter, self).__init__(messages)
+    def __init__(self, messages, config):
+        super(BlackListEndorsersFilter, self).__init__(messages, config)
         self._loadConfig('endorsers', 'blacklistendorsers')
         self.successMessage = 'email endorser %s is not blacklisted, keeping entry'
         self.failedMessage = 'email endorser %s is blacklisted, removing corresponding entry'
@@ -110,8 +106,8 @@ class BlackListEndorsersFilter(BlackListBaseFilter):
 
 class WhiteListChecksumsFilter(WhiteListBaseFilter):
     
-    def __init__(self, messages):
-        super(WhiteListChecksumsFilter, self).__init__(messages)
+    def __init__(self, messages, config):
+        super(WhiteListChecksumsFilter, self).__init__(messages, config)
         self._loadConfig('checksums', 'whitelistchecksums')
         self.successMessage = 'SHA-1 checksum image %s is whitelisted, keeping entry'
         self.failedMessage = 'SHA-1 checksum image %s is not whitelisted, removing corresponding entry'
@@ -122,8 +118,8 @@ class WhiteListChecksumsFilter(WhiteListBaseFilter):
 
 class BlackListChecksumsFilter(BlackListBaseFilter):
     
-    def __init__(self, messages):
-        super(BlackListChecksumsFilter, self).__init__(messages)
+    def __init__(self, messages, config):
+        super(BlackListChecksumsFilter, self).__init__(messages, config)
         self._loadConfig('checksums', 'blacklistchecksums')
         self.successMessage = 'SHA-1 checksum image %s is not blacklisted, keeping entry'
         self.failedMessage = 'SHA-1 checksum image %s is blacklisted, removing corresponding entry'
@@ -134,8 +130,8 @@ class BlackListChecksumsFilter(BlackListBaseFilter):
 
 class WhiteListImagesFilter(WhiteListBaseFilter):
     
-    def __init__(self, messages):
-        super(WhiteListImagesFilter, self).__init__(messages)
+    def __init__(self, messages, config):
+        super(WhiteListImagesFilter, self).__init__(messages, config)
         self._loadConfig('images', 'whitelistimages')
         self.successMessage = 'image identifier %s is whitelisted, keeping entry'
         self.failedMessage = 'image identifier %s is not whitelisted, removing corresponding entry'
@@ -146,8 +142,8 @@ class WhiteListImagesFilter(WhiteListBaseFilter):
 
 class BlackListImagesFilter(BlackListBaseFilter):
     
-    def __init__(self, messages):
-        super(BlackListImagesFilter, self).__init__(messages)
+    def __init__(self, messages, config):
+        super(BlackListImagesFilter, self).__init__(messages, config)
         self._loadConfig('images', 'blacklistimages')
         self.successMessage = 'image identifier %s is not blacklisted, keeping entry'
         self.failedMessage = 'image identifier %s is blacklisted, removing corresponding entry'
@@ -162,33 +158,40 @@ class Policy(object):
 
     def __init__(self, configHolder = ConfigHolder()):
         self.messages = []
+        self.policyConfigFile = None
         configHolder.assign(self)
         self.filters = self._loadFilters()
 
     def _loadFilters(self):
         filters = []
 
-        whiteListEndorsersFilter = WhiteListEndorsersFilter(self.messages)
+        configFile = self.policyConfigFile or Policy.POLICY_CFG
+        if not os.path.exists(configFile):
+            raise InputException("Can't find policy configuration file: %s" % configFile)
+        config = ConfigParser.ConfigParser()
+        config.read(configFile)
+
+        whiteListEndorsersFilter = WhiteListEndorsersFilter(self.messages, config)
         if whiteListEndorsersFilter.filterItems:
             filters.append(whiteListEndorsersFilter)
 
-        blackListEndorsersFilter = BlackListEndorsersFilter(self.messages)
+        blackListEndorsersFilter = BlackListEndorsersFilter(self.messages, config)
         if blackListEndorsersFilter.filterItems:
             filters.append(blackListEndorsersFilter)
 
-        whiteListChecksumsFilter = WhiteListChecksumsFilter(self.messages)
+        whiteListChecksumsFilter = WhiteListChecksumsFilter(self.messages, config)
         if whiteListChecksumsFilter.filterItems:
             filters.append(whiteListChecksumsFilter)
 
-        blackListChecksumsFilter = BlackListChecksumsFilter(self.messages)
+        blackListChecksumsFilter = BlackListChecksumsFilter(self.messages, config)
         if blackListChecksumsFilter.filterItems:
             filters.append(blackListChecksumsFilter)
 
-        whiteListImagesFilter = WhiteListImagesFilter(self.messages)
+        whiteListImagesFilter = WhiteListImagesFilter(self.messages, config)
         if whiteListImagesFilter.filterItems:
             filters.append(whiteListImagesFilter)
 
-        blackListImagesFilter = BlackListImagesFilter(self.messages)
+        blackListImagesFilter = BlackListImagesFilter(self.messages, config)
         if blackListImagesFilter.filterItems:
             filters.append(blackListImagesFilter)
 
