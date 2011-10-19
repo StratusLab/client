@@ -159,6 +159,7 @@ class Policy(object):
     def __init__(self, configHolder = ConfigHolder()):
         self.messages = []
         self.policyConfigFile = None
+        self.configHolder = configHolder
         configHolder.assign(self)
         self.filters = self._loadFilters()
 
@@ -213,7 +214,7 @@ class Policy(object):
         return remainingMetadataEntries
 
     def _downloadManifests(self, identifier):
-        return ManifestDownloader().getManifestList(identifier)
+        return ManifestDownloader(self.configHoler).getManifestList(identifier)
 
     def _errorMessage(self):
         self.messages.append("Image isn't valid according to site policy\n")

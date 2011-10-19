@@ -31,6 +31,7 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.marketplace.Downloader import Downloader
+from stratuslab.marketplace.Util import Util
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
@@ -50,6 +51,8 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('--policy', dest='policyConfigFile',
                 help='Policy configuration file. Default: ' + Policy.POLICY_CFG,
                 metavar='FILE', default=Policy.POLICY_CFG)
+
+        Util.addEndpointOption(self.parser);
 
         self.options, self.args = self.parser.parse_args()
 
