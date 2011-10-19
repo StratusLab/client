@@ -64,6 +64,7 @@ class MainProgram(AuthnCommand):
         
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
+        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:
             try:

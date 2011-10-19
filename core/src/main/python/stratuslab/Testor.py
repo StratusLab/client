@@ -223,6 +223,7 @@ class Testor(unittest.TestCase):
         options['persistentDiskUUID'] = persistentDiskUUID
         options['pdiskEndpoint'] = self.pdiskEndpoint
         options['pdiskPort'] = self.pdiskPort
+        options['pdiskProtocol'] = self.pdiskProtocol
 
         if withLocalNetwork:
             options['isLocalIp'] = True
@@ -602,6 +603,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.username = Testor.configHolder.testUsername
         configHolder.password = Testor.configHolder.testPassword
+        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         
         try:
@@ -612,8 +614,11 @@ class Testor(unittest.TestCase):
             if not pdisk.volumeExists(diskUUID):
                 self.fail('An error occurred while creating a persistent disk')
                 
+            Util.printAction('Getting number of available users (before)')
             availableUserBeforeStart, _ = pdisk.getVolumeUsers(diskUUID)
+            Util.printAction('Starting machine with persistent disk')
             runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+            Util.printAction('Getting number of available users (after)')
             availableUserAfterStart, _ = pdisk.getVolumeUsers(diskUUID)
             
             if availableUserAfterStart != (availableUserBeforeStart-1):
@@ -661,6 +666,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.username = Testor.configHolder.testUsername
         configHolder.password = Testor.configHolder.testPassword
+        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         
         try:    

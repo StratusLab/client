@@ -97,6 +97,7 @@ and use it but can't delete it.''', action='store_true', default=False)
         
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
+        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
 
         if self.options.originUuid:
