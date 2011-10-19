@@ -80,13 +80,14 @@ class PersistentDisk(object):
             return self._getUuidFromJson(uuid)
         self._raiseOnErrors(headers, uuid)
 
-    def createCowVolume(self, uuid):
+    def createCowVolume(self, uuid, tag):
         # TODO: add iscow check
         self._initPDiskConnection()
         self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
+        body = {'tag': tag}
         try:
-            _, content = self._postJson(url)
+            _, content = self._postJson(url,urlencode(body))
         except Exception, ex:
             ex.mediaType = 'json'
             raise

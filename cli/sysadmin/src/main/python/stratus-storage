@@ -49,15 +49,15 @@ class MainProgram(AuthnCommand):
                 default=None, type='int')
         
         self.parser.add_option('-t', '--tag', dest='volumeTag',
-                help='Tag of the volume. Only for the user', metavar='NAME', 
+                help='Tag of the volume. Only for the user', metavar='NAME',
                 default="")
         
         self.parser.add_option('--cow', dest='originUuid',
-                help='Create a copy on write volume based on this uuid', metavar='UUID', 
+                help='Create a copy on write volume based on this uuid', metavar='UUID',
                 default=None)
         
         self.parser.add_option('--rebase', dest='rebaseUuid',
-                help='Rebase the CoW volume', metavar='UUID', 
+                help='Rebase the CoW volume', metavar='UUID',
                 default=None)
         
         self.parser.add_option('--private', dest='volumeVisibility',
@@ -100,7 +100,8 @@ and use it but can't delete it.''', action='store_true', default=False)
         pdisk = PersistentDisk(configHolder)
 
         if self.options.originUuid:
-            volumeId = pdisk.createCowVolume(self.options.originUuid)
+            volumeId = pdisk.createCowVolume(self.options.originUuid,
+                                             self.options.volumeTag)
         elif self.options.rebaseUuid:
             volumeId = pdisk.rebaseVolume(self.options.rebaseUuid)
         else:
