@@ -266,8 +266,8 @@ class PDiskEndpoint(object):
         # TODO: Add certificate support
         parser.add_option('--pdisk-protocol', dest='pdiskProtocol',
                           help='Persistent disk service endpoint. \
-                          Default STRATUSLAB_PDISK_ENDPOINT or %s.' % defaultOptions['pdiskProtocol'],
-                          metavar='PROTOCOL', default=defaultOptions['pdiskEndpoint'])
+                          Default STRATUSLAB_PDISK_PROTOCOL or %s.' % defaultOptions['pdiskProtocol'],
+                          metavar='PROTOCOL', default=defaultOptions['pdiskProtocol'])
         parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
                           help='Persistent disk service endpoint. \
                           Default STRATUSLAB_PDISK_ENDPOINT',
