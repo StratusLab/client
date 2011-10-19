@@ -41,19 +41,22 @@ class MainProgram(CommandBaseSysadmin):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] <identifier-endpoint> <policy-config>
+        usage = '''%prog [options] <identifier-endpoint>
         
-<identifier-endpoint>    Marketplace endpoint + Image identifier(example: http://marketplace.stratuslab.eu/metadata/GOaxJFdoEXvqAm9ArJgnZ0_ky6F)   
-<policy-config>    Policy configuration file'''
+<image-identifier>    Marketplace image identifier (example: GOaxJFdoEXvqAm9ArJgnZ0_ky6F)'''
 
         self.parser.usage = usage
+
+        self.parser.add_option('--policy', dest='policyConfigFile',
+                help='Policy configuration file. Default: ' + Policy.POLICY_CFG,
+                metavar='FILE', default=Policy.POLICY_CFG)
 
         self.options, self.args = self.parser.parse_args()
 
         self.checkArgumentsLength()
 
     def checkArgumentsLength(self):
-        if len(self.args) < 2:
+        if len(self.args) < 1:
             self.usageExitTooFewArguments()
         if len(self.args) > 2:
             self.usageExitTooManyArguments()
@@ -61,13 +64,9 @@ class MainProgram(CommandBaseSysadmin):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         
-        identifierUri = self.args[0]
-        policyConfigFilename = self.args[1]
+        imageId = self.args[0]
         
-        marketplaceEndpoint, imageId = identifierUri.rsplit('/', 1)
-        configHolder.set('endpoint', marketplaceEndpoint)
-
-        policy = Policy(policyConfigFilename, configHolder)
+        policy = Policy(configHolder)
         policy.check(imageId)
         self.printDetail("Valid according to site policy")
 
