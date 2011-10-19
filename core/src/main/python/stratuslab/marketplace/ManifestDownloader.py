@@ -42,7 +42,7 @@ class ManifestDownloader(object):
         configHolder.assign(self)
 
     def getManifestList(self, identifier):
-        endpoint = Util.constructEndPoint(self.marketplaceEndpoint, 'http', '80', 'images')
+        endpoint = Util.constructEndPoint(self.marketplaceEndpoint, 'http', '80', 'metadata')
         url = endpoint + '/' + identifier
         metadataEntries = ''
         try:
