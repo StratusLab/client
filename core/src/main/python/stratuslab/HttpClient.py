@@ -40,7 +40,7 @@ class HttpClient(object):
         return self._httpCall(url,'GET',accept=accept)
         
     def post(self,url,body=None,contentType='application/xml',accept='application/xml'):
-        return self._httpCall(url,'POST',body,contentType,accept)
+        return self._httpCall(url,'POST',body,contentType,accept,retry=False)
     
     def delete(self,url,body=None,contentType='application/x-www-form-urlencoded',accept='application/xml'):
         return self._httpCall(url,'DELETE',body,contentType,accept)
@@ -131,7 +131,7 @@ class HttpClient(object):
         if self.handleResponse:
             try:
                 _handleResponse(resp, content)
-            except Exception, ex:
+            except ClientException, ex:
                 ex.mediaType = headers['Accept']
                 raise
 
