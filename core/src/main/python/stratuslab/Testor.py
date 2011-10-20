@@ -222,8 +222,6 @@ class Testor(unittest.TestCase):
         options['specificAddressRequest'] = requestedIpAddress
         options['persistentDiskUUID'] = persistentDiskUUID
         options['pdiskEndpoint'] = self.pdiskEndpoint
-        options['pdiskPort'] = self.pdiskPort
-        options['pdiskProtocol'] = self.pdiskProtocol
 
         if withLocalNetwork:
             options['isLocalIp'] = True
@@ -603,7 +601,6 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.username = Testor.configHolder.testUsername
         configHolder.password = Testor.configHolder.testPassword
-        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         
         try:
@@ -666,7 +663,6 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.username = Testor.configHolder.testUsername
         configHolder.password = Testor.configHolder.testPassword
-        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         
         try:    
