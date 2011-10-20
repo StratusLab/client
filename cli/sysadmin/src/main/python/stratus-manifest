@@ -24,9 +24,11 @@ class MainProgram(CommandBaseSysadmin):
         self.element
 
     def parse(self):
-        usage = '''Usage: %prog --get-element <ELEMENT> <marketplace image URL>
+        usage = '''Usage: %prog --get-element <ELEMENT> <marketplace id or URL>
 
-<marketplace image URL> - a valid URL. (http://example.com/dir/imageID)'''
+<marketplace id or URL>    can be either a Marketplace identifier (e.g.
+                           MNb7A8XGnNwwJAaZUBj5fwYVoFf) or a URL (e.g. 
+                           http://marketplace.stratuslab.eu/metadata/MNb7A8XGnNwwJAaZUBj5fwYVoFf)'''
 
         self.parser.usage = usage
 
@@ -62,7 +64,7 @@ class MainProgram(CommandBaseSysadmin):
     
     def doWork(self):
 
-        configHolder = ConfigHolder()
+        configHolder = ConfigHolder(self.options.__dict__)
         configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
         
         downloader = ManifestDownloader(configHolder)

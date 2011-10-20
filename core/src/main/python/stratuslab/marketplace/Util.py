@@ -21,6 +21,7 @@ import os
 import re
 
 from stratuslab import Defaults
+import stratuslab.Util
 
 class Util(object):
 
@@ -30,18 +31,18 @@ class Util(object):
 
     @staticmethod
     def addEndpointOption(parser):
-        parser.add_option(Util.OPTION_STRING, 
+        parser.add_option(Util.OPTION_STRING,
                           dest='marketplaceEndpoint',
-                          help='Marketplace endpoint. Default %s. %s' % \
-                              (Defaults.marketplaceEndpoint, 
-                               Util.ENVVAR_ENDPOINT),
+                          help='Marketplace endpoint (hostname or URL). Default %s or %s' % \
+                              (Util.ENVVAR_ENDPOINT,
+                               Defaults.marketplaceEndpoint),
                           default=None)
 
         
     @staticmethod
     def checkEndpointOption(options):
         if not options.marketplaceEndpoint:
-            options.marketplaceEndpoint = os.getenv(Util.ENVVAR_ENDPOINT, 
+            options.marketplaceEndpoint = os.getenv(Util.ENVVAR_ENDPOINT,
                                                     Defaults.marketplaceEndpoint)
 
         options.marketplaceEndpoint = re.sub(r"/*$", '', options.marketplaceEndpoint)
@@ -50,7 +51,10 @@ class Util(object):
 
     @staticmethod
     def metadataUrl(endpoint, identifier):
-        return '%s/metadata/%s' % (endpoint, identifier)
+        _endpoint = stratuslab.Util.sanitizeEndpoint(endpoint, 
+                                                     Defaults.marketplaceProtocol,
+                                                     Defaults.marketplacePort)
+        return '%s/metadata/%s' % (_endpoint, identifier)
 
     @staticmethod
     def metadataCompleteUrl(endpoint, identifier, email, created):

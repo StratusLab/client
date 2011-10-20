@@ -62,7 +62,6 @@ that have a tag matching the regex pattern.''',
         
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         filters = self._formatFilter()
         try:

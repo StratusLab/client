@@ -45,6 +45,7 @@ class OneConnector(object):
         else:
             self.server = address
         self._createRpcConnection()
+        return self.server
 
     def _createRpcConnection(self):
         self._rpc = self._credentials.createRpcConnection()

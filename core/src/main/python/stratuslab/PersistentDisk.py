@@ -26,23 +26,22 @@ from urllib import urlencode
 from uuid import UUID
 from stratuslab.Util import printError
 from socket import gethostbyaddr
+import Util
+from stratuslab import Defaults
 
 class PersistentDisk(object):
     
     def __init__(self, configHolder):
-        self.pdiskHostname = None
-        self.pdiskProtocol = None
-        self.pdiskPort = None
         self.pdiskUsername = None
         self.pdiskPassword = None
         self.username = None
         self.password = None
         
-        self.endpoint = None
+        self.pdiskEndpoint = None
 
-        self.structEndpoint = '%(pdiskProtocol)s://%(pdiskEndpoint)s:%(pdiskPort)d'
         self.configHolder = configHolder
         self.configHolder.assign(self)
+        self.endpoint = None
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
@@ -177,10 +176,10 @@ class PersistentDisk(object):
         return availableDisk
     
     def _buildFQNEndpoint(self):
-        if self.endpoint:
-            return
-        self.endpoint = self.structEndpoint % self.__dict__
-        
+        self.endpoint = Util.sanitizeEndpoint(self.pdiskEndpoint, 
+                                              Defaults.pdiskProtocol, 
+                                              Defaults.pdiskPort)
+    
     def _addCredentials(self):
         user = self.pdiskUsername or self.username
         password = self.pdiskPassword or self.password

@@ -74,7 +74,7 @@ class Runner(object):
 
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
-        self.cloud.setEndpoint(self.endpoint)
+        self.endpoint = self.cloud.setEndpoint(self.endpoint)
         self.pdisk = PersistentDisk(configHolder)
 
         self._initVmAttributes()

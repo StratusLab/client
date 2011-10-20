@@ -236,7 +236,7 @@ class CloudEndpoint(object):
             defaultOptions = CloudEndpoint.options()
 
         parser.add_option('--endpoint', dest='endpoint',
-                          help='cloud endpoint address. Default STRATUSLAB_ENDPOINT',
+                          help='cloud endpoint (hostname or URL). Default STRATUSLAB_ENDPOINT',
                           default=defaultOptions['endpoint'])
 
     @staticmethod
@@ -245,8 +245,7 @@ class CloudEndpoint(object):
             return True
 
         return False
-    
-    
+
 class PDiskEndpoint(object):
     optionString = '--pdisk-endpoint'
 
@@ -264,17 +263,10 @@ class PDiskEndpoint(object):
             defaultOptions = PDiskEndpoint.options()
         
         # TODO: Add certificate support
-        parser.add_option('--pdisk-protocol', dest='pdiskProtocol',
-                          help='Persistent disk service endpoint. \
-                          Default STRATUSLAB_PDISK_PROTOCOL or %s.' % defaultOptions['pdiskProtocol'],
-                          metavar='PROTOCOL', default=defaultOptions['pdiskProtocol'])
         parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
-                          help='Persistent disk service endpoint. \
-                          Default STRATUSLAB_PDISK_ENDPOINT',
+                          help='Persistent endpoint (hostname or URL). Default STRATUSLAB_PDISK_ENDPOINT or %s' % \
+                               Defaults.marketplaceEndpoint,
                           default=defaultOptions['pdiskEndpoint'])
-        parser.add_option('--pdisk-port', dest='pdiskPort',
-                          help='Alternate persistent disk storage endpoint port.', 
-                          metavar='PORT', default=defaultOptions['pdiskPort'], type='int')
         parser.add_option('--pdisk-username', dest='pdiskUsername',
                           help='Persistent disk service username. \
                           Default STRATUSLAB_PDISK_USERNAME, then your cloud username', 

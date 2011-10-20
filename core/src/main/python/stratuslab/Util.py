@@ -517,7 +517,15 @@ def constructEndPoint(fragment, protocol='https', port=8443, path=''):
 def parseUri(uri):
     "Return tuple (protocol, hostname, port, path?query#fragment)"
     m = re.match('([a-zA-Z0-9_]*://)?([^/:$]*):?(\d+)?/?(.*)', uri)
-    return m.group(1), m.group(2), m.group(3), m.group(4)
+    protocol, hostname, port, path_and_query = m.group(1), m.group(2), m.group(3), m.group(4)
+    return protocol, hostname, port, path_and_query
+
+def sanitizeEndpoint(endpoint, protocol=Defaults.marketplaceProtocol, port=Defaults.marketplacePort):
+    sanitized = endpoint
+    _protocol, _, _, _ = parseUri(endpoint)
+    if not _protocol:
+        sanitized = constructEndPoint(sanitized, protocol, port)[:-1] # trim trailing /
+    return sanitized
 
 def getHostnameFromUri(uri):
     return parseUri(uri)[1]
