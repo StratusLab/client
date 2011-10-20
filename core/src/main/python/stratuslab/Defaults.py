@@ -36,6 +36,9 @@ p12CertificateFile = 'usercert.p12'
 p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
 
 marketplaceEndpoint = 'http://marketplace.stratuslab.eu'
+marketplaceProtocol = 'http'
+marketplaceHostname = 'marketplace.stratuslab.eu'
+marketplacePort = 80
 
 apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 
