@@ -62,6 +62,7 @@ class PersistentDisk(object):
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
+        self._printContacting()
         listVolUrl = '%s/disks/' % self.endpoint
         headers, jsonDiskList = self._getJson(listVolUrl)
         self._raiseOnErrors(headers, jsonDiskList)
@@ -70,6 +71,7 @@ class PersistentDisk(object):
         
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
+        self._printContacting()
         url = '%s/disks/' % self.endpoint
         body = {'size': size, 
                 'tag': tag, 
@@ -82,6 +84,7 @@ class PersistentDisk(object):
     def createCowVolume(self, uuid, tag):
         # TODO: add iscow check
         self._initPDiskConnection()
+        self._printContacting()
         self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         body = {'tag': tag}
@@ -95,6 +98,7 @@ class PersistentDisk(object):
     def rebaseVolume(self, uuid):
         # TODO: add iscow check
         self._initPDiskConnection()
+        self._printContacting()
         self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         _, content = self._postJson(url)
@@ -102,6 +106,7 @@ class PersistentDisk(object):
     
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
+        self._printContacting()
         url = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, uuid = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, uuid)
@@ -109,12 +114,14 @@ class PersistentDisk(object):
     
     def volumeExists(self, uuid):
         self._initPDiskConnection()
+        self._printContacting()
         url = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, _ = self.client.head(url)
         return headers.status == 200
     
     def getVolumeUsers(self, uuid):
         self._initPDiskConnection()
+        self._printContacting()
         volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
@@ -122,6 +129,7 @@ class PersistentDisk(object):
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
+        self._printContacting()
         url = '%s/disks/%s/mounts/' % (self.endpoint, uuid)
         body = {'node': node,
                 'vm_id': vmId }
@@ -131,6 +139,7 @@ class PersistentDisk(object):
     
     def hotDetach(self, node, vmId, uuid):
         self._initPDiskConnection()
+        self._printContacting()
         url = '%s/disks/%s/mounts/%s-%s' % (self.endpoint, uuid, vmId, node)
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
@@ -139,6 +148,7 @@ class PersistentDisk(object):
     def serviceAvailable(self):
         try:
             self._initPDiskConnection()
+            self._printContacting()
             header, _ = self.client.head('%s' % self.endpoint)
             if header.status == 200:
                 return True
@@ -203,3 +213,8 @@ class PersistentDisk(object):
             return False
         return True
         
+    def _printContacting(self):
+        self._printDetail('Accessing storage service at: %s' % self.endpoint)
+        
+    def _printDetail(self, message):
+        Util.printDetail(message, self.verboseLevel, 1)

@@ -39,6 +39,8 @@ class ManifestDownloader(object):
         self.configHolder = configHolder
         self.manifestObject = None
         self.marketplaceEndpoint = ManifestDownloader.ENDPOINT
+        self.verboseLevel = 1
+        
         configHolder.assign(self)
 
     def getManifestList(self, identifier):
@@ -75,6 +77,7 @@ class ManifestDownloader(object):
 
     def _getManifest(self, resourceUri):
         url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, resourceUri)
+        self._printDetail('Downloading from: %s' % url)
         try:
             return self.__getManifest(url)
         except:
@@ -138,3 +141,6 @@ class ManifestDownloader(object):
 
     def downloadManifestByImageId(self, imageId):
         self.manifestObject = self._getManifest(imageId)
+
+    def _printDetail(self, message):
+        Util.printDetail(message, self.verboseLevel, 1)

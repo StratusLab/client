@@ -65,8 +65,7 @@ class CommandBase(object):
         try:
             Util.runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
-            sys.stderr.writelines('\nError: %s\n' % str(ex))
-            sys.exit(3)
+            self.raiseOrDisplayError('Error: %s\n' % str(ex))
         except xmlrpclib.ProtocolError, ex:
             self.raiseOrDisplayError('Error: %s' % ex.errmsg)
         except socket.sslerror, ex:
@@ -82,6 +81,8 @@ class CommandBase(object):
                 error = json.loads(ex.content)
                 msg = 'Error: %s (code %d)' % (error['message'], error['code'])
             self.raiseOrDisplayError(msg)
+        except Exception, ex:
+            self.raiseOrDisplayError('Error: %s' % ex)
 
     def _checkPythonVersionAndRaise(self):
         try:
@@ -108,7 +109,7 @@ class CommandBase(object):
         return self.parser.error('Wrong number of arguments')
     
     def raiseOrDisplayError(self, errorMsg):
-        if self.verboseLevel > 0:
+        if self.verboseLevel > 2:
             raise
         else:
             Util.printError(errorMsg, exit=False)

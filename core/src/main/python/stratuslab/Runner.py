@@ -64,6 +64,7 @@ class Runner(object):
     def __init__(self, image, configHolder):
         if image == '':
             raise ValueError('Image ID or full image endpoint should be provided.')
+
         self.vm_image = image
         self.persistentDiskUUID = None
         self.quiet = False
@@ -149,9 +150,11 @@ class Runner(object):
                 Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
                                 % (available, self.instanceNumber))
         except AttributeError:
-            Util.printError('Persistent disk service unavailable')
+            Util.printError('Persistent disk service unavailable', exit=False)
+            raise
         except Exception, e:
-            Util.printError(e)
+            Util.printError(e, exit=False)
+            raise
 
     def _setReadonlyDiskOptional(self):
         if hasattr(self, 'readonlyDiskId') and self.readonlyDiskId:
@@ -370,6 +373,7 @@ class Runner(object):
             self.notifications = ''
 
     def runInstance(self):
+        self._printContacting()
         self._checkImageExists(self.vm_image)
 
         self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
@@ -388,8 +392,8 @@ class Runner(object):
         self.printStep('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
-        self.printDetail('on endpoint: %s' % self.endpoint)
-        self.printDetail('with template:\n%s' % vmTpl)
+        self.printDetail('on endpoint: %s' % self.endpoint, Util.DETAILED_VERBOSE_LEVEL)
+        self.printDetail('with template:\n%s' % vmTpl, Util.DETAILED_VERBOSE_LEVEL)
 
         for vmNb in range(self.instanceNumber):
             vmId = self.cloud.vmStart(vmTpl)
@@ -437,10 +441,10 @@ class Runner(object):
         plural = (len(_ids) > 1 and 's') or ''
         self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
 
-    def printDetail(self, msg):
+    def printDetail(self, msg, verboseLevel=Util.NORMAL_VERBOSE_LEVEL):
         if self.quiet:
             return
-        return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)
+        return Util.printDetail(msg, self.verboseLevel, verboseLevel)
 
     def printStep(self, msg):
         if self.quiet:
@@ -477,3 +481,6 @@ class Runner(object):
             return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
         else:
             return image
+
+    def _printContacting(self):
+        self.printDetail('Accessing compute service at: %s' % self.endpoint)
