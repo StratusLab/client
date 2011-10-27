@@ -21,7 +21,6 @@
 import sys
 import os
 import ConfigParser
-import urllib2
 from stratuslab import Defaults
 
 from stratuslab.ConfigHolder import ConfigHolder
