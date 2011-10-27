@@ -214,7 +214,7 @@ class Policy(object):
         return remainingMetadataEntries
 
     def _downloadManifests(self, identifier):
-        return ManifestDownloader(self.configHoler).getManifestList(identifier)
+        return ManifestDownloader(self.configHolder).getManifestList(identifier)
 
     def _errorMessage(self):
         self.messages.append("Image isn't valid according to site policy\n")
