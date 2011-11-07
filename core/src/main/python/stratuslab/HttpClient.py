@@ -79,7 +79,7 @@ class HttpClient(object):
         def _handle3xx():
             if resp.status == 302:
                 # Redirected
-                resp, content = self.httpCall(resp['location'], method, body, accept)
+                resp, content = self._httpCall(resp['location'], method, body, accept)
             else:
                 raise Exception('Should have been handled by httplib2!! ' + str(resp.status) + ": " + resp.reason)
             return resp, content
