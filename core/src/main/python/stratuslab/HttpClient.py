@@ -42,6 +42,9 @@ class HttpClient(object):
     def post(self,url,body=None,contentType='application/xml',accept='application/xml'):
         return self._httpCall(url,'POST',body,contentType,accept,retry=False)
     
+    def put(self,url,body=None,contentType='application/xml',accept='application/xml'):
+        return self._httpCall(url,'PUT',body,contentType,accept,retry=False)
+    
     def delete(self,url,body=None,contentType='application/x-www-form-urlencoded',accept='application/xml'):
         return self._httpCall(url,'DELETE',body,contentType,accept)
     
