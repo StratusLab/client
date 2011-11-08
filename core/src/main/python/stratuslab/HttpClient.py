@@ -36,20 +36,20 @@ class HttpClient(object):
         self.handleResponse = True
         configHolder.assign(self)        
 
-    def get(self,url,accept='application/xml'):
-        return self._httpCall(url,'GET',accept=accept)
+    def get(self, url, accept='application/xml'):
+        return self._httpCall(url, 'GET', accept=accept)
         
-    def post(self,url,body=None,contentType='application/xml',accept='application/xml'):
-        return self._httpCall(url,'POST',body,contentType,accept,retry=False)
+    def post(self, url, body=None, contentType='application/xml', accept='application/xml'):
+        return self._httpCall(url, 'POST', body, contentType, accept, retry=False)
     
-    def put(self,url,body=None,contentType='application/xml',accept='application/xml'):
-        return self._httpCall(url,'PUT',body,contentType,accept,retry=False)
+    def put(self, url, body=None, contentType='application/xml', accept='application/xml'):
+        return self._httpCall(url, 'PUT', body, contentType, accept, retry=False)
     
-    def delete(self,url,body=None,contentType='application/x-www-form-urlencoded',accept='application/xml'):
-        return self._httpCall(url,'DELETE',body,contentType,accept)
+    def delete(self, url, body=None, contentType='application/x-www-form-urlencoded', accept='application/xml'):
+        return self._httpCall(url, 'DELETE', body, contentType, accept)
     
-    def head(self,url):
-        return self._httpCall(url,'HEAD')
+    def head(self, url):
+        return self._httpCall(url, 'HEAD')
     
     def addCredentials(self, username, password):
         self.crendentials[username] = password
@@ -68,11 +68,11 @@ class HttpClient(object):
         for u, p in self.certificates.items():
             http.add_certificate(u, p)
     
-    def _httpCall(self,url,method,body=None,contentType='application/xml',accept='application/xml',retry=True):
+    def _httpCall(self, url, method, body=None, contentType='application/xml', accept='application/xml', retry=True):
         
         def _convertContent(content):
             try:
-                content = unicode(content,'utf-8')
+                content = unicode(content, 'utf-8')
             except:
                 # If it fails (e.g. it's not a string-like media-type) ignore it
                 pass
@@ -93,7 +93,7 @@ class HttpClient(object):
         def _handle5xx():
             if retry:
                 return self._httpCall(url, method, body, contentType, accept, False)
-            raise ServerException('Failed calling method %s on url %s, with reason: %s' %
+            raise ServerException('Failed calling method %s on url %s, with reason: %s' % 
                                          (method, url, str(resp.status) + ": " + resp.reason))
 
         def _handleResponse(resp, content):
