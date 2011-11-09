@@ -46,7 +46,6 @@ class PersistentDisk(object):
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
-        self.client.setHandleResponse(False)
         self._addCredentials()
         self._buildFQNEndpoint()
 
@@ -104,7 +103,6 @@ class PersistentDisk(object):
         # TODO: add iscow check
         self._initPDiskConnection()
         self._printContacting()
-        self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         body = None
         # FIXME: We can't set body and use redirect "See Other" RPC pattern, as 
@@ -124,7 +122,6 @@ class PersistentDisk(object):
         # TODO: add iscow check
         self._initPDiskConnection()
         self._printContacting()
-        self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         _, content = self._postJson(url)
         return self._getUuidFromJson(content)
