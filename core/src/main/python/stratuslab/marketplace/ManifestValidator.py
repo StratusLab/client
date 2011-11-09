@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import hashlib
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Signator import Signator
 

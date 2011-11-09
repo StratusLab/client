@@ -106,9 +106,15 @@ class PersistentDisk(object):
         self._printContacting()
         self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
-        body = {'tag': tag}
+        body = None
+        # FIXME: We can't set body and use redirect "See Other" RPC pattern, as 
+        #        there seems to be a bug in httplib2, which incorrectly approximates
+        #        the accepted MIME type when doing GET on redirected resource.
+        #        See: http://jira.stratuslab.eu:8080/browse/STRATUSLAB-941
+#        if tag:
+#            body = urlencode({'tag': tag})
         try:
-            _, content = self._postJson(url,urlencode(body))
+            _, content = self._postJson(url, body)
         except Exception, ex:
             ex.mediaType = 'json'
             raise
