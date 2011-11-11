@@ -475,9 +475,13 @@ class Runner(object):
             return
         return Util.printAction(msg)
 
-    def waitUntilVmRunningFailedOrTimeout(self, vmId, vmStartTimeout=120):
-        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
+    def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120, failOn=()):
+        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout, 
+                                                           failOn=failOn)
         return vmStarted
+
+    def getVmState(self, vmId):
+        return self.cloud.getVmState(vmId)
 
     def _checkImageExists(self, image):
         '''image - URL or image ID'''

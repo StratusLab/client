@@ -236,8 +236,8 @@ class Creator(object):
 
         self._printAction('Starting image creation')
 
+        self.startNode()
         try:
-            self.startNode()
             self.buildNodeIncrement()
 
             if not self.v1:
@@ -389,26 +389,36 @@ class Creator(object):
 
         self._printStep('Waiting for machine to boot')
         vmStarted = self.runner.waitUntilVmRunningOrTimeout(self.vmId,
-                                                            self.vmStartTimeout)
+                                                            self.vmStartTimeout,
+                                                            failOn=('Failed'))
         if not vmStarted:
-            msg = 'Failed to start VM within %i seconds (id=%s, ip=%s)' % \
-                                (self.vmStartTimeout, self.vmId, self.vmAddress)
+            if self.runner.getVmState(self.vmId) == 'Failed':
+                msg = 'Failed to start VM (id=%s, ip=%s)' % \
+                                    (self.vmId, self.vmAddress)
+            else:
+                msg = 'Failed to start VM within %i seconds (id=%s, ip=%s)' % \
+                                    (self.vmStartTimeout, self.vmId, self.vmAddress)
             self.printDetail(msg)
             self._killMachine()
             self._printError(msg)
 
     def _stopMachine(self):
-        self._printStep('Shutting down machine')
+        self._printStep('Stopping machine')
 
         if self.vmId:
             if not self.v1:
-                self.cloud.vmStop(self.vmId)
+                if self.cloud.getVmState(self.vmId) != 'Failed':
+                    self._printStep('Shutting down machine')
+                    self.cloud.vmStop(self.vmId)
             else:
+                self._printStep('Killing machine')
                 self.cloud.vmKill(self.vmId)
         else:
             Util.printWarning('Undefined VM ID, when trying to stop machine.')
 
     def _killMachine(self):
+        self._printStep('Killing machine')
+
         if self.vmId:
             self.cloud.vmKill(self.vmId)
         else:
