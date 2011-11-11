@@ -19,6 +19,7 @@
 # limitations under the License.
 #
 
+from datetime import datetime
 import json
 import re
 from stratuslab.HttpClient import HttpClient
@@ -45,20 +46,25 @@ class PersistentDisk(object):
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
-        self.client.setHandleResponse(False)
         self._addCredentials()
         self._buildFQNEndpoint()
 
     def _getJson(self, url):
-        headers, content = self.client.get(url, accept="application/json")
+        headers, content = self.client.get(url, accept='application/json')
         return headers, content.replace('\\','')
         
     def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
         headers, content = self.client.post(url,
                                 body,
                                 contentType, 
-                                accept="application/json")
+                                accept='application/json')
         return headers, content.replace('\\','')
+        
+    def _putJson(self, url, body, contentType='application/x-www-form-urlencoded'):
+        self.client.put(url,
+                        body,
+                        contentType, 
+                        accept='application/json')
         
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
@@ -68,7 +74,19 @@ class PersistentDisk(object):
         self._raiseOnErrors(headers, jsonDiskList)
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
+
+    def quarantineVolume(self, uuid):
+        keyvalues = {'owner': 'oneadmin',
+                     'quarantine': datetime.now()}
+        self.updateVolume(keyvalues, uuid)
         
+    def updateVolume(self, keyvalues, uuid):
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        body = urlencode(keyvalues)
+        self._putJson(url, body)
+
     def createVolume(self, size, tag, visibility):
         self._initPDiskConnection()
         self._printContacting()
@@ -85,7 +103,6 @@ class PersistentDisk(object):
         # TODO: add iscow check
         self._initPDiskConnection()
         self._printContacting()
-        self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         body = None
         # FIXME: We can't set body and use redirect "See Other" RPC pattern, as 
@@ -105,7 +122,6 @@ class PersistentDisk(object):
         # TODO: add iscow check
         self._initPDiskConnection()
         self._printContacting()
-        self.client.setHandleResponse(True)
         url = '%s/disks/%s' % (self.endpoint, uuid)
         _, content = self._postJson(url)
         return self._getUuidFromJson(content)
