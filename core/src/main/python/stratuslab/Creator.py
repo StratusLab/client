@@ -79,6 +79,7 @@ class Creator(object):
         self.author = ''
         self.comment = ''
         self.os = ''
+        self.authorEmail = ''
 
         self.endpoint = ''
         self.apprepoEndpoint = ''
@@ -98,6 +99,9 @@ class Creator(object):
 
         self.vmStartTimeout = self.VM_START_TIMEOUT
         self.vmPingTimeout = self.VM_PING_TIMEPUT
+
+        # Temporarily allow to use the old version of the image creation.
+        self.v1 = False
 
         self.options = Runner.defaultRunOptions()
         self.options.update(configHolder.options)
@@ -146,6 +150,8 @@ class Creator(object):
         self.manifest = ''
         self.manifestObject = None
         self.newManifestFileName = None
+
+        self.manifestLocalFileName = ''
 
         self.__listener = CreatorBaseListener()
 
@@ -231,21 +237,23 @@ class Creator(object):
         self._printAction('Starting image creation')
 
         try:
-            self.buildAndStoreNodeIncrement()
+            self.startNode()
+            self.buildNodeIncrement()
 
-            self._printAction('Image creation finished')
-            print ' Image: %s' % self.targetImageUri
-            print ' Manifest: %s' % self.targetManifestUri
-            print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
-                                                                            self.stderr.name)
+            if not self.v1:
+                self._printAction('Finished building image increment.')
+                self._printAction('Please check %s for new image ID and instruction.' % self.authorEmail)
+            else:
+                self.storeNodeIncrement()
+
+                self._printAction('Image creation finished')
+                print ' Image: %s' % self.targetImageUri
+                print ' Manifest: %s' % self.targetManifestUri
+                print '\n\tInstallation details can be found at: \n\t%s, %s' % (self.stdout.name,
+                                                                                self.stderr.name)
         finally:
             self._shutdownNode()
         self._localCleanUp()
-
-    def buildAndStoreNodeIncrement(self):
-        self.startNode()
-        self.buildNodeIncrement()
-        self.storeNodeIncrement()
 
     def startNode(self):
         self._imageExists()
@@ -268,6 +276,7 @@ class Creator(object):
         self._executeRecipe()
         self._executeScripts()
 
+    def storeNodeIncrement(self):
         self._createImage()
 
         self._checksumImage()
@@ -277,7 +286,6 @@ class Creator(object):
 
         self._bundleImage()
 
-    def storeNodeIncrement(self):
         self._uploadImageAndManifest()
 
     def _printAction(self, msg):
@@ -348,6 +356,12 @@ class Creator(object):
         imageObject = Image(self.configHolder)
         imageObject.checkImageExists(self.image)
 
+    def _getCreateImageTemplateDict(self):
+        return {'CREATOR_EMAIL' : self.authorEmail,
+                'CREATOR_NAME' : self.author,
+                'NEWIMAGE_COMMENT' : self.comment,
+                'NEWIMAGE_VERSION' : self.newImageGroupVersion}
+
     def __createRunner(self):
         self.configHolder.set('vmName', 
                               '%s: %s' % (self.vmName, Util.getTimeInIso8601()))
@@ -355,6 +369,10 @@ class Creator(object):
         self.configHolder.set('noCheckImageUrl', True)
 
         self.runner = Runner(self.image, self.configHolder)
+
+        if not self.v1:
+            self.runner.updateCreateImageTemplateData(
+                                        self._getCreateImageTemplateDict())
 
     def _startMachine(self):
         self._printStep('Starting base image')
@@ -376,18 +394,25 @@ class Creator(object):
             msg = 'Failed to start VM within %i seconds (id=%s, ip=%s)' % \
                                 (self.vmStartTimeout, self.vmId, self.vmAddress)
             self.printDetail(msg)
-            self._stopMachine()
+            self._killMachine()
             self._printError(msg)
 
     def _stopMachine(self):
         self._printStep('Shutting down machine')
 
         if self.vmId:
-            # TODO: STRATUSLAB-414. This doesn't always work. Kill the machine instead.
-            #self.cloud.vmStop(self.vmId)
-            self.cloud.vmKill(self.vmId)
+            if not self.v1:
+                self.cloud.vmStop(self.vmId)
+            else:
+                self.cloud.vmKill(self.vmId)
         else:
             Util.printWarning('Undefined VM ID, when trying to stop machine.')
+
+    def _killMachine(self):
+        if self.vmId:
+            self.cloud.vmKill(self.vmId)
+        else:
+            Util.printWarning('Undefined VM ID, when trying to kill machine.')
 
     def _shutdownNode(self):
         if self.shutdownVm:
@@ -915,7 +940,7 @@ EOF
         return os.path.join(path, fileName)
 
     def _localCleanUp(self):
-        execute(['rm', '-rf', self.manifestLocalFileName])
+        execute(['rm', '-f', self.manifestLocalFileName])
 
     def getNewImageId(self):
         # FIXME: return ID when manifest gets uploaded to Marketplace

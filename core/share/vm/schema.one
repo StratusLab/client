@@ -5,9 +5,7 @@ VCPU    = %(vm_vcpu)s
 MEMORY = %(vm_ram)s
 RANK = "- RUNNING_VMS"
 %(vm_name)s
-
 %(os_options)s
-
 DISK = [
 source   = "%(vm_image)s",
 target   = "hda",
@@ -15,28 +13,22 @@ save     = %(save_disk)s,
 readonly = "no",
 driver = "%(disk_driver)s"
 ]
-
 DISK = [
 type     = swap,
 size     = %(vm_swap)s,
 target   = "hdb",
 readonly = "no"
 ]
-
 %(extra_disk)s
-
 %(persistent_disk)s
-
 %(readonly_disk)s
-
 %(vm_nic)s
 %(graphics)s
 %(raw_data)s
-
 CONTEXT = [
 public_key = "%(public_key)s",
 %(extra_context)s
 target = "hdd"
 ]
-
 %(notifications)s
+%(create_image)s

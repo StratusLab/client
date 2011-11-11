@@ -59,6 +59,10 @@ class Runner(object):
   PASSWORD="{3}",
   QUEUE="{4}" ]'''
 
+    CREATE_IMAGE = '''CREATE_IMAGE = [
+%s
+]'''
+
     DEFAULT_INSTANCE_TYPE = 'm1.small'
 
     def __init__(self, image, configHolder):
@@ -70,6 +74,7 @@ class Runner(object):
         self.quiet = False
         self.instanceNumber = 1
         self.vmShutdown = False
+        self.authorEmail = ''
         configHolder.assign(self)
         self.configHolder = configHolder
 
@@ -77,6 +82,8 @@ class Runner(object):
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.endpoint = self.cloud.setEndpoint(self.endpoint)
         self.pdisk = PersistentDisk(configHolder)
+
+        self.createImageData = {'CREATOR_EMAIL': self.authorEmail}
 
         self._initVmAttributes()
         
@@ -231,12 +238,13 @@ class Runner(object):
                     'vncListen': '',
                     'specificAddressRequest': None,
                     'diskFormat': 'raw',
-                    'saveDisk': 'no',
+                    'saveDisk': False,
                     'inVmIdsFile': None,
                     'outVmIdsFile': None,
                     'noCheckImageUrl': False,
                     'msgRecipients' : [],
-                    'marketplaceEndpoint' : Defaults.marketplaceEndpoint }
+                    'marketplaceEndpoint' : Defaults.marketplaceEndpoint,
+                    'authorEmail': ''}
         defaultOp.update(CloudEndpoint.options())
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
@@ -260,6 +268,7 @@ class Runner(object):
         self._manageExtraContext()
         self._manageVnc()
         self._manageNotifications()
+        self._manageCreateImage()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -372,6 +381,16 @@ class Runner(object):
         else:
             self.notifications = ''
 
+    def _manageCreateImage(self):
+        if not self.saveDisk:
+            return
+
+        data = ['%s = "%s"' % (k,v) for k,v in self.createImageData.items()]
+        self.create_image = Runner.CREATE_IMAGE % ',\n'.join(data)
+
+    def updateCreateImageTemplateData(self, updateDict):
+        self.createImageData.update(updateDict)
+
     def runInstance(self):
         self._printContacting()
         self._checkImageExists(self.vm_image)
@@ -456,7 +475,7 @@ class Runner(object):
             return
         return Util.printAction(msg)
 
-    def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120):
+    def waitUntilVmRunningFailedOrTimeout(self, vmId, vmStartTimeout=120):
         vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
         return vmStarted
 

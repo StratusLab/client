@@ -63,6 +63,12 @@ class MainProgram(Runnable):
                 help='save image after VM shutdown',
                 default=False)
 
+        self.parser.add_option('--author-email', dest='authorEmail',
+                help='Used with --save option. Email address of the author of ' \
+                'the new image. After image is saved a notification is sent ' \
+                'with further instructions.',
+                default='', metavar='EMAIL')
+
         self.parser.add_option('-o', '--output', dest='outVmIdsFile',
                 help='save vm-id to a file', metavar='FILE',
                 default=None)
@@ -108,8 +114,16 @@ class MainProgram(Runnable):
 
         super(MainProgram, self).parse()
 
+
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
         setattr(parser.values, option.dest, 1024*value)
+
+    def checkOptions(self):
+
+        super(MainProgram, self).checkOptions()
+
+        if self.options.saveDisk == True and not self.options.authorEmail:
+            self.parser.error('Provide a valid Email address of the author of the image.')
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
