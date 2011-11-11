@@ -59,7 +59,7 @@ class Runner(object):
   PASSWORD="{3}",
   QUEUE="{4}" ]'''
 
-    defaultInstanceType = 'm1.small'
+    DEFAULT_INSTANCE_TYPE = 'm1.small'
 
     def __init__(self, image, configHolder):
         if image == '':
@@ -212,7 +212,7 @@ class Runner(object):
         defaultOp = {'userPublicKeyFile': _sshPublicKey,
                     'userPrivateKeyFile': _sshPrivateKey,
                     'instanceNumber': 1,
-                    'instanceType': Runner.defaultInstanceType,
+                    'instanceType': Runner.DEFAULT_INSTANCE_TYPE,
                     'vmTemplateFile': Runner.getTemplatePath(),
                     'rawData': '',
                     'vmKernel': '',
