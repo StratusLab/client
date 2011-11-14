@@ -31,6 +31,7 @@ from stratuslab.commands.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Authn import AuthnFactory
+from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.Exceptions import OneException
 
 
