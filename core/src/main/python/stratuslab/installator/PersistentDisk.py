@@ -83,7 +83,7 @@ class PersistentDisk(object):
         self._service('pdisk', 'start')
         
     def configureFrontend(self):
-        self._writeConfig()
+        self._writePdiskConfig()
         self._setAutorunZookeeper()
         self._setPdiskUserAndPassword()
         # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
@@ -196,7 +196,7 @@ class PersistentDisk(object):
     def _copyCloudNodeKey(self):
         self.system.copyCmd(self.persistentDiskCloudNodeKey, self.cloudNodeKey)
         
-    def _writeConfig(self):
+    def _writePdiskConfig(self):
         printStep('Writing configuration...')
         self._overrideConfig('disk.store.share', self.persistentDiskShare)
         self._overrideConfig('disk.store.nfs.location', self.persistentDiskNfsMountPoint)
