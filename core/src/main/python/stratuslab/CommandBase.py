@@ -76,7 +76,9 @@ class CommandBase(object):
         except socket.gaierror, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exceptions.ClientException, ex:
-            msg = str(ex)
+            msg = 'Error: ' + ex.reason
+            if ex.content:
+                msg += '\nDetail: ' + ex.content
             if getattr(ex, 'mediaType', None) == 'json':
                 error = json.loads(ex.content)
                 msg = 'Error: %s (code %d)' % (error['message'], error['code'])
