@@ -4,7 +4,7 @@
 # co-funded by the European Commission under the Grant Agreement
 # INFSO-RI-261552."
 #
-# Copyright (c) 2010, Centre National de la Recherche Scientifique (CNRS)
+# Copyright (c) 2011, Centre National de la Recherche Scientifique (CNRS)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ from stratuslab.Util import printError
 from socket import gethostbyaddr
 import Util
 from stratuslab import Defaults
+from stratuslab.Authn import UsernamePasswordCredentialsLoader
 
 class PersistentDisk(object):
     
@@ -75,19 +76,36 @@ class PersistentDisk(object):
         disks = json.loads(jsonDiskList)
         return self._filterDisks(disks, filters)
 
+    def search(self, key, value):
+        self._setPDiskUserCredentials()
+        filtered = self.describeVolumes({key: value})
+        return [disk['uuid'] for disk in filtered]
+
     def quarantineVolume(self, uuid):
         keyvalues = {'owner': 'oneadmin',
                      'quarantine': datetime.now()}
+        self._setPDiskUserCredentials()
         self.updateVolume(keyvalues, uuid)
         
     def updateVolume(self, keyvalues, uuid):
+        # Need to set the user as pdisk since we need to be super
+        # to update pdisk metadata
+        self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/%s' % (self.endpoint, uuid)
         body = urlencode(keyvalues)
         self._putJson(url, body)
 
+    def _setPDiskUserCredentials(self):
+        '''Assign the super pdisk username/password'''
+        loader = UsernamePasswordCredentialsLoader()
+        loader.load()
+        self.pdiskUsername = self.pdiskStoreCloudServiceUser
+        self.pdiskPassword = loader.get_password(self.pdiskUsername)
+
     def createVolume(self, size, tag, visibility):
+        self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/' % self.endpoint
@@ -101,6 +119,7 @@ class PersistentDisk(object):
 
     def createCowVolume(self, uuid, tag):
         # TODO: add iscow check
+        self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/%s' % (self.endpoint, uuid)
@@ -120,6 +139,7 @@ class PersistentDisk(object):
     
     def rebaseVolume(self, uuid):
         # TODO: add iscow check
+        self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/%s' % (self.endpoint, uuid)
@@ -211,6 +231,11 @@ class PersistentDisk(object):
         self.endpoint = Util.sanitizeEndpoint(self.pdiskEndpoint, 
                                               Defaults.pdiskProtocol, 
                                               Defaults.pdiskPort)
+    
+    def addPdiskCredentials(self):
+        user = self.pdiskUsername or self.username
+        password = self.pdiskPassword or self.password
+        self.client.addCredentials(user, password)
     
     def _addCredentials(self):
         user = self.pdiskUsername or self.username

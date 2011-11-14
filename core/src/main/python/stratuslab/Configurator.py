@@ -120,3 +120,32 @@ class Configurator(Configurable):
     def revertConfig(self):
         if os.path.isfile(self.userConfigFile):
             os.remove(self.userConfigFile)
+
+
+class SimpleConfigParser(object):
+
+    FILENAME = 'Unknown'
+     
+    def __init__(self):
+        self.items = {}
+
+    def load(self, file=None):
+        
+        if not file:
+            file = open(SimpleConfigParser.FILENAME)
+
+        lines = file.read().split('\n')
+        lines = filter(None, lines)
+        lines = filter(lambda x: not x.strip().startswith('#'), lines)
+        for line in lines:
+            parts = line.split('=')
+            if len(parts) <= 1:
+                raise ValueError('Invalid configuration file format')
+            username = parts[0]
+            self.items[username] = self.parse_value(parts[1])
+            
+    def parse_value(self, value):
+        return value
+    
+    def get(self, username):
+        return self.items[username]
