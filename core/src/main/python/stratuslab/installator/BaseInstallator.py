@@ -34,7 +34,6 @@ from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.Registration import Registration
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
-from stratuslab.installator.CachingConfigurator import CachingConfigurator
 from stratuslab import Util
 
 class BaseInstallator(object):
@@ -208,8 +207,6 @@ class BaseInstallator(object):
 
         self._configureMarketPlacePolicyValidation()
         
-        self._configureCaching()
-
         printStep('Starting cloud')
         self._startCloudSystem()
 
@@ -280,12 +277,6 @@ class BaseInstallator(object):
 
     def _configureMarketPlacePolicyValidation(self):
         PolicyValidator(self.configHolder).run()
-
-    def _configureCaching(self):
-        if self._isTrue(self.caching):
-            CachingConfigurator(self.configHolder).run()
-        else:
-            CachingConfigurator(self.configHolder).resetOneConfig()
 
     def _isTrue(self, value):
         return Util.isTrueConfVal(value)
