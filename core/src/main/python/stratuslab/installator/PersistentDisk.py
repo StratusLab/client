@@ -270,7 +270,7 @@ class PersistentDisk(object):
         if re.search('^KERNEL=="dm-\*", OPTIONS\+="watch"', Util.fileGetContent(fileName), re.MULTILINE):
             Util.appendOrReplaceInFile(fileName, search, replace)
 
-        self.system.restartService('udev')
+        #self.system.restartService('udev')
 
         data = """*/15 * * * * root sed -i -e 's/^KERNEL==\"dm-\*\", OPTIONS+=\"watch\"/%s/' %s""" % \
                 (replace, fileName)
