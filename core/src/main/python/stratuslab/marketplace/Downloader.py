@@ -32,6 +32,7 @@ from stratuslab.Exceptions import InputException
 
 from stratuslab.marketplace.ImageValidator import ImageValidator
 from stratuslab.marketplace.ManifestValidator import ManifestValidator
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 etree = Util.importETree()
 
@@ -56,7 +57,7 @@ class Downloader(object):
         '''uri is the full resource uri uniquely identifying
            a single manifest entry'''
         tempMetadataFilename = tempfile.mktemp()
-        self.getManifestAsFile(uri, tempMetadataFilename)
+        ManifestDownloader(self.configHolder).getManifestAsFile(uri, tempMetadataFilename)
         manifestInfo = ManifestInfo(self.configHolder)
 
         tempImageFilename = self._downloadFromLocations(manifestInfo)
