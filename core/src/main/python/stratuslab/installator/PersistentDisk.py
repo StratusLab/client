@@ -267,7 +267,8 @@ class PersistentDisk(object):
         fileName = '/lib/udev/rules.d/80-udisks.rules'
         search = 'KERNEL=="dm-*", OPTIONS+="watch"'
         replace = '#KERNEL=="dm-*", OPTIONS+="watch"'
-        Util.appendOrReplaceInFile(fileName, search, replace)
+        if re.search('^KERNEL=="dm-\*", OPTIONS\+="watch"', Util.fileGetContent(fileName), re.MULTILINE):
+            Util.appendOrReplaceInFile(fileName, search, replace)
 
         self.system.restartService('udev')
 
