@@ -109,7 +109,7 @@ class Downloader(object):
             return ''
 
     def _verifySignature(self, imageFilename, metadataFilename):
-        ManifestValidator().verifySignature(imageFilename, metadataFilename)
+        ManifestValidator(self.configHolder).verifySignature(imageFilename, metadataFilename)
 
     def _inflateImage(self, imageFilename):
         extension = self._extractCompressionExtension(imageFilename)
