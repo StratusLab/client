@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2011, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Util import modulePath, printError
+from stratuslab.commands.StorageCommand import StorageCommand
+from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.ConfigHolder import ConfigHolder
+
+
+class MainProgram(StorageCommand):
+    '''A command-line program to update storage information.'''
+
+    def parse(self):
+        self.parser.usage = '%prog <uuid> <key> <value>'
+        self.parser.description = '''Update an existing storage disk'''
+        
+        StorageCommand.addPDiskEndpointOptions(self.parser)
+
+        super(MainProgram, self).parse()
+
+        self.options, self.args = self.parser.parse_args()
+
+    def checkOptions(self):
+        StorageCommand.checkPDiskEndpointOptionsOnly(self)
+        super(MainProgram, self).checkOptions()
+        if len(self.args) != 3:
+            self.usageExitWrongNumberOfArguments()
+        
+    def _addConfigFileOption(self):
+        ConfigHolder.addConfigFileSysadminOption(self.parser)
+
+    def doWork(self):
+        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        configHolder = ConfigHolder(self.options.__dict__, config)
+        pdisk = PersistentDisk(configHolder)
+
+        uuid, key, value = self.args
+        pdisk.updateVolume({key:value}, uuid)
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
