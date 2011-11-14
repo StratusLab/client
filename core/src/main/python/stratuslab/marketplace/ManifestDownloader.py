@@ -64,8 +64,7 @@ class ManifestDownloader(object):
         return manifests        
 
     def getManifestInfo(self, resourceUri):
-        '''Return manifest as ManifestInfo object.
-        '''
+        '''Return manifest as ManifestInfo object.'''
         return self._getManifest(resourceUri)
             
     def getManifestAsFile(self, uri, filename):
