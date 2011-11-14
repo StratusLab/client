@@ -29,6 +29,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commands.StorageCommand import StorageCommand
 import stratuslab.Util as Util
 from stratuslab.Uploader import Uploader
 
@@ -95,7 +96,7 @@ class MainProgram(CommandBase):
         Uploader.buildAppRepoOptionsParser(self.parser)
 
         AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
-        AuthnCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addPDiskEndpointOptions(self.parser)
 
         self.options, self.tests = self.parser.parse_args()
 

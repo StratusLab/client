@@ -26,12 +26,12 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath, printError
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commands.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class MainProgram(AuthnCommand):
+class MainProgram(StorageCommand):
     '''A command-line program to create a persistent disk.'''
 
     def __init__(self):
@@ -41,14 +41,14 @@ class MainProgram(AuthnCommand):
         self.parser.usage = '%prog volume_uid ... [options]'
         self.parser.description = '''Delete a persistent disk'''
         
-        AuthnCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
-        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
+        self.checkPDiskEndpointOptionsOnly()
         super(MainProgram, self).checkOptions()
         self._getUuid()
         self._checkUuid()
