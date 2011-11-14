@@ -42,8 +42,7 @@ class ManifestDownloader(object):
         configHolder.assign(self)
 
     def getManifestList(self, identifier):
-        endpoint = Util.constructEndPoint(self.marketplaceEndpoint, 'http', '80', 'metadata')
-        url = endpoint + '/' + identifier
+        url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, identifier)
         metadataEntries = ''
         try:
             metadataEntries = Util.wstring(url)
@@ -65,8 +64,7 @@ class ManifestDownloader(object):
         return manifests        
 
     def getManifestInfo(self, resourceUri):
-        '''Return manifest as ManifestInfo object.
-        '''
+        '''Return manifest as ManifestInfo object.'''
         return self._getManifest(resourceUri)
             
     def getManifestAsFile(self, uri, filename):

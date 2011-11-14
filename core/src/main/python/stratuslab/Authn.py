@@ -22,7 +22,8 @@ import xmlrpclib
 
 import Util
 from stratuslab.Exceptions import ValidationException
-
+from stratuslab.Configurator import SimpleConfigParser
+from stratuslab import Defaults
 
 class AuthnFactory(object):
     
@@ -117,13 +118,13 @@ class CertificateCredentialsConnector(CredentialsConnector):
         def __init__(self, cert, key):
             xmlrpclib.SafeTransport.__init__(self)
             self.__cert_file = cert
-            self.__key_file  = key
+            self.__key_file = key
 
         def make_connection(self, host):
             host_with_cert = (host, {
                                      'key_file'  :  self.__key_file,
                                      'cert_file' :  self.__cert_file
-                                     } )
+                                     })
             return  xmlrpclib.SafeTransport.make_connection(self, host_with_cert)
 
     def __init__(self, runnable):
@@ -173,3 +174,26 @@ class LocalhostCredentialsConnector(CredentialsConnector):
 
     def createSessionString(self):
         return '%s:%s' % (self.username, Util.shaHexDigest(self.password))
+
+
+class UsernamePasswordCredentialsLoader(SimpleConfigParser):
+    
+    PASSWORD_INDEX = 0
+    GROUP_INDEX = 1
+     
+    def __init__(self):
+        super(UsernamePasswordCredentialsLoader, self).__init__()
+        SimpleConfigParser.FILENAME = Defaults.authnConfigFile
+        self.credentials = self.items
+
+    def parse_value(self, value):
+        parts = value.split(',')
+        first = parts[0].strip()
+        rest = ','.join(parts[1:]).strip()
+        return (first, rest)
+    
+    def get_password(self, username):
+        return self.credentials[username][UsernamePasswordCredentialsLoader.PASSWORD_INDEX]
+            
+    def get_group(self, username):
+        return self.credentials[username][UsernamePasswordCredentialsLoader.GROUP_INDEX]

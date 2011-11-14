@@ -21,15 +21,18 @@
 import string
 import os
 import re
+import socket
 from stratuslab.system import SystemFactory
 from stratuslab.Util import printStep, printWarning, fileGetContent
 import stratuslab.Util as Util
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from random import choice
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab import Defaults
 
 class PersistentDisk(object):
 
-    def __init__(self, configHolder):
+    def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
         self.configHolder.assign(self)
         
@@ -53,7 +56,7 @@ class PersistentDisk(object):
                        },
         }
 
-        self.authnConfigFile = '/etc/stratuslab/authn/login-pswd.properties'
+        self.authnConfigFile = Defaults.authnConfigFile
         self.pdiskConfigFile = '/etc/stratuslab/pdisk.cfg'
         self.pdiskHostConfigFile = '/etc/stratuslab/pdisk-host.cfg'
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
@@ -71,6 +74,9 @@ class PersistentDisk(object):
         # As the pdisk service can be installed on another machine than the
         # frontend, we need to do an installation via SSH like for node.
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
+        if not self.persistentDiskIp:
+            self.persistentDiskIp = socket.gethostbyname(socket.gethostname())
+        
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
         self._copyCloudNodeKey()

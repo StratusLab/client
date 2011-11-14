@@ -32,49 +32,35 @@ from stratuslab.ConfigHolder import ConfigHolder
 
 
 class MainProgram(StorageCommand):
-    '''A command-line program to create a persistent disk.'''
-
-    def __init__(self):
-        super(MainProgram, self).__init__()
+    '''A command-line program to update storage information.'''
 
     def parse(self):
-        self.parser.usage = '%prog volume_uid ... [options]'
-        self.parser.description = '''Delete a persistent disk'''
+        self.parser.usage = '%prog <uuid> <key> <value>'
+        self.parser.description = '''Update an existing storage disk'''
         
         StorageCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
-        self.options, self.uuids = self.parser.parse_args()
+        self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        self.checkPDiskEndpointOptionsOnly()
+        StorageCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
-        self._getUuid()
-        self._checkUuid()
-    
-    def _getUuid(self):
-        if len(self.uuids) < 1:
-            printError('At least one disk UUID is required')
-    
-    def _checkUuid(self):
-        for uuid in self.uuids:
-            if not PersistentDisk.isValidUuid(uuid):
-                printError('Invalid UUID %s' % uuid)
+        if len(self.args) != 3:
+            self.usageExitWrongNumberOfArguments()
         
+    def _addConfigFileOption(self):
+        ConfigHolder.addConfigFileSysadminOption(self.parser)
+
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
-        configHolder.pdiskProtocol = "https"
+        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        configHolder = ConfigHolder(self.options.__dict__, config)
         pdisk = PersistentDisk(configHolder)
-        for uuid in self.uuids:
-            try:
-                volumeId = pdisk.deleteVolume(uuid)
-                print 'DELETED %s' % volumeId
-            except AttributeError:
-                printError('Persistent disk endpoint unavailable')
-            except Exception, e:
-                printError('Service error: %s' % e)
-#            
+
+        uuid, key, value = self.args
+        pdisk.updateVolume({key:value}, uuid)
+
 if __name__ == '__main__':
     try:
         MainProgram()

@@ -29,7 +29,7 @@ from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commands.StorageCommand import StorageCommand
 
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''
@@ -110,7 +110,7 @@ class MainProgram(Runnable):
                 help='recipient coordinates (host,vhost,user,pass,queue)',
                 default=[])
 
-        AuthnCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 

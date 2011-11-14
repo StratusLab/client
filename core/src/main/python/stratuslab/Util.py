@@ -515,7 +515,7 @@ def constructEndPoint(fragment, protocol='https', port=8443, path=''):
     return '%s%s:%s/%s' % (_protocol, _hostname, _port, _path)
 
 def parseUri(uri):
-    "Return tuple (protocol, hostname, port, path?query#fragment)"
+    '''Return tuple (protocol, hostname, port, path?query#fragment)'''
     m = re.match('([a-zA-Z0-9_]*://)?([^/:$]*):?(\d+)?/?(.*)', uri)
     protocol, hostname, port, path_and_query = m.group(1), m.group(2), m.group(3), m.group(4)
     return protocol, hostname, port, path_and_query

@@ -17,10 +17,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Signator import Signator
 
 class ManifestValidator(object):
+
+    def __init__(self, configHolder=ConfigHolder()):
+        self.configHolder = configHolder
 
     def verifySignature(self, imageFilename, metadataFilename):
         signator = Signator(metadataFilename, self.configHolder)

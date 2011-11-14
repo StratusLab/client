@@ -22,16 +22,17 @@
 import os
 import sys
 from optparse import OptionParser
+from stratuslab.commands.StorageCommand import StorageCommand
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath, printError
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commands.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class MainProgram(AuthnCommand):
+class MainProgram(StorageCommand):
     '''A command-line program to create a persistent disk.'''
 
     def __init__(self):
@@ -68,14 +69,14 @@ and delete the disk.''', action='store_false')
                 help='''Set the disk visibility as public. Any one can see it 
 and use it but can't delete it.''', action='store_true', default=False)
 
-        AuthnCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
-        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
+        self.checkPDiskEndpointOptionsOnly()
         super(MainProgram, self).checkOptions()
         self._checkVolumeSize()
         self._checkTagLength()

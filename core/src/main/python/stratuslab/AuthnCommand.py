@@ -31,7 +31,7 @@ class AuthnCommand(CommandBaseUser):
         options.update(AuthnCommand.userNamePasswordOptions())
         options.update(AuthnCommand.certPemOptions())
         options.update(AuthnCommand.certP12Options())
-        options.update(AuthnCommand.pdiskOptions())
+#        options.update(AuthnCommand.pdiskOptions())
         return options
 
     @staticmethod
@@ -51,10 +51,6 @@ class AuthnCommand(CommandBaseUser):
         return CloudEndpoint.options()
     
     @staticmethod
-    def pdiskOptions():
-        return PDiskEndpoint.options()
-
-    @staticmethod
     def addUsernamePasswordOptions(parser, defaultOptions=None):
         return UsernamePassword.addOptions(parser, defaultOptions)
 
@@ -70,10 +66,6 @@ class AuthnCommand(CommandBaseUser):
     def addCloudEndpointOptions(parser, defaultOptions=None):
         return CloudEndpoint.addOptions(parser, defaultOptions)
     
-    @staticmethod
-    def addPDiskEndpointOptions(parser, defaultOptions=None):
-        return PDiskEndpoint.addOptions(parser, defaultOptions)
-
     def parse(self):
         defaultOptions = AuthnCommand.defaultRunOptions()
         
@@ -92,9 +84,6 @@ class AuthnCommand(CommandBaseUser):
     def checkCloudEndpointOptoins(self):
         return CloudEndpoint.checkOptions(self.options)
     
-    def checkPDiskEndpointOptoins(self):
-        return PDiskEndpoint.checkOptions(self.options)
-
     def checkOptions(self):
         if not (self.checkUsernamePasswordOptions() or self.checkPemCertOptions()):
             self.parser.error('Missing credentials. Please provide either %s or %s' % 
@@ -111,11 +100,6 @@ class AuthnCommand(CommandBaseUser):
     def checkCloudEndpointOptionsOnly(self):
         if not self.checkCloudEndpointOptoins():
             self.parser.error('Missing cloud endpoint. Please provide %s' % CloudEndpoint.optionString)
-
-    def checkPDiskEndpointOptionsOnly(self):
-        if not self.checkPDiskEndpointOptoins():
-            self.parser.error('Missing persistent disk endpoint. Please provide %s' 
-                              % PDiskEndpoint.optionString)
 
 
 class UsernamePassword(object):
@@ -244,40 +228,4 @@ class CloudEndpoint(object):
         if options.endpoint:
             return True
 
-        return False
-
-class PDiskEndpoint(object):
-    optionString = '--pdisk-endpoint'
-
-    @staticmethod
-    def options():
-        return {'pdiskEndpoint' : os.getenv('STRATUSLAB_PDISK_ENDPOINT', ''),
-                'pdiskProtocol' : os.getenv('STRATUSLAB_PDISK_PROTOCOL', Defaults.pdiskProtocol),
-                'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),
-                'pdiskUsername' : os.getenv('STRATUSLAB_PDISK_USERNAME', UsernamePassword.options().get('username')),
-                'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', UsernamePassword.options().get('password')) }  
-
-    @staticmethod
-    def addOptions(parser, defaultOptions=None):
-        if not defaultOptions:
-            defaultOptions = PDiskEndpoint.options()
-        
-        # TODO: Add certificate support
-        parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
-                          help='Persistent endpoint (hostname or URL). Default STRATUSLAB_PDISK_ENDPOINT or %s' % \
-                               Defaults.marketplaceEndpoint,
-                          default=defaultOptions['pdiskEndpoint'])
-        parser.add_option('--pdisk-username', dest='pdiskUsername',
-                          help='Persistent disk service username. \
-                          Default STRATUSLAB_PDISK_USERNAME, then your cloud username', 
-                          metavar='NAME', default=defaultOptions['pdiskUsername'])
-        parser.add_option('--pdisk-password', dest='pdiskPassword',
-                          help='Persistent disk service password. \
-                          Default STRATUSLAB_PDISK_PASSWORD, then your cloud password', 
-                          metavar='NAME', default=defaultOptions['pdiskPassword'])
-        
-    @staticmethod
-    def checkOptions(options):
-        if options.pdiskEndpoint:
-            return True
         return False

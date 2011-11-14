@@ -31,12 +31,14 @@ class Util(object):
 
     @staticmethod
     def addEndpointOption(parser):
+        default = os.getenv(Util.ENVVAR_ENDPOINT,
+                            Defaults.marketplaceEndpoint)
         parser.add_option(Util.OPTION_STRING,
                           dest='marketplaceEndpoint',
                           help='Marketplace endpoint (hostname or URL). Default %s or %s' % \
                               (Util.ENVVAR_ENDPOINT,
                                Defaults.marketplaceEndpoint),
-                          default=None)
+                          default=default)
 
         
     @staticmethod
@@ -51,6 +53,9 @@ class Util(object):
 
     @staticmethod
     def metadataUrl(endpoint, identifier):
+        if identifier.startswith('http'):
+            return identifier
+        
         _endpoint = stratuslab.Util.sanitizeEndpoint(endpoint, 
                                                      Defaults.marketplaceProtocol,
                                                      Defaults.marketplacePort)

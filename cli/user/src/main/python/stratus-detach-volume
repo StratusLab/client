@@ -27,14 +27,14 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import modulePath, printError
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commands.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Exceptions import OneException
 
 
-class MainProgram(AuthnCommand):
+class MainProgram(StorageCommand):
     '''A command-line program to detach a persistent disk.'''
 
     def __init__(self):
@@ -48,7 +48,7 @@ class MainProgram(AuthnCommand):
                 help='The ID of the instance to which the volume attaches', metavar='VM_ID',
                 default=0, type='int')
 
-        AuthnCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addPDiskEndpointOptions(self.parser)
         AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
@@ -56,7 +56,7 @@ class MainProgram(AuthnCommand):
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
-        AuthnCommand.checkPDiskEndpointOptionsOnly(self)
+        self.checkPDiskEndpointOptionsOnly()
         super(MainProgram, self).checkOptions()
         if not self.uuids:
             printError('Please provide at least on persistent disk UUID to detach')

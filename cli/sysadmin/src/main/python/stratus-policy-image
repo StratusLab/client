@@ -42,7 +42,7 @@ class MainProgram(CommandBaseSysadmin):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] <identifier-endpoint>
+        usage = '''%prog [options] <image-identifier>
         
 <image-identifier>    Marketplace image identifier (example: GOaxJFdoEXvqAm9ArJgnZ0_ky6F)'''
 
@@ -70,9 +70,12 @@ class MainProgram(CommandBaseSysadmin):
         imageId = self.args[0]
         
         policy = Policy(configHolder)
-        policy.check(imageId)
-        self.printDetail("Valid according to site policy")
-
+        filtered = policy.check(imageId)
+        first = filtered[0]
+        rootUrl = policy.marketplaceEndpoint + '/metadata'
+        res = '%s/%s/%s/%s' % (rootUrl,first.identifier, first.endorser, first.created)
+        print res
+        
 if __name__ == '__main__':
     try:
         MainProgram()
