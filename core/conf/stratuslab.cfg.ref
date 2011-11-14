@@ -175,10 +175,10 @@ persistent_disk_storage = lvm
 # Username of storage service
 pdisk_store_cloud_service_user=pdisk
 # Location of the disk for file storage. Not used with LVM
-##persistent_disk_file_location = /tmp/pdisk 
+persistent_disk_file_location = /tmp/pdisk 
 persistent_disk_system = fedora
 # Only used at install
-##persistent_disk_private_key = /root/.ssh/id_rsa 
+persistent_disk_private_key = /root/.ssh/id_rsa 
 # Shall we configure to share same auth file with one-proxy? 
 # This imply to have one-proxy on the same machine 
 # Only used at install
