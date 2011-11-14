@@ -174,7 +174,10 @@ class OneConnector(object):
     def getVmSshPort(self, *args, **kwargs):
         return 22
 
-    def waitUntilVmRunningOrTimeout(self, vmId, timeout, ticks=True):
+    def getVmState(self, vmId):
+        return str(self._getVmStateSummary(vmId))
+
+    def waitUntilVmRunningOrTimeout(self, vmId, timeout, ticks=True, failOn=()):
         start = time.time()
         state = ''
 
@@ -183,6 +186,9 @@ class OneConnector(object):
         while (str(state) not in noWaitStates):
 
             state = self._getVmStateSummary(vmId)
+
+            if str(state) in failOn:
+                return False
 
             if ticks:
                 sys.stdout.flush()

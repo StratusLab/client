@@ -63,6 +63,14 @@ class MainProgram(Runnable):
                 help='author of the new image',
                 default='', metavar='NAME')
 
+        self.parser.add_option('--author-email', dest='authorEmail',
+                help='Email address of the author of the new image',
+                default='', metavar='EMAIL')
+
+        self.parser.add_option('--v1', dest='v1',
+                help='create image using old method.',
+                default=False, action='store_true')
+
         self.parser.add_option('--comment', dest='comment',
                 help='description of the new image',
                 default='', metavar='TEXT')
@@ -149,6 +157,14 @@ you\'ll never be able to retrieve the new image')
 
         if not self.options.author:
             self.parser.error('Provide an author for the new image')
+
+        if not self.options.v1 and not self.options.authorEmail:
+            self.parser.error('Provide a valid Email address of the author of the image.')
+
+        if not self.options.v1:
+            # This should be True for Runner in the case of image creation to
+            # define required data in deployment script.
+            self.options.saveDisk = True
 
         if not self.options.noUpload:
             Uploader.checkAppRepoOptions(self.options, self.parser)
