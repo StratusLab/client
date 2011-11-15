@@ -131,7 +131,7 @@ class ManifestDownloader(object):
     def _checkManifestAndImageId(self, imageId):
         if not self.manifestObject:
             self.downloadManifestByImageId(imageId)
-        if imageId != self.manifestObject.identifier:
+        if imageId.split('/')[0] != self.manifestObject.identifier:
             raise InputException('Given image ID [%s] does not match to downloaded [%s]' % 
                                     (imageId, self.manifestObject.identifier))
 

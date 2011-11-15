@@ -64,7 +64,7 @@ class Image(object):
 
     @staticmethod
     def isImageId(imageReference):
-        return Image.re_imageId.match(imageReference)
+        return Image.re_imageId.match(imageReference.split('/')[0])
 
     @staticmethod
     def isDiskId(imageReference):
