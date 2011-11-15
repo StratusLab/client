@@ -78,17 +78,12 @@ class MainProgram(StorageCommand):
         configHolder = ConfigHolder(self.options.__dict__)
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
-        try:
-            for uuid in self.uuids:
-                try:
-                    target = pdisk.hotDetach(self.node, self.options.instance, uuid)
-                    print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
-                except Exception, e:
-                    printError('DISK %s: %s' % (uuid, e), exit=False)
-        except AttributeError:
-            printError('Persistent disk endpoint unavailable')
-        except Exception, e:
-            printError('Service error: %s' % e)
+        for uuid in self.uuids:
+            try:
+                target = pdisk.hotDetach(self.node, self.options.instance, uuid)
+                print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
+            except Exception, e:
+                printError('DISK %s: %s' % (uuid, e), exit=False)
 
 if __name__ == '__main__':
     try:

@@ -64,13 +64,8 @@ that have a tag matching the regex pattern.''',
         configHolder = ConfigHolder(self.options.__dict__)
         pdisk = PersistentDisk(configHolder)
         filters = self._formatFilter()
-        try:
-            volumes = pdisk.describeVolumes(filters)
-            self._printVolumes(volumes)
-        except AttributeError:
-            printError('Persistent disk endpoint unavailable')
-        except Exception, e:
-            printError('Service error: %s' % e)
+        volumes = pdisk.describeVolumes(filters)
+        self._printVolumes(volumes)
         
     def _printVolumes(self, volumes):
         if not len(volumes):

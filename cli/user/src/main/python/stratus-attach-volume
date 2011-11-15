@@ -80,18 +80,13 @@ class MainProgram(StorageCommand):
         configHolder = ConfigHolder(self.options.__dict__)
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
-        try:
-            for uuid in self.uuids:
-                free, _ = pdisk.getVolumeUsers(uuid)
-                if free < 1:
-                    printError('DISK %s: Disk not available\n' % uuid, exit=False)
-                else:
-                    target = pdisk.hotAttach(self.node, self.options.instance, uuid)
-                    print 'ATTACHED %s in VM %s on /dev/%s' % (uuid, self.options.instance, target)
-        except AttributeError:
-            printError('Persistent disk endpoint unavailable')
-        except Exception, e:
-            printError('Service error: %s' % e)
+        for uuid in self.uuids:
+            free, _ = pdisk.getVolumeUsers(uuid)
+            if free < 1:
+                printError('DISK %s: Disk not available\n' % uuid, exit=False)
+            else:
+                target = pdisk.hotAttach(self.node, self.options.instance, uuid)
+                print 'ATTACHED %s in VM %s on /dev/%s' % (uuid, self.options.instance, target)
 
 if __name__ == '__main__':
     try:
