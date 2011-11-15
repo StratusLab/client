@@ -108,11 +108,13 @@ enabled=1
 
 
     def getSystemArch(self):
-        _, _, _, _, arch = os.uname()
-
-        if arch == 'x86_64':
-            return arch
-        else:
+        try:
+            _, _, _, _, arch = os.uname()
+            if arch == 'x86_64':
+                return arch
+            else:
+                return 'i386'
+        except AttributeError:
             return 'i386'
 
     # -------------------------------------------

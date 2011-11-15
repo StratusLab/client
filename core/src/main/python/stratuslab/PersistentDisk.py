@@ -101,7 +101,7 @@ class PersistentDisk(object):
         '''Assign the super pdisk username/password'''
         loader = UsernamePasswordCredentialsLoader()
         loader.load()
-        self.pdiskUsername = self.pdiskStoreCloudServiceUser
+        self.pdiskUsername = self.persistentDiskCloudServiceUser
         self.pdiskPassword = loader.get_password(self.pdiskUsername)
 
     def createVolume(self, size, tag, visibility):

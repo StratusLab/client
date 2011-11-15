@@ -36,8 +36,9 @@ class BaseSystem(object):
 
     def __init__(self):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
-        self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
+        tmpdir = tempfile.gettempdir()
+        self.stdout = open(os.path.join(tmpdir,('stratuslab_%s.log' % dateNow)), 'a')
+        self.stderr = open(os.path.join(tmpdir,('stratuslab_%s.err' % dateNow)), 'a')
 
         self.extraRepos = {}
         self.packages = {}
