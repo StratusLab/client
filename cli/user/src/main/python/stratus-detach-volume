@@ -27,7 +27,7 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import modulePath, printError
-from stratuslab.commands.StorageCommand import StorageCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder

@@ -26,7 +26,7 @@ from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
-from stratuslab.commands.StorageCommand import PDiskEndpoint
+from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
 

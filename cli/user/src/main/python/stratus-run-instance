@@ -29,7 +29,7 @@ from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
-from stratuslab.commands.StorageCommand import StorageCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
 
 class MainProgram(Runnable):
     '''A command-line program to run a virtual machine.'''

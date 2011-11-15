@@ -28,7 +28,7 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Util import modulePath, printError
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.commands.StorageCommand import StorageCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
 
 class MainProgram(StorageCommand):
     '''A command-line program to create a persistent disk.'''

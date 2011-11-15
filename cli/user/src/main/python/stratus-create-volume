@@ -26,7 +26,7 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath, printError
-from stratuslab.commands.StorageCommand import StorageCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 

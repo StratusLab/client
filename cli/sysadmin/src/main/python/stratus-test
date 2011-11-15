@@ -29,7 +29,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.Testor import Testor
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
-from stratuslab.commands.StorageCommand import StorageCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
 import stratuslab.Util as Util
 from stratuslab.Uploader import Uploader
 
