@@ -265,6 +265,10 @@ class PersistentDisk(object):
            udev package updates.
         """
         fileName = '/lib/udev/rules.d/80-udisks.rules'
+
+        if not os.path.exists(fileName):
+            return
+
         search = 'KERNEL=="dm-*", OPTIONS+="watch"'
         replace = '#KERNEL=="dm-*", OPTIONS+="watch"'
         if re.search('^KERNEL=="dm-\*", OPTIONS\+="watch"', Util.fileGetContent(fileName), re.MULTILINE):

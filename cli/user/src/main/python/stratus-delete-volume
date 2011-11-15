@@ -67,14 +67,9 @@ class MainProgram(StorageCommand):
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:
-            try:
-                volumeId = pdisk.deleteVolume(uuid)
-                print 'DELETED %s' % volumeId
-            except AttributeError:
-                printError('Persistent disk endpoint unavailable')
-            except Exception, e:
-                printError('Service error: %s' % e)
-#            
+            volumeId = pdisk.deleteVolume(uuid)
+            print 'DELETED %s' % volumeId
+
 if __name__ == '__main__':
     try:
         MainProgram()
