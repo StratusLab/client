@@ -85,7 +85,7 @@ class WhiteListEndorsersFilter(WhiteListBaseFilter):
         super(WhiteListEndorsersFilter, self).__init__(messages, config)
         self._loadConfig('endorsers', 'whitelistendorsers')
         self.successMessage = 'email endorser %s is whitelisted, keeping entry'
-        self.failedMessage = 'email endorser %s is not whitelisted, removing corresponding entry'
+        self.failedMessage = 'email endorser %s is not whitelisted, rejecting entry'
 
     def _getCandidate(self, manifestInfo):
         return manifestInfo.endorser
@@ -97,7 +97,7 @@ class BlackListEndorsersFilter(BlackListBaseFilter):
         super(BlackListEndorsersFilter, self).__init__(messages, config)
         self._loadConfig('endorsers', 'blacklistendorsers')
         self.successMessage = 'email endorser %s is not blacklisted, keeping entry'
-        self.failedMessage = 'email endorser %s is blacklisted, removing corresponding entry'
+        self.failedMessage = 'email endorser %s is blacklisted, rejecting entry'
 
     def _getCandidate(self, manifestInfo):
         return manifestInfo.endorser
@@ -109,7 +109,7 @@ class WhiteListChecksumsFilter(WhiteListBaseFilter):
         super(WhiteListChecksumsFilter, self).__init__(messages, config)
         self._loadConfig('checksums', 'whitelistchecksums')
         self.successMessage = 'SHA-1 checksum image %s is whitelisted, keeping entry'
-        self.failedMessage = 'SHA-1 checksum image %s is not whitelisted, removing corresponding entry'
+        self.failedMessage = 'SHA-1 checksum image %s is not whitelisted, rejecting entry'
 
     def _getCandidate(self, manifestInfo):
         return manifestInfo.sha1
@@ -121,7 +121,7 @@ class BlackListChecksumsFilter(BlackListBaseFilter):
         super(BlackListChecksumsFilter, self).__init__(messages, config)
         self._loadConfig('checksums', 'blacklistchecksums')
         self.successMessage = 'SHA-1 checksum image %s is not blacklisted, keeping entry'
-        self.failedMessage = 'SHA-1 checksum image %s is blacklisted, removing corresponding entry'
+        self.failedMessage = 'SHA-1 checksum image %s is blacklisted, rejecting entry'
 
     def _getCandidate(self, manifestInfo):
         return manifestInfo.sha1
@@ -133,7 +133,7 @@ class WhiteListImagesFilter(WhiteListBaseFilter):
         super(WhiteListImagesFilter, self).__init__(messages, config)
         self._loadConfig('images', 'whitelistimages')
         self.successMessage = 'image identifier %s is whitelisted, keeping entry'
-        self.failedMessage = 'image identifier %s is not whitelisted, removing corresponding entry'
+        self.failedMessage = 'image identifier %s is not whitelisted, rejecting entry'
 
     def _getCandidate(self, manifestInfo):
         return manifestInfo.identifier
@@ -145,7 +145,7 @@ class BlackListImagesFilter(BlackListBaseFilter):
         super(BlackListImagesFilter, self).__init__(messages, config)
         self._loadConfig('images', 'blacklistimages')
         self.successMessage = 'image identifier %s is not blacklisted, keeping entry'
-        self.failedMessage = 'image identifier %s is blacklisted, removing corresponding entry'
+        self.failedMessage = 'image identifier %s is blacklisted, rejecting entry'
 
     def _getCandidate(self, manifestInfo):
         return manifestInfo.identifier
