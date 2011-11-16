@@ -54,7 +54,7 @@ class Signator(Configurable):
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.SignMetadata'))
         cmd += javaMainArgs
         self._printCalling(cmd)
-        return Util.execute(cmd.split(' '))
+        return Util.execute(cmd.split(' '),withOutput=True)
 
     def _findJar(self):
         dirs = []
@@ -103,7 +103,7 @@ class Signator(Configurable):
         cmd = os.path.join('java -cp %s %s' % (jarLocation, 'eu.stratuslab.marketplace.metadata.CheckMetadata'))
         cmd += javaMainArgs
         self._printCalling(cmd)
-        return Util.execute(cmd.split(' '),withOutput=True)
+        return Util.execute(cmd.split(' '))
 
     def _printCalling(self, cmd):
         Util.printDetail('Calling: %s' % cmd, verboseLevel=self.verboseLevel,
