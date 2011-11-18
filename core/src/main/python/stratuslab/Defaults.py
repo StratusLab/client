@@ -45,9 +45,9 @@ apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 pdiskPort = 8445
 pdiskProtocol = 'https'
 
-ETC_DIR = '/etc/stratuslab/'
-SHARE_DIR = '/var/share/stratuslab/'
+ETC_DIR = '/etc/stratuslab'
+SHARE_DIR = '/var/share/stratuslab'
 TEMPLATE_DIR = path.join(SHARE_DIR, 'template')
 ONE_PROXY_DIR = '/opt/stratuslab/one-proxy'
 
-authnConfigFile = '/etc/stratuslab/authn/login-pswd.properties'
+authnConfigFile = ETC_DIR + '/authn/login-pswd.properties'
