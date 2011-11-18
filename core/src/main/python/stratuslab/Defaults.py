@@ -50,4 +50,4 @@ SHARE_DIR = '/var/share/stratuslab'
 TEMPLATE_DIR = path.join(SHARE_DIR, 'template')
 ONE_PROXY_DIR = '/opt/stratuslab/one-proxy'
 
-authnConfigFile = ETC_DIR + '/authn/login-pswd.properties'
+AUTHN_CONFIG_FILE = ETC_DIR + '/authn/login-pswd.properties'

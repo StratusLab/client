@@ -183,7 +183,7 @@ class UsernamePasswordCredentialsLoader(SimpleConfigParser):
      
     def __init__(self):
         super(UsernamePasswordCredentialsLoader, self).__init__()
-        SimpleConfigParser.FILENAME = Defaults.authnConfigFile
+        SimpleConfigParser.FILENAME = Defaults.AUTHN_CONFIG_FILE
         self.credentials = self.items
 
     def parse_value(self, value):

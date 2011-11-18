@@ -56,7 +56,7 @@ class PersistentDisk(object):
                        },
         }
 
-        self.authnConfigFile = Defaults.authnConfigFile
+        self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = '/etc/stratuslab/pdisk.cfg'
         self.pdiskHostConfigFile = '/etc/stratuslab/pdisk-host.cfg'
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'

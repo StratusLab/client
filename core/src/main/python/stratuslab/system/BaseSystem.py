@@ -604,7 +604,7 @@ class BaseSystem(object):
         self._configureProxyDefaultUsersUsernamePassword()
 
     def _configureProxyDefaultUsersUsernamePassword(self):
-        filename = Defaults.authnConfigFile
+        filename = Defaults.AUTHN_CONFIG_FILE
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
