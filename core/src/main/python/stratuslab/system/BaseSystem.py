@@ -24,6 +24,7 @@ import time
 from datetime import datetime
 
 from stratuslab import Exceptions
+from stratuslab import Defaults
 from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
     fileGetContent, filePutContent, scp, sshCmd
 import stratuslab.Util as Util
@@ -603,7 +604,7 @@ class BaseSystem(object):
         self._configureProxyDefaultUsersUsernamePassword()
 
     def _configureProxyDefaultUsersUsernamePassword(self):
-        filename = '/etc/stratuslab/authn/login-pswd.properties'
+        filename = Defaults.authnConfigFile
         search = self.oneUsername
         replace = '%(oneUsername)s=%(proxyOneadminPassword)s,cloud-access' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)
