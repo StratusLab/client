@@ -164,10 +164,11 @@ certificate_authority_repo =
  enabled=1
 
 [persistent-disks]
-persistent_disk = False
+persistent_disk = True
 # Location of the persistent disk storage service
-# if left empty, the ip of the front-end is used
 persistent_disk_ip =
+# Target LVM device (example: /dev/vg.02)
+persistent_disk_lvm_device = 
 # iscsi and soon nfs
 persistent_disk_share = iscsi 
 # lvm or file
@@ -195,8 +196,6 @@ persistent_disk_nfs_mount_point = /mnt/
 persistent_disk_file_location = /tmp/pdisk
 # Not used if LVM device already exists. Only used at install
 persistent_disk_physical_device = /dev/sdb
-# Not used with file disk
-persistent_disk_lvm_device = /dev/vg.02
 # Not used with file disk. Only used at install
 persistent_disk_lvm_pvcreate = /sbin/pvcreate 
 # Not used with file disk. Only used at install
