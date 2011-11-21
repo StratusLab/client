@@ -273,8 +273,8 @@ class BaseSystem(object):
     def configureCloudAdminSudoNode(self):
         Util.printDetail("Configuring sudo rights for '%s'..." % self.oneUsername)
         self.appendOrReplaceInFileCmd('/etc/sudoers',
-                         '^%s ALL = NOPASSWD: /bin/chgrp$' % self.oneUsername,
-                         '%s ALL = NOPASSWD: /bin/chgrp' % self.oneUsername)
+                         '^%s ALL = NOPASSWD: /bin/chown$' % self.oneUsername,
+                         '%s ALL = NOPASSWD: /bin/chown' % self.oneUsername)
 
     # -------------------------------------------
     #     Persistent disks
