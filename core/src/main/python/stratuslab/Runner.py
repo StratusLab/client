@@ -201,7 +201,7 @@ class Runner(object):
         if not os.path.exists(vmTemplate):
             vmTemplate = os.path.join(Defaults.SHARE_DIR, 'vm/schema.one')
         if not os.path.exists(vmTemplate):
-            vmTemplate = '%s/../../../share/stratuslab/vm/schema.one' % Util.modulePath
+            vmTemplate = '%s/../../../share/vm/schema.one' % Util.modulePath
         return vmTemplate
 
     @staticmethod
