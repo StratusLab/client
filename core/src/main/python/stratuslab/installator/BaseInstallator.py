@@ -307,16 +307,5 @@ class BaseInstallator(object):
     def _configurePolicies(self):
         pass
     
-    def _configurePersistentDisk(self):
-        pdiskInstaller = PersistentDisk(self.configHolder)
-        if self.nodeAddr:
-            pdiskInstaller.configureNode()
-        else:
-            pdiskInstaller.configureFrontend()
-
     def _addDefaultNetworks(self):
         pass
-
-    def _assignKey(self, options, config):
-        self.privateKey = (True and options.privateKey) or (self.nodePrivateKey)
-
