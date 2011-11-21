@@ -263,6 +263,7 @@ class BaseInstallator(object):
 
     def _configureCloudAdminNode(self):
         self.node.configureCloudAdminSshKeysNode()
+        self.node.configureCloudAdminSudoNode()
         self.node.configureCloudAdminPdiskNode()
 
     def _configureQuarantine(self):
