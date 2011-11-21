@@ -82,7 +82,7 @@ class Runner(object):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
         self.endpoint = self.cloud.setEndpoint(self.endpoint)
-        self.pdisk = PersistentDisk(configHolder)
+        self.pdisk = None
 
         self.createImageData = {'CREATOR_EMAIL': self.authorEmail}
 
@@ -153,6 +153,7 @@ class Runner(object):
                 return
             self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
+            self.pdisk = PersistentDisk(self.configHolder)
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
                 Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
