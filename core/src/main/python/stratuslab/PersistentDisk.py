@@ -82,7 +82,7 @@ class PersistentDisk(object):
         return [disk['uuid'] for disk in filtered]
 
     def quarantineVolume(self, uuid):
-        keyvalues = {'owner': 'oneadmin',
+        keyvalues = {'owner': self.pdiskUsername,
                      'quarantine': datetime.now()}
         self._setPDiskUserCredentials()
         self.updateVolume(keyvalues, uuid)

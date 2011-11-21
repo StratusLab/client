@@ -54,17 +54,11 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('-k', '--private-key', dest='privateKey', 
                                help='private key for ssh node connection', metavar='FILENAME',
                                default=None)
-#        self.parser.add_option('--install', dest='onlyInstall',
-#                               help='Only install packages, don\'t perform setup', 
-#                               action='store_true', default=None)
-#        self.parser.add_option('--setup', dest='onlySetup',
-#                               help='Only setup system, don\'t install packages', 
-#                               action='store_true', default=None)
         self.parser.add_option('--claudia', dest='installCloudia',
                                help='Install Claudia', 
                                action='store_true', default=False)
-        self.parser.add_option('--persistent-disk', dest='installPersistentDisk',
-                               help='Install persistent disk storage service', 
+        self.parser.add_option('--storage', dest='installPersistentDisk',
+                               help='Install storage service', 
                                action='store_true', default=False)
         
         # ONE specific parameters
