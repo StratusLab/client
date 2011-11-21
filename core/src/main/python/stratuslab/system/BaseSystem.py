@@ -270,6 +270,12 @@ class BaseSystem(object):
         if not self.oneHome:
             self.oneHome = os.path.expanduser('~' + self.oneUsername)
 
+    def configureCloudAdminSudoNode(self):
+        Util.printDetail("Configuring sudo rights for '%s'..." % self.oneUsername)
+        self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
+             '%s ALL = NOPASSWD: /bin/chgrp' % self.oneUsername,
+             '%s ALL = NOPASSWD: /bin/chgrp' % self.oneUsername)
+
     # -------------------------------------------
     #     Persistent disks
     # -------------------------------------------
@@ -279,14 +285,17 @@ class BaseSystem(object):
         pdiskDetach = '/usr/sbin/detach-persistent-disk.sh'
 
         if Util.isFalseConfVal(getattr(self, 'persistentDisks', False)):
-            self.executeCmd('"[ -f %(pd)s ] || { touch %(pd)s; chmod +x %(pd)s; }"' % {'pd':pdiskDetach}, shell=True)
+            self.executeCmd('"[ -f %(pd)s ] || { touch %(pd)s; chmod +x %(pd)s; }"' %
+                            {'pd':pdiskDetach}, shell=True)
             return
 
-        Util.printDetail('Configuring persistent disks management for oneadmin user.')
+        Util.printDetail("Configuring persistent disks management for "
+                         "'%s' user." % self.oneUsername)
 
         line = 'oneadmin ALL = NOPASSWD: %s, %s' % (pdiskAttach, pdiskDetach)
         self.appendOrReplaceInFileCmd('/etc/sudoers',
-                                      '^oneadmin.*persistent-disk.*$', line)
+                                      '^%s.*persistent-disk.*$' %
+                                      self.oneUsername, line)
 
     # -------------------------------------------
     #     File sharing configuration
