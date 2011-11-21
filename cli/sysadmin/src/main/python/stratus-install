@@ -57,8 +57,8 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('--claudia', dest='installCloudia',
                                help='Install Claudia', 
                                action='store_true', default=False)
-        self.parser.add_option('--persistent-disk', dest='installPersistentDisk',
-                               help='Install persistent disk storage service', 
+        self.parser.add_option('--storage', dest='installPersistentDisk',
+                               help='Install storage service', 
                                action='store_true', default=False)
         
         # ONE specific parameters
