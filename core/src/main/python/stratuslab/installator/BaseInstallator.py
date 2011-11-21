@@ -85,10 +85,11 @@ class BaseInstallator(object):
             printAction('Claudia installation')
             self._runInstallClaudia()
             return
-        else:
-            printAction('Frontend installation')
-            self._runInstallFrontend()
-            self._printInstalCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
+        
+        # Front-end installation
+        printAction('Frontend installation')
+        self._runInstallFrontend()
+        self._printInstalCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
 
 
     def _printInstalCompleted(self, stdoutFilename, stderrFilename):
@@ -215,13 +216,13 @@ class BaseInstallator(object):
 
         self._configureRegistrationApplication()
 
-        if self._isTrue(self.persistentDisk):
-            self._runInstallFrontEndPersistentDisk()
+        self._runInstallFrontEndPersistentDisk()
         
     def _runInstallFrontEndPersistentDisk(self):
-        printAction('Persistent disk storage installation')
-        pdiskInstaller = PersistentDisk(self.configHolder)
-        pdiskInstaller.runFrontend()
+        if self._isTrue(self.persistentDisk):
+            printAction('Storage installation')
+            pdiskInstaller = PersistentDisk(self.configHolder)
+            pdiskInstaller.runFrontend()
         
     def _runInstallNodePersistentDisk(self):
         printAction('Persistent disk storage installation')
