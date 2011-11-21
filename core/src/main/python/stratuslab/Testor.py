@@ -522,9 +522,10 @@ class Testor(unittest.TestCase):
         fh = urllib2.urlopen(url, timeout=5)
         page = fh.read()
 
-        self.failUnless(re.search(errorMessage, page, re.M),
-                        "Error message '%s' for VM %s wasn't found at %s" % 
-                        (errorMessage, vmId, url))
+        for line in errorMessage.replace('\\n', '\n').split('\n'):
+            self.failUnless(re.search(line, page, re.M),
+                            "Line '%s' of error message '%s' for VM %s wasn't found at %s" %
+                            (line, errorMessage, vmId, url))
 
     def _startStopVmAndGetVmInfo(self, image):
         'Return VM monitoring info and VM id.'
