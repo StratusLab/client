@@ -29,6 +29,7 @@ from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from random import choice
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab import Defaults
+from stratuslab.Exceptions import ValidationException
 
 class PersistentDisk(object):
 
@@ -64,10 +65,15 @@ class PersistentDisk(object):
         self.pdiskPassword = self._extractPdiskPassword()
         
     def runFrontend(self):
-        self.installFrontend()
-        self.configureFrontend()
+        self._validateConfiguration()
+        self._installFrontend()
+        self._configureFrontend()
 
-    def installFrontend(self):
+    def _validateConfiguration(self):
+        if not self.persistentDiskLvmDevice:
+            raise ValidationException('Missing value for configuration parameter: persistent_disk_lvm_device')
+
+    def _installFrontend(self):
         self.profile = 'frontend'
         self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
         # Fool the script to avoid rewrite huge amount of code:
@@ -82,7 +88,7 @@ class PersistentDisk(object):
         self._copyCloudNodeKey()
         self._service('pdisk', 'start')
         
-    def configureFrontend(self):
+    def _configureFrontend(self):
         self._writePdiskConfig()
         self._setAutorunZookeeper()
         self._setPdiskUserAndPassword()
