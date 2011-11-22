@@ -266,6 +266,14 @@ class BaseSystem(object):
         self.appendOrReplaceInFileCmd(oneAuthFile,
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
 
+        self.configureCloudAdminSudoFrontend()
+
+    def configureCloudAdminSudoFrontend(self):
+        Util.printDetail("Configuring sudo rights for '%s'..." % self.oneUsername)
+        self.appendOrReplaceInFileCmd('/etc/sudoers',
+                         '^%s ALL = NOPASSWD: /bin/dd$' % self.oneUsername,
+                         '%s ALL = NOPASSWD: /bin/dd' % self.oneUsername)
+
     def _setOneHome(self):
         if not self.oneHome:
             self.oneHome = os.path.expanduser('~' + self.oneUsername)

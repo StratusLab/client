@@ -200,7 +200,7 @@ class Testor(unittest.TestCase):
         self.vmIds.extend(vmIds)
 
         for id in vmIds:
-            vmStarted = self.runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT)
+            vmStarted = self.runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT, failOn=('Failed'))
             if not vmStarted:
                 error = 'Failed to start VM id: %s' % id
                 Util.printError(error, exit=False)

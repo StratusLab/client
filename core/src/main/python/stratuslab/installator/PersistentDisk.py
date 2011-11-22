@@ -46,7 +46,7 @@ class PersistentDisk(object):
                             'iscsi': ['scsi-target-utils', ],
                             'nfs': ['nfs-utils', 'nfs-utils-lib'],
                             'lvm': ['lvm2', ],
-                            'file': [], 
+                            'file': ['qemu-img'], 
                         }, 
                          'node': {
                             'pdisk': ['pdisk-host', ],
