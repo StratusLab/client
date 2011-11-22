@@ -187,7 +187,9 @@ class Testor(unittest.TestCase):
         log.write('=' * 60 + '\n' * 3)
         return log
 
-    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, instanceNumber=1, noCheckImageUrl=False, msgRecipients=None):
+    def _startVm(self, withLocalNetwork=False, requestedIpAddress=None, 
+                 instanceNumber=1, noCheckImageUrl=False, msgRecipients=None,
+                 raiseOnFailed=True):
         self.runner = self._createRunner(withLocalNetwork, requestedIpAddress)
         self.runner.instanceNumber = instanceNumber
 
@@ -200,8 +202,9 @@ class Testor(unittest.TestCase):
         self.vmIds.extend(vmIds)
 
         for id in vmIds:
-            vmStarted = self.runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT, failOn=('Failed'))
-            if not vmStarted:
+            vmStarted = self.runner.waitUntilVmRunningOrTimeout(id, VM_START_TIMEOUT,
+                                                                failOn=('Failed'))
+            if not vmStarted and raiseOnFailed:
                 error = 'Failed to start VM id: %s' % id
                 Util.printError(error, exit=False)
                 raise OneException(error)
@@ -484,9 +487,9 @@ class Testor(unittest.TestCase):
         '''Test if ONE reports error messages via XML RPC'''
         
         # invalid image
-        image = self.image + '.gz'
+        self.image += '.gz'
 
-        info, vmId = self._startStopVmAndGetVmInfo(image)
+        info, vmId = self._startStopVmAndGetVmInfo()
 
         try:
             errorMessage = info.attribs['template_error_message']
@@ -500,9 +503,9 @@ class Testor(unittest.TestCase):
         '''Check if VM creation error message is on Web Monitor's VM details page'''
 
         # invalid image
-        image = self.image + '.gz'
+        self.image += '.gz'
 
-        info, vmId = self._startStopVmAndGetVmInfo(image)
+        info, vmId = self._startStopVmAndGetVmInfo()
 
         try:
             errorMessage = info.attribs['template_error_message']
@@ -527,12 +530,10 @@ class Testor(unittest.TestCase):
                             "Line '%s' of error message '%s' for VM %s wasn't found at %s" %
                             (line, errorMessage, vmId, url))
 
-    def _startStopVmAndGetVmInfo(self, image):
+    def _startStopVmAndGetVmInfo(self):
         'Return VM monitoring info and VM id.'
         
-        self.image = image + '.gz'
-
-        self._startVm(noCheckImageUrl=True)
+        self._startVm(noCheckImageUrl=True, raiseOnFailed=False)
         vmId = self.runner.vmIds[0]
         self._stopVm(self.runner)
 
