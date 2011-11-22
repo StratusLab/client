@@ -35,10 +35,15 @@ class MainProgram(StorageCommand):
     '''A command-line program to quarantine a storage disk.'''
 
     def parse(self):
-        self.parser.usage = '%prog <uuid>'
-        self.parser.description = '''Quarantine an existing storage disk'''
+        self.parser.usage = '%prog [uuid]'
+        self.parser.description = '''Perform quarantine actions'''
         
         StorageCommand.addPDiskEndpointOptions(self.parser)
+
+        self.parser.add_option('--clean', dest='quarantineCleanUp',
+                          help='Clean quarantine store. No uuid parameter should be provided.',
+                          default=False,
+                          action='store_true')
 
         super(MainProgram, self).parse()
 
@@ -47,8 +52,12 @@ class MainProgram(StorageCommand):
     def checkOptions(self):
         StorageCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
-        if len(self.args) != 1:
-            self.usageExitWrongNumberOfArguments()
+        if self.options.quarantineCleanUp:
+            if len(self.args) != 0:
+                self.usageExitWrongNumberOfArguments()
+        else:
+            if len(self.args) != 1:
+                self.usageExitWrongNumberOfArguments()
         
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileSysadminOption(self.parser)
@@ -56,11 +65,15 @@ class MainProgram(StorageCommand):
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)        
         configHolder = ConfigHolder(self.options.__dict__, config)
+        
         pdisk = PersistentDisk(configHolder)
 
-        uuid = self.args[0]
-        pdisk.quarantineVolume(uuid)
-#            
+        if self.options.quarantineCleanUp:
+            pdisk.cleanQuarantine()
+        else:
+            uuid = self.args[0]
+            pdisk.quarantineVolume(uuid)
+
 if __name__ == '__main__':
     try:
         MainProgram()
