@@ -99,6 +99,8 @@ class PersistentDisk(object):
 
     def _setPDiskUserCredentials(self):
         '''Assign the super pdisk username/password'''
+        if self.pdiskUsername and self.pdiskPassword:
+            return
         loader = UsernamePasswordCredentialsLoader()
         loader.load()
         self.pdiskUsername = self.persistentDiskCloudServiceUser
