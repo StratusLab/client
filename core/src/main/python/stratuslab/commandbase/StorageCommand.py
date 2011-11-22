@@ -33,11 +33,11 @@ class StorageCommand(AuthnCommand):
         return PDiskEndpoint.addOptions(parser, defaultOptions)
 
     def checkPDiskEndpointOptionsOnly(self):
-        if not self.checkPDiskEndpointOptoins():
+        if not self.checkPDiskEndpointOptions():
             self.parser.error('Missing persistent disk endpoint. Please provide %s' 
                               % PDiskEndpoint.optionString)
 
-    def checkPDiskEndpointOptoins(self):
+    def checkPDiskEndpointOptions(self):
         return PDiskEndpoint.checkOptions(self.options)
 
 class PDiskEndpoint(object):
@@ -49,7 +49,7 @@ class PDiskEndpoint(object):
                 'pdiskProtocol' : os.getenv('STRATUSLAB_PDISK_PROTOCOL', Defaults.pdiskProtocol),
                 'pdiskPort' : os.getenv('STRATUSLAB_PDISK_PORT', Defaults.pdiskPort),
                 'pdiskUsername' : os.getenv('STRATUSLAB_PDISK_USERNAME', UsernamePassword.options().get('username')),
-                'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', UsernamePassword.options().get('password')) }  
+                'pdiskPassword' : os.getenv('STRATUSLAB_PDISK_PASSWORD', UsernamePassword.options().get('password'))}
 
     @staticmethod
     def addOptions(parser, defaultOptions=None):
