@@ -1,4 +1,4 @@
-# remove files regularly from the quarantine area
+# remove quarantined storage disks
 #
 
 */15 * * * * root (date --iso-8601=seconds --utc; /usr/bin/stratus-storage-quarantine --clean) >>/var/log/stratuslab/storage-quarantine-cleanup.log 2>&1
