@@ -20,6 +20,7 @@
 #
 
 from datetime import datetime
+from datetime import timedelta
 import json
 import re
 from stratuslab.HttpClient import HttpClient
@@ -30,15 +31,17 @@ from socket import gethostbyaddr
 import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
+from stratuslab.Exceptions import ValidationException
+from stratuslab.ConfigHolder import ConfigHolder
 
 class PersistentDisk(object):
     
-    def __init__(self, configHolder):
+    def __init__(self, configHolder=ConfigHolder()):
         self.pdiskUsername = None
         self.pdiskPassword = None
         self.username = None
         self.password = None
-        
+        self.verboseLevel = Util.NORMAL_VERBOSE_LEVEL
         self.pdiskEndpoint = None
 
         self.configHolder = configHolder
@@ -52,19 +55,19 @@ class PersistentDisk(object):
 
     def _getJson(self, url):
         headers, content = self.client.get(url, accept='application/json')
-        return headers, content.replace('\\','')
+        return headers, content.replace('\\', '')
         
     def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
         headers, content = self.client.post(url,
                                 body,
-                                contentType, 
+                                contentType,
                                 accept='application/json')
-        return headers, content.replace('\\','')
+        return headers, content.replace('\\', '')
         
     def _putJson(self, url, body, contentType='application/x-www-form-urlencoded'):
         self.client.put(url,
                         body,
-                        contentType, 
+                        contentType,
                         accept='application/json')
         
     def describeVolumes(self, filters={}):
@@ -109,8 +112,8 @@ class PersistentDisk(object):
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/' % self.endpoint
-        body = {'size': size, 
-                'tag': tag, 
+        body = {'size': size,
+                'tag': tag,
                 'visibility': self._getVisibilityFromBool(visibility)}
         headers, uuid = self._postJson(url, urlencode(body))
         if headers.status == 201:
@@ -228,8 +231,8 @@ class PersistentDisk(object):
         return availableDisk
     
     def _buildFQNEndpoint(self):
-        self.endpoint = Util.sanitizeEndpoint(self.pdiskEndpoint, 
-                                              Defaults.pdiskProtocol, 
+        self.endpoint = Util.sanitizeEndpoint(self.pdiskEndpoint,
+                                              Defaults.pdiskProtocol,
                                               Defaults.pdiskPort)
     
     def addPdiskCredentials(self):
@@ -265,3 +268,50 @@ class PersistentDisk(object):
         
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, 1)
+
+    def cleanQuarantine(self):
+        disks = self.describeVolumes({'quarantine': ['.*']})
+        threashold = self._getQuarantineThreasholdDate()
+
+        disksToCleanUp = []
+
+        for disk in disks:
+            quarantineDate = self._parseQuarantineDate(disk['quarantine'])
+            if quarantineDate > threashold:
+                disksToCleanUp.append(disk)
+
+        for disk in disksToCleanUp:
+            self._printDetail('Removing disk: %s' % disk['uuid'])
+            self.deleteVolume(disk['uuid'])
+
+    def _getQuarantineThreasholdDate(self):
+        now = datetime.now()
+        quarantineTime = self._getQuarantinePeriod()
+        return now + timedelta(minutes=quarantineTime)
+
+    def _getQuarantinePeriod(self):
+        period, factor = self._parseQuarantinePeriod()
+        return period * factor
+        
+    def _parseQuarantinePeriod(self):
+        if not self.quarantinePeriod:
+            raise ValidationException('Invalid quarantine_period parameter. Cannot be empty.')
+
+        factor = 1
+        
+        if self.quarantinePeriod.isdigit():
+            return int(self.quarantinePeriod), factor
+        
+        factors = {'m': 1, 'h': 60, 'd': 60 * 24}
+        unit = self.quarantinePeriod[-1].lower()
+        if unit not in factors.keys():
+            raise ValidationException('Invalid quarantine_period parameter unit. Should be one of: %s.' % ', '.join(factors.keys()))
+
+        if not self.quarantinePeriod[:-1].isdigit():
+            raise ValidationException('Invalid quarantine_period parameter value. Should be integer [+ unit].')
+        
+        return int(self.quarantinePeriod[:-1]), factors[unit]
+
+    def _parseQuarantineDate(self, dateString):
+        return datetime.strptime(dateString, '%Y-%m-%d %H:%M:%S.%f')
+    
