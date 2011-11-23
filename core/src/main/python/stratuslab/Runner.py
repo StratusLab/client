@@ -151,7 +151,7 @@ class Runner(object):
         try:
             if not self.persistentDiskUUID:
                 return
-            self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
+            self.pdiskEndpointHostname = self.pdiskEndpoint
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
             self.pdisk = PersistentDisk(self.configHolder)
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
@@ -502,7 +502,7 @@ class Runner(object):
 
     def _createDiskUrlIfDiskId(self, image):
         if Image.isDiskId(image):
-            self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
+            self.pdiskEndpointHostname = self.pdiskEndpoint
             return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
         else:
             return image
