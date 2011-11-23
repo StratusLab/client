@@ -21,12 +21,12 @@
       <classifier>core-bundle</classifier>
       <type>zip</type>
     </dependency>
-	<dependency>
-		<groupId>eu.stratuslab.marketplace</groupId>
-		<artifactId>marketplace-metadata</artifactId>
-		<type>jar</type>
-		<scope>compile</scope>
-	</dependency>
+    <dependency>
+      <groupId>eu.stratuslab.marketplace</groupId>
+      <artifactId>marketplace-metadata</artifactId>
+      <classifier>jar-with-dependencies</classifier>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
   
   <build>
