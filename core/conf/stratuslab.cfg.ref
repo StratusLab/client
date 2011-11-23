@@ -142,10 +142,12 @@ quota_memory = 1GB
 #  not_nice@badboys.org
 # Notice the space required before each multi-line entry
 whitelistendorsers =
-whitelistimages =
-whitelistchecksums =
-blacklistimages =
 blacklistendorsers =
+
+whitelistimages =
+blacklistimages =
+
+whitelistchecksums =
 blacklistchecksums =
 
 [certificate-authority]
