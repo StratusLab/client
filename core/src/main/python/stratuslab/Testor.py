@@ -163,8 +163,8 @@ class Testor(unittest.TestCase):
             self.assertTrue(message in ex.message, 'Quota not working, got %s expected %s' % (ex.message, message))
         else:
             self.fail('Quota not enforced')
-
-        self._createRunner().killInstances(self.runner.vmIds)
+        finally:
+            self._createRunner().killInstances(self.runner.vmIds)
         
     def _excludeTests(self, tests):
         if self.testsToExclude:
