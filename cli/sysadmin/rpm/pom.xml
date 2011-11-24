@@ -117,6 +117,19 @@
 	  </requires>
 
 	  <mappings>
+		<mapping>
+			<directory>/etc</directory>
+			<filemode>644</filemode>
+			<username>root</username>
+			<groupname>root</groupname>
+			<configuration>false</configuration>
+			<directoryIncluded>false</directoryIncluded>
+			<sources>
+				<source>
+					<location>${project.build.directory}/zip-sources/etc</location>
+				</source>
+			</sources>
+		</mapping>
 	    <mapping>
 	      <directory>/usr/bin/</directory>
 	      <directoryIncluded>false</directoryIncluded>
@@ -199,6 +212,14 @@
 export RPM_BUILD_ROOT=
 	    </script>
 	  </installScriptlet>
+	  <postinstallScriptlet>
+	  	<script>
+#!/bin/bash
+
+# Create log dir (e.g. used by quarantine cron job)
+mkdir -p /var/log/stratuslab/
+	  	</script>
+	  </postinstallScriptlet>
 	</configuration>
       </plugin>
 
@@ -211,7 +232,7 @@ export RPM_BUILD_ROOT=
       <name>Apache 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
-      <comments>Copyright (c) 2010, SixSq Sarl</comments>
+      <comments>Copyright (c) 2011, SixSq Sarl</comments>
     </license>
   </licenses>
 

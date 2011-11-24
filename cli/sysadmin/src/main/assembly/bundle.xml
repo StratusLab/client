@@ -10,7 +10,7 @@
 	<fileSets>
 
 		<fileSet>
-			<directory>src/main/scripts</directory>
+			<directory>main/scripts</directory>
 			<outputDirectory>etc/cron.d</outputDirectory>
 			<fileMode>755</fileMode>
 			<includes>

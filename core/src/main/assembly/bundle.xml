@@ -21,7 +21,7 @@
 		</fileSet>
 
 		<fileSet>
-			<directory>src/main/python</directory>
+                        <directory>${project.build.directory}/python</directory>
 			<outputDirectory>python</outputDirectory>
 			<excludes>
 				<exclude>**/*.pyc</exclude>

@@ -45,7 +45,7 @@
 	      <outputDirectory>${project.build.directory}/python</outputDirectory>
 	      <resources>
 	        <resource>
-	          <directory>src</directory>
+	          <directory>src/main/python</directory>
 	          <filtering>true</filtering>
 	        </resource>
 	      </resources>
@@ -88,7 +88,7 @@
       <name>Apache 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
-      <comments>Copyright (c) 2010, SixSq Sarl</comments>
+      <comments>Copyright (c) 2011, SixSq Sarl</comments>
     </license>
   </licenses>
 
