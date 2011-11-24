@@ -210,11 +210,12 @@
 # the list of files created by maven.
 #
 export RPM_BUILD_ROOT=
-
-# Create log dir (used by quarantine cron job, for example)
-mkdir -p /var/log/stratuslab/
 	    </script>
 	  </installScriptlet>
+	  <postinstallScriptlet>
+# Create log dir (e.g. used by quarantine cron job)
+mkdir -p /var/log/stratuslab/
+	  </postinstallScriptlet>
 	</configuration>
       </plugin>
 
