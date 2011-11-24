@@ -94,7 +94,8 @@ class HttpClient(object):
             if retry:
                 return self._httpCall(url, method, body, contentType, accept, False)
             raise ServerException('Failed calling method %s on url %s, with reason: %s' % 
-                                         (method, url, str(resp.status) + ": " + resp.reason))
+                                         (method, url, str(resp.status) + ": " + resp.reason), 
+                                         status=str(resp.status))
 
         def _handleResponse(resp, content):
             self._printDetail('Received response: %s' % resp + \

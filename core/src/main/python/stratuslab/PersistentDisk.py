@@ -27,7 +27,7 @@ from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
 from uuid import UUID
 from stratuslab.Util import printError
-from socket import gethostbyaddr
+from socket import getfqdn
 import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
@@ -249,13 +249,11 @@ class PersistentDisk(object):
     
     @staticmethod
     def getFQNHostname(hostname):
-        endpoint = ''
         try:
-            endpoint = gethostbyaddr(hostname)[0]
+            return getfqdn(hostname)
         except Exception:
             printError('Unable to translate endpoint "%s" to an IP address' % hostname,
                        exit=False)
-        return endpoint
         
     @staticmethod
     def isValidUuid(uuid):

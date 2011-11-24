@@ -42,7 +42,9 @@ class ClientException(Exception):
         self.content = content
 
 class ServerException(Exception):
-    pass
+    def __init__(self, msg, status=''):
+        super(ServerException, self).__init__(msg)
+        self.status = status
 
 
     
