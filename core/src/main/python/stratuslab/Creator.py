@@ -953,9 +953,7 @@ EOF
         execute(['rm', '-f', self.manifestLocalFileName])
 
     def getNewImageId(self):
-        # FIXME: return ID when manifest gets uploaded to Marketplace
-        return self.targetManifestUri
-        #return self.manifestObject.identifier
+        return self.manifestObject.identifier
 
     def getVmId(self):
         return self.vmId
