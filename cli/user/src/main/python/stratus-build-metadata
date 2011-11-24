@@ -67,7 +67,7 @@ class MainProgram(CommandBase):
                 help='Operation system architecture',
                 default='', metavar='ARCH')
 
-        self.parser.add_option('--version', dest='version',
+        self.parser.add_option('--image-version', dest='version',
                 help='Image version',
                 default='')
 

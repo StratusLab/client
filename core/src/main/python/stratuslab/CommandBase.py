@@ -44,7 +44,7 @@ class CommandBase(object):
         self._callAndHandleErrors(self, self.doWork.__name__)
 
     def _setParserAndParse(self):
-        self.parser = OptionParser()
+        self.parser = OptionParser(version="${project.version}")
         self.parser.add_option('-v', '--verbose', dest='verboseLevel',
                 help='verbose level. Add more to get more details',
                 action='count', default=self.verboseLevel)
