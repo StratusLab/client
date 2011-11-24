@@ -213,8 +213,12 @@ export RPM_BUILD_ROOT=
 	    </script>
 	  </installScriptlet>
 	  <postinstallScriptlet>
+	  	<script>
+#!/bin/bash
+
 # Create log dir (e.g. used by quarantine cron job)
 mkdir -p /var/log/stratuslab/
+	  	</script>
 	  </postinstallScriptlet>
 	</configuration>
       </plugin>
