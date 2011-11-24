@@ -117,6 +117,19 @@
 	  </requires>
 
 	  <mappings>
+		<mapping>
+			<directory>/etc</directory>
+			<filemode>644</filemode>
+			<username>root</username>
+			<groupname>root</groupname>
+			<configuration>false</configuration>
+			<directoryIncluded>false</directoryIncluded>
+			<sources>
+				<source>
+					<location>${project.build.directory}/zip-sources/etc</location>
+				</source>
+			</sources>
+		</mapping>
 	    <mapping>
 	      <directory>/usr/bin/</directory>
 	      <directoryIncluded>false</directoryIncluded>
