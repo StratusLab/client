@@ -31,7 +31,8 @@ from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
-from stratuslab.Exceptions import NetworkException, OneException
+from stratuslab.Exceptions import NetworkException, OneException,\
+    ServerException, ClientException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Exceptions import InputException
@@ -601,57 +602,58 @@ class Testor(unittest.TestCase):
         testString = 'pdiskTest'
         
         configHolder = Testor.configHolder.copy()
-        configHolder.username = Testor.configHolder.testUsername
-        configHolder.password = Testor.configHolder.testPassword
+        configHolder.pdiskUsername = Testor.configHolder.testUsername
+        configHolder.pdiskPassword = Testor.configHolder.testPassword
         pdisk = PersistentDisk(configHolder)
         
-        try:
-            Util.printAction('Creating a new persistent disk')
-            diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
-            
-            Util.printAction('Checking persistent disk exists')
-            if not pdisk.volumeExists(diskUUID):
-                self.fail('An error occurred while creating a persistent disk')
-                
-            Util.printAction('Getting number of available users (before)')
-            availableUserBeforeStart, _ = pdisk.getVolumeUsers(diskUUID)
-            Util.printAction('Starting machine with persistent disk')
-            runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
-            Util.printAction('Getting number of available users (after)')
-            availableUserAfterStart, _ = pdisk.getVolumeUsers(diskUUID)
-            
-            if availableUserAfterStart != (availableUserBeforeStart-1):
-                self.fail('Available users on persistent disk have to decrease by one (%s, %s)' % 
-                          (availableUserBeforeStart, availableUserAfterStart))
+        Util.printAction('Creating a new persistent disk')
+        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
         
-            self._formatDisk(runner, pdiskDevice)
-            self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
-            self._writeToFile(runner, testFile, testString)
-            self._umountPDiskAndStopVm(runner, pdiskDevice)
-
-            availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
+        Util.printAction('Checking persistent disk exists')
+        if not pdisk.volumeExists(diskUUID):
+            self.fail('An error occurred while creating a persistent disk')
             
-            if availableUserAfterStop != availableUserBeforeStart:
-                self.fail('Available users on persistent disk have to be the same as when VM has started')
+        Util.printAction('Getting number of available users (before)')
+        availableUserBeforeStart, _ = pdisk.getVolumeUsers(diskUUID)
+        Util.printAction('Starting machine with persistent disk')
+        runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+        Util.printAction('Getting number of available users (after)')
+        availableUserAfterStart, _ = pdisk.getVolumeUsers(diskUUID)
         
-            runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
-            self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
-            self._writeToFile(runner, testFileCmp, testString)
-            self._compareFiles(runner, testFile, testFileCmp)
-            self._umountPDiskAndStopVm(runner, pdiskDevice)      
-            
-            availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
-            
-            if availableUserAfterStop != availableUserBeforeStart:
-                self.fail('Available users on persistent disk have to be the same as when VM has started')
+        if availableUserAfterStart != (availableUserBeforeStart-1):
+            self.fail('Available users on persistent disk have to decrease by one (%s, %s)' % 
+                      (availableUserBeforeStart, availableUserAfterStart))
     
-            Util.printAction('Removing persistent disk...')
-            pdisk.deleteVolume(diskUUID)
-        except Exception, e:
-            self.fail('Server error: %s' % e)
-            
-        if pdisk.volumeExists(diskUUID):
-            self.fail('The persistent disk is still present')
+        self._formatDisk(runner, pdiskDevice)
+        self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
+        self._writeToFile(runner, testFile, testString)
+        self._umountPDiskAndStopVm(runner, pdiskDevice)
+
+        availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
+        
+        if availableUserAfterStop != availableUserBeforeStart:
+            self.fail('Available users on persistent disk have to be the same as when VM has started')
+    
+        runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+        self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
+        self._writeToFile(runner, testFileCmp, testString)
+        self._compareFiles(runner, testFile, testFileCmp)
+        self._umountPDiskAndStopVm(runner, pdiskDevice)      
+        
+        availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
+        
+        if availableUserAfterStop != availableUserBeforeStart:
+            self.fail('Available users on persistent disk have to be the same as when VM has started')
+
+        Util.printAction('Removing persistent disk...')
+        pdisk.deleteVolume(diskUUID)
+        
+        try:
+            if pdisk.volumeExists(diskUUID):
+                self.fail('The persistent disk %s is still present' % diskUUID)
+        except (ClientException, ServerException), ex:
+            if not re.match('(404|5.*)', ex.status):
+                self.fail('The persistent disk %s is still present' % diskUUID)
             
     def persistentDiskStorageHotplugTest(self):
         '''Ensure that a disk hot-plugged to a VM and then hot-unplugged'''
@@ -663,70 +665,70 @@ class Testor(unittest.TestCase):
         testString = 'pdiskTest'
         
         configHolder = Testor.configHolder.copy()
-        configHolder.username = Testor.configHolder.testUsername
-        configHolder.password = Testor.configHolder.testPassword
+        configHolder.pdiskUsername = Testor.configHolder.testUsername
+        configHolder.pdiskPassword = Testor.configHolder.testPassword
         pdisk = PersistentDisk(configHolder)
         
-        try:    
-            runner = self._startVmWithPDiskAndWaitUntilUp(image=self.ubuntuImg)
+        runner = self._startVmWithPDiskAndWaitUntilUp(image=self.ubuntuImg)
         
-            Util.printAction('Creating a new persistent disk')
-            diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
-            
-            Util.printAction('Checking persistent disk exists')
-            if not pdisk.volumeExists(diskUUID):
-                self.fail('An error occurred while creating a persistent disk')
+        Util.printAction('Creating a new persistent disk')
+        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
         
-            self._modeprobe(runner, 'acpiphp')
-            vmId = self.vmIds[0]
-            node = runner.cloud.getVmNode(vmId)
-            
-            printStep('Attaching pdisk to VM')
-            
-            availableUserBeforeAttach, _ = pdisk.getVolumeUsers(diskUUID)
-            device = pdisk.hotAttach(node, vmId, diskUUID)
-            availableUserAfterAttach, _ = pdisk.getVolumeUsers(diskUUID)
-            
-            if availableUserAfterAttach != (availableUserBeforeAttach-1):
-                self.fail('Available users on persistent disk have to decrease by one; before=%s, after=%s' % 
-                          (availableUserBeforeAttach, availableUserAfterAttach))
-            
-            self._formatDisk(runner, pdiskDevice % device)
-            self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
-            self._writeToFile(runner, testFile, testString)
-            self._umountDisk(runner, pdiskDevice % device)
-            
-            printStep('Detaching pdisk of VM')
-            pdisk.hotDetach(node, vmId, diskUUID)
+        Util.printAction('Checking persistent disk exists')
+        if not pdisk.volumeExists(diskUUID):
+            self.fail('An error occurred while creating a persistent disk')
+        
+        self._modeprobe(runner, 'acpiphp')
+        vmId = self.vmIds[0]
+        node = runner.cloud.getVmNode(vmId)
+        
+        printStep('Attaching pdisk to VM')
+        
+        availableUserBeforeAttach, _ = pdisk.getVolumeUsers(diskUUID)
+        device = pdisk.hotAttach(node, vmId, diskUUID)
+        availableUserAfterAttach, _ = pdisk.getVolumeUsers(diskUUID)
+        
+        if availableUserAfterAttach != (availableUserBeforeAttach-1):
+            self.fail('Available users on persistent disk have to decrease by one; before=%s, after=%s' % 
+                      (availableUserBeforeAttach, availableUserAfterAttach))
+        
+        self._formatDisk(runner, pdiskDevice % device)
+        self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
+        self._writeToFile(runner, testFile, testString)
+        self._umountDisk(runner, pdiskDevice % device)
+        
+        printStep('Detaching pdisk of VM')
+        pdisk.hotDetach(node, vmId, diskUUID)
 
-            availableUserAfterDetach, _ = pdisk.getVolumeUsers(diskUUID)
-            
-            if availableUserAfterDetach != availableUserBeforeAttach:
-                self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' %
-                          (availableUserBeforeAttach, availableUserAfterDetach))
-            
-            printStep('Re-attaching pdisk to VM')
-            device = pdisk.hotAttach(node, vmId, diskUUID)
-            
-            self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
-            self._writeToFile(runner, testFileCmp, testString)
-            self._compareFiles(runner, testFile, testFileCmp)
-            self._umountPDiskAndStopVm(runner, pdiskDevice % device)
-            
-            availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
-            
-            if availableUserAfterStop != availableUserBeforeAttach:
-                self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' % 
-                          (availableUserBeforeAttach, availableUserAfterStop))
-            
-            Util.printAction('Removing persistent disk...')
-            pdisk.deleteVolume(diskUUID)
-        except Exception, e:
-            self.fail('Server error: %s' % e)
-            
-        if pdisk.volumeExists(diskUUID):
-            self.fail('The persistent disk is still present')
+        availableUserAfterDetach, _ = pdisk.getVolumeUsers(diskUUID)
         
+        if availableUserAfterDetach != availableUserBeforeAttach:
+            self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' %
+                      (availableUserBeforeAttach, availableUserAfterDetach))
+        
+        printStep('Re-attaching pdisk to VM')
+        device = pdisk.hotAttach(node, vmId, diskUUID)
+        
+        self._mountDisk(runner, pdiskDevice % device, pdiskMountPoint)
+        self._writeToFile(runner, testFileCmp, testString)
+        self._compareFiles(runner, testFile, testFileCmp)
+        self._umountPDiskAndStopVm(runner, pdiskDevice % device)
+        
+        availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
+        
+        if availableUserAfterStop != availableUserBeforeAttach:
+            self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' % 
+                      (availableUserBeforeAttach, availableUserAfterStop))
+        
+        Util.printAction('Removing persistent disk...')
+        pdisk.deleteVolume(diskUUID)
+            
+        try:
+            if pdisk.volumeExists(diskUUID):
+                self.fail('The persistent disk %s is still present' % diskUUID)
+        except (ClientException, ServerException), ex:
+            if not re.match('(404|5.*)', ex.status):
+                self.fail('The persistent disk %s is still present' % diskUUID)
         
     def _startVmWithPDiskAndWaitUntilUp(self, pdisk=None, image=None):
         runner = self._createRunner(persistentDiskUUID=pdisk, image=image)
@@ -734,7 +736,8 @@ class Testor(unittest.TestCase):
         if len(vmIds) < 1:
             self.fail('An error occurred while starting a VM')
         if not runner.waitUntilVmRunningOrTimeout(vmIds[0], failOn=('Failed')):
-            self.fail('Failed starting VM from %s.' % pdisk)
+            self.fail('Failed starting VM: image %s, pdisk %s' % (str(image),
+                                                                  str(pdisk)))
         self.vmIds.extend(vmIds)
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner, '/bin/true')
