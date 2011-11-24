@@ -6,7 +6,7 @@ VALID=360
 CN="Jane Tester"
 EMAIL=jane.tester@example.org
 
-usage="usage: $(basename $0) [-o <path>] [-v <days>] [-p <pass>] [-c <CN>] [ -e <EMAIL>]\n
+usage="usage: $(basename $0) [-h] [-o <path>] [-v <days>] [-p <pass>] [-c <CN>] [ -e <EMAIL>]\n
  -o <path> - path to generated certificate (default: $CERTFILE)\n
  -v <days> - validity of the certificate in days (default: $VALID)\n
  -p <pass> - password of the certificate (default: $PASS)\n
@@ -22,9 +22,9 @@ while getopts ":o:p:v:c:e:h" options; do
     c ) CN=$OPTARG;;
     e ) EMAIL=$OPTARG;;
     h ) echo -e $usage
-        exit 1;;
+        exit 0;;
     \? ) echo -e $usage
-         exit 1;;
+         exit 0;;
     * ) echo -e $usage
          exit 1;;
   esac
