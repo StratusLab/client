@@ -10,6 +10,15 @@
 	<fileSets>
 
 		<fileSet>
+			<directory>src/main/scripts</directory>
+			<outputDirectory>etc/cron.d</outputDirectory>
+			<fileMode>755</fileMode>
+			<includes>
+				<include>*.cron</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
 			<directory>${project.build.directory}/scripts/</directory>
 			<outputDirectory>scripts</outputDirectory>
 			<includes>

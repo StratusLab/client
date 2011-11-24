@@ -22,6 +22,7 @@
 import os
 import sys
 from optparse import OptionParser
+from stratuslab.Configurator import Configurator
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -50,7 +51,7 @@ class MainProgram(StorageCommand):
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        StorageCommand.checkPDiskEndpointOptionsOnly(self)
+#        StorageCommand.checkPDiskEndpointOptionsOnly(self)
         super(MainProgram, self).checkOptions()
         if self.options.quarantineCleanUp:
             if len(self.args) != 0:
@@ -65,7 +66,10 @@ class MainProgram(StorageCommand):
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)        
         configHolder = ConfigHolder(self.options.__dict__, config)
-        
+
+        if not configHolder.pdiskEndpoint:
+            configHolder.pdiskEndpoint = Configurator(configHolder).getValue('persistent_disk_ip')
+
         pdisk = PersistentDisk(configHolder)
 
         if self.options.quarantineCleanUp:
