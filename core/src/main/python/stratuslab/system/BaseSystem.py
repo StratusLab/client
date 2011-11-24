@@ -270,9 +270,17 @@ class BaseSystem(object):
 
     def configureCloudAdminSudoFrontend(self):
         Util.printDetail("Configuring sudo rights for '%s'..." % self.oneUsername)
+        commands = ['/bin/dd',
+                    '/bin/chmod'
+                    '/usr/bin/sha1sum', 
+                    '/usr/bin/sha256sum', 
+                    '/usr/bin/sha512sum', 
+                    '/usr/bin/md5sum',
+                    '/sbin/lvs']
+        textToAdd = '%s ALL = NOPASSWD: %s' % (self.oneUsernam,
+                                               ', '.join(commands))
         self.appendOrReplaceInFileCmd('/etc/sudoers',
-                         '^%s ALL = NOPASSWD: /bin/dd$' % self.oneUsername,
-                         '%s ALL = NOPASSWD: /bin/dd' % self.oneUsername)
+                         '^%s' % textToAdd, textToAdd)
 
     def _setOneHome(self):
         if not self.oneHome:
