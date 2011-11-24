@@ -957,6 +957,9 @@ EOF
 
     def getVmId(self):
         return self.vmId
+    
+    def getVmState(self):
+        return self.runner.getVmState(self.vmId)
 
 class CreatorBaseListener(object):
 
