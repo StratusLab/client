@@ -24,7 +24,6 @@ import time
 import unittest
 import urllib2
 import re
-import os
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
@@ -81,13 +80,10 @@ class Testor(unittest.TestCase):
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
 
-
     def _setFieldsFromEnvVars(self):
         self._setSingleFieldFromEnvVar('apprepoUsername', 'STRATUSLAB_APPREPO_USERNAME')
         self._setSingleFieldFromEnvVar('apprepoPassword', 'STRATUSLAB_APPREPO_PASSWORD')
         self._setSingleFieldFromEnvVar('apprepoEndpoint', 'STRATUSLAB_APPREPO_ENDPOINT')
-        self._setSingleFieldFromEnvVar('username', 'STRATUSLAB_USERNAME')
-        self._setSingleFieldFromEnvVar('password', 'STRATUSLAB_PASSWORD')
         self._setSingleFieldFromEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
         self._setSingleFieldFromEnvVar('p12Certificate', 'STRATUSLAB_P12_CERTIFICATE')
         self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
@@ -465,8 +461,8 @@ class Testor(unittest.TestCase):
         options['os'] = 'centos'
 
         options['endpoint'] = getattr(self, 'endpoint')
-        options['username'] = getattr(self, 'username', self.oneUsername)
-        options['password'] = getattr(self, 'password', self.proxyOneadminPassword)
+        options['username'] = self.testUsername
+        options['password'] = self.testPassword
 
         options['apprepoEndpoint'] = self.apprepoEndpoint
         options['apprepoUsername'] = self.apprepoUsername
