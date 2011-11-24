@@ -55,7 +55,7 @@ class Testor(unittest.TestCase):
     def setUp(self):
         self.vmIds = []
         self.image = 'LwcRbwCalYSysY1wftQdAj6Bwoi'
-        self.ubuntuImg = 'http://appliances.stratuslab.eu/images/base/ubuntu-10.04-amd64-base/1.3/ubuntu-10.04-amd64-base-1.3.img.gz'
+        self.ubuntuImg = 'BXSSv_2udGkpKgi6fcCaVniz1Zd'
 
     def tearDown(self):
         self._unlinkFiles([self.sshKey, self.sshKeyPub])
