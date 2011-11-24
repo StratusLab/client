@@ -389,9 +389,16 @@ class Testor(unittest.TestCase):
                (attrib.lower().startswith('test') or attrib.lower().endswith('test')) and \
                not attrib.startswith('_')
 
+    def createImageV1Test(self):
+        '''Create a machine image based on a given one.'''
+        self._doCreateImage(v1=True)
+
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
-        creator = self._createCreator(self.imageIdCreateImage)
+        self._doCreateImage()
+
+    def _doCreateImage(self, v1=False):
+        creator = self._createCreator(self.imageIdCreateImage, v1=v1)
 
         newImage = creator.showName()
         newImageUri = '%s/%s' % (creator.apprepoEndpoint, newImage)
@@ -401,7 +408,10 @@ class Testor(unittest.TestCase):
         try:
             creator.create()
         finally:
-            creator._stopMachine()
+            try:
+                creator._stopMachine()
+            except:
+                pass
 
         assert creator.targetImageUri == newImageUri
         assert Util.checkUrlExists(creator.targetImageUri)
@@ -425,18 +435,26 @@ class Testor(unittest.TestCase):
                      verboseLevel=self.verboseLevel,
                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
-    def _createCreator(self, image):
+    def _createCreator(self, image, v1=False):
+        'For both new and old "v1" versions.'
+
         Util.generateSshKeyPair(self.sshKey)
         options = {}
+
+        options['v1'] = v1
+        
+        if not v1:
+            options['authorEmail'] = 'konstan@sixsq.com'
+            options['saveDisk'] = True
 
         options['verboseLevel'] = self.verboseLevel
 
         options['author'] = 'Konstantin Skaburskas'
-        options['comment'] = 'CentOS with python-dirq.'
+        options['comment'] = 'Fedora with python-dirq.'
         options['newImageGroupVersion'] = '1.99'
         options['newImageGroupName'] = 'base'
-        options['newInstalledSoftwareName'] = 'CentOS'
-        options['newInstalledSoftwareVersion'] = '5.5'
+        options['newInstalledSoftwareName'] = 'Fedora'
+        options['newInstalledSoftwareVersion'] = '14'
         options['excludeFromCreatedImage'] = '/etc/resolve.conf,/usr/sbin/pppdump'
         options['extraDiskSize'] = str(7 * 1024)
         options['scripts'] = '' # TODO: add some
