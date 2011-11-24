@@ -22,7 +22,6 @@
 import os
 import sys
 from optparse import OptionParser
-from stratuslab.Configurator import Configurator
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -30,6 +29,7 @@ from stratuslab.Util import modulePath, printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Configurator import Configurator
 
 
 class MainProgram(StorageCommand):
