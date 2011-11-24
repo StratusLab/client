@@ -1,0 +1,82 @@
+#!/bin/sh
+
+CERTFILE=cert.p12
+PASS=XYZXYZ
+VALID=360
+CN="Jane Tester"
+EMAIL=jane.tester@example.org
+
+usage="usage: $(basename $0) [-h] [-o <path>] [-v <days>] [-p <pass>] [-c <CN>] [ -e <EMAIL>]\n
+ -o <path> - path to generated certificate (default: $CERTFILE)\n
+ -v <days> - validity of the certificate in days (default: $VALID)\n
+ -p <pass> - password of the certificate (default: $PASS)\n
+ -c <CN> - CN of the certificate (default: $CN)\n
+ -e <EMAIL> - email address (default: $EMAIL)\n 
+"
+
+while getopts ":o:p:v:c:e:h" options; do
+  case $options in
+    o ) CERTFILE=$OPTARG;;
+    v ) VALID=$OPTARG;;
+    p ) PASS=$OPTARG;;
+    c ) CN=$OPTARG;;
+    e ) EMAIL=$OPTARG;;
+    h ) echo -e $usage
+        exit 0;;
+    \? ) echo -e $usage
+         exit 0;;
+    * ) echo -e $usage
+         exit 1;;
+  esac
+done
+
+TMPDIR=$(mktemp -d 2>/dev/null) ||{ TMPDIR=/tmp/$(date +%s)$$; mkdir -p $TMPDIR; } 
+
+trap "rm -rf $TMPDIR" EXIT
+set -e
+
+cat > $TMPDIR/openssl.cfg <<EOF
+[ req ]
+distinguished_name     = req_distinguished_name
+x509_extensions        = v3_ca
+prompt                 = no
+input_password         = $PASS
+output_password        = $PASS
+
+dirstring_type = nobmp
+
+[ req_distinguished_name ]
+C = EU
+O = StratusLab Project
+OU = Testing Department
+CN = $CN
+
+[ v3_ca ]
+basicConstraints = CA:false
+nsCertType=client, email, objsign
+keyUsage=critical, digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+subjectAltName=email:$EMAIL
+EOF
+
+openssl genrsa -passout pass:$PASS -des3 \
+        -out $TMPDIR/test-key.pem \
+        2048
+
+openssl req -new -key $TMPDIR/test-key.pem \
+        -out $TMPDIR/test.csr \
+        -config $TMPDIR/openssl.cfg
+
+openssl x509 -req -days $VALID -in $TMPDIR/test.csr \
+        -signkey $TMPDIR/test-key.pem \
+        -out $TMPDIR/test-cert.pem \
+        -extfile $TMPDIR/openssl.cfg \
+        -extensions v3_ca \
+        -passin pass:$PASS
+
+openssl pkcs12 -export -in $TMPDIR/test-cert.pem \
+        -inkey $TMPDIR/test-key.pem \
+        -out $CERTFILE \
+        -passin pass:$PASS \
+        -passout pass:$PASS
