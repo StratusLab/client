@@ -270,6 +270,8 @@ class PersistentDisk(object):
         Util.printDetail(message, self.verboseLevel, 1)
 
     def cleanQuarantine(self):
+        self._setPDiskUserCredentials()
+
         disks = self.describeVolumes({'quarantine': ['.*']})
         threashold = self._getQuarantineThreasholdDate()
 
