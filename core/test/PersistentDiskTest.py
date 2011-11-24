@@ -39,6 +39,7 @@ class PersistentDiskTest(unittest.TestCase):
         
         PersistentDisk.describeVolumes = mock
         PersistentDisk.deleteVolume = Mock()
+        PersistentDisk._setPDiskUserCredentials = Mock()
         
         pd = PersistentDisk()
         pd.quarantinePeriod = '2d'
