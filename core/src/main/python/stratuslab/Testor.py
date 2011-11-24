@@ -733,6 +733,8 @@ class Testor(unittest.TestCase):
         vmIds = runner.runInstance()
         if len(vmIds) < 1:
             self.fail('An error occurred while starting a VM')
+        if not runner.waitUntilVmRunningOrTimeout(vmIds[0], failOn=('Failed')):
+            self.fail('Failed starting VM from %s.' % pdisk)
         self.vmIds.extend(vmIds)
         self._repeatCall(self._ping, runner)
         self._repeatCall(self._loginViaSsh, runner, '/bin/true')
