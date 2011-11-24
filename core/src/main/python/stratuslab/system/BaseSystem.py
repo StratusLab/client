@@ -277,7 +277,7 @@ class BaseSystem(object):
                     '/usr/bin/sha512sum', 
                     '/usr/bin/md5sum',
                     '/sbin/lvs']
-        textToAdd = '%s ALL = NOPASSWD: %s' % (self.oneUsernam,
+        textToAdd = '%s ALL = NOPASSWD: %s' % (self.oneUsername,
                                                ', '.join(commands))
         self.appendOrReplaceInFileCmd('/etc/sudoers',
                          '^%s' % textToAdd, textToAdd)
