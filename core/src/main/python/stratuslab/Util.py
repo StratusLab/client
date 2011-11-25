@@ -587,3 +587,7 @@ def sanitizePath(path):
     for s in subs:
         path = path.replace(*s)
     return path
+
+def isValidNetLocation(url):
+    r = urlparse.urlsplit(url)
+    return (r.scheme and r.netloc) and True or False
