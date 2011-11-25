@@ -314,7 +314,9 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
             del kwargs[keyword]
         except: pass
 
-    sshCmd = ['ssh', '-p', str(port), '-o', 'ConnectTimeout=%s' % timeout, '-o', 'StrictHostKeyChecking=no']
+    sshCmd = ['ssh', '-p', str(port),
+              '-o', 'ConnectTimeout=%s' % timeout,
+              '-o', 'StrictHostKeyChecking=no']
 
     if sshKey and os.path.isfile(sshKey):
         sshCmd.append('-i')
