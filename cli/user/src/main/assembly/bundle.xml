@@ -18,6 +18,9 @@
 			<includes>
 				<include>stratus-*</include>
 			</includes>
+			<excludes>
+				<exclude>stratus-ovf</exclude>
+			</excludes>
 		</fileSet>
 
 		<fileSet>
@@ -26,6 +29,9 @@
 			<includes>
 				<include>stratus-*.bat</include>
 			</includes>
+			<excludes>
+				<exclude>stratus-ovf.bat</exclude>
+			</excludes>
 		</fileSet>
 
 		<fileSet>
