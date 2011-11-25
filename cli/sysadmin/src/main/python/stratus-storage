@@ -110,6 +110,8 @@ and use it but can't delete it.''', action='store_true', default=False)
         elif self.options.rebaseUuid:
             volumeId = pdisk.rebaseVolume(self.options.rebaseUuid)
         else:
+            # FIXME: Hack. Need to be inside the class
+            pdisk._setPDiskUserCredentials()
             volumeId = pdisk.createVolume(self.options.volumeSize,
                                           self.options.volumeTag,
                                           self.options.volumeVisibility)
