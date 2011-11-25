@@ -88,7 +88,8 @@ class HttpClient(object):
             return resp, content
 
         def _handle4xx():
-            raise ClientException(resp.reason, content)
+            raise ClientException(resp.reason, content=content,
+                                  status=str(resp.status))
 
         def _handle5xx():
             if retry:
