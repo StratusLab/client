@@ -24,6 +24,7 @@ import sys
 import time
 import urllib2
 import random
+import urlparse
 from random import sample
 from string import ascii_lowercase
 from stratuslab.Exceptions import ExecutionException, ValidationException
