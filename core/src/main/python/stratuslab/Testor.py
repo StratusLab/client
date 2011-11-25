@@ -59,6 +59,7 @@ class Testor(unittest.TestCase):
         self.vmIds = []
         self.image = 'LwcRbwCalYSysY1wftQdAj6Bwoi'
         self.ubuntuImg = 'BXSSv_2udGkpKgi6fcCaVniz1Zd'
+        self._unlinkFiles([self.sshKey, self.sshKeyPub])
 
     def tearDown(self):
         self._unlinkFiles([self.sshKey, self.sshKeyPub])
@@ -73,7 +74,7 @@ class Testor(unittest.TestCase):
         super(Testor, self).__init__(methodName)
 
         self.vmIds = []
-        self.sshKey = '/tmp/id_rsa_smoke_test'
+        self.sshKey = '/tmp/id_rsa_smoke_test' + str(os.getpid())
         self.sshKeyPub = self.sshKey + '.pub'
         self.testsToRun = []
         self.quotaCpu = 2
