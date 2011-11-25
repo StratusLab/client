@@ -37,9 +37,10 @@ class ExecutionException(Exception):
     pass
 
 class ClientException(Exception):
-    def __init__(self, reason, content=''):
+    def __init__(self, reason, content='', status=''):
         self.reason = reason
         self.content = content
+        self.status = status
 
 class ServerException(Exception):
     def __init__(self, msg, status=''):
