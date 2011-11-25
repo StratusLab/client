@@ -407,7 +407,7 @@ class Creator(object):
 
         if self.vmId:
             if not self.v1:
-                if self.getVmState(self.vmId) != 'Failed':
+                if self.getVmState() != 'Failed':
                     self._printStep('Shutting down machine')
                     self.cloud.vmStop(self.vmId)
             else:
