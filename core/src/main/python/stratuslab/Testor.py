@@ -24,6 +24,7 @@ import time
 import unittest
 import urllib2
 import re
+import sys
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
@@ -38,12 +39,14 @@ from stratuslab.Exceptions import InputException
 from stratuslab.ConfigHolder import ConfigHolder
 import Util
 from stratuslab.marketplace.Downloader import Downloader
+from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Util import sleep, printStep
+from stratuslab.Image import Image
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -260,7 +263,7 @@ class Testor(unittest.TestCase):
 
         for vmId in self.vmIds:
             _, ip = runner.getNetworkDetail(vmId)
-            res = Util.sshCmd(cmd, ip, self.sshKey)
+            res = Util.sshCmd(cmd, ip, sshKey=self.sshKey)
             if res:
                 raise ExecutionException('Failed to SSH into machine for %s with return code %s' % (ip, res))
 
@@ -386,15 +389,11 @@ class Testor(unittest.TestCase):
                not attrib.startswith('_')
 
     def createImageV1Test(self):
-        '''Create a machine image based on a given one.'''
-        self._doCreateImage(v1=True)
+        '''Create a machine image based on a given one. Old version v1.'''
+        self._doCreateImageV1()
 
-    def createImageTest(self):
-        '''Create a machine image based on a given one.'''
-        self._doCreateImage()
-
-    def _doCreateImage(self, v1=False):
-        creator = self._createCreator(self.imageIdCreateImage, v1=v1)
+    def _doCreateImageV1(self):
+        creator = self._createCreator(self.imageIdCreateImage, v1=True)
 
         newImage = creator.showName()
         newImageUri = '%s/%s' % (creator.apprepoEndpoint, newImage)
@@ -403,11 +402,12 @@ class Testor(unittest.TestCase):
 
         try:
             creator.create()
-        finally:
+        except Exception, e:
             try:
                 creator._stopMachine()
             except:
                 pass
+            raise e
 
         assert creator.targetImageUri == newImageUri
         assert Util.checkUrlExists(creator.targetImageUri)
@@ -419,6 +419,72 @@ class Testor(unittest.TestCase):
         self._runInstanceTest(cmdToRun='python -c "import dirq"')
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
+
+    def createImageTest(self):
+        '''Create a machine image based on a given one.'''
+        self._doCreateImage()
+
+    def _doCreateImage(self):
+        creator = self._createCreator(self.imageIdCreateImage)
+
+        try:
+            creator.create()
+        except Exception, e:
+            try:
+                creator._stopMachine()
+            except:
+                pass
+            raise e
+
+        timeout = 600
+        t_stop = time.time() + timeout
+        t_step  = 10
+        print "Waiting %i sec for image bundling. One dot %i sec." % (timeout,
+                                                                      t_step)
+        while time.time() < t_stop:
+            if creator.getVmState() in ('Done', 'Failed'):
+                print
+                break
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            time.sleep(t_step)
+
+        # Assert instance state
+        vm_state = creator.getVmState()
+        if vm_state != 'Done':
+            self.configHolder.username = self.testUsername
+            self.configHolder.password = self.testPassword
+            self.configHolder.endpoint = self.endpoint
+            monitor = Monitor(self.configHolder)
+            info = monitor._vmDetail(creator.getVmId())
+            info_attributes = info.getAttributes()
+            msg = "Image creation failed. Instance final state '%s'. Error: %s" % \
+                        (vm_state, info_attributes.get('template_error_message',
+                                                       'not set'))
+            self.fail(msg)
+        
+        # Assert new image. 
+        # Assuming we are running on FE and can access VM log file.
+        vm_id = creator.getVmId()
+        mp_and_id = ''
+        for line in open('/var/log/one/%s.log' % vm_id).readlines():
+            if re.search('MARKETPLACE_AND_IMAGEID', line):
+                mp_and_id = line.split()
+                break
+        image_id = mp_and_id[-1].strip('\'')
+        if not Image.isImageId(image_id):
+            self.fail("Failed to obtain new image ID.")
+        marketplace_url = mp_and_id[-2].strip('\'')
+        if not Util.isValidNetLocation(marketplace_url):
+            self.fail("Failed to get marketplace endpoint.") 
+
+        self.configHolder.marketplaceEndpoint = marketplace_url
+        ManifestDownloader(self.configHolder).getManifestInfo(image_id)
+
+        self.image = image_id
+        self.oneUsername = self.testUsername
+        self.proxyOneadminPassword = self.testPassword
+        self._runInstanceTest(cmdToRun='python -c "import dirq"')
 
     def _deleteImageAndManifestFromAppRepo(self, imageUri):
         urlDir = imageUri.rsplit('/', 1)[0] + '/'
@@ -442,37 +508,37 @@ class Testor(unittest.TestCase):
         if not v1:
             options['authorEmail'] = 'konstan@sixsq.com'
             options['saveDisk'] = True
+        if v1:
+            options['extraDiskSize'] = str(7 * 1024)
+            options['apprepoEndpoint'] = self.apprepoEndpoint
+            options['apprepoUsername'] = self.apprepoUsername
+            options['apprepoPassword'] = self.apprepoPassword
+            options['p12Certificate'] = self.p12Certificate
+            options['p12Password'] = self.p12Password
 
+    
         options['verboseLevel'] = self.verboseLevel
 
         options['author'] = 'Konstantin Skaburskas'
-        options['comment'] = 'Fedora with python-dirq.'
+        options['comment'] = 'Image with python-dirq.'
         options['newImageGroupVersion'] = '1.99'
         options['newImageGroupName'] = 'base'
-        options['newInstalledSoftwareName'] = 'Fedora'
-        options['newInstalledSoftwareVersion'] = '14'
+        options['newInstalledSoftwareName'] = 'Linux'
+        options['newInstalledSoftwareVersion'] = '0.0'
         options['excludeFromCreatedImage'] = '/etc/resolve.conf,/usr/sbin/pppdump'
-        options['extraDiskSize'] = str(7 * 1024)
         options['scripts'] = '' # TODO: add some
         options['packages'] = 'python-dirq'
         options['extraOsReposUrls'] = 'http://download.fedora.redhat.com/pub/epel/5/i386/'
 
         options['installer'] = 'yum'
-        options['os'] = 'centos'
+        options['os'] = 'linux'
 
-        options['endpoint'] = getattr(self, 'endpoint')
+        options['endpoint'] = self.endpoint
         options['username'] = self.testUsername
         options['password'] = self.testPassword
 
-        options['apprepoEndpoint'] = self.apprepoEndpoint
-        options['apprepoUsername'] = self.apprepoUsername
-        options['apprepoPassword'] = self.apprepoPassword
-
         options['userPublicKeyFile'] = self.sshKeyPub
         options['userPrivateKeyFile'] = self.sshKey
-
-        options['p12Certificate'] = self.p12Certificate
-        options['p12Password'] = self.p12Password
 
         options['shutdownVm'] = True
 
