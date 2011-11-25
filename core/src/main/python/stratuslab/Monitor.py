@@ -188,9 +188,6 @@ class Monitor(Configurable):
         self._adjustAttributeFields(_list, attrList)
 
     def _adjustAttributeFields(self, _list, attrList):
-#        for k,v in _list[0].attribs.items():
-#            print k,v
-#        raise SystemExit()
         if _list:
             for attr in attrList:
                 for i, attrVal in enumerate(getattr(self, attr)):
