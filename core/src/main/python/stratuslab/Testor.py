@@ -32,7 +32,7 @@ from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
 from stratuslab.Creator import Creator
 from stratuslab.Exceptions import NetworkException, OneException,\
-    ServerException, ClientException
+    ClientException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Exceptions import InputException
@@ -731,8 +731,8 @@ class Testor(unittest.TestCase):
         try:
             if pdisk.volumeExists(diskUUID):
                 self.fail('The persistent disk %s is still present' % diskUUID)
-        except (ClientException, ServerException), ex:
-            if not re.match('(404|5.*)', ex.status):
+        except ClientException, ex:
+            if not re.match('404', ex.status):
                 self.fail('The persistent disk %s is still present' % diskUUID)
             
     def persistentDiskStorageHotplugTest(self):
@@ -806,8 +806,8 @@ class Testor(unittest.TestCase):
         try:
             if pdisk.volumeExists(diskUUID):
                 self.fail('The persistent disk %s is still present' % diskUUID)
-        except (ClientException, ServerException), ex:
-            if not re.match('(404|5.*)', ex.status):
+        except ClientException, ex:
+            if not re.match('404', ex.status):
                 self.fail('The persistent disk %s is still present' % diskUUID)
         
     def _startVmWithPDiskAndWaitUntilUp(self, pdisk=None, image=None):
