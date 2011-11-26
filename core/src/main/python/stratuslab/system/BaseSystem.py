@@ -180,10 +180,11 @@ class BaseSystem(object):
     def createCloudAdmin(self):
 
         self.createDirsCmd(os.path.dirname(self.oneHome))
+
         self.executeCmd(['useradd', '-d', self.oneHome, '-g',
                         self.oneGroup, '-u', self.oneUid, self.oneUsername,
                         '-s', '/bin/bash', '-p', self.onePassword, '--create-home'])
-
+    
     # -------------------------------------------
     #     ONE admin env config and related
     # -------------------------------------------
@@ -266,31 +267,34 @@ class BaseSystem(object):
         self.appendOrReplaceInFileCmd(oneAuthFile,
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
 
+        self.addCloudAdminToExtraGroups()
+
         self.configureCloudAdminSudoFrontend()
 
+    def addCloudAdminToExtraGroups(self):
+        if Util.isTrueConfVal(self.persistentDisk) and self.persistentDiskStorage == 'lvm':
+            self._addCloudAdminToExtraGroup(self.persistentDiskLvmDevfilesGroup)
+
+    def _addCloudAdminToExtraGroup(self, group):
+            self.executeCmd(['usermod', '-aG', group, self.oneUsername])
+
     def configureCloudAdminSudoFrontend(self):
+        commands = ['/sbin/lvs']
+        self._configureCloudAdminSudo(commands)
+
+    def configureCloudAdminSudoNode(self):
+        commands = ['/bin/chmod']
+        self._configureCloudAdminSudo(commands)
+
+    def _configureCloudAdminSudo(self, commands):
         Util.printDetail("Configuring sudo rights for '%s'" % self.oneUsername)
-        commands = ['/bin/dd',
-                    '/bin/chmod',
-                    '/usr/bin/sha1sum', 
-                    '/usr/bin/sha256sum', 
-                    '/usr/bin/sha512sum', 
-                    '/usr/bin/md5sum',
-                    '/sbin/lvs']
         for cmd in commands:
             replace = '%s ALL = NOPASSWD: %s' % (self.oneUsername, cmd)
-            self.appendOrReplaceInFileCmd('/etc/sudoers',
-                                          '%s' % replace, replace)
+            self.appendOrReplaceInFileCmd('/etc/sudoers', '%s' % replace, replace)
 
     def _setOneHome(self):
         if not self.oneHome:
             self.oneHome = os.path.expanduser('~' + self.oneUsername)
-
-    def configureCloudAdminSudoNode(self):
-        Util.printDetail("Configuring sudo rights for '%s'..." % self.oneUsername)
-        self.appendOrReplaceInFileCmd('/etc/sudoers',
-                         '^%s ALL = NOPASSWD: /bin/chmod$' % self.oneUsername,
-                         '%s ALL = NOPASSWD: /bin/chmod' % self.oneUsername)
 
     # -------------------------------------------
     #     Persistent disks
