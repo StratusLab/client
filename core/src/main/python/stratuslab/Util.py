@@ -81,9 +81,9 @@ def _wget(url):
 
 def ping(host, timeout=5, number=1, ** kwargs):
     if systemName() == 'Darwin':
-        timeout_opt = '-w'
-    else:
         timeout_opt = '-t'
+    else:
+        timeout_opt = '-w'
     p = subprocess.Popen(['ping', '-q', '-c', str(number), 
                                 timeout_opt, str(timeout), host], ** kwargs)
     p.wait()
