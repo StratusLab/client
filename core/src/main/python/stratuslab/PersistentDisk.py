@@ -110,7 +110,6 @@ class PersistentDisk(object):
         self.pdiskPassword = loader.get_password(self.pdiskUsername)
 
     def createVolume(self, size, tag, visibility):
-        self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/' % self.endpoint
