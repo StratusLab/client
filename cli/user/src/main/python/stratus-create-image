@@ -166,10 +166,11 @@ you\'ll never be able to retrieve the new image')
             # define required data in deployment script.
             self.options.saveDisk = True
 
+        if self.options.v1:
+            AuthnCommand.checkP12CertOptionsOnly(self)
+
         if not self.options.noUpload:
             Uploader.checkAppRepoOptions(self.options, self.parser)
-
-        AuthnCommand.checkP12CertOptionsOnly(self)
 
     def doWork(self):
 
