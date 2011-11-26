@@ -29,6 +29,7 @@ from random import sample
 from string import ascii_lowercase
 from stratuslab.Exceptions import ExecutionException, ValidationException
 import Defaults
+import platform
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -595,3 +596,6 @@ def sanitizePath(path):
 def isValidNetLocation(url):
     r = urlparse.urlsplit(url)
     return (r.scheme and r.netloc) and True or False
+
+def systemName():
+    return platform.system()
