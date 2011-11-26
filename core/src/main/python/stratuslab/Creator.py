@@ -167,7 +167,7 @@ class Creator(object):
                             'sha512':'shasum -a 512'}
         chksumCmds = {}
         for chksum in chksums:
-            if commands.getoutput('uname') == 'Darwin':
+            if Util.systemName() == 'Darwin':
                 chksumCmds[chksum] = darwinChksumCmds[chksum]
             else:
                 chksumCmds[chksum] = Creator.checksums[chksum]['cmd']
