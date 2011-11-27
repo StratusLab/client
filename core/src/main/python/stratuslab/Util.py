@@ -29,6 +29,7 @@ from random import sample
 from string import ascii_lowercase
 from stratuslab.Exceptions import ExecutionException, ValidationException
 import Defaults
+import platform
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -79,8 +80,12 @@ def _wget(url):
     return urllib2.urlopen(url)
 
 def ping(host, timeout=5, number=1, ** kwargs):
+    if systemName() == 'Darwin':
+        timeout_opt = '-t'
+    else:
+        timeout_opt = '-w'
     p = subprocess.Popen(['ping', '-q', '-c', str(number), 
-                                        '-w', str(timeout), host], ** kwargs)
+                                timeout_opt, str(timeout), host], ** kwargs)
     p.wait()
     success = (p.returncode == 0)
     return success
@@ -595,3 +600,6 @@ def sanitizePath(path):
 def isValidNetLocation(url):
     r = urlparse.urlsplit(url)
     return (r.scheme and r.netloc) and True or False
+
+def systemName():
+    return platform.system()
