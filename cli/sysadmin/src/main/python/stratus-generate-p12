@@ -1,82 +1,50 @@
-#!/bin/sh
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010, SixSq Sarl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-CERTFILE=cert.p12
-PASS=XYZXYZ
-VALID=360
-CN="Jane Tester"
-EMAIL=jane.tester@example.org
+import sys
 
-usage="usage: $(basename $0) [-h] [-o <path>] [-v <days>] [-p <pass>] [-c <CN>] [ -e <EMAIL>]\n
- -o <path> - path to generated certificate (default: $CERTFILE)\n
- -v <days> - validity of the certificate in days (default: $VALID)\n
- -p <pass> - password of the certificate (default: $PASS)\n
- -c <CN> - CN of the certificate (default: $CN)\n
- -e <EMAIL> - email address (default: $EMAIL)\n 
-"
+sys.path.append('/var/lib/stratuslab/python')
 
-while getopts ":o:p:v:c:e:h" options; do
-  case $options in
-    o ) CERTFILE=$OPTARG;;
-    v ) VALID=$OPTARG;;
-    p ) PASS=$OPTARG;;
-    c ) CN=$OPTARG;;
-    e ) EMAIL=$OPTARG;;
-    h ) echo -e $usage
-        exit 0;;
-    \? ) echo -e $usage
-         exit 0;;
-    * ) echo -e $usage
-         exit 1;;
-  esac
-done
+from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.CertGenerator import CertGenerator
 
-TMPDIR=$(mktemp -d 2>/dev/null) ||{ TMPDIR=/tmp/$(date +%s)$$; mkdir -p $TMPDIR; } 
+class MainProgram(CommandBaseSysadmin):
+    '''A command-line program to generate p12 certificate.'''
 
-trap "rm -rf $TMPDIR" EXIT
-set -e
+    def __init__(self):
+        self.image = None
+        super(MainProgram, self).__init__()
 
-cat > $TMPDIR/openssl.cfg <<EOF
-[ req ]
-distinguished_name     = req_distinguished_name
-x509_extensions        = v3_ca
-prompt                 = no
-input_password         = $PASS
-output_password        = $PASS
+    def parse(self):
+        self.parser.usage = '%prog [options]'
 
-dirstring_type = nobmp
+        CertGenerator.buildCertGeneratorP12Parser(self.parser)
 
-[ req_distinguished_name ]
-C = EU
-O = StratusLab Project
-OU = Testing Department
-CN = $CN
+        self.options, self.args = self.parser.parse_args()
 
-[ v3_ca ]
-basicConstraints = CA:false
-nsCertType=client, email, objsign
-keyUsage=critical, digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid:always,issuer:always
-subjectAltName=email:$EMAIL
-EOF
+    def doWork(self):
+        CertGenerator(self.options).generateP12()
 
-openssl genrsa -passout pass:$PASS -des3 \
-        -out $TMPDIR/test-key.pem \
-        2048
-
-openssl req -new -key $TMPDIR/test-key.pem \
-        -out $TMPDIR/test.csr \
-        -config $TMPDIR/openssl.cfg
-
-openssl x509 -req -days $VALID -in $TMPDIR/test.csr \
-        -signkey $TMPDIR/test-key.pem \
-        -out $TMPDIR/test-cert.pem \
-        -extfile $TMPDIR/openssl.cfg \
-        -extensions v3_ca \
-        -passin pass:$PASS
-
-openssl pkcs12 -export -in $TMPDIR/test-cert.pem \
-        -inkey $TMPDIR/test-key.pem \
-        -out $CERTFILE \
-        -passin pass:$PASS \
-        -passout pass:$PASS
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
