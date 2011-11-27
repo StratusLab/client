@@ -321,7 +321,8 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
 
     sshCmd = ['ssh', '-p', str(port),
               '-o', 'ConnectTimeout=%s' % timeout,
-              '-o', 'StrictHostKeyChecking=no']
+              '-o', 'StrictHostKeyChecking=no',
+              '-o', 'NumberOfPasswordPrompts=0']
 
     if sshKey and os.path.isfile(sshKey):
         sshCmd.append('-i')
