@@ -720,7 +720,8 @@ touch %s
         availableUserAfterStart, _ = pdisk.getVolumeUsers(diskUUID)
         
         if availableUserAfterStart != (availableUserBeforeStart-1):
-            self.fail('Available users on persistent disk have to decrease by one (%s, %s)' % 
+            self.fail('Available users on persistent disk have to decrease by '
+                      'one (%s, %s)' % 
                       (availableUserBeforeStart, availableUserAfterStart))
     
         self._formatDisk(runner, pdiskDevice)
@@ -731,7 +732,8 @@ touch %s
         availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
         
         if availableUserAfterStop != availableUserBeforeStart:
-            self.fail('Available users on persistent disk have to be the same as when VM has started')
+            self.fail('Available users on persistent disk have to be the same '
+                      'as when VM has started')
     
         runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
         self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
@@ -742,7 +744,8 @@ touch %s
         availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
         
         if availableUserAfterStop != availableUserBeforeStart:
-            self.fail('Available users on persistent disk have to be the same as when VM has started')
+            self.fail('Available users on persistent disk have to be the same '
+                      'as when VM has started')
 
         Util.printAction('Removing persistent disk...')
         pdisk.deleteVolume(diskUUID)
@@ -771,7 +774,8 @@ touch %s
         runner = self._startVmWithPDiskAndWaitUntilUp(image=self.ubuntuImg)
         
         Util.printAction('Creating a new persistent disk')
-        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
+        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(),
+                                      False)
         
         Util.printAction('Checking persistent disk exists')
         if not pdisk.volumeExists(diskUUID):
@@ -788,7 +792,8 @@ touch %s
         availableUserAfterAttach, _ = pdisk.getVolumeUsers(diskUUID)
         
         if availableUserAfterAttach != (availableUserBeforeAttach-1):
-            self.fail('Available users on persistent disk have to decrease by one; before=%s, after=%s' % 
+            self.fail('Available users on persistent disk have to decrease by '
+                      'one; before=%s, after=%s' % 
                       (availableUserBeforeAttach, availableUserAfterAttach))
         
         self._formatDisk(runner, pdiskDevice % device)
@@ -802,7 +807,8 @@ touch %s
         availableUserAfterDetach, _ = pdisk.getVolumeUsers(diskUUID)
         
         if availableUserAfterDetach != availableUserBeforeAttach:
-            self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' %
+            self.fail('Available users on persistent disk have to be the '
+                      'same as when VM has started; before=%s, after=%s' %
                       (availableUserBeforeAttach, availableUserAfterDetach))
         
         printStep('Re-attaching pdisk to VM')
@@ -816,9 +822,10 @@ touch %s
         availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
         
         if availableUserAfterStop != availableUserBeforeAttach:
-            self.fail('Available users on persistent disk have to be the same as when VM has started; before=%s, after=%s' % 
+            self.fail('Available users on persistent disk have to be the '
+                      'same as when VM has started; before=%s, after=%s' % 
                       (availableUserBeforeAttach, availableUserAfterStop))
-        
+
         Util.printAction('Removing persistent disk...')
         pdisk.deleteVolume(diskUUID)
             
