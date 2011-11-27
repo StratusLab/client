@@ -47,6 +47,7 @@ import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Util import sleep, printStep
 from stratuslab.Image import Image
+import tempfile
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -427,7 +428,18 @@ class Testor(unittest.TestCase):
         self._doCreateImage()
 
     def _doCreateImage(self):
-        creator = self._createCreator(self.imageIdCreateImage)
+
+        remote_test_file = '$HOME/createImageTest-%s' % str(os.getpid())
+        script = """#!/bin/sh
+touch %s
+""" % remote_test_file
+
+        fd, script_file = tempfile.mkstemp('.sh', 'script')
+        os.write(fd, script)
+        os.close(fd)
+
+        creator = self._createCreator(self.imageIdCreateImage,
+                                      script_file=script_file)
 
         try:
             creator.create()
@@ -437,6 +449,8 @@ class Testor(unittest.TestCase):
             except:
                 pass
             raise e
+        finally:
+            os.unlink(script_file)
 
         timeout = 600
         t_stop = time.time() + timeout
@@ -501,7 +515,7 @@ class Testor(unittest.TestCase):
                      verboseLevel=self.verboseLevel,
                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
-    def _createCreator(self, image, v1=False):
+    def _createCreator(self, image, v1=False, script_file=''):
         'For both new and old "v1" versions.'
 
         Util.generateSshKeyPair(self.sshKey)
@@ -531,7 +545,7 @@ class Testor(unittest.TestCase):
         options['newInstalledSoftwareName'] = 'Linux'
         options['newInstalledSoftwareVersion'] = '0.0'
         options['excludeFromCreatedImage'] = '/etc/resolve.conf,/usr/sbin/pppdump'
-        options['scripts'] = '' # TODO: add some
+        options['scripts'] = script_file
         options['packages'] = 'python-dirq'
         options['extraOsReposUrls'] = 'http://download.fedora.redhat.com/pub/epel/5/i386/'
 
