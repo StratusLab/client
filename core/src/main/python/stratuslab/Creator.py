@@ -609,7 +609,7 @@ deb %(name)s
             self.printDetail('No scripts to execute')
             return
 
-        self._printStep('Executing scripts: %s' % self.scripts)
+        self.printDetail('Executing scripts: %s' % self.scripts)
 
         for script in self.scripts.split(','):
             self._uploadAndExecuteRemoteScript(script)
