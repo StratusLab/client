@@ -135,7 +135,7 @@ class Testor(unittest.TestCase):
     def runInstanceLocalNetworkTest(self):
         '''Start new instance, ping it via local network and ssh into it, then stop it.'''
         self._runInstanceTest(withLocalNetwork=True,
-                                cmdToRun='ping -c 2 www.google.com')
+                                cmdToRun=['ping -c 2 www.google.com'])
 
     def runInstanceRequestedNetworkTest(self):
         '''Start new instance, ping it via requested IP address and ssh into it, then stop it.'''
@@ -175,10 +175,11 @@ class Testor(unittest.TestCase):
                 except ValueError:
                     print "WARNING: Test '%s' not in a list of defined tests." % test
 
-    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun='/bin/true', msgRecipients=None):
+    def _runInstanceTest(self, withLocalNetwork=False, cmdToRun=['/bin/true'], msgRecipients=None):
         runner = self._startVm(withLocalNetwork=withLocalNetwork, msgRecipients=msgRecipients)
         self._repeatCall(self._ping, runner)
-        self._repeatCall(self._loginViaSsh, runner, cmdToRun)
+        for cmd in cmdToRun:
+            self._repeatCall(self._loginViaSsh, runner, cmd)
         self._stopVm(runner)
 
     def _prepareLog(self, logFile):
@@ -417,7 +418,7 @@ class Testor(unittest.TestCase):
         self.image = creator.targetImageUri
         self.oneUsername = self.username
         self.proxyOneadminPassword = self.password
-        self._runInstanceTest(cmdToRun='python -c "import dirq"')
+        self._runInstanceTest(cmdToRun=['python -c "import dirq"'])
 
         self._deleteImageAndManifestFromAppRepo(newImageUri)
 
@@ -485,7 +486,9 @@ class Testor(unittest.TestCase):
         self.image = image_id
         self.oneUsername = self.testUsername
         self.proxyOneadminPassword = self.testPassword
-        self._runInstanceTest(cmdToRun='python -c "import dirq"')
+        cmds = ['python -c "import dirq"',
+                'ls -l %s' % remote_test_file]
+        self._runInstanceTest(cmdToRun=cmds)
 
     def _deleteImageAndManifestFromAppRepo(self, imageUri):
         urlDir = imageUri.rsplit('/', 1)[0] + '/'
