@@ -516,7 +516,8 @@ class Testor(unittest.TestCase):
             options['apprepoPassword'] = self.apprepoPassword
             options['p12Certificate'] = self.p12Certificate
             options['p12Password'] = self.p12Password
-
+    
+        options['instanceType'] = 'c1.medium'
     
         options['verboseLevel'] = self.verboseLevel
 
