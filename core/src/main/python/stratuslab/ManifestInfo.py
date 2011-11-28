@@ -183,6 +183,8 @@ class ManifestInfo(object):
         # email and endorsement timestamp if present
         self.email = getattr(xml.find('.//{%s}email' % NS_SLREQ), 'text',
                             self.email)
+        self.created = getattr(xml.find('.//{%s}endorsement/{%s}created' % (NS_SLREQ, NS_DCTERMS)), 'text',
+                            self.created)
 
         # extra elements with defaults
         self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
