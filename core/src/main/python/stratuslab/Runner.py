@@ -29,6 +29,7 @@ from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
+from stratuslab.Exceptions import ExecutionException
 
 class Runner(object):
 
@@ -74,7 +75,6 @@ class Runner(object):
         self.persistentDiskUUID = None
         self.quiet = False
         self.instanceNumber = 1
-        self.vmShutdown = False
         self.authorEmail = ''
         configHolder.assign(self)
         self.configHolder = configHolder
@@ -449,18 +449,29 @@ class Runner(object):
         return vmIds
 
     def killInstances(self, ids=[]):
+        self._operateOnInstance('Kill', ids=ids)
+
+    def shutdownInstances(self, ids=[]):
+        self._operateOnInstance('Shutdown', ids=ids)
+
+    def _operateOnInstance(self, operation, ids=[]):
+        operations = ('Shutdown', 'Kill')
+        if operation not in operations:
+            raise ExecutionException('Unsupported operation on instance: %s' %
+                                     operation)
         _ids = ids or self.vmIds
         if self.inVmIdsFile:
             _ids = self._loadVmIdsFromFile()
+        if operation == 'Shutdown':
+            instance_operation = self.cloud.vmStop
+        if operation == 'Kill':
+            instance_operation = self.cloud.vmKill
         for id in _ids:
-            if self.vmShutdown == True:
-                self.printDetail('Sending Shutdown request for instance %s.' % id)
-                self.cloud.vmStop(int(id))
-            else:
-                self.printDetail('Sending Kill request for instance %s.' % id)
-                self.cloud.vmKill(int(id))
+            self.printDetail('Sending Shutdown request for instance %s.' % id)
+            instance_operation(int(id))
         plural = (len(_ids) > 1 and 's') or ''
-        self.printDetail('Killed %s VM%s: %s' % (len(_ids), plural, ', '.join(map(str,_ids))))
+        self.printDetail('Shutdown %s VM%s: %s' % (len(_ids), plural, 
+                                                   ', '.join(map(str,_ids))))
 
     def printDetail(self, msg, verboseLevel=Util.NORMAL_VERBOSE_LEVEL):
         if self.quiet:
