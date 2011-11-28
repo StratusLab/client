@@ -65,7 +65,7 @@ class MainProgram(AuthnCommand):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(None, configHolder)
-        runner.killInstances(self.vmIds)
+        runner.shutdownInstances(self.vmIds)
 
 if __name__ == '__main__':
     try:
