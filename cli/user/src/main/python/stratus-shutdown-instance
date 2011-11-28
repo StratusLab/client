@@ -25,47 +25,13 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
-from stratuslab.CommandBase import CommandBase
-from stratuslab.Runner import Runner
-from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commandbase.InstanceCommand import InstanceCommand
 
-
-class MainProgram(AuthnCommand):
-    '''A command-line program to kill a virtual machine.'''
-
-    def __init__(self):
-        self.vmIds = []
-        super(MainProgram, self).__init__()
-
-    def parse(self):
-        usage = '''%prog [options] vm-id ...'''
-
-        self.parser.usage=usage
-
-        self.parser.add_option('-i', '--input', dest='inVmIdsFile',
-                help='file containing line separated vm-ids', metavar='FILE',
-                default=None)
-
-        AuthnCommand.addCloudEndpointOptions(self.parser)
-
-        super(MainProgram, self).parse()
-
-        self.options, self.vmIds = self.parser.parse_args()
-
-    def checkOptions(self):
-        AuthnCommand.checkCloudEndpointOptionsOnly(self)
-
-        if not self.vmIds and not self.options.inVmIdsFile:
-            self.parser.error('Missing vm-id or input file (-i/--input)')
-
-        super(MainProgram, self).checkOptions()
+class MainProgram(InstanceCommand):
+    '''A command-line program to shutdown a virtual machine.'''
 
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
-        runner = Runner(None, configHolder)
-        runner.shutdownInstances(self.vmIds)
+        self.shutdownInstances()
 
 if __name__ == '__main__':
     try:
