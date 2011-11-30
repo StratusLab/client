@@ -96,8 +96,8 @@ class Monitor(Configurable):
         vms = self.cloud.listVms(showVmsFromAllUsers)
         correct_vms = []
         for vm in self._iterate(etree.fromstring(vms)):
-            if (vm.attribs['username'].startswith('CN')):
-                vm.attribs['username'] = vm.attribs['username'].replace("CN%3D","")\
+            if (vm.attribs['uname'].startswith('CN')):
+                vm.attribs['uname'] = vm.attribs['uname'].replace("CN%3D","")\
                 .replace("%2COU%3D"," OrgUnit:").replace("%2CO%3D"," Org:").replace("%2CC%3D", " Country:")\
                 .replace("+"," ")
             correct_vms.append(vm)
