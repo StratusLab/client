@@ -30,6 +30,7 @@ from stratuslab.Util import printError
 from stratuslab.Util import getTemplateDir
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
+from stratuslab.installator.Monitoring import Monitoring
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.Registration import Registration
 from stratuslab.installator.PolicyValidator import PolicyValidator
@@ -84,6 +85,10 @@ class BaseInstallator(object):
         elif self.installCloudia:
             printAction('Claudia installation')
             self._runInstallClaudia()
+            return
+        elif self.installMonitoring:
+            printAction('Monitoring installation')
+            self._runInstallMonitoring()
             return
         
         # Front-end installation
@@ -171,7 +176,10 @@ class BaseInstallator(object):
         claudiaInstaller = Claudia(self.configHolder)
         claudiaInstaller.run()
         self._printInstalCompleted(claudiaInstaller.system.stdout.name, claudiaInstaller.system.stderr.name)
-
+    def _runInstallMonitoring(self):
+        monitoringInstaller = Monitoring(self.configHolder)
+        monitoringInstaller.run()
+        self._printInstalCompleted(monitoringInstaller.system.stdout.name, monitoringInstaller.system.stderr.name)
     def _runInstallFrontend(self):
 
         self._setCloud()

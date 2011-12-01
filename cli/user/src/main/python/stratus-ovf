@@ -41,7 +41,10 @@ class MainProgram(CommandBase):
     def parse(self):
         usage = '%prog [options] [test] ...'
 
-        self.parser.description = '[test] - comma separated list of tests, according to the name provided by -l/--list.'
+        self.parser.description ='stratus-ovf is one of the Claudias stratuslab user '\
+             'commnads. Its used for deploying, undeploying and executing event simulation operations'
+             #'[test] - comma separated list of tests, according to the name provided by -l/--list.'
+         
 
         self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile',
