@@ -81,12 +81,12 @@ class OneInstallator(BaseInstallator):
         return vnetTpl
 
     def _configurePolicies(self):
-        oneAuthTpl = os.path.join(Util.getTemplateDir(), 'auth.conf.tpl')
+        oneAuthTpl = os.path.join(Util.getTemplateDir(), 'quota.conf.tpl')
         if not os.path.isfile(oneAuthTpl):
             Util.printError('ONE auth configuration template '
                        '%s does not exists' % oneAuthTpl)
 
-        authConfFile = self.cloudConfDir + 'auth/auth.conf' 
+        authConfFile = self.cloudConfDir + 'auth/quota.conf'
 
         # need KB
         try:
