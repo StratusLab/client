@@ -110,7 +110,7 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
-	    <require>one-2.2-StratusLab</require>
+	    <require>one-3.0-StratusLab</require>
 	    <require>fetch-crl</require>
 	    <require>mysql</require>
 	    <require>python-ldap</require>
