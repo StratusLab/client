@@ -552,10 +552,10 @@ HM_MAD = [
 #       --authz: authorization module
 #-------------------------------------------------------------------------------
 
-#AUTH_MAD = [
-#    executable = "one_auth_mad",
-#    arguments = "--authz quota --authn plain,ssh,x509"
-#]
+AUTH_MAD = [
+    executable = "one_auth_mad",
+    arguments = "--authz quota --authn dummy,plain"
+]
 
 #------------------------------ Notification Hooks -----------------------------
 
