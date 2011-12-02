@@ -35,7 +35,7 @@ with minimal dependencies for maximum portability.
     <nexus.release.repository.name>fedora14-one-3.0-releases</nexus.release.repository.name>
     <nexus.snapshot.repository.name>fedora14-one-3.0-snapshots</nexus.snapshot.repository.name>
 
-    <marketplace-metadata.version>1.0.1-SNAPSHOT</marketplace-metadata.version>
+    <marketplace-metadata.version>1.0.2-SNAPSHOT</marketplace-metadata.version>
 
     <!-- <marketplace-metadata.version>0.0.7-SNAPSHOT</marketplace-metadata.version> -->
   </properties>
