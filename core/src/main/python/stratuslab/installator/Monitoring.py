@@ -153,7 +153,7 @@ class Monitoring(object):
         
         ##----- TABLE monitoringSAMPLE
         c.execute("SET character_set_client = utf8")
-        c.execute("""CREATE TABLE `monitoringsample` (
+        c.execute("""CREATE TABLE IF NOT EXISTS `monitoringsample` (
              `id` bigint(20) NOT NULL auto_increment,
              `datetime` datetime default NULL,
              `day` int(11) NOT NULL,
@@ -173,7 +173,7 @@ class Monitoring(object):
              ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1""")
         
         ###------- Table FQN
-        c.execute("""create table `fqn` ( 
+        c.execute("""create table  IF NOT EXISTS `fqn` ( 
              fqn varchar(255) not null, host varchar(64) not null, 
              plugin varchar(64) default null, primary key (fqn), 
              INDEX in1 (host,plugin)) ENGINE=InnoDB""")        
