@@ -244,7 +244,7 @@ class Monitoring(object):
         #try:
         self._host=self._pd["host"]
         self._db=self._pd["database"]
-        self._port=self_pd["port"]
+        self._port=eval(self._pd["port"])
         
         if self._host in ["localhost", "127.0.0.1"]:
                 cmd1="chkconfig mysqld on"                
