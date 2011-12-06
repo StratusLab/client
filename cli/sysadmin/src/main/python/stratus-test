@@ -80,7 +80,11 @@ class MainProgram(CommandBase):
         self.parser.add_option('--claudia-ovf-endpoint', dest='claudiaOvfEndpoint',
                                help='Endpoint of the OVF file used by Claudia',
                                default=None, metavar='ENDPOINT')
-
+        
+        self.parser.add_option('--monitoring', dest='monitoringEndpoint',
+                               help='Endpoint of the OVF file used by Claudia',                               
+                               default=None, metavar='ENDPOINT')
+        
         self.parser.add_option('--webmonitor-host', dest='webMonitorHost',
                                help='IP or hostname where Web Monitor is installed. If not set, cloud frontend '
                                'IP defined in configuration file will be used.',
