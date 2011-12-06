@@ -24,6 +24,7 @@ import hashlib
 import time
 import sys
 from commands import getstatusoutput
+import getpass
 
 class MonitoringParsers(object):
     MYSQL_URL_DATA=['protocol', 'base','host', 'port', 'database']
@@ -183,7 +184,8 @@ class Monitoring(object):
     def _createDatabase(self):
         print " :: Database creation"
         import MySQLdb
-        rootpass=raw_input("Password root:")
+        #ootpass=raw_input("Password root:")
+        rootpass=getpass.getpass("root password for mysql:")
         conn=MySQLdb.connect(host = self._host,
                 user = "root",
                 passwd = rootpass,
