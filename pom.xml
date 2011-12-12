@@ -83,6 +83,22 @@ with minimal dependencies for maximum portability.
       <url>http://repo.stratuslab.eu:8081/content/repositories/${nexus.release.repository.name}</url>
       <layout>default</layout>
     </repository>
+    <repository>
+      <releases>
+	<enabled>false</enabled>
+	<updatePolicy>never</updatePolicy>
+	<checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+	<enabled>true</enabled>
+	<updatePolicy>always</updatePolicy>
+	<checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <id>StratusLabSnapshots</id>
+      <name>StratusLab Snapshots</name>
+      <url>http://repo.stratuslab.eu:8081/content/repositories/${nexus.snapshot.repository.name}</url>
+      <layout>default</layout>
+    </repository>
   </repositories>
 
   <distributionManagement>
@@ -107,7 +123,8 @@ with minimal dependencies for maximum portability.
       <dependency>
         <groupId>eu.stratuslab.marketplace</groupId>
         <artifactId>marketplace-metadata</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
+        <type>jar</type>
         <classifier>jar-with-dependencies</classifier>
       </dependency>
     </dependencies>

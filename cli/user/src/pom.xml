@@ -25,6 +25,7 @@
     <dependency>
       <groupId>eu.stratuslab.marketplace</groupId>
       <artifactId>marketplace-metadata</artifactId>
+      <type>jar</type>
       <classifier>jar-with-dependencies</classifier>
       <scope>compile</scope>
     </dependency>

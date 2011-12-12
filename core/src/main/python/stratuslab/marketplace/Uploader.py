@@ -68,6 +68,8 @@ class Uploader(object):
                 error = etree.fromstring(ex.content).text
             except: pass
             raise ExecutionException("Failed to upload: %s: %s" % (ex.reason, error))
+        except AttributeError, ex:
+            raise ExecutionException("Failed to upload (post) to URL: %s" % url)
 
         finalUrl = MarketplaceUtil.metadataCompleteUrl(self.marketplaceEndpoint, 
                                                        info.identifier, 
