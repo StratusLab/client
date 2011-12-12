@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.pkgs</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>1.10-SNAPSHOT</version>
+  <version>1.12-SNAPSHOT</version>
   <name>StratusLab Parent POM</name>
 
   <url>http://hudson.stratuslab.eu/integration</url>
@@ -123,7 +123,7 @@ with minimal dependencies for maximum portability.
       <dependency>
         <groupId>eu.stratuslab.marketplace</groupId>
         <artifactId>marketplace-metadata</artifactId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.0.2</version>
         <type>jar</type>
         <classifier>jar-with-dependencies</classifier>
       </dependency>

@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
     <artifactId>stratuslab-parent</artifactId>
-    <version>1.10-SNAPSHOT</version>
+    <version>1.12-SNAPSHOT</version>
   </parent>
 
   <build>
