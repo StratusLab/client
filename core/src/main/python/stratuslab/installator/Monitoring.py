@@ -72,7 +72,7 @@ class MonitoringParsers(object):
     def _getProperties(self):
         try:
             #Pareamos el fichero de propiedades buscando las que nos interesan
-            pf=open(r"%s" % (MonitoringTest.COLLECTD_CONFIG_FILE), "rU")
+            pf=open(r"%s" % (Monitoring.COLLECTD_CONFIG_FILE), "rU")
             self._pd=dict() #pd={}
             for propLine in pf:
                 propLine=propLine.strip()
@@ -92,7 +92,7 @@ class MonitoringParsers(object):
         return self._pd
             
 class Monitoring(object):
-
+    COLLECTD_CONFIG_FILE = '/opt/monitoring/conf/monitoring.properties'
     def __init__(self, configHolder):     
         # this call makes all configuration parameters and command-line options
         # available as fields of self using the Camel case convention.
@@ -116,7 +116,8 @@ class Monitoring(object):
         self.monitoringprops = {"mysqlurl":self.monitoringMysqlurl, \
                             "mysqluser":self.monitoringMysqluser, \
                             "mysqlpassword":self.monitoringMysqlpassword, \
-                            "persistence.jars":self.monitoringPersistenceJars
+                            "persistence.jars":self.monitoringPersistenceJars, \
+                            "webserverport":self.monitoringWebserverport
                             }
         
     def _overrideValueInFile(self, key, value, fileName):
@@ -184,8 +185,9 @@ class Monitoring(object):
     def _createDatabase(self):
         print " :: Database creation"
         import MySQLdb
-        #ootpass=raw_input("Password root:")
-        rootpass=getpass.getpass("root password for mysql:")
+       
+        rootpass=self.monitoringMysqlRootPassword
+        #rootpass=getpass.getpass("root password for mysql:")
         conn=MySQLdb.connect(host = self._host,
                 user = "root",
                 passwd = rootpass,
@@ -279,7 +281,7 @@ class Monitoring(object):
         #print " :: Configuring "+self.smFile
         for k in self.monitoringprops:
             print k + " |-----> " + self.monitoringprops[k]
-            self._overrideValueInFile(k, self.monitoringprops[k], self.monitoringProperites)
+            self._overrideValueInFile(k, self.monitoringprops[k], self.monitoringProperties)
                 
         print " ::"
     
