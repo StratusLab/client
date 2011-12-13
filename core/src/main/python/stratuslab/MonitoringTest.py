@@ -66,8 +66,9 @@ class MonitoringTest(unittest.TestCase):
     def _getProperties(self):
         try:
             #Pareamos el fichero de propiedades buscando las que nos interesan
-            pf=open(r"%s" % (MonitoringTest.COLLECTD_CONFIG_FILE), "rU")
             self._pd=dict() #pd={}
+            pf=open(r"%s" % (MonitoringTest.COLLECTD_CONFIG_FILE), "rU")
+            
             for propLine in pf:
                 propLine=propLine.strip()
                 if len(propLine)>0 and not propLine[0] in ('!','#',';'):
@@ -95,31 +96,37 @@ class MonitoringTest(unittest.TestCase):
     def test01DatabaseDaemon(self):
         print "::::::::::"
         print "::: Testing database connetion"
-        self._getProperties()
-        import commands
-        cmd='mysql -u %s -p%s -h%s %s --batch -e "select count(1) as num from monitoringsample"' % \
+        
+        try:
+           self._getProperties()
+                
+           cmd='mysql -u %s -p%s -h%s %s --batch -e "select count(1) as num from monitoringsample"' % \
             (self._pd["mysqluser"], self._pd["mysqlpassword"], 
                 self._pd['host'], self._pd['database'])
         
-        #first query.            
-        (stat, txt)=getstatusoutput(cmd)        
-        print txt
-        print ":::  mysqcmd=%d" % stat
-        print "::::::::::::"        
-        assert stat==0
-        (field, value) = self._getFieldAndValue(txt)
+           #first query.            
+           (stat, txt)=getstatusoutput(cmd)        
+           print txt
+           print ":::  mysqcmd=%d" % stat
+           print "::::::::::::"        
+           assert stat==0
+           (field, value) = self._getFieldAndValue(txt)
         
-        #wait time
-        time.sleep(31)
+           #wait time
+           print "::::::: Sleeping 31 seconds before next query."
+           time.sleep(31)
         
-        # Second query...
-        (stat, txt)=getstatusoutput(cmd)                
-        print txt
-        print ":::  mysqcmd=%d" % stat
-        print "::::::::::::"        
-        assert stat==0
-        (field, value2) = self._getFieldAndValue(txt)
-        assert eval(value2)>eval(value)
+           # Second query...
+           (stat, txt)=getstatusoutput(cmd)                
+           print txt
+           print ":::  mysqcmd=%d" % stat
+           print "::::::::::::"        
+           assert stat==0
+           (field, value2) = self._getFieldAndValue(txt)
+           assert eval(value2)>eval(value)
+        except Exception, e:
+           print "::::::  This instalation might not work:" 
+           print e.args[0]
 
 if __name__ == "__main__":
     unittest.main()
