@@ -233,7 +233,7 @@ class Monitoring(object):
            self._createTables()
             
         except ImportError:            
-            pass
+            print "::::::  Error %d: %s" % (e.args[0], e.args[1])
         except MySQLdb.Error, e:
             print "::::::  Error %d: %s" % (e.args[0], e.args[1])
  
