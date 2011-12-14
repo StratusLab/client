@@ -17,10 +17,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest, commands, time
-#from xml.dom.minidom import parseString
-from commands import getstatusoutput
-
+import unittest
+import commands
+import time
 
 class MonitoringTest(unittest.TestCase):
 
@@ -105,7 +104,7 @@ class MonitoringTest(unittest.TestCase):
                 self._pd['host'], self._pd['database'])
         
            #first query.            
-           (stat, txt)=getstatusoutput(cmd)        
+           (stat, txt)=commands.getstatusoutput(cmd)        
            print txt
            print ":::  mysqcmd=%d" % stat
            print "::::::::::::"        
@@ -117,7 +116,7 @@ class MonitoringTest(unittest.TestCase):
            time.sleep(31)
         
            # Second query...
-           (stat, txt)=getstatusoutput(cmd)                
+           (stat, txt)=commands.getstatusoutput(cmd)                
            print txt
            print ":::  mysqcmd=%d" % stat
            print "::::::::::::"        
