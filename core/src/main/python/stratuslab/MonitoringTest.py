@@ -125,7 +125,8 @@ class MonitoringTest(unittest.TestCase):
            assert eval(value2)>eval(value)
         except Exception, e:
            print "::::::  This instalation might not work:" 
-           print e.args[0]
+           #print e.args[0]
+        print ":::::::::::::"
 
 if __name__ == "__main__":
     unittest.main()
