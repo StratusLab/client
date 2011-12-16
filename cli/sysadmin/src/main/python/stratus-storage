@@ -95,7 +95,7 @@ and use it but can't delete it.''', action='store_true', default=False)
         
     def _checkTagLength(self):
         if len(self.options.volumeTag) > self.TAG_LENGTH_MAX:
-            printError('Tag have to be less than %d characters' % self.TAG_LENGTH_MAX)
+            printError('Tags must have less than %d characters' % self.TAG_LENGTH_MAX)
         
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)        
