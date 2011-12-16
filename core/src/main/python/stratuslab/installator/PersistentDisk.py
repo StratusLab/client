@@ -192,8 +192,9 @@ class PersistentDisk(object):
         printStep('Creating LVM volume group...')
         self.system._nodeShell('%s %s' 
            % (self.persistentDiskLvmPvcreate, self.persistentDiskPhysicalDevice))
-        self.system._nodeShell('%s %s' 
-           % (self.persistentDiskLvmVgcreate, self.persistentDiskLvmDevice))
+        self.system._nodeShell('%s %s %s'
+           % (self.persistentDiskLvmVgcreate, self.persistentDiskLvmDevice,
+              self.persistentDiskPhysicalDevice))
                 
     def _createFileHddDirectory(self):
         printStep('Creating disk store directory...')
