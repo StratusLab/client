@@ -156,7 +156,7 @@ class Runner(object):
             self.pdisk = PersistentDisk(self.configHolder)
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
-                Util.printError('Only %s/%s disk(s) can be attached. Aborting' 
+                Util.printError('disk cannot be attached; it is already mounted (%s/%s)' 
                                 % (available, self.instanceNumber))
         except AttributeError:
             Util.printError('Persistent disk service unavailable', exit=False)
