@@ -52,8 +52,7 @@ class Fedora(CentOS):
         self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_rw.*$',
                                       'auth_unix_rw = "none"')
 
-        qemuConf = '/etc/libvirt/qemu.conf'
-        self.appendOrReplaceInFileCmd(qemuConf, '^vnc_listen.*$',
+        self.appendOrReplaceInFileCmd(self.qemuConf, '^vnc_listen.*$',
                                       'vnc_listen = "0.0.0.0"')
 
         self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/libexec/qemu-kvm'.split())
