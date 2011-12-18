@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.pkgs</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>1.14</version>
+  <version>1.15-SNAPSHOT</version>
   <name>StratusLab Parent POM</name>
 
   <url>http://hudson.stratuslab.eu/integration</url>
