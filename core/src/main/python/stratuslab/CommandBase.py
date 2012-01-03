@@ -120,6 +120,9 @@ class CommandBase(object):
     def printDetail(self, message):
         Util.printDetail(message, self)
 
+    def printError(self, message):
+        Util.printError(message, self)
+
 class CommandBaseUser(CommandBase):
     def __init__(self):
         super(CommandBaseUser, self).__init__()
