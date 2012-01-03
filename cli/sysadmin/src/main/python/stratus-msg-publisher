@@ -47,6 +47,8 @@ class AmazonSqsQueue(object):
             raise Exception(data)
         self.conn.close()
 
+sys.path.append('/var/lib/stratuslab/python')
+
 from stratuslab.CommandBase import CommandBase
 
 class MainProgram(CommandBase):
