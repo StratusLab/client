@@ -26,7 +26,7 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBase
-from stratuslab.Claudia import Claudia
+from stratuslab.ClaudiaOVF import ClaudiaOVF
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
@@ -116,14 +116,11 @@ class MainProgram(CommandBase):
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
-        Claudia.configHolder = configHolder
-        Claudia.testNames = self.tests
-        claudia = Claudia()
+        ClaudiaOVF.configHolder = configHolder
+        #Claudia.testNames = self.tests
+        claudia = ClaudiaOVF()
+        claudia.doWork()
 
-        if self.options.listTests:
-            self._listTests(claudia)
-        else:
-            self._runTests(claudia)
 
     def _listTests(self, claudia):
         testor.listAvalableTests()
