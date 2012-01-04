@@ -210,3 +210,17 @@ class Monitor(Configurable):
                     lenMax = max(map(lambda x: len(getattr(x, attrVal[0], '')), _list))
                     if lenMax >= getattr(self, attr)[i][1]:
                         getattr(self, attr)[i][1] = lenMax + 1
+
+    def getVmConnectionInfo(self, vmId):
+        host, port = None, None
+
+        vmPort = str(self.cloud.getVmSshPort(int(vmId)))
+        vmInfo = self._vmDetail(vmId)
+        if Util.isTrueConfVal(self.patEnable) and self.portTranslation.hasPortTranslated(vmInfo):
+            port = self.portTranslation.findGatewayPort(vmInfo, vmPort)
+            host = self.patGatewayHost
+        else:
+            port = vmPort
+            host = getattr(vmInfo, 'template_nic_ip', None)
+        return (host, port)
+
