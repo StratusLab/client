@@ -31,8 +31,9 @@ from stratuslab.Monitor import Monitor
 from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util
 
+from stratuslab.PortTranslation import PortTranslationCommand
 
-class MainProgram(AuthnCommand):
+class MainProgram(AuthnCommand, PortTranslationCommand):
     '''A command-line program to monitor the state of virtual machines.'''
 
     def __init__(self):
@@ -47,6 +48,8 @@ class MainProgram(AuthnCommand):
 Without the parameter [vm-id] the command lists the available VMs belonging
 to the user (-u/--username).'''
 
+
+        PortTranslationCommand.addCommonOptions(self.parser)
         AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
@@ -55,6 +58,7 @@ to the user (-u/--username).'''
 
     def checkOptions(self):
         AuthnCommand.checkCloudEndpointOptionsOnly(self)
+        PortTranslationCommand.checkCommonOptions(self)
         super(MainProgram, self).checkOptions()
         
     def doWork(self):
