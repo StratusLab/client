@@ -26,11 +26,6 @@ from stratuslab.CommandBase import CommandBaseUser
 class PortTranslationCommand(CommandBaseUser):
 
     @staticmethod
-    def addAllOptions(parser):
-        PortTranslationCommand.addCommonOptions(parser)
-        PortTranslationCommand.addAdvancedOptions(parser)
-
-    @staticmethod
     def addCommonOptions(parser):
         parser.add_option('--pat-enable', dest='patEnable',
                 help='show port address translations',

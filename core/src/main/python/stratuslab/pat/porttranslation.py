@@ -143,9 +143,6 @@ class VmPortTranslation(object):
     def __repr__(self):
         return str(self.vmPorts)
 
-    def __getitem__(self, key):
-        return Layers(self.vmPorts[key])
-
     def findGwPortFromVmPort(self, port):
         for vmPort, gwPort in self.vmPorts:
             if vmPort == port:
