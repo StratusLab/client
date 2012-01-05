@@ -25,7 +25,7 @@ from stratuslab.Configurable import Configurable
 from stratuslab.Authn import AuthnFactory
 import stratuslab.Util as Util
 
-from stratuslab.PortTranslation import PortTranslationWebClient
+from stratuslab.pat.client import PortTranslationWebClient
 
 etree = Util.importETree()
 

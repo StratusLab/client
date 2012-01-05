@@ -30,7 +30,7 @@ from stratuslab import Util
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Monitor import Monitor
-from stratuslab.PortTranslation import PortTranslationCommand
+from stratuslab.pat.command import PortTranslationCommand
 
 
 class MainProgram(AuthnCommand, PortTranslationCommand):

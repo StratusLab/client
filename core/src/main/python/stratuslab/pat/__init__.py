@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -18,23 +17,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# ${BUILD_INFO}
-#
-
-import cgi
-import sys
-
-from stratuslab.pat.service import PortTranslationService
-
-# Debug CGI
-# http://docs.python.org/library/cgi.html#using-the-cgi-module
-import cgitb
-cgitb.enable()
-
-if __name__ == '__main__':
-    configFile = ''
-    if (len(sys.argv) > 1):
-        configFile = sys.argv[1]
-    service = PortTranslationService(configFile)
-    service.run()
 
