@@ -23,6 +23,17 @@ password = password
 #pem_key = <home>/.globus/userkey.pem
 #pem_certificate = <home>/.globus/usercert.pem
 
+# List of Cloud frontend endpoints in the format: 
+# <endpoint> <username> <password>
+# Each line has to be indented. Any line can be commented out.
+endpoints = 
+# <endpoint> <username> <password>
+# Test Cloud
+ test.could.net username password
+
+# Timeout (in sec) on each Cloud frontend
+endpoint_timeout = 5
+
 # Marketplace
 #marketplace_endpoint = http://marketplace.stratuslab.eu
 
