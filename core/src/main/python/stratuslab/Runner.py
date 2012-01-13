@@ -298,7 +298,7 @@ class Runner(object):
 
     def _manageNetwork(self):
         networkName = self._getNetworkName()
-        networkPrefix = 'NIC = [ network = "%s" ' % networkName
+        networkPrefix = 'NIC = [ network_uname=oneadmin,network = "%s" ' % networkName
         networkPostfix = ']\n'
         if self.specificAddressRequest:
             self.vm_nic = networkPrefix + ',\nIP = "%s"' % self.specificAddressRequest + networkPostfix
