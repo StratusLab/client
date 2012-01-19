@@ -254,21 +254,30 @@ VM_MAD = [
 #*******************************************************************************
 
 #-------------------------------------------------------------------------------
-# SHARED Transfer Manager Driver Configuration
+# StratusLab Transfer Manager Driver Configuration
 #-------------------------------------------------------------------------------
 TM_MAD = [
-    name       = "tm_shared",
+    name       = "tm_stratuslab",
     executable = "one_tm",
-    arguments  = "tm_shared/tm_shared.conf" ]
+    arguments  = "tm_stratuslab/tm_stratuslab.conf" ]
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# SHARED Transfer Manager Driver Configuration
+#-------------------------------------------------------------------------------
+#TM_MAD = [
+#    name       = "tm_shared",
+#    executable = "one_tm",
+#    arguments  = "tm_shared/tm_shared.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # SSH Transfer Manager Driver Configuration
 #-------------------------------------------------------------------------------
-TM_MAD = [
-    name       = "tm_ssh",
-    executable = "one_tm",
-    arguments  = "tm_ssh/tm_ssh.conf" ]
+#TM_MAD = [
+#    name       = "tm_ssh",
+#    executable = "one_tm",
+#    arguments  = "tm_ssh/tm_ssh.conf" ]
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
