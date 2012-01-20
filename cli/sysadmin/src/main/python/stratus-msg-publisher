@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+
+import sys
+import base64
+import json
+
+import httplib
+import urllib
+
+SECRET_HEADER = {'User-Agent':'StratusLab'}
+
+def set_imageid(message, imageid):
+    'message - JSON and can be base64 encoded'
+    if not message.startswith('{'):
+        # Assume this is base64 encoded message.
+        message = base64.b64decode(message)
+    try:
+        message_dict = json.loads(message)
+    except Exception, ex:
+        raise ValueError("Couldn't load JSON message: %s" % message)
+    message_dict['imageid'] = imageid
+    return json.dumps(message_dict)
+
+class AmazonSqsQueue(object):
+    def __init__(self, endpoint, queue, verboseLevel):
+        self.conn = httplib.HTTPSConnection(endpoint)
+        self.conn.debuglevel = verboseLevel
+        self.queue = queue
+        self.headers = {'Accept':'*/*', 
+                        'Content-Type':'application/x-www-form-urlencoded'}
+        self.headers.update(SECRET_HEADER)
+    @staticmethod
+    def _endcode_message(message):
+        return base64.b64encode(message)
+    def _build_query_params(self, message):
+        params = {'Action':'SendMessage',
+                  'MessageBody':self._endcode_message(message)}
+        return urllib.urlencode(params)
+    def send(self, message):
+        'message - dictionary'
+        params = self._build_query_params(message)
+        self.conn.request('POST', self.queue, params, self.headers)
+        response = self.conn.getresponse()
+        status = str(response.status)
+        if not status.startswith('2'):
+            data = response.read()
+            raise Exception(data)
+        self.conn.close()
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.CommandBase import CommandBase
+
+class MainProgram(CommandBase):
+
+    def __init__(self):
+        self.msg_message = ''
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        self.parser.usage = '%prog [options] message'
+
+        self.parser.add_option('--msg-type', dest='msg_type',
+                    help='Type of messaging queue: amazonsqs. Mandatory.', metavar='NAME',
+                    default="")
+        self.parser.add_option('--msg-endpoint', dest='msg_endpoint',
+                    help='Messaging service endpoint. Mandatory.', metavar='ENDPOINT',
+                    default="")
+        self.parser.add_option('--msg-queue', dest='msg_queue',
+                    help='Message queue name. Mandatory.', metavar='NAME',
+                    default="")
+        self.parser.add_option('--imageid', dest='imageid',
+                    help='Image ID. Assumes message is JSON representation '
+                    'of a dictionary on which the ID will be set. JSON can be '
+                    'base64 encoded.', metavar='ID',
+                    default="")
+
+        self.options, self.args = self.parser.parse_args()
+
+    def checkOptions(self):
+        super(MainProgram, self).checkOptions()
+
+        err_mgs = 'Missing mandatory %s option'
+        if not self.options.msg_type:
+            self.printError(err_mgs % '--msg-type')
+        if not self.options.msg_endpoint:
+            self.printError(err_mgs % '--msg-endpoint')
+        if not self.options.msg_queue:
+            self.printError(err_mgs % '--msg-queue')
+
+        if len(self.args) != 0:
+            self.msg_message = self.args[0]
+        else:
+            self.printError('Message should be set as first argument')
+
+    def doWork(self):
+        
+        # We are publishing image ID. Set image ID in the message.
+        if self.options.imageid:
+            self.msg_message = set_imageid(self.msg_message, self.options.imageid)
+
+        if self.options.msg_type == 'amazonsqs':
+            AmazonSqsQueue(self.options.msg_endpoint,
+                                self.options.msg_queue,
+                                    self.options.verboseLevel).send(self.msg_message)
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'

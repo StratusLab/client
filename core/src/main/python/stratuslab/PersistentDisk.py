@@ -54,8 +54,7 @@ class PersistentDisk(object):
         self._buildFQNEndpoint()
 
     def _getJson(self, url):
-        headers, content = self.client.get(url, accept='application/json')
-        return headers, content.replace('\\', '')
+        return self.client.get(url, accept='application/json')
         
     def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
         headers, content = self.client.post(url,

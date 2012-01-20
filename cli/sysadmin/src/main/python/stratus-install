@@ -58,7 +58,7 @@ class MainProgram(CommandBaseSysadmin):
                                help='Install Claudia', 
                                action='store_true', default=False)
         self.parser.add_option('--monitoring', dest='installMonitoring',
-                              help='Install Monitoring',
+                              help='Install Monitoring tool',
                               action='store_true', default=False)
         self.parser.add_option('--storage', dest='installPersistentDisk',
                                help='Install storage service', 

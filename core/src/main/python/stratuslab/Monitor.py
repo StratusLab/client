@@ -191,7 +191,45 @@ class Monitor(Configurable):
         if _list:
             for attr in attrList:
                 for i, attrVal in enumerate(getattr(self, attr)):
-                    #print attrVal
                     lenMax = max(map(lambda x: len(getattr(x, attrVal[0], '')), _list))
                     if lenMax >= getattr(self, attr)[i][1]:
                         getattr(self, attr)[i][1] = lenMax + 1
+
+import signal
+
+class MultisiteMonitor(object):
+    def __init__(self, configHolder):
+        self.endpointTimeout = '5'
+        self.configHolder = configHolder
+        configHolder.assign(self)
+        self.endpoints = [eup.strip().split() for eup in self.endpoints.split('\n')]
+
+    def printVmList(self):
+        configHolder = self.configHolder.copy()
+        for endpoint, username, password in self.endpoints:
+            sys.stdout.write('\033[1;36m')
+            print '::: %s : %s :::' % (endpoint, username)
+            sys.stdout.write('\033[0m')
+            configHolder.set('endpoint', endpoint)
+            configHolder.set('username', username)
+            configHolder.set('password', password)
+            monitor = Monitor(configHolder)
+            self._set_alarm()
+            try:
+                list = monitor.listVms()
+                monitor.printVmList(list)
+            except Exception, ex:
+                print str(ex)
+            except KeyboardInterrupt:
+                pass
+            self._unset_alarm()
+
+    def _set_alarm(self):
+        def _sig_handler(_ignore1, _ignore2):
+            raise Exception("WARNIG: Could not get results in %s sec" % 
+                            self.endpointTimeout)
+        signal.signal(signal.SIGALRM, _sig_handler)
+        signal.alarm(int(self.endpointTimeout))
+
+    def _unset_alarm(self):
+        signal.alarm(0)

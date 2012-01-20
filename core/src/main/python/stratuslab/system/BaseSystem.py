@@ -51,6 +51,8 @@ class BaseSystem(object):
         self.workOnFrontend()
         self.oneDbUsername = None
         self.oneDbPassword = None
+        
+        self.qemuConf = '/etc/libvirt/qemu.conf'
 
         self.shareType = Defaults.SHARE_TYPE
 
@@ -412,8 +414,7 @@ class BaseSystem(object):
                              '-c', '"%s user"'%user, user])
 
         # Instruct libvirt to run VMs with GID of ONE group.
-        qemuConf = '/etc/libvirt/qemu.conf'
-        self.appendOrReplaceInFileCmd(qemuConf, '^group.*$',
+        self.appendOrReplaceInFileCmd(self.qemuConf, '^group.*$',
                                       'group = "%s"' % self.oneGroup)
         
         # TODO: check why this didn't work
