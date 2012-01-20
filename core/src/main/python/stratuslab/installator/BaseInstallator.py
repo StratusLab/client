@@ -36,6 +36,7 @@ from stratuslab.installator.Registration import Registration
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab import Util
+from stratuslab import Defaults
 
 class BaseInstallator(object):
 
@@ -57,6 +58,7 @@ class BaseInstallator(object):
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
         self.caching = False
+        self.shareType = Defaults.SHARE_TYPE
 
     def runInstall(self, configHolder):
         # TODO: fix the logs for apprepo installs

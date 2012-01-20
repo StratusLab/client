@@ -52,6 +52,8 @@ class BaseSystem(object):
         self.oneDbUsername = None
         self.oneDbPassword = None
 
+        self.shareType = Defaults.SHARE_TYPE
+
     def init(self):
         self._setOneHome()
 

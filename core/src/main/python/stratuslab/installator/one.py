@@ -120,6 +120,8 @@ class OneInstallator(BaseInstallator):
             self._configureNfsServer()
         elif self.shareType == 'ssh':
             self.frontend.configureSshServer()
+        elif self.shareType == 'stratuslab':
+            self.frontend.configureSshServer()
 
     # ---- NFS configuration
 
@@ -147,6 +149,8 @@ class OneInstallator(BaseInstallator):
         if self.shareType == 'nfs':
             self._configureNfsClient()
         elif self.shareType == 'ssh':
+            self.node.configureSshClient(self.cloudVarLibDir)
+        elif self.shareType == 'stratuslab':
             self.node.configureSshClient(self.cloudVarLibDir)
     
     # ---- NFS configuration   
