@@ -31,7 +31,7 @@ from stratuslab.Monitor import Monitor
 from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util
 
-from stratuslab.pat.command import PortTranslationCommand
+from stratuslab.pat.Command import PortTranslationCommand
 
 class MainProgram(AuthnCommand, PortTranslationCommand):
     '''A command-line program to monitor the state of virtual machines.'''

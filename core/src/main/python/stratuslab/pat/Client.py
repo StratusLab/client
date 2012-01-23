@@ -24,7 +24,7 @@ import sqlite3
 from stratuslab import Defaults
 from stratuslab import Util
 from stratuslab.HttpClient import HttpClient
-from stratuslab.pat.porttranslation import PortTranslation, VmPortTranslation
+from stratuslab.pat.Core import PortTranslation, VmPortTranslation
 
 class PortTranslationWebClient(PortTranslation):
 

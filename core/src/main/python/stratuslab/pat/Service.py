@@ -25,7 +25,7 @@ import sys
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ConfigurationException
-from stratuslab.pat.client import PortTranslationDbClient
+from stratuslab.pat.Client import PortTranslationDbClient
 
 class PortTranslationService(object):
     def __init__(self, configFile=''):

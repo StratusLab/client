@@ -24,7 +24,7 @@
 import cgi
 import sys
 
-from stratuslab.pat.service import PortTranslationService
+from stratuslab.pat.Service import PortTranslationService
 
 # Debug CGI
 # http://docs.python.org/library/cgi.html#using-the-cgi-module
