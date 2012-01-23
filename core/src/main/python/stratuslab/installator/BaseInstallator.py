@@ -19,14 +19,12 @@
 #
 import os
 
-from stratuslab.Util import fileGetContent
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import printAction
 from stratuslab.Util import printStep
 from stratuslab.Util import printWarning
 from stratuslab.AppRepo import AppRepo
 from stratuslab.system import SystemFactory
-from stratuslab.Util import printError
 from stratuslab.Util import getTemplateDir
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.installator.Claudia import Claudia
@@ -307,14 +305,7 @@ class BaseInstallator(object):
         self.frontend.configureCloudAdminSshKeys()
 
     def _configureCloudSystem(self):
-        if not os.path.isfile(self.onedTpl):
-            printError('ONe daemon configuration template '
-                       '%s does not exists' % self.onedTpl)
-
-        conf = self.config.copy()
-        conf['vm_dir'] = self.cloudVarLibDir
-        self.frontend.filePutContentsCmd(self.cloudConfFile,
-                                         fileGetContent(self.onedTpl) % conf)
+        pass
 
     def _configurePolicies(self):
         pass

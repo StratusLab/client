@@ -48,13 +48,29 @@ class OneInstallator(BaseInstallator):
         self.cloud.hostRemove(id)
         
     def _addDefaultNetworks(self):
-        try:
-            for vnet in self.defaultStaticNetworks:
+        for vnet in self.defaultStaticNetworks:
+            try:
                 self.cloud.networkCreate(self._buildFixedNetworkTemplate(vnet))
-            for vnet in self.defaultRangedNetworks:
+            except OneException, ex:
+                Util.printWarning("Couldn't create virtual network. Already present? %s" % str(ex))
+        for vnet in self.defaultRangedNetworks:
+            try:
                 self.cloud.networkCreate(self._buildRangedNetworkTemplate(vnet))
-        except OneException:
-            Util.printWarning('Couldn\'t create virtual networks, already present?')
+            except OneException, ex:
+                Util.printWarning("Couldn't create virtual network. Already present? %s" % str(ex))
+
+        # * NET/#<id> USE (allow to use all networks by all users)
+        # "magic" number
+        _magic = self.cloud.ACL_USERS['UID']
+        for n in [0, 1, 2]:
+            try:
+                self.cloud.addNetworkAcl(hex(self.cloud.ACL_USERS['ALL']),
+                                         hex(self.cloud.ACL_RESOURCES['NET'] + 
+                                             _magic + n),
+                                         hex(self.cloud.ACL_RIGHTS['USE']))
+            except OneException, ex:
+                Util.printWarning("Couldn't add ACL on NET %i: %s" % (n, str(ex)))
+
 
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(os.path.join(Defaults.SHARE_DIR, 'vnet/fixed.net'))
@@ -106,7 +122,20 @@ class OneInstallator(BaseInstallator):
 
         self.frontend.filePutContentsCmd(authConfFile,
                                          fileGetContent(oneAuthTpl) % self.__dict__)
-        
+
+    def _configureCloudSystem(self):
+        self.__configureOneDaemon()
+
+    def __configureOneDaemon(self):
+        if not os.path.isfile(self.onedTpl):
+            Util.printError('ONe daemon configuration template '
+                            '%s does not exists' % self.onedTpl)
+
+        conf = self.config.copy()
+        conf['vm_dir'] = self.cloudVarLibDir
+        self.frontend.filePutContentsCmd(self.cloudConfFile,
+                                         fileGetContent(self.onedTpl) % conf)
+    
     # -------------------------------------------
     #   Front-end file sharing management
     # -------------------------------------------
