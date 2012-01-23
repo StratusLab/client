@@ -45,6 +45,9 @@ apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 pdiskPort = 8445
 pdiskProtocol = 'https'
 
+patEnable = False
+patServiceDbname = '/var/lib/one/ports.db'
+
 ETC_DIR = '/etc/stratuslab'
 SHARE_DIR = '/var/share/stratuslab'
 TEMPLATE_DIR = path.join(SHARE_DIR, 'template')

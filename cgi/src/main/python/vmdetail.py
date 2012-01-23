@@ -57,6 +57,11 @@ class VmDetailGenerator(DetailedGenerator):
                                                             ['net_tx', 'Net TX'],
                                                             ]]
                            ]
+
+        configHolder = ConfigHolder(config=self._loadConfiguration())
+        configHolder.assign(self)
+        if Util.isTrueConfVal(self.patEnable):
+            self.fieldGroups[0].append(['template_pat', 'PAT (VM:GW)'])
     
     def _getData(self):
         id = self._getId()

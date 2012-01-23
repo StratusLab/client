@@ -25,6 +25,8 @@ from stratuslab.Configurable import Configurable
 from stratuslab.Authn import AuthnFactory
 import stratuslab.Util as Util
 
+from stratuslab.pat.Client import PortTranslationWebClient
+
 etree = Util.importETree()
 
 class Monitor(Configurable):
@@ -39,10 +41,16 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
-        self.vmInfoListAttributes = (['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16])
+        self.vmInfoDetailAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16]]
+        self.vmInfoListAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16]]
 
         self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
+
+        if Util.isTrueConfVal(self.patEnable):
+            self.portTranslation = PortTranslationWebClient(configHolder)
+            self.vmInfoDetailAttributes.insert(-1, ['template_pat', 16])
+            self.vmInfoListAttributes.insert(-1, ['template_pat', 16])
+            self.labelDecorator['template_pat'] = 'pat(VM:GW)'
 
     def _setCloud(self):
         credentials = AuthnFactory.getCredentials(self)
@@ -77,6 +85,8 @@ class Monitor(Configurable):
     def _vmDetail(self, id):
         res = self.cloud.getVmInfo(int(id))
         vm = etree.fromstring(res)
+        if Util.isTrueConfVal(self.patEnable):
+            self.portTranslation.addPortTranslationToSingleVmInfo(vm)
         info = CloudInfo()
         info.populate(vm)
         return info
@@ -93,9 +103,14 @@ class Monitor(Configurable):
         return correct_nodes
 
     def listVms(self, showVmsFromAllUsers=False):
-        vms = self.cloud.listVms(showVmsFromAllUsers)
+        res = self.cloud.listVms(showVmsFromAllUsers)
+        vms = etree.fromstring(res)
+
+        if Util.isTrueConfVal(self.patEnable):
+            self.portTranslation.addPortTranslationToVmsInfo(vms)
+
         correct_vms = []
-        for vm in self._iterate(etree.fromstring(vms)):
+        for vm in self._iterate(vms):
             if (vm.attribs['uname'].startswith('CN')):
                 vm.attribs['uname'] = vm.attribs['uname'].replace("CN%3D","")\
                 .replace("%2COU%3D"," OrgUnit:").replace("%2CO%3D"," Org:").replace("%2CC%3D", " Country:")\
@@ -162,7 +177,7 @@ class Monitor(Configurable):
 
     def _printInfo(self, info, headerAttributes):
         for attrib in headerAttributes[:-1]:
-            sys.stdout.write(getattr(info, attrib[0]).ljust(int(attrib[1])))
+            sys.stdout.write(getattr(info, attrib[0], '').ljust(int(attrib[1])))
 
         self._printVmName(headerAttributes, info)
 
@@ -194,6 +209,19 @@ class Monitor(Configurable):
                     lenMax = max(map(lambda x: len(getattr(x, attrVal[0], '')), _list))
                     if lenMax >= getattr(self, attr)[i][1]:
                         getattr(self, attr)[i][1] = lenMax + 1
+
+    def getVmConnectionInfo(self, vmId):
+        host, port = None, None
+
+        vmPort = str(self.cloud.getVmSshPort(int(vmId)))
+        vmInfo = self._vmDetail(vmId)
+        if Util.isTrueConfVal(self.patEnable) and self.portTranslation.hasPortTranslated(vmInfo):
+            port = self.portTranslation.findGatewayPort(vmInfo, vmPort)
+            host = self.patGatewayHost
+        else:
+            port = vmPort
+            host = getattr(vmInfo, 'template_nic_ip', None)
+        return (host, port)
 
 import signal
 
