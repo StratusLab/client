@@ -2,9 +2,9 @@
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
-# INFSO-RI-261552."
+# INFSO-RI-261552.
 #
-# Copyright (c) 2010, SixSq Sarl
+# Copyright (c) 2012, Centre National de la Recherche Scientifique
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,67 +25,79 @@ from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
+from stratuslab import Defaults
+from stratuslab import Util
 from stratuslab.AuthnCommand import AuthnCommand
-from stratuslab.Monitor import Monitor, MultisiteMonitor
 from stratuslab.ConfigHolder import ConfigHolder
-import stratuslab.Util as Util
-
+from stratuslab.Monitor import Monitor
 from stratuslab.pat.Command import PortTranslationCommand
 
+
 class MainProgram(AuthnCommand, PortTranslationCommand):
-    '''A command-line program to monitor the state of virtual machines.'''
+    '''A command-line program to connect to virtual machines.'''
 
     def __init__(self):
         self.vmIds = []
         super(MainProgram, self).__init__()
 
     def parse(self):
+        defaultOptions = self._setDefaultOptions()
 
         self.parser.usage = '%prog [options] [vm-id]'
+        self.parser.description = '''[vm-id] - virtual machine identifier'''
 
-        self.parser.description = '''[vm-id] - space separated list of VM IDs.
-Without the parameter [vm-id] the command lists the available VMs belonging
-to the user (-u/--username).'''
-
+        self.parser.add_option('-k', '--key', dest='userPrivateKeyFile',
+                help='SSH private key file to log on the machine. Default %s.' % defaultOptions['userPrivateKeyFile'],
+                metavar='FILE',
+                default=defaultOptions['userPrivateKeyFile'])
 
         PortTranslationCommand.addCommonOptions(self.parser)
         AuthnCommand.addCloudEndpointOptions(self.parser)
-
-        self.parser.add_option('-m', dest='multi_site', action='store_true', 
-                help='Print state of virtual machines on multiple sites. '
-                '"endpoints" parameter should be set in user configuration '
-                'file.', 
-                default=False)
 
         super(MainProgram, self).parse()
 
         self.options, self.vmIds = self.parser.parse_args()
 
+    def _setDefaultOptions(self):
+        sshPublicKey = os.getenv('STRATUSLAB_KEY', Defaults.sshPublicKeyLocation)
+        sshPrivateKey = sshPublicKey.strip('.pub')
+        defaultOptions = {
+            'userPublicKeyFile': sshPublicKey,
+            'userPrivateKeyFile': sshPrivateKey
+        }
+
+        return defaultOptions
+
     def checkOptions(self):
+        if not self.vmIds:
+            self.parser.error('Missing vm-id')
+
         AuthnCommand.checkCloudEndpointOptionsOnly(self)
         PortTranslationCommand.checkCommonOptions(self)
+        self._checkPrivateKeyFile()
+
         super(MainProgram, self).checkOptions()
-        
+
+    def _checkPrivateKeyFile(self):
+        if not self.options.userPrivateKeyFile:
+            self.parser.error('Unspecified user private key. See --key option.')
+
+        if not os.path.isfile(self.options.userPrivateKeyFile):
+            self.parser.error('Private key `%s` does not exist' % self.options.userPrivateKeyFile)
+
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__,
-                        ConfigHolder.configFileToDict(self.options.configFile))
+        configHolder = ConfigHolder(self.options.__dict__)
         monitor = Monitor(configHolder)
-        if self.vmIds:
-            list = monitor.vmDetail(self.vmIds)
-            if len(list) == 1 and self.verboseLevel > Util.DETAILED_VERBOSE_LEVEL:
-                monitor.printVmAllAttributes(list)
+        for vmId in self.vmIds:
+            host, port = monitor.getVmConnectionInfo(vmId)
+            if host and port:
+                Util.sshInteractive(host, port=port, sshKey=self.options.userPrivateKeyFile)
             else:
-                monitor.printVmDetails(list)
-        else:
-            if self.options.multi_site and self.config.get('endpoints'):
-                    MultisiteMonitor(configHolder).printVmList()
-            else:
-                list = monitor.listVms()
-                monitor.printVmList(list)
-            
+                sys.stderr.write("Couldn't find enough information to connect to VM '%s'\n" % vmId)
+
 if __name__ == '__main__':
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+

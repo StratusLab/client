@@ -28,6 +28,8 @@ from stratuslab.Monitor import Monitor
 import stratuslab.Util as Util
 from stratuslab.web.Generator import ListGenerator
 from stratuslab.cloud.one import OneVmState
+from stratuslab.ConfigHolder import ConfigHolder
+
 
 class VmListGenerator(ListGenerator):
     
@@ -44,7 +46,12 @@ class VmListGenerator(ListGenerator):
                        ['template_nic_ip', 'IP'],
                        ['stime', 'Time']]
         self.idTemplate = '            <td><a href="vmdetail.py?id=%(value)s"/>%(value)s</a></td>\n'
-    
+
+        configHolder = ConfigHolder(config=self._loadConfiguration())
+        configHolder.assign(self)
+        if Util.isTrueConfVal(self.patEnable):
+            self.fields.append(['template_pat', 'PAT (VM:GW)'])
+
     def _getData(self):
         return self.monitor.listVms(showVmsFromAllUsers=True)
 

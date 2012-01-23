@@ -310,7 +310,7 @@ def printDetail(msg,verboseLevel=1,verboseThreshold=1):
         _msg = (msg.endswith('\n') and msg) or msg+'\n'
         printAndFlush('    %s' % _msg)
 
-def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
+def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordPrompts=0, **kwargs):
     
     def _appendToSshCommandFromKwargs(keyword, append):
         if kwargs.get(keyword, False):
@@ -321,8 +321,8 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
 
     sshCmd = ['ssh', '-p', str(port),
               '-o', 'ConnectTimeout=%s' % timeout,
-              '-o', 'StrictHostKeyChecking=no',
-              '-o', 'NumberOfPasswordPrompts=0']
+              '-o', 'StrictHostKeyChecking=no']
+    sshCmd.append('-o NumberOfPasswordPrompts=%d' % int(passwordPrompts))
 
     if sshKey and os.path.isfile(sshKey):
         sshCmd.append('-i')
@@ -359,6 +359,10 @@ def sshCmdWithOutputVerb(cmd, host, sshKey=None, port=22, user='root', timeout=5
 def sshCmdWithOutputQuiet(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
                   user=user, timeout=timeout, withOutput=True, sshQuiet=True, **kwargs)
+
+def sshInteractive(host, sshKey=None, port=22, user='root', timeout=5, passwordPrompts=3, **kwargs):
+    return sshCmd('', host, sshKey=sshKey, port=port, user=user,
+            timeout=timeout, passwordPrompts=passwordPrompts, **kwargs)
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port), '-r', '-o', 'StrictHostKeyChecking=no']
