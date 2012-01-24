@@ -28,6 +28,7 @@ from stratuslab.Monitor import Monitor
 import stratuslab.Util as Util
 from stratuslab.web.Generator import DetailedGenerator
 from stratuslab.cloud.one import OneVmState
+from stratuslab.ConfigHolder import ConfigHolder
 
 class VmDetailGenerator(DetailedGenerator):
     
