@@ -222,6 +222,9 @@ class BaseInstallator(object):
         printStep('Adding default ONE vnet')
         self._addDefaultNetworks()
 
+        printStep('Adding default ACLs')
+        self._addDefaultAcls()
+
         self._configureRegistrationApplication()
 
         self._runInstallFrontEndPersistentDisk()
@@ -312,3 +315,7 @@ class BaseInstallator(object):
     
     def _addDefaultNetworks(self):
         pass
+    
+    def _addDefaultAcls(self):
+        pass
+

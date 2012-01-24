@@ -59,18 +59,37 @@ class OneInstallator(BaseInstallator):
             except OneException, ex:
                 Util.printWarning("Couldn't create virtual network. Already present? %s" % str(ex))
 
+    def _addDefaultAcls(self):
+        self._addDefaultNetworkAcl()
+        self._addDefaultUserAcl()
+
+    def _addDefaultNetworkAcl(self):
         # * NET/#<id> USE (allow to use all networks by all users)
-        # "magic" number
-        _magic = self.cloud.ACL_USERS['UID']
-        for n in [0, 1, 2]:
+        for net_id in [0, 1, 2]:
             try:
                 self.cloud.addNetworkAcl(hex(self.cloud.ACL_USERS['ALL']),
-                                         hex(self.cloud.ACL_RESOURCES['NET'] + 
-                                             _magic + n),
+                                         net_id,
                                          hex(self.cloud.ACL_RIGHTS['USE']))
             except OneException, ex:
-                Util.printWarning("Couldn't add ACL on NET %i: %s" % (n, str(ex)))
+                Util.printWarning("Couldn't add ACL on NET %i: %s" % (net_id, str(ex)))
 
+    def _addDefaultUserAcl(self):
+        # * VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE
+        __acls = '* VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE'
+
+        users = hex(self.cloud.ACL_USERS['ALL'])
+        resources = hex(self.cloud.ACL_RESOURCES['VM'] +
+                        self.cloud.ACL_RESOURCES['IMAGE'] +
+                        self.cloud.ACL_RESOURCES['TEMPLATE'] +
+                        self.cloud.ACL_USERS['ALL'])
+        rights = hex(self.cloud.ACL_RIGHTS['CREATE'] + 
+                    self.cloud.ACL_RIGHTS['INFO_POOL_MINE'] +
+                    self.cloud.ACL_RIGHTS['INSTANTIATE'])
+        try:
+            self.cloud.addUserAcl(users, resources, rights)
+        except OneException, ex:
+                Util.printWarning("Couldn't add default user ACL [%s]. %s" % \
+                                  (__acls, str(ex)))
 
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(os.path.join(Defaults.SHARE_DIR, 'vnet/fixed.net'))

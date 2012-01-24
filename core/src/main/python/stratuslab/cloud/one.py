@@ -307,12 +307,31 @@ class OneConnector(object):
     #    ACLs management
     # -------------------------------------------
 
-    def addNetworkAcl(self, users, resources, rights):
+    def addNetworkAcl(self, users, net_id_int, rights):
+        """
+        users - hex
+        net_id_int - integer, network ID
+        rights - hex
+        """
+        # "magic" number
+        _magic = self.ACL_USERS['UID']
+        net_resource = hex(self.ACL_RESOURCES['NET'] + _magic + net_id_int)
+ 
+        ret, info, error_code = self._rpc.one.acl.addrule(self._sessionString,
+                                                          users,
+                                                          net_resource,
+                                                          rights)
+
+        if not ret:
+            raise OneException(info)
+
+        return info
+
+    def addUserAcl(self, users, resources, rights):
         ret, info, error_code = self._rpc.one.acl.addrule(self._sessionString,
                                                           users,
                                                           resources,
                                                           rights)
-
         if not ret:
             raise OneException(info)
 
