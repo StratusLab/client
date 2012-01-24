@@ -34,6 +34,7 @@ class Monitor(Configurable):
     def __init__(self, configHolder):
         self.endpoint = None
         self.verboseLevel = 1
+        self.patEnable = False
         super(Monitor, self).__init__(configHolder)
 
         self._setCloud()
