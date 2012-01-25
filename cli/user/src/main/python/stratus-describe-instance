@@ -38,6 +38,7 @@ class MainProgram(AuthnCommand, PortTranslationCommand):
 
     def __init__(self):
         self.vmIds = []
+        self.config = {}
         super(MainProgram, self).__init__()
 
     def parse(self):
@@ -68,8 +69,7 @@ to the user (-u/--username).'''
         super(MainProgram, self).checkOptions()
         
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__,
-                        ConfigHolder.configFileToDict(self.options.configFile))
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         monitor = Monitor(configHolder)
         if self.vmIds:
             list = monitor.vmDetail(self.vmIds)
