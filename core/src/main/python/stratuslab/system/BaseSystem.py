@@ -1059,7 +1059,7 @@ group {
     def _configureDbUser(self, username, password):
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
         userCreate = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'" % (username, password)
-        userGrant =  "GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE ON opennebula.* TO '%s'@'localhost'" % username
+        userGrant =  "GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE, INDEX ON opennebula.* TO '%s'@'localhost'" % username
 
         rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate), 
                                    withOutput=True, shell=True)
