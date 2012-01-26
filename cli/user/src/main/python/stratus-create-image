@@ -34,9 +34,10 @@ from stratuslab.Uploader import Uploader
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
 
-    def parse(self):
+    parser_usage = '''%prog [options] base-image'''
+    parser_description = 'image - Marketplace image ID'
 
-        self.parser.usage = '''%prog [options] base-image'''
+    def parse(self):
 
         self.parser.add_option('--show-name', dest='showImageName',
                 help='show the name the new image will take',

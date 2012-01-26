@@ -28,6 +28,8 @@ from marketplace.Util import Util as MarketplaceUtil
 
 class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
+    parser_usage = '''%prog [defaultOptions] image'''
+    parser_description = 'image - Marketplace image ID or PDISK volume UUID'
 
     def __init__(self):
         self.options = None
@@ -40,9 +42,9 @@ class Runnable(AuthnCommand):
     def parse(self):
         defaultOptions = Runner.defaultRunOptions()
 
-        self.parser.usage = '''%prog [defaultOptions] image'''
-        
-        self.parser.description = 'image - Marketplace image ID or image URL in Appliance Repository.'
+        self.parser.usage = self.parser_usage
+
+        self.parser.description = self.parser_description
 
         self.parser.add_option('-k', '--key', dest='userPublicKeyFile',
                 help='SSH public key(s) (.pub) to log on the machine. Default %s. In case of multiple keys, concatenate them to the file.' % defaultOptions['userPublicKeyFile'], 
