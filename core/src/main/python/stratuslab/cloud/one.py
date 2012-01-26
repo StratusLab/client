@@ -160,7 +160,7 @@ class OneConnector(object):
     def getVmNode(self, vmId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
-        return xml.find('HISTORY/HOSTNAME').text
+        return xml.find('HISTORY_RECORDS/HISTORY/HOSTNAME').text
     
     def isVmRunning(self, vmId):
         return str(self._getVmStateSummary(vmId)) == 'Running'
