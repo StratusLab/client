@@ -82,13 +82,20 @@ class Claudia(object):
         #dump the password out in text 
         self.sha1Password = self.createSha1.hexdigest()
         #print "Password en sha1: "+self.sha1Password
-
+        
+        try:
+            if self.claudiaOneversion=="":
+                pass
+        except:
+            self.claudiaOneversion=="2.2"
+            
         # tcloud.properties
         self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
                             "oneUser":self.oneUsername, \
                             "onePassword":self.sha1Password, \
                             "oneEnvironmentPath":self.claudiaHome+"repository/", \
-                            "oneNetworkBridge":self.nodeBridgeName
+                            "oneNetworkBridge":self.nodeBridgeName,
+                            "ONEVERSION":self.claudiaOneversion
                             }
 
         # claudiaClient.properties
