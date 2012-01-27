@@ -622,7 +622,7 @@ class BaseSystem(object):
         self.removeCmd = self._remoteRemove
 
     def configureQuarantine(self):
-        filename = '/etc/stratuslab/quarantine.cfg'
+        filename = os.path.join(Defaults.ETC_DIR, 'quarantine.cfg')
         search = '^PERIOD.*$'
         replace = 'PERIOD=%(quarantinePeriod)s' % self.__dict__
         Util.appendOrReplaceInFile(filename, search, replace)        

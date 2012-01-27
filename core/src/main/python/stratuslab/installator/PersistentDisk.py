@@ -58,8 +58,8 @@ class PersistentDisk(object):
         }
 
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
-        self.pdiskConfigFile = '/etc/stratuslab/pdisk.cfg'
-        self.pdiskHostConfigFile = '/etc/stratuslab/pdisk-host.cfg'
+        self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
+        self.pdiskHostConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk-host.cfg')
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
         self.pdiskUsername = 'pdisk'
         self.pdiskPassword = self._extractPdiskPassword()
@@ -229,7 +229,7 @@ class PersistentDisk(object):
                                   self.authnConfigFile)
             
     def _mergeAuthWithProxy(self):
-        loginConf = '/etc/stratuslab/%s/login.conf'
+        loginConf = os.path.join(Defaults.ETC_DIR, '%s/login.conf')
         pdiskDir = 'storage/pdisk'
         oneproxyDir = 'one-proxy'
         confLine = '<Arg>%s</Arg>'
