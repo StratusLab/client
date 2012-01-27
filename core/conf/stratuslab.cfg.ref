@@ -274,3 +274,8 @@ registration_mail_debug = True
 
 [caching]
 caching = False
+
+[claudia]
+#Version of Opennebula installed with claudia. It might be 2.2 or 3.0
+claudia_oneversion = 2.2
+
