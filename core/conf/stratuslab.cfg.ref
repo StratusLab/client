@@ -13,8 +13,6 @@
 [general]
 hypervisor = kvm
 #hypervisor = xen
-#share_type = nfs
-share_type = ssh
 debug_level = 3
 mac_prefix = 02:00
 stratuslab_location =
