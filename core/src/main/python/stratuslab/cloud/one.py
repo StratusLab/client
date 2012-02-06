@@ -112,7 +112,7 @@ class OneConnector(object):
 
     def listVms(self, showVmsFromAllUsers=False):
         fromAllUsers = -2
-        currentUserOnly = -1
+        currentUserOnly = -3
 
         if showVmsFromAllUsers:
             visibilitySwitch = fromAllUsers
