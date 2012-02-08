@@ -88,7 +88,9 @@ class HttpClient(object):
             return resp, content
 
         def _handle4xx():
-            raise ClientException(resp.reason, content=content,
+            raise ClientException('Failed calling method %s on url %s, with reason: %s' %
+                                  (method, url, str(resp.status) + ": " + resp.reason),
+                                  content=content,
                                   status=str(resp.status))
 
         def _handle5xx():

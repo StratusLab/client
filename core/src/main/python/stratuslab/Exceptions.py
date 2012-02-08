@@ -36,16 +36,13 @@ class ValidationException(Exception):
 class ExecutionException(Exception):
     pass
 
-class ClientException(Exception):
-    def __init__(self, reason, content='', status=''):
-        self.reason = reason
-        self.content = content
-        self.status = status
-
 class ServerException(Exception):
-    def __init__(self, msg, status=''):
-        super(ServerException, self).__init__(msg)
+    def __init__(self, reason, status=''):
+        super(ServerException, self).__init__(reason)
+        self.reason = reason
         self.status = status
 
-
-    
+class ClientException(ServerException):
+    def __init__(self, reason, content='', status=''):
+        super(ClientException, self).__init__(reason, status=status)
+        self.content = content
