@@ -290,7 +290,7 @@ class PersistentDisk(object):
     def _getQuarantineThreasholdDate(self):
         now = datetime.now()
         quarantineTime = self._getQuarantinePeriod()
-        return now + timedelta(minutes=quarantineTime)
+        return now - timedelta(minutes=quarantineTime)
 
     def _getQuarantinePeriod(self):
         period, factor = self._parseQuarantinePeriod()
