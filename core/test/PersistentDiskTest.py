@@ -30,8 +30,8 @@ class PersistentDiskTest(unittest.TestCase):
 
     def testCleanQuarantine(self):
         now = datetime.now()
-        past = str(now - timedelta(days=-1))
-        way_past = str(now - timedelta(days=-3))
+        past = str(now - timedelta(days=1))
+        way_past = str(now - timedelta(days=3))
                 
         mock = Mock(return_value = [{'quarantine': past, 'uuid': 'past'},
                                     {'quarantine': way_past, 'uuid': 'way_past'},

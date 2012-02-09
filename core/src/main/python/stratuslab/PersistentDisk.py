@@ -31,7 +31,8 @@ from socket import getfqdn
 import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
-from stratuslab.Exceptions import ValidationException
+from stratuslab.Exceptions import ValidationException, ClientException,\
+    ServerException
 from stratuslab.ConfigHolder import ConfigHolder
 
 class PersistentDisk(object):
@@ -277,17 +278,19 @@ class PersistentDisk(object):
 
         for disk in disks:
             quarantineDate = self._parseQuarantineDate(disk['quarantine'])
-            if quarantineDate > threashold:
+            if quarantineDate < threashold:
                 disksToCleanUp.append(disk)
-
         for disk in disksToCleanUp:
             self._printDetail('Removing disk: %s' % disk['uuid'])
-            self.deleteVolume(disk['uuid'])
+            try:
+                self.deleteVolume(disk['uuid'])
+            except (ClientException, ServerException), ex:
+                print datetime.now(), ex
 
     def _getQuarantineThreasholdDate(self):
         now = datetime.now()
         quarantineTime = self._getQuarantinePeriod()
-        return now + timedelta(minutes=quarantineTime)
+        return now - timedelta(minutes=quarantineTime)
 
     def _getQuarantinePeriod(self):
         period, factor = self._parseQuarantinePeriod()
