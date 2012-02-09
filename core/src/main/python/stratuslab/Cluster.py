@@ -293,17 +293,17 @@ class Cluster(object):
         # For MPI clusters prepare the machinefile for mpirun
         if self.mpi_machine_file:
             self.doPrepareMPImachineFile(ssh, worker_nodes)
-        
+
+        if self.cluster_user:
+            # Create a new user and prepare the environments for password-less ssh
+            self.doCreateClusterUser(ssh, master_node)
+
         # Initialize the shared storage in NFS
         if self.shared_folder:
             self.doPrepareNFSSharedFolder(ssh, master_node, worker_nodes)
         
         if self.ssh_hostbased:
             self.doSetupSSHHostBasedCluster(ssh)
-            
-        if self.cluster_user:
-            # Create a new user and prepare the environments for password-less ssh
-            self.doCreateClusterUser(ssh, master_node)
                     
         # Update /etc/profile with StratusLab specific environment variables
         self.doUpdateEnvironmentVariables(ssh, master_node)
