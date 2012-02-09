@@ -274,6 +274,30 @@ registration_mail_debug = True
 caching = False
 
 [claudia]
-#Version of Opennebula installed with claudia. It might be 2.2 or 3.0
-claudia_oneversion = 2.2
+#Claudia's installation directory.
+claudia_home=/opt/claudia
 
+#Version of Opennebula installed with claudia. It might be 2.2 or 3.0
+claudia_oneversion = 3.0
+
+#Claudia also uses the parameter frontend_ip from Opennebula config. section.
+#Domain name for claudiaClient.properties and reportClient.properties.
+domain_name=stratuslab
+
+claudia_monitor_vm_name = workernode.replicas.1
+claudia_monitor_name = cpus.1
+
+[Monitoring]
+#Persistence jar filename.
+monitoring_persistence_jars = mysql_monpersistence.jar
+#mysql database url for connecting
+monitoring_mysqlurl = jdbc\:mysql\://127.0.0.1\:3306/monitoring
+#mysqluser
+monitoring_mysqluser = claudia
+monitoring_mysqlpassword = claudiaPass
+#Properties filename to configure collectd
+monitoring_properties = /opt/monitoring/conf/monitoring.properties
+#mysql root_password: Needed to create the database schema for monitoring
+monitoring_mysql_root_password = root
+#Port where monitoring tools will start listening.
+monitoring_webserverport = 8080
