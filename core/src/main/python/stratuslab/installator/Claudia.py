@@ -87,7 +87,7 @@ class Claudia(object):
             if self.claudiaOneversion=="":
                 pass
         except:
-            self.claudiaOneversion=="2.2"
+            self.claudiaOneversion=="3.0"
             
         # tcloud.properties
         self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
