@@ -56,13 +56,13 @@ def getShareDir():
     if os.path.exists(Defaults.SHARE_DIR):
         return Defaults.SHARE_DIR
     else:
-        return os.path.join(os.path.dirname(__file__),'../../../../share')
+        return os.path.join(os.path.dirname(__file__), '../../../../share')
 
 def getTemplateDir():
     if os.path.exists(Defaults.TEMPLATE_DIR):
         return Defaults.TEMPLATE_DIR
     else:
-        return os.path.join(os.path.dirname(__file__),'../../../../share/template')
+        return os.path.join(os.path.dirname(__file__), '../../../../share/template')
 
 def wget(url, savePath):
     fd = _wget(url)
@@ -84,7 +84,7 @@ def ping(host, timeout=5, number=1, ** kwargs):
         timeout_opt = '-t'
     else:
         timeout_opt = '-w'
-    p = subprocess.Popen(['ping', '-q', '-c', str(number), 
+    p = subprocess.Popen(['ping', '-q', '-c', str(number),
                                 timeout_opt, str(timeout), host], ** kwargs)
     p.wait()
     success = (p.returncode == 0)
@@ -131,7 +131,7 @@ def appendOrReplaceMultilineBlockInString(content, data):
     lines = content.split('\n')
 
     lineNums = []
-    for i,line in enumerate(lines):
+    for i, line in enumerate(lines):
         if line.startswith(beginStr):
             lineNums.append(i)
             break
@@ -148,7 +148,7 @@ def appendOrReplaceMultilineBlockInString(content, data):
     lineNums.reverse()
     for n in lineNums:
         del lines[n]
-    if insertIndex == len(lines)-1:
+    if insertIndex == len(lines) - 1:
         data = data + '\n'
     lines.insert(insertIndex, data)
 
@@ -160,8 +160,9 @@ def fileGetContent(filename):
     fd.close()
     return content
 
-def filePutContent(filename, data):
-    _printDetail('Creating file %s with content: \n%s\n' % (filename, data))
+def filePutContent(filename, data, neverShowData=False):
+    _printDetail('Creating file %s with content: \n%s\n' % (filename, 
+                                (neverShowData and '<hidden>' or data)))
     fd = open(filename, 'wb')
     fd.write(data)
     fd.close()
@@ -283,9 +284,9 @@ def _extractAndDeleteKey(key, default, dict):
     return value
 
 def printAction(msg):
-    printAndFlush('\n :::%s:::\n' % (':' *len(msg)))
+    printAndFlush('\n :::%s:::\n' % (':' * len(msg)))
     printAndFlush(' :: %s ::\n' % msg)
-    printAndFlush(' :::%s:::\n' % (':' *len(msg)))
+    printAndFlush(' :::%s:::\n' % (':' * len(msg)))
 
 def printStep(msg):
     printAndFlush(' :: %s\n' % msg)
@@ -305,9 +306,9 @@ def printAndFlush(msg):
     print msg,
     sys.stdout.flush()
 
-def printDetail(msg,verboseLevel=1,verboseThreshold=1):
+def printDetail(msg, verboseLevel=1, verboseThreshold=1):
     if verboseLevel >= verboseThreshold:
-        _msg = (msg.endswith('\n') and msg) or msg+'\n'
+        _msg = (msg.endswith('\n') and msg) or msg + '\n'
         printAndFlush('    %s' % _msg)
 
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordPrompts=0, **kwargs):
@@ -343,7 +344,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordProm
         if isinstance(output, int):
             es = output
         else:
-            es= output[0]
+            es = output[0]
         if es != SSH_EXIT_STATUS_ERROR:
             return output
     return output
@@ -461,7 +462,7 @@ def isValidIpV6(ip):
     return pattern.match(ip) is not None
 
 def unifyNetsize(netsize):
-    classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
+    classes = { 'A': 2 ** 24, 'B': 2 ** 16, 'C': 2 ** 8 }
 
     for letter, mask in classes.items():
         if netsize == letter:
@@ -473,7 +474,7 @@ def networkSizeToNetmask(netsize):
     MAX_MASK_POW_TWO = 24
     MAX_MASK_LENTGH = 32
     for pow in range(MAX_MASK_POW_TWO):
-        if 2**pow >= netsize:
+        if 2 ** pow >= netsize:
             return MAX_MASK_LENTGH - pow
     return MAX_MASK_LENTGH
 
@@ -553,7 +554,7 @@ def getProtoHostnameFromUri(uri):
 def getProtoHostnamePortFromUri(uri):
     groups = parseUri(uri)
     protoHost = ''.join(groups[:2])
-    port = (groups[2] and ':%s'%groups[2]) or ''
+    port = (groups[2] and ':%s' % groups[2]) or ''
     return protoHost + port
 
 def getTimeInIso8601():
@@ -594,7 +595,7 @@ def importETree():
     return etree
 
 def escapeDoubleQuotes(string, times=1):
-    return re.sub('"', '%s"' % ('\\'*times), string)
+    return re.sub('"', '%s"' % ('\\' * times), string)
 
 def sanitizePath(path):
     subs = [('\ ', ' ')]

@@ -46,8 +46,10 @@ import stratuslab.MonitoringTest as MonitoringTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
-from stratuslab.Util import sleep, printStep
+from stratuslab.Util import sleep, printStep, filePutContent
 from stratuslab.Image import Image
+from os.path import splitext
+from os import mkdir, rmdir, remove
 import tempfile
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
@@ -851,7 +853,56 @@ touch %s
         except ClientException, ex:
             if not re.match('404', ex.status):
                 self.fail('The persistent disk %s is still present' % diskUUID)
+                
+    def persistentDiskStorageDownloadTest(self):
+        '''Check that an image can be downloaded correctly'''
+        pdiskDevice = '/dev/hdc' # !!!! Configured for the default image (ttylinux)
+        pdiskMountPoint = '/mnt/pdisk-test'
+        testFile = '%s/pdisk.txt'
+        testString = 'pdiskTest'
+        downloadedCompressedDisk = '/tmp/pdisk-img.gz'
+        localMountPoint = '/mnt/pdisk-check'
+        localTestFile = '/tmp/pdiskGzip.tmp'
         
+        configHolder = Testor.configHolder.copy()
+        configHolder.pdiskUsername = Testor.configHolder.testUsername
+        configHolder.pdiskPassword = Testor.configHolder.testPassword
+        pdisk = PersistentDisk(configHolder)
+        
+        Util.printAction('Creating a new persistent disk')
+        diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
+        
+        Util.printAction('Checking persistent disk exists')
+        if not pdisk.volumeExists(diskUUID):
+            self.fail('An error occurred while creating a persistent disk')
+            
+        Util.printAction('Starting machine with persistent disk')
+        runner = self._startVmWithPDiskAndWaitUntilUp(diskUUID)
+        
+        self._formatDisk(runner, pdiskDevice)
+        self._mountDisk(runner, pdiskDevice, pdiskMountPoint)
+        self._writeToFile(runner, testFile % pdiskMountPoint, testString)
+        self._umountPDiskAndStopVm(runner, pdiskDevice)
+        
+        Util.printAction('Downloading volume...')
+        pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
+        volume = self._gunzip(downloadedCompressedDisk)
+        
+        self._localMount(volume, localMountPoint, ['loop',])
+        
+        filePutContent(localTestFile, testString)
+        
+        fileEquals = self._compareLocalFiles(localTestFile, testFile % localMountPoint)
+        
+        if not fileEquals:
+            self.fail('Downloaded volume is corrupted')
+            
+        self._localUmount(localMountPoint)
+
+        Util.printAction('Post test clean-up...')
+        rmdir(localMountPoint)
+        remove(volume)
+
     def _startVmWithPDiskAndWaitUntilUp(self, pdisk=None, image=None):
         runner = self._createRunner(persistentDiskUUID=pdisk, image=image)
         vmIds = runner.runInstance()
@@ -885,6 +936,20 @@ touch %s
         self._loginViaSsh(runner, 'mkdir -p %s' % mountPoint)
         self._loginViaSsh(runner, 'mount %s %s' % (device, mountPoint))
     
+    def _localMount(self, device, mountPoint, options={}):
+        Util.printStep('Mounting device %s on %s with options %s', (device, mountPoint, 
+                                                                    (options.join(', ') or '<no options>')))
+        mountOptions = ['-o %s' % opt for opt in options]
+        try:
+            mkdir(mountPoint)
+        except:
+            pass
+        Util.execute(['mount', mountOptions, device, mountPoint])
+        
+    def _localUmount(self, device):
+        Util.printStep('Unmounting device %s...' % device)
+        Util.execute(['umount', device])
+        
     def _umountDisk(self, runner, device):
         Util.printStep('Unmounting device %s...' % device)
         self._loginViaSsh(runner, 'umount %s' % device)
@@ -896,9 +961,16 @@ touch %s
     def _compareFiles(self, runner, file1, file2):
         Util.printStep('Comparing %s and %s content...' % (file1, file2))
         self._loginViaSsh(runner, 'diff %s %s' % (file1, file2))
+
+    def _compareLocalFiles(self, file1, file2):
+        Util.printStep('Comparing %s and %s content...' % (file1, file2))
+        return Util.execute(['diff', file1, file2])
         
     def _modeprobe(self, runner, module):
         Util.printStep('Loading module %s...' % module)
         self._loginViaSsh(runner, 'modprobe %s' % module)
         
-    
+    def _gunzip(self, filename):
+        Util.printStep("Unzipping file %s..." % filename)
+        Util.execute(['/bin/gunzip', filename])
+        return splitext(filename)[0]
