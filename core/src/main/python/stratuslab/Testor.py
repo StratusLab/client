@@ -888,7 +888,8 @@ touch %s
         pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
         volume = self._gunzip(downloadedCompressedDisk)
         
-        self._localMount(volume, localMountPoint, ['loop',])
+        if not self._localMount(volume, localMountPoint, ['loop',]):
+            self.fail('Error mounting downloaded image, corrupted?')
         
         filePutContent(localTestFile, testString)
         
