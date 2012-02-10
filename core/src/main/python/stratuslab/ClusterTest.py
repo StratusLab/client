@@ -25,9 +25,8 @@ from stratuslab.Cluster import Cluster
 
 class ClusterTest(unittest.TestCase):
     instanceNumber = 2
-    image = "JAm9q9vBzGJL1klVTe-9xBByfxj"
-    instanceType = "c1.medium"
-    userPublicKeyFile = None
+    image = "CcMFFcnWsQaFpq__Bk_NmP73faX"
+    instanceType = "m1.xlarge"
     username = 'oneadmin'
     password = 'oneadmin'
 
@@ -36,20 +35,17 @@ class ClusterTest(unittest.TestCase):
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
                         'mpi_machine_file': True, 
-                        'instanceType': self.instanceType, 
-                        'noCheckImageUrl': False,
+                        'instanceType': self.instanceType,
                         'cluster_admin': 'root', 
-                        'cluster_user':'vangelis', 
+                        'cluster_user':'testuser',
                         'master_vmid': None,
                         'tolerate_failures': False, 
                         'clean_after_failure': False,
                         'include_master': True, 
-                        'shared_folder':'/home', 
-                        'useQcowDiskFormat': True,
+                        'shared_folder':'/home',
                         'add_packages': None, 
                         'ssh_hostbased': False, 
                         'instanceNumber': self.instanceNumber,
-                        'userPublicKeyFile': ClusterTest.userPublicKeyFile,
                         'verboseLevel':0, 
                         'marketplaceEndpoint':'http://marketplace.stratuslab.eu'})
         configHolder = ConfigHolder(options)
@@ -65,18 +61,15 @@ class ClusterTest(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'userPublicKeyFile': ClusterTest.userPublicKeyFile,
                         'mpi_machine_file': True, 
-                        'instanceType': self.instanceType, 
-                        'noCheckImageUrl': False,
+                        'instanceType': self.instanceType,
                         'cluster_admin': 'root', 
-                        'cluster_user':'vangelis', 
+                        'cluster_user':'testuser',
                         'master_vmid': None,
                         'tolerate_failures': False, 
                         'clean_after_failure': False,
                         'include_master': True, 
-                        'shared_folder': None, 
-                        'useQcowDiskFormat': True,
+                        'shared_folder': None,
                         'add_packages': None, 
                         'ssh_hostbased': True, 
                         'instanceNumber': self.instanceNumber,
@@ -96,9 +89,6 @@ class ClusterTest(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'userPublicKeyFile': ClusterTest.userPublicKeyFile,
-                        'useQcowDiskFormat': True, 
-                        'noCheckImageUrl': False,
                         'instanceType': 'm1.large', 
                         'instanceNumber': 1, 
                         'verboseLevel':0,
@@ -112,16 +102,13 @@ class ClusterTest(unittest.TestCase):
         # Worker node instance
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'userPublicKeyFile': ClusterTest.userPublicKeyFile,
                         'mpi_machine_file': True, 
-                        'instanceType': self.instanceType, 
-                        'noCheckImageUrl': False,
+                        'instanceType': self.instanceType,
                         'cluster_admin': 'root', 
-                        'cluster_user':'vangelis', 
+                        'cluster_user':'testuser',
                         'master_vmid': runner.vmIds[0],
                         'include_master': True, 
-                        'shared_folder': '/home', 
-                        'useQcowDiskFormat': True,
+                        'shared_folder': '/home',
                         'tolerate_failures': False, 
                         'clean_after_failure': False,
                         'add_packages': None, 
