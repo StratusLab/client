@@ -73,7 +73,10 @@ class Claudia(object):
                         "NetworkRanges":self.network, \
 			"MacEnabled":self.claudiaMacEnabled, \
 			"NetworkMacList":self.claudiaMacList, \
-			"StaticIpList":self.claudiaStaticIpList
+			"StaticIpList":self.claudiaStaticIpList, \
+			"monitoring.login":self.monitoringMysqluser, \
+			"monitoring.uri":self.monitoringMysqlurl, \
+			"monitoring.password":self.monitoringMysqlpassword
                         }
 
         #pass the password to the sha1 constructor 
