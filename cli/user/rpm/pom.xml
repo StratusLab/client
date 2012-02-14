@@ -3,7 +3,6 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>eu.stratuslab.pkgs</groupId>
   <artifactId>stratuslab-cli-user-rpm</artifactId>
   <name>StratusLab Command-Line Interface (CLI) for End-Users (RPM)</name>
   <packaging>rpm</packaging>
