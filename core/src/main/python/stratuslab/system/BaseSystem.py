@@ -811,8 +811,7 @@ class BaseSystem(object):
             Util.printDetail('Requested not to install CAs.')
         else:
             self._installCAs()
-
-        self._enableFetchCrl()
+            self._enableFetchCrl()
 
     def _enableFetchCrl(self):
         pass
