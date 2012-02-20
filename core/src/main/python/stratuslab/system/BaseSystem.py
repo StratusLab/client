@@ -360,6 +360,9 @@ class BaseSystem(object):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
         
+        # seen a case when permission of /dev/kvm were 0600
+        self.executeCmd(['chmod', '0666', '/dev/kvm'])
+        
         # FIXME: remove when centos is removed
         if self.frontendSystem not in ['fedora', 'ubuntu']:
             return
