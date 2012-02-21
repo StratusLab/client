@@ -141,7 +141,6 @@ class OpenNebula(Installator):
         printStep('Adding default ACLs')
         self._addDefaultAcls()
 
-        self._configureRegistrationApplication()
         self._printInstalCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
 
     def _printInstalCompleted(self, stdoutFilename, stderrFilename):
@@ -199,17 +198,10 @@ class OpenNebula(Installator):
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
 
-    def _configureRegistrationApplication(self):
-        # TODO: Split install
-        if self._isTrue(self.registration):
-            Registration(self.configHolder).run()
-
     def _configureMarketPlacePolicyValidation(self):
         # TODO: Split install
         PolicyValidator(self.configHolder).run()
 
-    def _isTrue(self, value):
-        return Util.isTrueConfVal(value)
 
     def _configureFirewall(self):
         self.frontend.configureFirewall()

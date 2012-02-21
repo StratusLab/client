@@ -18,13 +18,15 @@
 # limitations under the License.
 #
 
-from stratuslab.Util import printAction
+from stratuslab.Util import printAction, isTrueConfVal
 from stratuslab.installator.AppRepo import AppRepo
 from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Monitoring import Monitoring
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.OpenNebula import OpenNebula
+from stratuslab.installator.Registration import Registration
+from stratuslab.installator.PolicyValidator import PolicyValidator
 
 class BaseInstallator(object):
         
@@ -36,9 +38,11 @@ class BaseInstallator(object):
         return {'app-repo': AppRepo,
                 'claudia': Claudia,
                 'monitoring': Monitoring,
-                'one': OpenNebula,
-                'storage': PersistentDisk,
-                'web-monitor': WebMonitor }
+                'opennebula': OpenNebula,
+                'persistent-disk': PersistentDisk,
+                'web-monitor': WebMonitor,
+                'registration': Registration,
+                'policy-validator': PolicyValidator }
         
     def runInstallator(self, configHolder):
         self.configHolder = configHolder
@@ -61,7 +65,10 @@ class BaseInstallator(object):
                 self._executeInstall(componentName, componentInstallator)
                 
     def _isComponentSelected(self, name):
-        return getattr(self, 'install%s' % name.title()) or self.installAllComponents
+        # Check if marked to install in config
+        return (getattr(self, 'install%s' % name.title()) 
+                or self._selectedInConfig(name)
+                or self.installAllComponents)
 
     def _executeInstall(self, componentName, componentInstallator):
         self._installStep(componentName, componentInstallator)
@@ -82,3 +89,8 @@ class BaseInstallator(object):
         if self.startServices:
             printAction('Starting %s services' % componentName)
             componentInstallator.startServices()
+            
+    def _selectedInConfig(self, value):
+        return isTrueConfVal(value.replace('-', '_'))
+    
+    
