@@ -56,3 +56,6 @@ ONE_PROXY_DIR = '/opt/stratuslab/one-proxy'
 AUTHN_CONFIG_FILE = ETC_DIR + '/authn/login-pswd.properties'
 
 SHARE_TYPE = 'stratuslab'
+
+CLOUD_CONF_DIR = '/etc/one/'
+CLOUD_CONF_FILE = CLOUD_CONF_DIR + 'oned.conf'
