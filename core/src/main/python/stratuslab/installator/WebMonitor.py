@@ -18,28 +18,20 @@
 # limitations under the License.
 #
 import stratuslab.system.SystemFactory as SystemFactory
-from stratuslab import Util
+from stratuslab.installator.Installator import Installator
+from stratuslab.Util import printStep
+from stratuslab.Util import restartService
 
-class WebMonitor(object):
+class WebMonitor(Installator):
 
     def __init__(self, configHolder):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         self.packages = ['stratuslab-web-monitor']
-        
-    def run(self):
-        self._installPackages()
-        self._configure()
-        self._restartService('httpd')
-        
-    def _installPackages(self):
-        Util.printStep('Installing packages')
+            
+    def _installFrontend(self):        
+        printStep('Installing packages')
         self.system.installPackages(self.packages)
-
-    def _configure(self):
-        pass
-
-    def _restartService(self, service):
-        Util.printStep("Restarting service %s" % service)
-        cmd = 'service %s restart' % service
-        Util.executeRaiseOnError(cmd)
+        
+    def _startServicesFrontend(self):
+        restartService('httpd')
