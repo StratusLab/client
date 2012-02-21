@@ -31,6 +31,7 @@ from stratuslab.Exceptions import ExecutionException, ValidationException
 import Defaults
 import platform
 
+# TODO: Move to Defaults
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
@@ -609,3 +610,16 @@ def isValidNetLocation(url):
 
 def systemName():
     return platform.system()
+
+def service(name, action):
+    printDetail('Trying to %s %s' % (action, name))
+    execute(['/etc/init.d/%s' % name, action])
+    
+def startService(name):
+    service(name, 'start')
+
+def stopService(name):
+    service(name, 'stop')
+
+def restartService(name):
+    service(name, 'restart')
