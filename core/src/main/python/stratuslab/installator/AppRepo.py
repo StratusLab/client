@@ -25,34 +25,33 @@ from stratuslab.Util import execute
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import filePutContent
 import stratuslab.system.SystemFactory as SystemFactory
+from stratuslab.installator.Installator import Installator
 
-class AppRepo(Configurable):
+class AppRepo(Configurable, Installator):
     '''Perform local installation of an Appliance Repository'''
     
     def __init__(self, configHolder):
         super(AppRepo, self).__init__(configHolder)
         self.configHolder = configHolder
         self.useLdap = Util.isTrueConfVal(self.appRepoUseLdap)
+        self.system = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
 
     def verify(self):
         if self.useLdap and not self.appRepoLdapPasswd:
             raise ConfigurationException('LDAP authentication selected but no password for server specified')
-
         if not self.useLdap and not self.appRepoHttpdPasswdFile:
             raise ConfigurationException('No password file specified')
-
-    def run(self):
-        installAndSetup = not (self.onlySetup or self.onlyInstall)
-        install = self.onlyInstall or installAndSetup
-        if install:
-            self._install()
-        setup = self.onlySetup or installAndSetup
-        if setup:
-            self._setup()
     
-    def _install(self):
+    def _installFrontend(self):
         self._installWebServer()
         self._installImageRepo()
+    
+    def _setupFrontend(self):
+        self._setupWebServer()
+        self._setupImageRepo()
+    
+    def _startServicesFrontend(self):
+        self._restartWebServer()
 
     def _installWebServer(self):
         self.printStep('Installing web server (apache2 / httpd)')
@@ -69,7 +68,7 @@ class AppRepo(Configurable):
         self._setupWebDav()
         self._createRepoStructure()
         self._createRepoConfig()
-        self._restartWebServer()
+#        self._restartWebServer()
  
     def _setupWebDav(self):
         self.printDetail('Creating webdav configuration')        
@@ -121,12 +120,6 @@ class AppRepo(Configurable):
 
     def _execute(self, cmd):
         return execute(cmd, verboseLevel=self.verboseLevel)
-    
-    def _setup(self):
-        self._setupWebServer()
-        self._setupImageRepo()
 
     def _setupWebServer(self):
         pass
-
-
