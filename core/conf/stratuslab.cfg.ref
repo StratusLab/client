@@ -301,3 +301,7 @@ monitoring_properties = /opt/monitoring/conf/monitoring.properties
 monitoring_mysql_root_password = root
 #Port where monitoring tools will start listening.
 monitoring_webserverport = 8080
+
+[marketplace_client]
+# To be used on Frontend by sysadmin CLI utilites
+marketplace_endpoint = http://marketplace.stratuslab.eu
