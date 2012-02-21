@@ -25,11 +25,11 @@ from optparse import OptionParser, OptionGroup
 
 sys.path.append('/var/lib/stratuslab/python')
 
+import stratuslab.Util as Util
 from stratuslab import Defaults
 from stratuslab.CommandBase import CommandBaseSysadmin
-import stratuslab.installator.InstallatorFactory as InstallatorFactory
-import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.installator.BaseInstallator import BaseInstallator
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to install StratusLab.'''
@@ -52,34 +52,24 @@ class MainProgram(CommandBaseSysadmin):
                                help='private key for ssh node connection', metavar='FILENAME',
                                default=None)
         
-        componentGroup = OptionGroup(self.parser, 'Available components', 'Specify a component to install')
+        componentGroup = OptionGroup(self.parser, 'Available components', 
+                                     'Unless specify all components will be selected')
         self.parser.add_option_group(componentGroup)
-
-        componentGroup.add_option('--claudia', dest='installCloudia',
-                               help='Install Claudia', 
-                               action='store_true', default=False)
-        componentGroup.add_option('--monitoring', dest='installMonitoring',
-                              help='Install Monitoring tool',
-                              action='store_true', default=False)
-        componentGroup.add_option('--storage', dest='installPersistentDisk',
-                               help='Install storage service', 
-                               action='store_true', default=False)
-        componentGroup.add_option('--web-monitor', dest='webMonitor', 
-                               help='Install web monitor application',
-                               action='store_true', default=False)
+        self._addComponentsOptions(componentGroup)
         
         installGroup = OptionGroup(self.parser, 'Installation options', 
-                                   'Unless specify will perform all the action')
+                                   'Unless specify will perform all the actions')
         self.parser.add_option_group(installGroup)
         
-        installGroup.add_option('--install', dest='onlyInstall',
-                               help='Only install component, don\'t configure or run it', 
+        installGroup.add_option('--install', dest='installStep',
+                               help='Install all or selected components', 
                                action='store_true', default=False)
-        installGroup.add_option('--setup', dest='onlySetup',
-                               help='Only setup component, don\'t install or run any thing', 
+        installGroup.add_option('--setup', dest='setupStep',
+                               help='Setup all or selected components', 
                                action='store_true', default=False)
-        installGroup.add_option('--service', dest='executeService', metavar='ACTION',
-                               help='Start/stop/restart a service', default=None)
+        installGroup.add_option('--start', dest='startServices',
+                               help='Start all or selected components', 
+                               action='store_true', default=False)
         
         oneGroup = OptionGroup(self.parser, 'OpenNebula options')
         self.parser.add_option_group(oneGroup)
@@ -97,16 +87,26 @@ class MainProgram(CommandBaseSysadmin):
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
-#        if self.options.onlyInstall and self.options.onlySetup:
-#            self.parser.error('--install and --setup are mutually exclusive.')
-        pass
+        if self._noInstallStepSelected():
+            self.options.installStep = True
+            self.options.setupStep = True
+            self.options.startServices = True
+
+    def _noInstallStepSelected(self):
+        return not self.options.installStep and not self.options.setupStep and self.options.startService
+    
+    def _addComponentsOptions(self, parser):
+        for name in BaseInstallator.availableInstallator().keys():
+            parser.add_option('--%s' % name, dest='install%s' % name.title(), 
+                               help='%s component' % name.title(),
+                               action='store_true', default=False)
 
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)        
         configHolder = ConfigHolder(self.options.__dict__, config)
-
-        self.installator = InstallatorFactory.getInstallator()
-        self.installator.runInstall(configHolder)
+        
+        installator = BaseInstallator()
+        installator.runInstallator(configHolder)
         
 
 if __name__ == '__main__':
