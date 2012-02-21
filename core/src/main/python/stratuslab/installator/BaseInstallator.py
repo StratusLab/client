@@ -67,6 +67,15 @@ class BaseInstallator(object):
 
         self.options = configHolder.options
         self.config = configHolder.config
+        
+        if self.installPersistentDisk:
+            printAction("Persistant disk")
+            pdiskInstaller = PersistentDisk(self.configHolder)
+            if self.nodeAddr:
+                self._executeNodeInstall(pdiskInstaller)
+            else:
+                self._executeFrontendInstall(pdiskInstaller)
+            return
 
         if self.nodeAddr:
             printAction('Node(s) installation')
@@ -105,6 +114,26 @@ class BaseInstallator(object):
         self.infoDriver = (True and self.infoDriver) or ('im_%s' % self.hypervisor)
         self.virtDriver = (True and self.virtDriver) or ('vmm_%s' % self.hypervisor)
         self.transfertDriver = (True and self.transfertDriver) or ('tm_%s' % self.shareType)
+
+    def _executeFrontendInstall(self, componentInstallator):
+        if self.onlyInstall:
+            componentInstallator.installFrontend()
+        if self.onlySetup:
+            componentInstallator.configureFrontend()
+        if self.executeService is not None:
+            componentInstallator.manageService(self.executeService)
+        if not (self.onlyInstall | self.onlySetup | (self.executeService is not None)):
+            componentInstallator.runFrontend()
+            
+    def _executeNodeInstall(self, componentInstallator):
+        if self.onlyInstall:
+            componentInstallator.installNode()
+        if self.onlySetup:
+            componentInstallator.configureNode()
+        if self.executeService is not None:
+            componentInstallator.manageService(self.executeService)
+        if not (self.onlyInstall | self.onlySetup | (self.executeService is not None)):
+            componentInstallator.runNode()
 
     def _runInstallNodes(self):
 
@@ -176,12 +205,13 @@ class BaseInstallator(object):
         claudiaInstaller = Claudia(self.configHolder)
         claudiaInstaller.run()
         self._printInstalCompleted(claudiaInstaller.system.stdout.name, claudiaInstaller.system.stderr.name)
+        
     def _runInstallMonitoring(self):
         monitoringInstaller = Monitoring(self.configHolder)
         monitoringInstaller.run()
         self._printInstalCompleted(monitoringInstaller.system.stdout.name, monitoringInstaller.system.stderr.name)
+    
     def _runInstallFrontend(self):
-
         self._setCloud()
 
         self._setFrontend()

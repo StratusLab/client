@@ -187,7 +187,7 @@ class CommandBaseUser(CommandBase):
                         # work only with Option object for the particular key 
                         if optionObj.dest != k:
                             continue
-                        # Update iff
+                        # Update if
                         # * the long option is NOT in the list of the CLI arguments
                         if not (optionObj._long_opts[0] in sys.argv):
                             # * and not set via corresponding environment variable

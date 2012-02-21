@@ -18,18 +18,18 @@
 # limitations under the License.
 #
 
-import string
 import os
 import re
 import socket
-from stratuslab.system import SystemFactory
-from stratuslab.Util import printStep, printWarning, fileGetContent
 import stratuslab.Util as Util
-from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
+import string
 from random import choice
-from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab import Defaults
+from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ValidationException
+from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
+from stratuslab.Util import printStep, printWarning, fileGetContent
+from stratuslab.system import SystemFactory
 
 class PersistentDisk(object):
 
@@ -46,8 +46,8 @@ class PersistentDisk(object):
                             'iscsi': ['scsi-target-utils', ],
                             'nfs': ['nfs-utils', 'nfs-utils-lib'],
                             'lvm': ['lvm2', ],
-                            'file': ['qemu-img'], 
-                        }, 
+                            'file': ['qemu-img'],
+                        },
                          'node': {
                             'pdisk': ['pdisk-host', ],
                             'iscsi': ['iscsi-initiator-utils', ],
@@ -65,9 +65,19 @@ class PersistentDisk(object):
         self.pdiskPassword = self._extractPdiskPassword()
         
     def runFrontend(self):
+        self.installFrontend()
+        self.configureFrontend()
+        self.executeService('start')
+        
+    def installFrontend(self):
         self._validateConfiguration()
         self._installFrontend()
+        
+    def configureFrontend(self):
         self._configureFrontend()
+        
+    def manageService(self, action):
+        self._service('pdisk', action)
 
     def _validateConfiguration(self):
         if not self.persistentDiskLvmDevice:
@@ -86,14 +96,11 @@ class PersistentDisk(object):
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
         self._copyCloudNodeKey()
-        self._service('pdisk', 'start')
         
     def _configureFrontend(self):
         self._writePdiskConfig()
         self._setAutorunZookeeper()
         self._setPdiskUserAndPassword()
-        # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
-        self._service('pdisk', 'restart')
         if self.persistentDiskShare == 'nfs':
             return
         if self.persistentDiskStorage == 'lvm':
@@ -138,12 +145,12 @@ class PersistentDisk(object):
     def _installPackages(self, section):
         if self.packages:
             printStep('Installing packages on %s for section "%s": %s' 
-                      % (self.profile, section, 
+                      % (self.profile, section,
                          ', '.join(self.packages[self.profile][section])))
             self.system.installNodePackages(self.packages[self.profile][section])
 
-    def _randomPassword(self, length=12, chars=string.letters+string.digits):
-        return ''.join([choice(chars) for i in range(length)])
+    def _randomPassword(self, length=12, chars=string.letters + string.digits):
+        return ''.join([choice(chars) for _ in range(length)])
             
     def _commonInstallActions(self):
         self.system.workOnNode()
@@ -224,8 +231,8 @@ class PersistentDisk(object):
             self._overrideValueInFile('persistentDisk', 0, '/etc/init.d/pdisk')
 
     def _setPdiskUserAndPassword(self):
-        self._overrideValueInFile(self.pdiskUsername, 
-                                  '%s,cloud-access' % (self.pdiskPassword), 
+        self._overrideValueInFile(self.pdiskUsername,
+                                  '%s,cloud-access' % (self.pdiskPassword),
                                   self.authnConfigFile)
             
     def _mergeAuthWithProxy(self):
@@ -252,10 +259,10 @@ class PersistentDisk(object):
     def _configureNfsServer(self):
         printStep('Configuring NFS sharing...')
         if self._nfsShareAlreadyExists():
-            self.system.configureExistingNfsShare(self.persistentDiskExistingNfs, 
+            self.system.configureExistingNfsShare(self.persistentDiskExistingNfs,
                                                   self.persistentDiskNfsMountPoint)
         elif self.profile == 'node':
-            self.system.configureExistingNfsShare('%s:%s' % (PDiskClient.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint), 
+            self.system.configureExistingNfsShare('%s:%s' % (PDiskClient.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint),
                                                   self.persistentDiskNfsMountPoint)
         else:
             self.system.configureNewNfsServer(self.persistentDiskNfsMountPoint,
