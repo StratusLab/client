@@ -17,36 +17,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-
-import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab import Util, Defaults
+from stratuslab.Util import printStep, filePutContent, fileGetContent, \
+    restartService
+from stratuslab.installator.Installator import Installator
+import os
+import stratuslab.system.SystemFactory as SystemFactory
 
-class Registration(object):
+
+class Registration(Installator):
 
     def __init__(self, configHolder):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         self.packages = ['apacheds']
-        
+    
+    # TODO: Remove if not used    
     def run(self):
         self._installPackages()
-        self._configure()
+        self.setup()
         self._restartService('one-proxy')
         
-    def _installPackages(self):
-        Util.printStep('Installing packages')
+    def _installFrontend(self):
+        printStep('Installing packages')
         self.system.installPackages(self.packages)
 
-    def _configure(self):
-        Util.printStep('Creating registration configuration file')
-        
+    def _setupFrontend(self):
+        printStep('Creating registration configuration file')
         registrationTpl = os.path.join(Util.getTemplateDir(), 'registration.cfg.tpl')
         registrationConfFile = os.path.join(Defaults.ETC_DIR, 'registration.cfg') 
-        Util.filePutContent(registrationConfFile,
-                            Util.fileGetContent(registrationTpl) % self.__dict__)
+        self._writeConfigFromTemplate(registrationConfFile, registrationTpl)
+        
+    def _writeConfigFromTemplate(self, config, tpl):
+        filePutContent(config,
+                       fileGetContent(tpl) % self.__dict__)
+       
+    def _startServicesFrontend(self):
+        restartService('one-proxy')
 
-    def _restartService(self, service):
-        Util.printStep("Restarting Jetty7 (one-proxy)")
-        cmd = 'service %s restart' % service
-        Util.execute(cmd.split(' '))
