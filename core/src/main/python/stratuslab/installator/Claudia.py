@@ -21,153 +21,119 @@
 import stratuslab.Util as Util
 import stratuslab.system.SystemFactory as SystemFactory
 import hashlib
-import time
+from stratuslab.Util import printStep, restartService, sleep
+from stratuslab.installator.Installator import Installator
 
-class Claudia(object):
+class Claudia(Installator):
 
     def __init__(self, configHolder):
-        # this call makes all configuration parameters and command-line options
-        # available as fields of self using the Camel case convention.
-        # For example, the config parameter 'one_username' is available as self.oneUsername.
         configHolder.assign(self)
+        
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
-        # add your packages here 
-        #self.packages = ['apache2']
-        self.packages = ['claudia-common-rpm', 'claudia-client-rpm', 'clotho-rpm', 'tcloud-server-rpm', 'activemq', 'reportclient-rpm']
+        self.packages = ['claudia-common-rpm', 'claudia-client-rpm', 'clotho-rpm',
+                         'tcloud-server-rpm', 'activemq', 'reportclient-rpm']
         
-        # claudia configuration files
-        self.smFile = self.claudiaHome+"/conf/sm.properties"
-        self.tcloudFile = self.claudiaHome+"/conf/tcloud.properties"
-        self.claudiaClientFile= self.claudiaHome+"/conf/claudiaClient.properties"
-        self.reportClientFile = self.claudiaHome+"/conf/reportClient.properties"
+        self._setClaudiaConfigFiles()
+        self._setPublicNetwork()
+        self._setPrivateNetwork()
+        self._setNetwork()
+        self._dumpOnePassword()
+        self._retrieveOneVersion()
+        self._setSMProperties()
+        self._setTCloudProperties()
+        self._setClaudiaClientProperties()
+        self._setReportProperties()
 
-        # Network configuration 
-        self.publicNet = "IP:"+self.claudiaPublicIp+";"+    \
-                         " Netmask:"+self.claudiaPublicNetmask+";"+  \
-                         " Gateway:"+self.claudiaPublicGateway+\
-                         "; DNS:"+self.claudiaPublicDns+";"+  \
-                         " Public:yes;"
-        if self.claudiaPublicNetwork:
-            self.publicNet = "Network:"+self.claudiaPublicNetwork+"; "+self.publicNet
+    def _installFrontend(self):
+        printStep('Installing packages')
+        self.system.installPackages(self.packages)
 
+    def _setupFrontend(self):
+        self.setup(self.smFile, self.smProperties)
+        self.setup(self.tcloudFile, self.tCloudProperties)
+        self.setup(self.claudiaClientFile, self.claudiaClientProperties)
+        self.setup(self.reportClientFile, self.reportProperties)
 
-        self.privateNet = "IP:"+self.claudiaPrivateIp+";"+               \
-                          " Netmask:"+self.claudiaPrivateNetmask+";"+     \
-                          " Gateway:"+self.claudiaPrivateGateway+";"+     \
-                          " DNS:"+self.claudiaPrivateDns+";"+             \
-                          " Public:no;"
-        if self.claudiaPrivateNetwork:
-            self.privateNet = "Network:"+self.claudiaPrivateNetwork+"; "+self.privateNet
-
-        self.network="[ "+self.publicNet+" ], [ "+self.privateNet+" ]"
-
-        # properties translation
-        # sm.properties
-        self.smprops = {"java.naming.provider.url":"tcp://"+self.frontendIp+":61616", \
-                        "RestListenerHost":self.frontendIp, \
-                        "SMIHost":self.frontendIp, \
-                        "MonitoringAddress":self.frontendIp, \
-                        "ImagesServerHost":self.frontendIp, \
-                        "VEEMHost":self.frontendIp, \
-                        "SiteRoot":self.domainName, \
-                        "NetworkRanges":self.network, \
-			"MacEnabled":self.claudiaMacEnabled, \
-			"NetworkMacList":self.claudiaMacList, \
-			"StaticIpList":self.claudiaStaticIpList
-                        }
-
-        #pass the password to the sha1 constructor 
-        self.createSha1 = hashlib.sha1(self.onePassword)
- 
-        #dump the password out in text 
-        self.sha1Password = self.createSha1.hexdigest()
-        #print "Password en sha1: "+self.sha1Password
-        
-        try:
-            if self.claudiaOneversion=="":
-                pass
-        except:
-            self.claudiaOneversion=="2.2"
-            
-        # tcloud.properties
-        self.tcloudprops = {"com.telefonica.claudia.server.host":self.frontendIp, \
-                            "oneUser":self.oneUsername, \
-                            "onePassword":self.sha1Password, \
-                            "oneEnvironmentPath":self.claudiaHome+"repository/", \
-                            "oneNetworkBridge":self.nodeBridgeName,
-                            "ONEVERSION":self.claudiaOneversion
-                            }
-
-        # claudiaClient.properties
-        self.ccprops = {"domain.root":self.domainName, \
-                        "smi.host":"http://"+self.frontendIp+":", \
-                        "rest.host":self.frontendIp
-                        }
-
-        # reportClient.properties
-        self.reportprops = {"SiteRoot":self.domainName, \
-                            "TServer.url":"http://"+self.frontendIp+":8182", \
-			    "vmMonName":self.claudiaMonitorVmName, \
-			    "monitorName":self.claudiaMonitorName
-                            }
+    def _startServicesFrontend(self):
+        restartService('activemq')
+        sleep(10)
+        restartService('tcloudd')
+        restartService('clothod')
 
     def _overrideValueInFile(self, key, value, fileName):
-        # Here's how you could override config files...
         search = key + '='
         replace = key + '=' + value
         Util.appendOrReplaceInFile(fileName, search, replace)
 
-    def run(self):
-        self._installPackages()
-        self._configure()
-        self._startServices()
-        
-    def _installPackages(self):
-        if self.packages:
-            print " :: Installing packages: "
-            for p in self.packages:
-                print " ::\t"+p
-            print " ::"
-            self.system.installPackages(self.packages)
-
-    def _configure(self):
-        # configure sm.properties file
-        print " :: Configuring "+self.smFile
-        for k in self.smprops:
-            #print k + " |-----> " + self.smprops[k]
-            self._overrideValueInFile(k, self.smprops[k], self.smFile)
-
-        # configure tcloud.properties file
-        print " :: Configuring "+self.tcloudFile
-        for k in self.tcloudprops:
-            #print k + " |-----> " + self.tcloudprops[k]
-            self._overrideValueInFile(k, self.tcloudprops[k], self.tcloudFile)
-
-        # configure claudiaClient.properties file
-        print " :: Configuring "+self.claudiaClientFile
-        for k in self.ccprops:
-            #print k + " |-----> " + self.ccprops[k]
-            self._overrideValueInFile(k, self.ccprops[k], self.claudiaClientFile)
-        print " ::"
-
-        # configure reportClient.properties file
-        print " :: Configuring "+self.reportClientFile
-        for k in self.reportprops:
-            #print k + " |-----> " + self.reportprops[k]
-            self._overrideValueInFile(k, self.reportprops[k], self.reportClientFile)
-        print " ::"
+    def _retrieveOneVersion(self):
+        if not hasattr(self, 'oneVersion') or not self.oneVersion:
+            self.oneVersion = '2.2'
+                        
+    def _dumpOnePassword(self):
+        createSha1 = hashlib.sha1(self.onePassword)
+        self.onePassword = createSha1.hexdigest()
     
-    def _startServices(self):
-        print " :: Starting activemq"
-        self.system.execute(['/etc/init.d/activemq', 'restart'])
-        # Wait 10 seconds for giving time to activemq to completely start
-        time.sleep(10)
+    def _setTCloudProperties(self):
+        self.tCloudProperties = {"com.telefonica.claudia.server.host": self.frontendIp,
+                                 "oneUser": self.oneUsername,
+                                 "onePassword": self.onePassword,
+                                 "oneEnvironmentPath": self.claudiaHome + "repository/",
+                                 "oneNetworkBridge": self.nodeBridgeName,
+                                 "ONEVERSION": self.oneVersion }
+    
+    def _setClaudiaClientProperties(self):
+        self.claudiaClientProperties = {"domain.root": self.domainName,
+                                        "smi.host": "http://" + self.frontendIp + ":",
+                                        "rest.host": self.frontendIp }
         
-        print " :: Starting tcloud"
-        self.system.execute(['/etc/init.d/tcloudd', 'restart'])
-        
-        print " :: Starting clotho"
-        self.system.execute(['/etc/init.d/clothod', 'restart'])
+    def _setReportProperties(self):
+        self.reportProperties = {"SiteRoot": self.domainName,
+                                 "TServer.url": "http://" + self.frontendIp + ":8182",
+                                 "vmMonName": self.claudiaMonitorVmName,
+                                 "monitorName": self.claudiaMonitorName }                    
+    
+    def _setSMProperties(self):
+        self.smProperties = {"java.naming.provider.url":"tcp://" + self.frontendIp + ":61616", 
+                            "RestListenerHost":self.frontendIp, 
+                            "SMIHost":self.frontendIp,
+                            "MonitoringAddress":self.frontendIp,
+                            "ImagesServerHost":self.frontendIp,
+                            "VEEMHost":self.frontendIp,
+                            "SiteRoot":self.domainName,
+                            "NetworkRanges":self.network,
+                            "MacEnabled":self.claudiaMacEnabled,
+                            "NetworkMacList":self.claudiaMacList,
+                            "StaticIpList":self.claudiaStaticIpList }
 
-        # last line
-        print " ::"
+    def _setClaudiaConfigFiles(self):
+        self.smFile = self.claudiaHome + "/conf/sm.properties"
+        self.tcloudFile = self.claudiaHome + "/conf/tcloud.properties"
+        self.claudiaClientFile = self.claudiaHome + "/conf/claudiaClient.properties"
+        self.reportClientFile = self.claudiaHome + "/conf/reportClient.properties"
+    
+    def _setPublicNetwork(self):
+        self.publicNet = 'IP:%s; Netmask:%s; Gateway:%s; DNS:%s; Public:yes;' % (
+                 self.claudiaPublicIp, 
+                 self.claudiaPublicNetmask,
+                 self.claudiaPublicGateway,
+                 self.claudiaPublicDns)
+        if self.claudiaPublicNetwork:
+            self.publicNet = "Network:" + self.claudiaPublicNetwork + "; " + self.publicNet
+
+    def _setPrivateNetwork(self):
+        self.privateNet = 'IP:%s; Netmask:%s; Gateway:%s; DNS:%s; Public:yes;' % (
+                 self.claudiaPrivateIp, 
+                 self.claudiaPrivateNetmask,
+                 self.claudiaPrivateGateway,
+                 self.claudiaPrivateDns)
+        if self.claudiaPrivateNetwork:
+            self.privateNet = "Network:" + self.claudiaPrivateNetwork + "; " + self.privateNet
+            
+    def _setNetwork(self):
+        self.network = "[ " + self.publicNet + " ], [ " + self.privateNet + " ]"
+    
+    def _configureFile(self, configFile, properties):
+        printStep('Configuring %s' % configFile)
+        for key, value in properties.items():
+            self._overrideValueInFile(key, value, configFile)
+
