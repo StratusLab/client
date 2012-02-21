@@ -30,8 +30,9 @@ from stratuslab.Exceptions import ValidationException
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from stratuslab.Util import printStep, printWarning, fileGetContent
 from stratuslab.system import SystemFactory
+from stratuslab.installator.Installator import Installator
 
-class PersistentDisk(object):
+class PersistentDisk(Installator):
 
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
@@ -63,21 +64,10 @@ class PersistentDisk(object):
         self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
         self.pdiskUsername = 'pdisk'
         self.pdiskPassword = self._extractPdiskPassword()
-        
-    def runFrontend(self):
-        self.installFrontend()
-        self.configureFrontend()
-        self.executeService('start')
-        
-    def installFrontend(self):
-        self._validateConfiguration()
-        self._installFrontend()
-        
-    def configureFrontend(self):
-        self._configureFrontend()
-        
-    def manageService(self, action):
-        self._service('pdisk', action)
+            
+    def _startServicesFrontend(self):
+        self._setPDiskEndpoint()
+        self._service('pdisk', 'start')
 
     def _validateConfiguration(self):
         if not self.persistentDiskLvmDevice:
@@ -86,18 +76,23 @@ class PersistentDisk(object):
     def _installFrontend(self):
         self.profile = 'frontend'
         self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
-        # Fool the script to avoid rewrite huge amount of code:
-        # As the pdisk service can be installed on another machine than the
-        # frontend, we need to do an installation via SSH like for node.
+        self._validateConfiguration()
+        self._setPDiskEndpoint()
+        self._commonInstallActions()
+        self._copyCloudNodeKey()
+        
+    def _setPDiskEndpoint(self):
+        '''Fool the script to avoid rewrite huge amount of code:
+           As the pdisk service can be installed on another machine than the
+           frontend, we need to do an installation via SSH like for node.
+        '''
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
         if not self.persistentDiskIp:
             self.persistentDiskIp = socket.gethostbyname(socket.gethostname())
         
         self.system.setNodeAddr(self.persistentDiskIp)
-        self._commonInstallActions()
-        self._copyCloudNodeKey()
         
-    def _configureFrontend(self):
+    def _setupFrontend(self):
         self._writePdiskConfig()
         self._setAutorunZookeeper()
         self._setPdiskUserAndPassword()
@@ -109,16 +104,12 @@ class PersistentDisk(object):
         else:
             self._createFileHddDirectory()
     
-    def runNode(self):
-        self.installNode()
-        self.configureNode()
-    
-    def installNode(self):
+    def _installNode(self):
         self.profile = 'node'
         self.system = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
         self._commonInstallActions()
         
-    def configureNode(self):
+    def _setupNode(self):
         self._configureNodeSudo()
         self._configureNodeScripts()
         
