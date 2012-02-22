@@ -42,11 +42,18 @@ class PersistentDisk(object):
         self.pdiskPassword = None
         self.username = None
         self.password = None
+        self.pemCertificate = None
+        self.pemKey = None
         self.verboseLevel = Util.NORMAL_VERBOSE_LEVEL
         self.pdiskEndpoint = None
+        self.endpointSuffix = ''
 
         self.configHolder = configHolder
         self.configHolder.assign(self)
+
+        # This will eventually contain the sanitized endpoint 
+        # with the proper suffix attached for the authentication
+        # method being used.
         self.endpoint = None
         
     def _initPDiskConnection(self):
@@ -230,21 +237,26 @@ class PersistentDisk(object):
             if addDisk:
                 availableDisk.append(disk)
         return availableDisk
-    
+
+    def _addCredentials(self):
+        cert = self.pemCertificate
+        key = self.pemKey
+        user = self.pdiskUsername or self.username
+        password = self.pdiskPassword or self.password
+        if (cert and key):
+            self.endpointSuffix = '/cert'
+            self.client.addCredentials(cert, key)
+        elif (user and password):
+            self.endpointSuffix = '/pswd'
+            self.client.addCredentials(user, password)
+        else:
+            raise ValueError('Missing credentials')
+
     def _buildFQNEndpoint(self):
         self.endpoint = Util.sanitizeEndpoint(self.pdiskEndpoint,
                                               Defaults.pdiskProtocol,
                                               Defaults.pdiskPort)
-    
-    def addPdiskCredentials(self):
-        user = self.pdiskUsername or self.username
-        password = self.pdiskPassword or self.password
-        self.client.addCredentials(user, password)
-    
-    def _addCredentials(self):
-        user = self.pdiskUsername or self.username
-        password = self.pdiskPassword or self.password
-        self.client.addCredentials(user, password)
+        self.endpoint += self.endpointSuffix
     
     @staticmethod
     def getFQNHostname(hostname):
