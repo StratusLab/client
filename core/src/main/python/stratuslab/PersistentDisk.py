@@ -243,12 +243,15 @@ class PersistentDisk(object):
         key = self.pemKey
         user = self.pdiskUsername or self.username
         password = self.pdiskPassword or self.password
-        if (cert and key):
-            self.endpointSuffix = '/cert'
-            self.client.addCredentials(cert, key)
-        elif (user and password):
+
+        # Must test username/password first because there will
+        # always be default values set for the certificate.
+        if (user and password):
             self.endpointSuffix = '/pswd'
             self.client.addCredentials(user, password)
+        elif (cert and key):
+            self.endpointSuffix = '/cert'
+            self.client.addCertificate(key, cert)
         else:
             raise ValueError('Missing credentials')
 

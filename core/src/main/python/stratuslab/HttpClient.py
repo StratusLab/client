@@ -66,7 +66,7 @@ class HttpClient(object):
             
     def _addCertificate(self, http):
         for u, p in self.certificates.items():
-            http.add_certificate(u, p)
+            http.add_certificate(u, p, '')
     
     def _httpCall(self, url, method, body=None, contentType='application/xml', accept='application/xml', retry=True):
         

@@ -17,7 +17,7 @@ endpoint = <cloud.frontend.hostname>
 
 # Authentication to Cloud frontend. 
 # Use either username/password or PEM key/cert.
-# If both are enabled, PEM key/cert takes precedence. 
+# If both are enabled, the username/password takes precedence.
 username = username
 password = password
 #pem_key = <home>/.globus/userkey.pem
