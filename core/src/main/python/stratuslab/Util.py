@@ -623,3 +623,15 @@ def stopService(name):
 
 def restartService(name):
     service(name, 'restart')
+    
+def getValueInKB(value):
+    ''' Assume that if no unit specified, already in KB 
+    '''
+    unit = ('KB', 'MB', 'GB')
+    try:
+        valueKB = int(value)
+    except ValueError:
+        value = valueKB[:-2]
+        valueUnit = (valueKB[-2:]).strip().upper()
+        valueKB = value * (1024 ** unit.index(valueUnit))
+    return valueKB

@@ -88,9 +88,12 @@ class MainProgram(CommandBaseSysadmin):
 
     def checkOptions(self):
         if self._noInstallStepSelected():
-            self.options.installStep = True
-            self.options.setupStep = True
-            self.options.startServices = True
+            self._doAllSteps()
+            
+    def _doAllSteps(self):
+        self.options.installStep = True
+        self.options.setupStep = True
+        self.options.startServices = True
 
     def _noInstallStepSelected(self):
         return not self.options.installStep and not self.options.setupStep and self.options.startService
@@ -98,7 +101,7 @@ class MainProgram(CommandBaseSysadmin):
     def _addComponentsOptions(self, parser):
         for name in BaseInstallator.availableInstallator().keys():
             parser.add_option('--%s' % name, dest='install%s' % name.title(), 
-                               help='%s component' % name.title(),
+                               help='%s component' % name.title().replace('-', ' '),
                                action='store_true', default=False)
 
     def doWork(self):

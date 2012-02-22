@@ -26,7 +26,6 @@ from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.OpenNebula import OpenNebula
 from stratuslab.installator.Registration import Registration
-from stratuslab.installator.PolicyValidator import PolicyValidator
 
 class BaseInstallator(object):
         
@@ -41,15 +40,11 @@ class BaseInstallator(object):
                 'opennebula': OpenNebula,
                 'persistent-disk': PersistentDisk,
                 'web-monitor': WebMonitor,
-                'registration': Registration,
-                'policy-validator': PolicyValidator }
+                'registration': Registration }
         
     def runInstallator(self, configHolder):
         self.configHolder = configHolder
         configHolder.assign(self)
-
-        self.options = configHolder.options
-        self.config = configHolder.config
         
         self._selectAllcomponentIfNoOneSpecified()
         self._launchInstallator()
@@ -65,7 +60,6 @@ class BaseInstallator(object):
                 self._executeInstall(componentName, componentInstallator)
                 
     def _isComponentSelected(self, name):
-        # Check if marked to install in config
         return (getattr(self, 'install%s' % name.title()) 
                 or self._selectedInConfig(name)
                 or self.installAllComponents)

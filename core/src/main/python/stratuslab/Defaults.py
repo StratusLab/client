@@ -17,23 +17,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os.path as path
+from os.path import join, expanduser
 
-userHome = path.expanduser('~')
+userHome = expanduser('~')
 
-sshPublicKeyLocation = path.join(userHome, '.ssh/id_rsa.pub')
+sshPublicKeyLocation = join(userHome, '.ssh/id_rsa.pub')
 
-_globusDirectory = path.join(userHome, '.globus')
+_globusDirectory = join(userHome, '.globus')
 
 pemDirectory = _globusDirectory
 pemCertificateFile = 'usercert.pem'
 pemKeyFile = 'userkey.pem'
-pemCertificateLocation = path.join(pemDirectory, pemCertificateFile)
-pemKeyLocation = path.join(pemDirectory, pemKeyFile)
+pemCertificateLocation = join(pemDirectory, pemCertificateFile)
+pemKeyLocation = join(pemDirectory, pemKeyFile)
 
 p12Directory = _globusDirectory
 p12CertificateFile = 'usercert.p12'
-p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
+p12CertificateLocation = join(p12Directory, p12CertificateFile)
 
 marketplaceEndpoint = 'http://marketplace.stratuslab.eu'
 marketplaceProtocol = 'http'
@@ -50,7 +50,7 @@ patServiceDbname = '/var/lib/one/ports.db'
 
 ETC_DIR = '/etc/stratuslab'
 SHARE_DIR = '/var/share/stratuslab'
-TEMPLATE_DIR = path.join(SHARE_DIR, 'template')
+TEMPLATE_DIR = join(SHARE_DIR, 'template')
 ONE_PROXY_DIR = '/opt/stratuslab/one-proxy'
 
 AUTHN_CONFIG_FILE = ETC_DIR + '/authn/login-pswd.properties'
@@ -59,3 +59,6 @@ SHARE_TYPE = 'stratuslab'
 
 CLOUD_CONF_DIR = '/etc/one/'
 CLOUD_CONF_FILE = CLOUD_CONF_DIR + 'oned.conf'
+
+CLOUD_VAR_LIB_DIR = '/var/lib/one'
+
