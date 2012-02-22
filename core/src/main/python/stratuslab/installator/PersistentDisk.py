@@ -70,8 +70,7 @@ class PersistentDisk(Installator):
         self._service('pdisk', 'start')
 
     def _validateConfiguration(self):
-        if not self.persistentDiskLvmDevice:
-            raise ValidationException('Missing value for configuration parameter: persistent_disk_lvm_device')
+        pass
 
     def _installFrontend(self):
         self.profile = 'frontend'
