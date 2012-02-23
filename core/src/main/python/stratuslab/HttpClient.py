@@ -133,7 +133,9 @@ class HttpClient(object):
             else:
                 resp, content = h.request(url, method, body)
         except httplib.BadStatusLine:
-            raise NetworkException('Error: BadStatusLine contacting: ' + url)
+            raise NetworkException('BadStatusLine when contacting ' + url)
+        except AttributeError:
+            raise NetworkException('Cannot contact ' + url)
         
         if self.handleResponse:
             try:
