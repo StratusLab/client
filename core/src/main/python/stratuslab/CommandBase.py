@@ -77,7 +77,7 @@ class CommandBase(object):
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exceptions.ClientException, ex:
             msg = 'Error: ' + ex.reason
-            if ex.content:
+            if ex.content and (self.verboseLevel > 1):
                 msg += '\nDetail: ' + ex.content
             if getattr(ex, 'mediaType', None) == 'json':
                 error = json.loads(ex.content)

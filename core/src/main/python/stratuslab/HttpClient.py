@@ -66,7 +66,7 @@ class HttpClient(object):
             
     def _addCertificate(self, http):
         for u, p in self.certificates.items():
-            http.add_certificate(u, p)
+            http.add_certificate(u, p, '')
     
     def _httpCall(self, url, method, body=None, contentType='application/xml', accept='application/xml', retry=True):
         
@@ -133,7 +133,9 @@ class HttpClient(object):
             else:
                 resp, content = h.request(url, method, body)
         except httplib.BadStatusLine:
-            raise NetworkException('Error: BadStatusLine contacting: ' + url)
+            raise NetworkException('BadStatusLine when contacting ' + url)
+        except AttributeError:
+            raise NetworkException('Cannot contact ' + url)
         
         if self.handleResponse:
             try:

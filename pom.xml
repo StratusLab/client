@@ -28,12 +28,16 @@ with minimal dependencies for maximum portability.
 
     <BUILD_INFO>
 
-# ${artifactId}, ${project.version}, ${maven.build.timestamp}
+# ${project.artifactId}, ${project.version}, ${maven.build.timestamp}
 #
     </BUILD_INFO>
 
+    <package.os>fc14</package.os>
     <nexus.release.repository.name>fedora-14-releases</nexus.release.repository.name>
     <nexus.snapshot.repository.name>fedora-14-snapshots</nexus.snapshot.repository.name>
+
+    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> 
+    <RELEASE>0.${maven.build.timestamp}.${package.os}</RELEASE>
 
     <marketplace-metadata.version>1.0.2-SNAPSHOT</marketplace-metadata.version>
 
@@ -140,12 +144,12 @@ with minimal dependencies for maximum portability.
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-assembly-plugin</artifactId>
-	  <version>2.2</version>
+	  <version>2.2.2</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-release-plugin</artifactId>
-	  <version>2.1</version>
+	  <version>2.2.2</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
@@ -164,22 +168,22 @@ with minimal dependencies for maximum portability.
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-jar-plugin</artifactId>
-	  <version>2.3.1</version>
+	  <version>2.3.2</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-surefire-plugin</artifactId>
-	  <version>2.6</version>
+	  <version>2.11</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-dependency-plugin</artifactId>
-	  <version>2.1</version>
+	  <version>2.4</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-deploy-plugin</artifactId>
-	  <version>2.5</version>
+	  <version>2.7</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
@@ -189,17 +193,17 @@ with minimal dependencies for maximum portability.
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-resources-plugin</artifactId>
-	  <version>2.4.3</version>
+	  <version>2.5</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-site-plugin</artifactId>
-	  <version>2.2</version>
+	  <version>3.0</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-scm-plugin</artifactId>
-	  <version>1.4</version>
+	  <version>1.6</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
@@ -210,12 +214,12 @@ with minimal dependencies for maximum portability.
 	<plugin>
 	  <groupId>org.codehaus.mojo</groupId>
 	  <artifactId>build-helper-maven-plugin</artifactId>
-	  <version>1.5</version>
+	  <version>1.7</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.codehaus.mojo</groupId>
 	  <artifactId>findbugs-maven-plugin</artifactId>
-	  <version>2.3.1</version>
+	  <version>2.3.3</version>
 	</plugin>
 	<plugin>
 	  <groupId>org.codehaus.mojo</groupId>
@@ -228,7 +232,7 @@ with minimal dependencies for maximum portability.
 	<plugin>
 	  <groupId>org.codehaus.mojo</groupId>
 	  <artifactId>exec-maven-plugin</artifactId>
-	  <version>1.2</version>
+	  <version>1.2.1</version>
 	</plugin>
 
       </plugins>
