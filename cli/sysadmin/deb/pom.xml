@@ -42,7 +42,7 @@
 		    <artifactItem>
 		      <groupId>eu.stratuslab.pkgs</groupId>
 		      <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
-		      <classifier>cli-sysadmin-bundle</classifier>
+		      <!-- <classifier>cli-sysadmin-bundle</classifier> -->
 		      <type>zip</type>
 		    </artifactItem>
 		  </artifactItems>
@@ -75,7 +75,7 @@
       <groupId>eu.stratuslab.pkgs</groupId>
       <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
       <version>1.9-SNAPSHOT</version>
-      <classifier>cli-sysadmin-bundle</classifier>
+      <!-- <classifier>cli-sysadmin-bundle</classifier> -->
       <type>zip</type>
       <scope>compile</scope>
     </dependency>
