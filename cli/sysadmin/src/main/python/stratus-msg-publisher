@@ -47,9 +47,6 @@ class MainProgram(CommandBaseSysadmin):
                     'of a dictionary on which the ID will be set. JSON can be '
                     'base64 encoded.', metavar='ID',
                     default="")
-#        self.parser.add_option('-c', '--config', dest='configFile', 
-#                    help='configuration file.', metavar='FILE',
-#                    default=Defaults.MESSAGING_CONFIG)
 
         self.options, self.args = self.parser.parse_args()
 
@@ -70,9 +67,7 @@ class MainProgram(CommandBaseSysadmin):
             self.printError('Message should be set as first argument')
 
     def doWork(self):
-        config = {}
-        if self.options.configFile:
-            config = ConfigHolder.configFileToDict(self.options.configFile) 
+        config = ConfigHolder.configFileToDict(self.options.configFile) 
         configHolder = ConfigHolder(self.options.__dict__, config)
         
         # We are publishing image ID. Set image ID in the message.
