@@ -122,6 +122,9 @@ class CommandBase(object):
 
     def printError(self, message):
         Util.printError(message, self)
+        
+    def printMandatoryOptionError(self, option):
+        self.printError('Missing mandatory %s option' % option)
 
 class CommandBaseUser(CommandBase):
     def __init__(self):

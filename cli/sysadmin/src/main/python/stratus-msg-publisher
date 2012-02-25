@@ -12,19 +12,20 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 
 from stratuslab.messaging.RestPublisher import RestPublisher
 
-def set_imageid(message, imageid):
-    'message - JSON and can be base64 encoded'
-    if not message.startswith('{'):
-        # Assume this is base64 encoded message.
-        message = base64.b64decode(message)
-    try:
-        message_dict = json.loads(message)
-    except Exception, ex:
-        raise ValueError("Couldn't load JSON message: %s" % message)
-    message_dict['imageid'] = imageid
-    return json.dumps(message_dict)
-
 class MainProgram(CommandBaseSysadmin):
+    
+    @staticmethod
+    def set_imageid(message, imageid):
+        'message - JSON and can be base64 encoded'
+        if not message.startswith('{'):
+            # Assume this is base64 encoded message.
+            message = base64.b64decode(message)
+        try:
+            message_dict = json.loads(message)
+        except Exception, ex:
+            raise ValueError("Couldn't load JSON message: %s" % message)
+        message_dict['imageid'] = imageid
+        return json.dumps(message_dict)
 
     def __init__(self):
         self.msg_message = ''
@@ -50,30 +51,32 @@ class MainProgram(CommandBaseSysadmin):
 
         self.options, self.args = self.parser.parse_args()
 
-    def checkOptions(self):
-        super(MainProgram, self).checkOptions()
-
-        err_mgs = 'Missing mandatory %s option'
-        if not self.options.msg_type:
-            self.printError(err_mgs % '--msg-type')
-        if not self.options.msg_endpoint:
-            self.printError(err_mgs % '--msg-endpoint')
-        if not self.options.msg_queue:
-            self.printError(err_mgs % '--msg-queue')
-
+    def _checkMessageAndImageid(self):
         if len(self.args) != 0:
             self.msg_message = self.args[0]
         else:
             self.printError('Message should be set as first argument')
 
+        # We are publishing image ID. Set image ID in the message.
+        if self.options.imageid:
+            self.msg_message = MainProgram.set_imageid(self.msg_message, self.options.imageid)
+
+    def checkOptions(self):
+        super(MainProgram, self).checkOptions()
+
+        if not self.options.msg_type:
+            self.printMandatoryOptionError('--msg-type')
+        if not self.options.msg_endpoint:
+            self.printMandatoryOptionError('--msg-endpoint')
+        if not self.options.msg_queue:
+            self.printMandatoryOptionError('--msg-queue')
+
+        self._checkMessageAndImageid()
+
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile) 
         configHolder = ConfigHolder(self.options.__dict__, config)
         
-        # We are publishing image ID. Set image ID in the message.
-        if self.options.imageid:
-            self.msg_message = set_imageid(self.msg_message, self.options.imageid)
-
         if self.options.msg_type.lower() == 'amazonsqs':
             AmazonSqsQueue(self.options.msg_endpoint,
                                 self.options.msg_queue,
