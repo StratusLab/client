@@ -42,7 +42,7 @@
 		    <artifactItem>
 		      <groupId>eu.stratuslab.pkgs</groupId>
 		      <artifactId>stratuslab-cli-user-pkg</artifactId>
-		      <classifier>cli-user-bundle</classifier>
+		      <!-- <classifier>cli-user-bundle</classifier> -->
 		      <type>zip</type>
 		    </artifactItem>
 		  </artifactItems>
@@ -75,7 +75,7 @@
       <groupId>eu.stratuslab.pkgs</groupId>
       <artifactId>stratuslab-cli-user-pkg</artifactId>
       <version>1.9-SNAPSHOT</version>
-      <classifier>cli-user-bundle</classifier>
+      <!-- <classifier>cli-user-bundle</classifier> -->
       <type>zip</type>
       <scope>compile</scope>
     </dependency>
