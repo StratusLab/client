@@ -4,10 +4,13 @@ import sys
 import base64
 import json
 
-import httplib
-import urllib
+sys.path.append('/var/lib/stratuslab/python')
 
-SECRET_HEADER = {'User-Agent':'StratusLab'}
+from stratuslab import Defaults
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.CommandBase import CommandBaseSysadmin
+
+from stratuslab.messaging.RestPublisher import RestPublisher
 
 def set_imageid(message, imageid):
     'message - JSON and can be base64 encoded'
@@ -21,37 +24,7 @@ def set_imageid(message, imageid):
     message_dict['imageid'] = imageid
     return json.dumps(message_dict)
 
-class AmazonSqsQueue(object):
-    def __init__(self, endpoint, queue, verboseLevel):
-        self.conn = httplib.HTTPSConnection(endpoint)
-        self.conn.debuglevel = verboseLevel
-        self.queue = queue
-        self.headers = {'Accept':'*/*', 
-                        'Content-Type':'application/x-www-form-urlencoded'}
-        self.headers.update(SECRET_HEADER)
-    @staticmethod
-    def _endcode_message(message):
-        return base64.b64encode(message)
-    def _build_query_params(self, message):
-        params = {'Action':'SendMessage',
-                  'MessageBody':self._endcode_message(message)}
-        return urllib.urlencode(params)
-    def send(self, message):
-        'message - dictionary'
-        params = self._build_query_params(message)
-        self.conn.request('POST', self.queue, params, self.headers)
-        response = self.conn.getresponse()
-        status = str(response.status)
-        if not status.startswith('2'):
-            data = response.read()
-            raise Exception(data)
-        self.conn.close()
-
-sys.path.append('/var/lib/stratuslab/python')
-
-from stratuslab.CommandBase import CommandBase
-
-class MainProgram(CommandBase):
+class MainProgram(CommandBaseSysadmin):
 
     def __init__(self):
         self.msg_message = ''
@@ -74,6 +47,9 @@ class MainProgram(CommandBase):
                     'of a dictionary on which the ID will be set. JSON can be '
                     'base64 encoded.', metavar='ID',
                     default="")
+#        self.parser.add_option('-c', '--config', dest='configFile', 
+#                    help='configuration file.', metavar='FILE',
+#                    default=Defaults.MESSAGING_CONFIG)
 
         self.options, self.args = self.parser.parse_args()
 
@@ -94,16 +70,26 @@ class MainProgram(CommandBase):
             self.printError('Message should be set as first argument')
 
     def doWork(self):
+        config = {}
+        if self.options.configFile:
+            config = ConfigHolder.configFileToDict(self.options.configFile) 
+        configHolder = ConfigHolder(self.options.__dict__, config)
         
         # We are publishing image ID. Set image ID in the message.
         if self.options.imageid:
             self.msg_message = set_imageid(self.msg_message, self.options.imageid)
 
-        if self.options.msg_type == 'amazonsqs':
+        if self.options.msg_type.lower() == 'amazonsqs':
             AmazonSqsQueue(self.options.msg_endpoint,
                                 self.options.msg_queue,
                                     self.options.verboseLevel).send(self.msg_message)
-
+        elif self.options.msg_type.lower() == 'rest':
+            client = RestPublisher(configHolder)
+            if self.options.imageid:
+                client.send(self.options.imageid)
+            else:
+                client.send(self.msg_message)
+                
 if __name__ == '__main__':
     try:
         MainProgram()

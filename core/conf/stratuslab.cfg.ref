@@ -305,3 +305,7 @@ monitoring_webserverport = 8080
 [marketplace_client]
 # To be used on Frontend by sysadmin CLI utilites
 marketplace_endpoint = http://marketplace.stratuslab.eu
+
+[messaging]
+# JSON encoded dictionary with REST endpoints as keys
+rest_endpoints = {"http://example.com" : {"username" : "x", "password" : "*"} }
