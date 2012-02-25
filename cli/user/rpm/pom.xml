@@ -96,7 +96,7 @@
 	<artifactId>rpm-maven-plugin</artifactId>
 	<configuration>
 	  <release>${RELEASE}</release>
-	  <summary>${name}</summary>
+	  <summary>${project.name}</summary>
 	  <name>stratuslab-cli-user</name>
 	  <vendor>SixSq Sarl</vendor>
 	  <copyright>Apache 2.0</copyright>
