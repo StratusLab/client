@@ -35,11 +35,11 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.usage = '%prog [options] message'
 
         self.parser.add_option('--msg-type', dest='msg_type',
-                    help='Type of messaging queue: amazonsqs. Mandatory.', metavar='NAME',
-                    default="")
+                    help='Type of messaging queue: amazonsqs. Mandatory.', 
+                    metavar='NAME', default="")
         self.parser.add_option('--msg-endpoint', dest='msg_endpoint',
-                    help='Messaging service endpoint. Mandatory.', metavar='ENDPOINT',
-                    default="")
+                    help='Messaging service endpoint. Mandatory.', 
+                    metavar='ENDPOINT', default="")
         self.parser.add_option('--msg-queue', dest='msg_queue',
                     help='Message queue name. Mandatory.', metavar='NAME',
                     default="")
@@ -59,7 +59,8 @@ class MainProgram(CommandBaseSysadmin):
 
         # We are publishing image ID. Set image ID in the message.
         if self.options.imageid:
-            self.msg_message = MainProgram.set_imageid(self.msg_message, self.options.imageid)
+            self.msg_message = MainProgram.set_imageid(self.msg_message,
+                                                       self.options.imageid)
 
     def checkOptions(self):
         super(MainProgram, self).checkOptions()
