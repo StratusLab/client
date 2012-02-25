@@ -32,8 +32,12 @@ with minimal dependencies for maximum portability.
 #
     </BUILD_INFO>
 
+    <package.os>fc14</package.os>
     <nexus.release.repository.name>fedora-14-releases</nexus.release.repository.name>
     <nexus.snapshot.repository.name>fedora-14-snapshots</nexus.snapshot.repository.name>
+
+    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> 
+    <RELEASE>0.${maven.build.timestamp}.${package.os}</RELEASE>
 
     <marketplace-metadata.version>1.0.2-SNAPSHOT</marketplace-metadata.version>
 
