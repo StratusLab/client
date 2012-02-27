@@ -548,7 +548,8 @@ touch %s
         options['excludeFromCreatedImage'] = '/etc/resolve.conf,/usr/sbin/pppdump'
         options['scripts'] = script_file
         options['packages'] = 'python-dirq'
-        options['extraOsReposUrls'] = 'http://download.fedora.redhat.com/pub/epel/5/i386/'
+        # python-dirq is in Fedora base repo
+        #options['extraOsReposUrls'] = 'http://download.fedora.redhat.com/pub/epel/5/i386/'
 
         options['installer'] = 'yum'
         options['os'] = 'linux'
