@@ -1,5 +1,3 @@
-# encoding: utf8
-
 import os
 import shutil
 import unittest
@@ -18,6 +16,6 @@ class DirectoryQueueTest(unittest.TestCase):
     def test_send(self):
         dirq = DirectoryQueue(ConfigHolder({'msg_queue':self.test_queue}))
         try:
-            dirq.send(u'{"foo":"Élément"}')
+            dirq.send('{"foo":"bar"}')
         except Exception, e:
             self.fail('Failed with %s' % str(e))
