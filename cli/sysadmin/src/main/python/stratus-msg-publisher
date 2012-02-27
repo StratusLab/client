@@ -9,8 +9,7 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseSysadmin
-
-from stratuslab.messaging.RestPublisher import RestPublisher
+from stratuslab.messaging.MsgClientFactory import getMsgClient
 
 class MainProgram(CommandBaseSysadmin):
     
@@ -77,18 +76,14 @@ class MainProgram(CommandBaseSysadmin):
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile) 
         configHolder = ConfigHolder(self.options.__dict__, config)
-        
-        if self.options.msg_type.lower() == 'amazonsqs':
-            AmazonSqsQueue(self.options.msg_endpoint,
-                                self.options.msg_queue,
-                                    self.options.verboseLevel).send(self.msg_message)
-        elif self.options.msg_type.lower() == 'rest':
-            client = RestPublisher(configHolder)
-            if self.options.imageid:
-                client.send(self.options.imageid)
-            else:
-                client.send(self.msg_message)
-                
+
+        client = getMsgClient()
+        if self.options.msg_type.lower() == 'rest' and self.options.imageid:
+            message = self.options.imageid
+        else:
+            message = self.msg_message
+        client.send(message)
+
 if __name__ == '__main__':
     try:
         MainProgram()
