@@ -51,6 +51,7 @@ from stratuslab.Image import Image
 from stratuslab.system import Systems
 from stratuslab import Defaults
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
+from stratuslab.Monitor import Monitor
 
 class Creator(object):
 
@@ -393,8 +394,9 @@ class Creator(object):
                                                             failOn=('Failed'))
         if not vmStarted:
             if self.runner.getVmState(self.vmId) == 'Failed':
-                msg = 'Failed to start VM (id=%s, ip=%s)' % \
-                                    (self.vmId, self.vmAddress)
+                msg = 'Failed to start VM (id=%s, ip=%s): %s' % \
+                                    (self.vmId, self.vmAddress,
+                                     self._getVmFailureMessage(self.vmId))
             else:
                 msg = 'Failed to start VM within %i seconds (id=%s, ip=%s)' % \
                                     (self.vmStartTimeout, self.vmId, self.vmAddress)
@@ -423,6 +425,10 @@ class Creator(object):
             self.cloud.vmKill(self.vmId)
         else:
             Util.printWarning('Undefined VM ID, when trying to kill machine.')
+
+    def _getVmFailureMessage(self, vmId):
+        return getattr(Monitor(self.configHolder)._vmDetail(vmId),
+                       'template_error_message', '')
 
     def _shutdownNode(self):
         if self.shutdownVm:
