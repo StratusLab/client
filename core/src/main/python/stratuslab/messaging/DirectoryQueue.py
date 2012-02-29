@@ -1,6 +1,8 @@
+
+from .BaseClient import BaseClient
 from dirq.QueueSimple import QueueSimple
 
-class DirectoryQueue(object):
+class DirectoryQueue(BaseClient):
     def __init__(self, configHolder):
         configHolder.assign(self)
         self.queue = QueueSimple(self.msg_queue)
