@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
     <artifactId>stratuslab-web-monitor</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <version>1.20</version>
   </parent>
 
   <profiles>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>eu.stratuslab.pkgs</groupId>
       <artifactId>stratuslab-web-monitor-zip</artifactId>
-      <version>1.20-SNAPSHOT</version>
+      <version>1.20</version>
       <classifier>cgi-bundle</classifier>
       <type>zip</type>
       <scope>compile</scope>
