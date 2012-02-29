@@ -200,8 +200,8 @@ class QueueBase(object):
         if not isinstance(path, (str, unicode)):
             raise TypeError("'path' should be str or unicode")
         self.path = path
-        if umask != None or isinstance(umask, int):
-            raise TypeError("'umask' should be integer")
+        if umask != None and not isinstance(umask, int):
+                raise TypeError("'umask' should be integer")
         self.umask = umask
 
         # create top level directory
