@@ -9,8 +9,8 @@
 
   <parent>
     <groupId>eu.stratuslab.pkgs</groupId>
-    <artifactId>stratuslab-cli</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <artifactId>stratuslab-cli-user</artifactId>
+    <version>1.22-SNAPSHOT</version>
   </parent>
 
   <profiles>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>eu.stratuslab.pkgs</groupId>
       <artifactId>stratuslab-cli-user-pkg</artifactId>
-      <version>1.20-SNAPSHOT</version>
+      <version>1.22-SNAPSHOT</version>
       <!-- <classifier>cli-user-bundle</classifier> -->
       <type>zip</type>
       <scope>compile</scope>
