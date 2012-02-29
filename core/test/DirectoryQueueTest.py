@@ -19,3 +19,6 @@ class DirectoryQueueTest(unittest.TestCase):
             dirq.send('{"foo":"bar"}')
         except Exception, e:
             self.fail('Failed with %s' % str(e))
+
+if __name__ == "__main__":
+    unittest.main()
