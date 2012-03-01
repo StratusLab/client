@@ -27,6 +27,8 @@ from commands import getstatusoutput
 import getpass
 from stratuslab.installator.Installator import Installator
 from stratuslab.Util import printWarning, startService, printStep
+from os.path import dirname, isdir
+from os import makedirs
 
 # TODO: Refactoring required
 
@@ -128,7 +130,13 @@ class Monitoring(Installator):
         # Here's how you could override config files...
         search = key + '='
         replace = key + '=' + value
+        self._createParentDirs(fileName)
         Util.appendOrReplaceInFile(fileName, search, replace)
+        
+    def _createParentDirs(self, filename):
+        parent = dirname(filename)
+        if not isdir(parent):
+            makedirs(parent)
 
     def _createTables(self):
         print " :: Tables creation"

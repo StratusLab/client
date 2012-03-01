@@ -25,7 +25,7 @@ from stratuslab.Util import printWarning, printError
 class OpenNebulaNode(OpenNebulaCommon):
     
     def __init__(self, configHolder):
-        super(OpenNebulaCommon, self).__init__(configHolder)
+        super(OpenNebulaNode, self).__init__(configHolder)
         
         self.node = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
         self._propagateNodeInfos()

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-from stratuslab.Util import printAction, isTrueConfVal
+from stratuslab.Util import printAction, isTrueConfVal, printDetail
 from stratuslab.installator.AppRepo import AppRepo
 from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Monitoring import Monitoring
@@ -50,8 +50,11 @@ class BaseInstallator(object):
         self._launchInstallator()
         
     def _selectAllcomponentIfNoOneSpecified(self):
+        componentSelected = False
         for name in self.availableInstallator().keys():
-            self.installAllComponents |=  not getattr(self, 'install%s' % name.title())
+            componentSelected |=  not getattr(self, 'install%s' % name.title())
+        self.installAllComponents = not componentSelected
+        printDetail('All component selected: %s' % self.installAllComponents, self.verboseLevel, 3)
         
     def _launchInstallator(self):
         for componentName, installer in self.availableInstallator().items():
@@ -80,7 +83,7 @@ class BaseInstallator(object):
             componentInstallator.setup()
 
     def _startService(self, componentName, componentInstallator):
-        if self.startServices:
+        if self.startComponent:
             printAction('Starting %s services' % componentName)
             componentInstallator.startServices()
             

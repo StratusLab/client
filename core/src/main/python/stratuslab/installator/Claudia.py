@@ -23,6 +23,8 @@ import stratuslab.system.SystemFactory as SystemFactory
 import hashlib
 from stratuslab.Util import printStep, restartService, sleep
 from stratuslab.installator.Installator import Installator
+from os.path import dirname, isdir
+from os import makedirs
 
 class Claudia(Installator):
 
@@ -49,10 +51,10 @@ class Claudia(Installator):
         self.system.installPackages(self.packages)
 
     def _setupFrontend(self):
-        self.setup(self.smFile, self.smProperties)
-        self.setup(self.tcloudFile, self.tCloudProperties)
-        self.setup(self.claudiaClientFile, self.claudiaClientProperties)
-        self.setup(self.reportClientFile, self.reportProperties)
+        self._configureFile(self.smFile, self.smProperties)
+        self._configureFile(self.tcloudFile, self.tCloudProperties)
+        self._configureFile(self.claudiaClientFile, self.claudiaClientProperties)
+        self._configureFile(self.reportClientFile, self.reportProperties)
 
     def _startServicesFrontend(self):
         restartService('activemq')
@@ -63,7 +65,13 @@ class Claudia(Installator):
     def _overrideValueInFile(self, key, value, fileName):
         search = key + '='
         replace = key + '=' + value
+        self._createParentDirs(fileName)
         Util.appendOrReplaceInFile(fileName, search, replace)
+
+    def _createParentDirs(self, filename):
+        parent = dirname(filename)
+        if not isdir(parent):
+            makedirs(parent)
 
     def _retrieveOneVersion(self):
         if not hasattr(self, 'oneVersion') or not self.oneVersion:

@@ -67,7 +67,7 @@ class MainProgram(CommandBaseSysadmin):
         installGroup.add_option('--setup', dest='setupStep',
                                help='Setup all or selected components', 
                                action='store_true', default=False)
-        installGroup.add_option('--start', dest='startServices',
+        installGroup.add_option('--start', dest='startComponent',
                                help='Start all or selected components', 
                                action='store_true', default=False)
         
@@ -93,10 +93,12 @@ class MainProgram(CommandBaseSysadmin):
     def _doAllSteps(self):
         self.options.installStep = True
         self.options.setupStep = True
-        self.options.startServices = True
+        self.options.startComponent = True
 
     def _noInstallStepSelected(self):
-        return not self.options.installStep and not self.options.setupStep and self.options.startService
+        return (not self.options.installStep 
+            and not self.options.setupStep 
+            and not self.options.startComponent)
     
     def _addComponentsOptions(self, parser):
         for name in BaseInstallator.availableInstallator().keys():

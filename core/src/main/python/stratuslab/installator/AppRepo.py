@@ -31,8 +31,8 @@ class AppRepo(Configurable, Installator):
     '''Perform local installation of an Appliance Repository'''
     
     def __init__(self, configHolder):
-        super(AppRepo, self).__init__(configHolder)
         self.configHolder = configHolder
+        configHolder.assign(self)
         self.useLdap = Util.isTrueConfVal(self.appRepoUseLdap)
         self.system = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
 
@@ -47,6 +47,7 @@ class AppRepo(Configurable, Installator):
         self._installImageRepo()
     
     def _setupFrontend(self):
+        self._verify()
         self._setupWebServer()
         self._setupImageRepo()
     

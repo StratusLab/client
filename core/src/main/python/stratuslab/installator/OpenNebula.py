@@ -23,7 +23,7 @@ from stratuslab.installator.OpenNebulaNode import OpenNebulaNode
 from stratuslab.installator.OpenNebulaFrontend import OpenNebulaFrontend
 from stratuslab.Util import printStep
 
-class OpenNebula(Installator, OpenNebulaNode, OpenNebulaFrontend):
+class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
     
     def __init__(self, configHolder):
         super(OpenNebula, self).__init__(configHolder)
@@ -50,6 +50,7 @@ class OpenNebula(Installator, OpenNebulaNode, OpenNebulaFrontend):
         self._setupFileSharingClient()
 
         printStep('Adding node to cloud')
+        self._assignDrivers()
         self._addCloudNode()
     
     def _installFrontend(self):

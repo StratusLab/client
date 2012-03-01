@@ -26,9 +26,8 @@ import string
 from random import choice
 from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Exceptions import ValidationException
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
-from stratuslab.Util import printStep, printWarning, fileGetContent
+from stratuslab.Util import printStep, fileGetContent
 from stratuslab.system import SystemFactory
 from stratuslab.installator.Installator import Installator
 
@@ -38,8 +37,9 @@ class PersistentDisk(Installator):
         self.configHolder = configHolder
         self.configHolder.assign(self)
         
-        self.system = None
         self.profile = None # Can be frontend or node
+        self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
+        self._setPDiskEndpoint()
         
         # Package to be installed
         self.packages = { 'frontend': {
@@ -65,21 +65,6 @@ class PersistentDisk(Installator):
         self.pdiskUsername = 'pdisk'
         self.pdiskPassword = self._extractPdiskPassword()
             
-    def _startServicesFrontend(self):
-        self._setPDiskEndpoint()
-        self._service('pdisk', 'start')
-
-    def _validateConfiguration(self):
-        pass
-
-    def _installFrontend(self):
-        self.profile = 'frontend'
-        self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
-        self._validateConfiguration()
-        self._setPDiskEndpoint()
-        self._commonInstallActions()
-        self._copyCloudNodeKey()
-        
     def _setPDiskEndpoint(self):
         '''Fool the script to avoid rewrite huge amount of code:
            As the pdisk service can be installed on another machine than the
@@ -90,6 +75,15 @@ class PersistentDisk(Installator):
             self.persistentDiskIp = socket.gethostbyname(socket.gethostname())
         
         self.system.setNodeAddr(self.persistentDiskIp)
+
+    def _validateConfiguration(self):
+        pass
+
+    def _installFrontend(self):
+        self.profile = 'frontend'
+        self._validateConfiguration()
+        self._commonInstallActions()
+        self._copyCloudNodeKey()
         
     def _setupFrontend(self):
         self._writePdiskConfig()
@@ -102,10 +96,13 @@ class PersistentDisk(Installator):
             self._fixUdevForLvmMonitoring()
         else:
             self._createFileHddDirectory()
+            
+                
+    def _startServicesFrontend(self):
+        self._service('pdisk', 'start')
     
     def _installNode(self):
         self.profile = 'node'
-        self.system = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
         self._commonInstallActions()
         
     def _setupNode(self):
@@ -224,27 +221,6 @@ class PersistentDisk(Installator):
         self._overrideValueInFile(self.pdiskUsername,
                                   '%s,cloud-access' % (self.pdiskPassword),
                                   self.authnConfigFile)
-            
-    def _mergeAuthWithProxy(self):
-        loginConf = os.path.join(Defaults.ETC_DIR, '%s/login.conf')
-        pdiskDir = 'storage/pdisk'
-        oneproxyDir = 'one-proxy'
-        confLine = '<Arg>%s</Arg>'
-        configFile = '/opt/stratuslab/storage/pdisk/etc/jetty-jaas-stratuslab.xml'
-        if not self.persistentDiskMergeAuthWithProxy:
-            return
-        printStep('Merging pdisk and one-proxy auth configuration...')
-        if not self.system._remoteFileExists(loginConf % oneproxyDir):
-            printWarning('Not merging login configuration with one proxy, '
-                         'not able to find one-proxy configuration file.\n'
-                         'Edit %s to do it.' % loginConf % pdiskDir)
-            return
-        if 0 == self.system._nodeShell(['grep', '"%s"' % confLine % loginConf % oneproxyDir, configFile]):
-            return
-        self.system._remoteAppendOrReplaceInFile(
-             configFile,
-             confLine % loginConf % pdiskDir,
-             confLine % loginConf % oneproxyDir)
         
     def _configureNfsServer(self):
         printStep('Configuring NFS sharing...')
