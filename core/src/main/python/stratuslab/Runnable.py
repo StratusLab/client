@@ -59,6 +59,18 @@ class Runnable(AuthnCommand):
                 help='list available instance type',
                 default=False, action='store_true')
 
+        self.parser.add_option('--cpu', dest='vmCpu',
+                help='number of CPU cores',
+                default=None)
+
+        self.parser.add_option('--ram', dest='vmRam',
+                help='RAM in megabytes',
+                default=None)
+
+        self.parser.add_option('--swap', dest='vmSwap',
+                help='swap space in megabytes',
+                default=None)
+
         self.parser.add_option('--context-file', dest='extraContextFile', metavar='FILE',
                 help='extra context file with one key=value per line',
                 default=defaultOptions['extraContextFile'])

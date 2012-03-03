@@ -228,6 +228,9 @@ class Runner(object):
                     'vmRamdisk': '',
                     'vmName': '',
                     'vmCpuAmount': None,
+                    'vmCpu': None,
+                    'vmRam': None,
+                    'vmSwap': None,
                     'isLocalIp': False,
                     'isPrivateIp': False,
                     'extraContextFile': '',
@@ -251,9 +254,20 @@ class Runner(object):
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
 
+    def _getVmResourceValues(self):
+        cpu, ram, swap = self.getInstanceType().get(self.instanceType)
+        if self.vmCpu is not None:
+            cpu = self.vmCpu
+        if self.vmRam is not None:
+            ram = self.vmRam
+        if self.vmSwap is not None:
+            swap = self.vmSwap
+
+        return cpu, ram, swap
+
     def _buildVmTemplate(self, template):
         baseVmTemplate = Util.fileGetContent(template)
-        self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceType().get(self.instanceType)
+        self.vm_cpu, self.vm_ram, self.vm_swap = self._getVmResourceValues()
         self.vm_vcpu = self.vm_cpu
 
         if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
