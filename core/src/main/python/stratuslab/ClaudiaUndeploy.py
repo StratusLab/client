@@ -3,7 +3,7 @@
 # co-funded by the European Commission under the Grant Agreement
 # INFSO-RI-261552."
 #
-# Copyright (c) 2011, Telefónica I+D
+# Copyright (c) 2011, Telefonica I+D
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

@@ -21,6 +21,7 @@ import os
 import xmlrpclib
 
 import Util
+import urllib
 from stratuslab.Exceptions import ValidationException
 from stratuslab.Configurator import SimpleConfigParser
 from stratuslab import Defaults
@@ -77,7 +78,9 @@ class CredentialsConnector(object):
     def _insertUsernamePassword(self, url):
         protocolSeparator = '://'
         parts = url.split(protocolSeparator)
-        return parts[0] + protocolSeparator + self.username + ':' + self.password + "@" + ''.join(parts[1:])
+        quotedUsername = urllib.quote(self.username, '')
+        quotedPassword = urllib.quote(self.password, '')
+        return parts[0] + protocolSeparator + quotedUsername + ':' + quotedPassword + "@" + ''.join(parts[1:])
     
     def _validateUsernamePassword(self):
         if not self.username:
@@ -101,11 +104,6 @@ class UsernamePasswordCredentialsConnector(CredentialsConnector):
         url = self._insertUsernamePassword(self.runnable.cloud.server)
         url = self._manglePath(url)
         return xmlrpclib.ServerProxy(url)
-
-    def _insertUsernamePassword(self, url):
-        protocolSeparator = '://'
-        parts = url.split(protocolSeparator)
-        return parts[0] + protocolSeparator + self.username + ':' + self.password + "@" + ''.join(parts[1:])
 
     def createSessionString(self):
         return '%s:%s' % (self.username, Util.shaHexDigest(self.password))
