@@ -323,11 +323,6 @@ BRIDGE=%s
     # -------------------------------------------
     # Security
     # -------------------------------------------
-    def _installFetchCrl(self):
-        Util.printDetail('Installing fetch-crl.')
-        self.installPackages([self.packages['fetch-crl']])
-        if not self.isPackageInstalled('fetch-crl'):
-            Util.printError(msg, exitCode, exit)
         
     def _enableFetchCrl(self):
 
