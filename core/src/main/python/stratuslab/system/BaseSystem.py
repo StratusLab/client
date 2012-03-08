@@ -92,12 +92,17 @@ class BaseSystem(object):
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
     def getPackageWithVersionForInstall(self, package):
-        if self.packages[package].packageVersion:
-            return '%s%s%s*' % (self.packages[package].packageName,
-                                self._getPackageAndVersionSeparator(),
-                                self.packages[package].packageVersion)
+        try:
+            self.packages[package]
+        except KeyError:
+            return package
         else:
-            return self.packages[package].packageName
+            if self.packages[package].packageVersion:
+                return '%s%s%s*' % (self.packages[package].packageName,
+                                    self._getPackageAndVersionSeparator(),
+                                    self.packages[package].packageVersion)
+            else:
+                return self.packages[package].packageName
     
     def _getPackageAndVersionSeparator(self):
         return Systems.getPackageAndVersionSeparatorBasedOnOs(self.os)
