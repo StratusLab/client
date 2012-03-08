@@ -22,6 +22,9 @@ from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab import Util
 
 class Fedora(CentOS):
+    
+    os = 'fedora'
+    
     def __init__(self):
         super(Fedora, self).__init__()
         self.frontendDeps = [
