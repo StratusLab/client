@@ -833,6 +833,7 @@ class BaseSystem(object):
             Util.printDetail('Requested not to install CAs.')
         else:
             self._installCAs()
+            self._installFetchCrl()
             self._enableFetchCrl()
 
     def _enableFetchCrl(self):
@@ -857,6 +858,12 @@ class BaseSystem(object):
         for package in packages:
             if not self.isPackageInstalled(package):
                 Util.printError('Failed to install %s.' % package)
+
+    def _installFetchCrl(self):
+        package = self.getPackageName('fetch-crl')
+        self.installPackages([package])
+        if not self.isPackageInstalled(package):
+            Util.printError('Failed to install %s.' % package)
 
     # -------------------------------------------
     # DHCP server

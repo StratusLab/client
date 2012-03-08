@@ -36,6 +36,7 @@ repoFileNamePattern = '%s/%s.repo' %(packageManagerReposConfDir, '%s')
 
 class CentOS(BaseSystem):
 
+    os = 'centos'
 
     def __init__(self):
         super(CentOS, self).__init__()
@@ -102,7 +103,9 @@ enabled=1
                          'CA' : PackageInfo('ca-policy-egi-core', 
                                                 repository=self.caRepoName),
                          'MySQLServer': PackageInfo('mysql-server',
-                                                    initdScriptName='mysqld')}
+                                                    initdScriptName='mysqld'),
+                         'fetch-crl': PackageInfo('fetch-crl',
+                                                  packageVersion='3*')}
 
         self.installPackagesErrorMsgs = ['No package .* available']
 
@@ -320,6 +323,12 @@ BRIDGE=%s
     # -------------------------------------------
     # Security
     # -------------------------------------------
+    def _installFetchCrl(self):
+        Util.printDetail('Installing fetch-crl.')
+        self.installPackages([self.packages['fetch-crl']])
+        if not self.isPackageInstalled('fetch-crl'):
+            Util.printError(msg, exitCode, exit)
+        
     def _enableFetchCrl(self):
 
         Util.printDetail('Enabling fetch-crl-cron.')
