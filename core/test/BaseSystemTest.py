@@ -39,3 +39,6 @@ class BaseSystemTest(unittest.TestCase):
 
         bs.packages['foo'] = PackageInfo('foo', packageVersion='1*')
         assert 'foo=1**' == bs.getPackageWithVersionForInstall('foo')
+
+if __name__ == "__main__":
+    unittest.main()
