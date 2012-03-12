@@ -37,7 +37,7 @@
         <slterms:os-version>%(osversion)s</slterms:os-version>
         <slterms:os-arch>%(arch)s</slterms:os-arch>
         <slterms:version>%(version)s</slterms:version>
-        <dcterms:compression>%(compression)s</dcterms:compression>
+        <slterms:compression>%(compression)s</slterms:compression>
         %(_locations_xml)s
 
         <dcterms:format>%(format)s</dcterms:format>
