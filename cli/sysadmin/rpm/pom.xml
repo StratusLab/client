@@ -110,7 +110,6 @@
 	  
 	  <requires>
 	    <require>one-3.0-StratusLab</require>
-	    <require>fetch-crl &gt;= 3.0.5</require>
 	    <require>mysql</require>
 	    <require>python-ldap</require>
 	  </requires>

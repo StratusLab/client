@@ -12,3 +12,9 @@ def getInstallerBasedOnOs(os):
         return 'apt'
     else:
         raise Exceptions.ExecutionException('Unsupported OS: %s' % os)
+
+packageAndVersionSeparators = {'yum' : '-',
+                               'apt' : '='}
+
+def getPackageAndVersionSeparatorBasedOnOs(os):
+    return packageAndVersionSeparators[getInstallerBasedOnOs(os)]

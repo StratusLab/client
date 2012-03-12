@@ -21,6 +21,7 @@ import os
 import re
 import shutil
 import time
+import tempfile
 from datetime import datetime
 
 from stratuslab import Exceptions
@@ -29,10 +30,11 @@ from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
     fileGetContent, filePutContent, scp, sshCmd
 import stratuslab.Util as Util
 from stratuslab.system.PackageInfo import PackageInfo
-import tempfile
+from stratuslab.system import Systems
 
 class BaseSystem(object):
 
+    os = ''
     caRepoName = 'CAs'
 
     def __init__(self):
@@ -78,11 +80,33 @@ class BaseSystem(object):
 
         self.addRepositories(packages)
 
-        cmd = '%s %s' % (self.installCmd, ' '.join(packages))
+        packages_versioned = []
+        for package in packages:
+            packages_versioned.append(
+                            self.getPackageWithVersionForInstall(package))
+
+        cmd = '%s %s' % (self.installCmd, ' '.join(packages_versioned))
         _, output = self._executeWithOutput(cmd, shell=True)
 
         Util.printDetail(output, verboseLevel=self.verboseLevel,
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+
+    def getPackageWithVersionForInstall(self, package):
+        try:
+            self.packages[package]
+        except KeyError:
+            return package
+        else:
+            if self.packages[package].packageVersion:
+                return '%s%s%s*' % (self.packages[package].packageName,
+                                    self._getPackageAndVersionSeparator(),
+                                    self.packages[package].packageVersion)
+            else:
+                return self.packages[package].packageName
+    
+    def _getPackageAndVersionSeparator(self):
+        return Systems.getPackageAndVersionSeparatorBasedOnOs(self.os)
+         
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
@@ -814,6 +838,7 @@ class BaseSystem(object):
             Util.printDetail('Requested not to install CAs.')
         else:
             self._installCAs()
+            self._installFetchCrl()
             self._enableFetchCrl()
 
     def _enableFetchCrl(self):
@@ -838,6 +863,12 @@ class BaseSystem(object):
         for package in packages:
             if not self.isPackageInstalled(package):
                 Util.printError('Failed to install %s.' % package)
+
+    def _installFetchCrl(self):
+        package = self.getPackageName('fetch-crl')
+        self.installPackages([package])
+        if not self.isPackageInstalled(package):
+            Util.printError('Failed to install %s.' % package)
 
     # -------------------------------------------
     # DHCP server

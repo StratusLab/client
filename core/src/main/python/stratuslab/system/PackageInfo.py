@@ -19,9 +19,10 @@
 #
 class PackageInfo(object):
 
-    def __init__(self, packageName, installLocation='', configFile='',
-                 initdScriptName='', repository=''):
+    def __init__(self, packageName, packageVersion='', installLocation='',
+                 configFile='', initdScriptName='', repository=''):
         self.packageName = packageName
+        self.packageVersion = packageVersion
         self.installLocation = installLocation
         self.configFile = configFile
         self.initdScriptName = initdScriptName

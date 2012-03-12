@@ -28,6 +28,8 @@ queryPackageCmd = 'dpkg -s'
 
 class Ubuntu(BaseSystem):
 
+    os = 'ubuntu'
+
     def __init__(self):
         self.systemName = 'Ubuntu 10.04'
         self.installCmd = installCmd
