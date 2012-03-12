@@ -104,7 +104,7 @@ class ManifestInfo(object):
                              ('os','os',NS_SLTERMS,None),
                              ('arch','os-arch',NS_SLTERMS,None),
                              ('osversion','os-version',NS_SLTERMS,None),
-                             ('compression','compression',NS_DCTERMS,self.compression),
+                             ('compression','compression',NS_SLTERMS,self.compression),
                              ('comment','description',NS_DCTERMS,None),
                              ('version','version',NS_SLTERMS,None))
 
