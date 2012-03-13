@@ -236,7 +236,7 @@ app_repo_structure = #type_#/#os#-#osversion#-#arch#-#type#/#version#
 app_repo_filename = #os#-#osversion#-#arch#-#type#-#version#.img.#compression#
 
 # URL of the LDAP server to use for authentication
-app_repo_ldap_url = ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid'
+app_repo_ldap_url = ldap://ldap.stratuslab.eu:10636/ou=people,o=stratuslab?uid
 
 # Enable LDAP authentication
 app_repo_use_ldap = True
@@ -256,19 +256,25 @@ app_repo_apache_home = /etc/httpd
 # HTTPD user password file (required if not using LDAP)
 app_repo_httpd_passwd_file =
 
+[openldap]
+openldap = False
+openldap_password = secret
+openldap_password_hash = {SSHA}kzaD3ZyFWmDZ6lzqWX7bBvEZE+Y2OWI/
+
 [registration]
-# Install the registration web application?
 registration = False
+registration_ldap_scheme = ldap
+registration_ldap_host = localhost
+registration_ldap_port = 389
+registration_ldap_manager_dn = cn=admin,o=cloud
 registration_ldap_manager_password = secret
-# administrator email address
-registration_mail_admin =
+registration_admin_email =
 registration_mail_host =
-registration_mail_port = 465
-# Address used in the reply-to
-registration_mail_reply_user =
+registration_mail_port =
+registration_mail_user =
 registration_mail_password =
-registration_mail_ssl = True
-registration_mail_debug = True
+registration_mail_ssl = true
+registration_mail_debug = true
 
 [caching]
 caching = False

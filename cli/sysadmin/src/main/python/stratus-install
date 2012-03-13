@@ -63,6 +63,12 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('--storage', dest='installPersistentDisk',
                                help='Install storage service', 
                                action='store_true', default=False)
+        self.parser.add_option('--registration', dest='installRegistration',
+                               help='Install registration service', 
+                               action='store_true', default=False)
+        self.parser.add_option('--openldap', dest='installOpenLdap',
+                               help='Install OpenLDAP for registration', 
+                               action='store_true', default=False)
         
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 

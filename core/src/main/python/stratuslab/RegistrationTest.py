@@ -29,9 +29,9 @@ import ldap.modlist as modlist
 class RegistrationTest(unittest.TestCase):
 
     baseUrl = 'https://localhost:8444'
-    ldapUrl = 'ldap://localhost:10389/'
+    ldapUrl = 'ldaps://localhost:636/'
 
-    managerDn = 'uid=admin,ou=system'
+    managerDn = 'cn=admin,o=cloud'
     managerPassword = 'secret'
 
     username = 'jsmith'
