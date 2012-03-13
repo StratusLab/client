@@ -27,12 +27,12 @@ class Registration(object):
     def __init__(self, configHolder):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
-        self.packages = ['apacheds']
+        self.packages = ['stratuslab-registration']
         
     def run(self):
         self._installPackages()
         self._configure()
-        self._restartService('one-proxy')
+        self._restartService('registration')
         
     def _installPackages(self):
         Util.printStep('Installing packages')
@@ -47,6 +47,8 @@ class Registration(object):
                             Util.fileGetContent(registrationTpl) % self.__dict__)
 
     def _restartService(self, service):
-        Util.printStep("Restarting Jetty7 (one-proxy)")
+        Util.printStep("Adding registration service to chkconfig and restarting")
+        cmd = 'chkconfig --add %s' % service
+        Util.execute(cmd.split(' '))
         cmd = 'service %s restart' % service
         Util.execute(cmd.split(' '))

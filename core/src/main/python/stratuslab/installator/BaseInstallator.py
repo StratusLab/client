@@ -31,7 +31,7 @@ from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Monitoring import Monitoring
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.Registration import Registration
-from stratuslab.installator.RegistrationLdap import RegistrationLdap
+from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab import Util
@@ -56,7 +56,7 @@ class BaseInstallator(object):
         self.onedTpl = os.path.join(getTemplateDir(), 'oned.conf.tpl')
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
-        self.registrationLdap = False
+        self.openLDAP = False
         self.caching = False
         self.shareType = Defaults.SHARE_TYPE
 
@@ -227,9 +227,9 @@ class BaseInstallator(object):
         printStep('Adding default ACLs')
         self._addDefaultAcls()
 
-        self._configureRegistrationLdap()
+        self._configureOpenLDAP()
 
-        self._configureRegistrationApplication()
+        self._configureRegistration()
 
         self._runInstallFrontEndPersistentDisk()
         
@@ -288,11 +288,11 @@ class BaseInstallator(object):
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
 
-    def _configureRegistrationLdap(self):
-        if self._isTrue(self.registrationLdap):
-            RegistrationLdap(self.configHolder).run()
+    def _configureOpenLDAP(self):
+        if self._isTrue(self.openLDAP):
+            OpenLDAP(self.configHolder).run()
 
-    def _configureRegistrationApplication(self):
+    def _configureRegistration(self):
         if self._isTrue(self.registration):
             Registration(self.configHolder).run()
 
