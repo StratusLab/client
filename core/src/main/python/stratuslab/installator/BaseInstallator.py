@@ -58,6 +58,8 @@ class BaseInstallator(object):
         self.registration = False
         self.openldap = False
         self.caching = False
+        self.installRegistration = False
+        self.installOpenLdap = False
         self.shareType = Defaults.SHARE_TYPE
 
     def runInstall(self, configHolder):
@@ -91,6 +93,12 @@ class BaseInstallator(object):
         elif self.installMonitoring:
             printAction('Monitoring installation')
             self._runInstallMonitoring()
+            return
+        elif self.installOpenLdap:
+            self._configureOpenLDAP()
+            return
+        elif self.installRegistration:
+            self._configureRegistration()
             return
         
         # Front-end installation
