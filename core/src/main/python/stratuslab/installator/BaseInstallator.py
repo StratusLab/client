@@ -297,12 +297,12 @@ class BaseInstallator(object):
         self.frontend.configureCloudProxyService()
 
     def _configureOpenLDAP(self):
-        if self._isTrue(self.openldap):
+        if self._isTrue(self.openldap) or self._isTrue(self.installOpenLdap):
             printAction('Configuring OpenLDAP')
             OpenLDAP(self.configHolder).run()
 
     def _configureRegistration(self):
-        if self._isTrue(self.registration):
+        if self._isTrue(self.registration) or self._isTrue(self.installRegistration):
             printAction('Configuring Registration Service')
             Registration(self.configHolder).run()
 
