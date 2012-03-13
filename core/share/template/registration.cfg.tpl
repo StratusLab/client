@@ -1,4 +1,4 @@
-ldap.scheme=%(registrationLdapScheme)
+ldap.scheme=%(registrationLdapScheme)s
 ldap.host=%(registrationLdapHost)s
 ldap.port=%(registrationLdapPort)s
 ldap.manager.dn=%(registrationLdapManagerDn)s
