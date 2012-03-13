@@ -56,7 +56,7 @@ class BaseInstallator(object):
         self.onedTpl = os.path.join(getTemplateDir(), 'oned.conf.tpl')
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
-        self.openLDAP = False
+        self.openldap = False
         self.caching = False
         self.shareType = Defaults.SHARE_TYPE
 
@@ -289,11 +289,13 @@ class BaseInstallator(object):
         self.frontend.configureCloudProxyService()
 
     def _configureOpenLDAP(self):
-        if self._isTrue(self.openLDAP):
+        if self._isTrue(self.openldap):
+            printAction('Configuring OpenLDAP')
             OpenLDAP(self.configHolder).run()
 
     def _configureRegistration(self):
         if self._isTrue(self.registration):
+            printAction('Configuring Registration Service')
             Registration(self.configHolder).run()
 
     def _configureMarketPlacePolicyValidation(self):

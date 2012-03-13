@@ -18,80 +18,102 @@
 # limitations under the License.
 #
 import os
+import stat
 
 import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab import Util, Defaults
-from shutil import copyfile
-from shutil import move
 
 class OpenLDAP(object):
 
     def __init__(self, configHolder):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
-        self.packages = ['stratuslab-openldap-support']
-        
+
+        self._serviceName = 'slapd'
+        self._packages = ['stratuslab-openldap-support']
+
+        self._sharepath = '/usr/share/stratuslab/registration-openldap'
+
+        self._sysconfigLdap = '/etc/sysconfig/ldap'
+        self._sysconfigLdapTemplate = '%s/sysconfig/ldap' % self._sharepath
+
+        self._testCertCmd = '%s/scripts/generate-self-signed-certificate.sh' % self._sharepath
+        self._certConfigLdif = '%s/ldif/certificates-config.ldif' % self._sharepath
+
+        self._ldapClientConfig = '/etc/openldap/ldap.conf'
+
+        self._openLdapConfig = '/etc/openldap/slapd.d/cn=config/olcDatabase={0}config.ldif'
+        self._accessValue  = 'olcAccess: {0}to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * none'
+
+        self._databaseTemplate = '%s/ldif/cloud-db-defn.ldif' % self._sharepath
+        self._completeDatabaseTemplate = 'cloud-db-defn.ldif'
+
+        self._cloudDatabaseSkeleton = '%s/ldif/cloud-data.ldif' % self._sharepath
+
+        self._openLdapAdminDn = 'cn=admin,o=cloud'
+
+        self._nodename = 'onehost-5.lal.in2p3.fr'
+
+
     def run(self):
         self._installPackages()
         self._configure()
-        self._restartService('slapd')
+        self._restartService()
         
     def _installPackages(self):
         Util.printStep('Installing packages')
-        self.system.installPackages(self.packages)
+        self.system.installPackages(self._packages)
 
     def _configure(self):
-        Util.printStep('Creating LDAP configuration files')
+        Util.printStep('Configuring OpenLDAP server')
 
-        sharepath = '/usr/share/stratuslab/registration-openldap'
+        Util.printStep('Updating sysconfig')
+        Util.filePutContent(self._sysconfigLdap,
+                            Util.fileGetContent(self._sysconfigLdapTemplate))
+        Util.appendOrReplaceInFile(self._sysconfigLdap, 'SLAPD_LDAP=', 'SLAPD_LDAP=yes')
 
-        copyfile(('%s/sysconfig/ldap' % sharepath),
-                 '/etc/sysconfig/ldap')
+        Util.printStep('Setting root account access')
+        Util.appendOrReplaceInFile(self._openLdapConfig, 'olcAccess:', self._accessValue)
 
-        Util.appendOrReplaceInFile('/etc/sysconfig/ldap', 'SLAPD_LDAP=', 'SLAPD_LDAP=yes')
-
-        Util.appendOrReplaceInFile('/etc/openldap/slapd.d/cn=config/olcDatabase={0}config.ldif',
-                                   'olcAccess:',
-                                   'olcAccess: {0}to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * none')
-
-        cmd = 'service %s start' % service
+        Util.printStep('(Re-)starting slapd')
+        cmd = 'service %s restart' % self._serviceName
         Util.execute(cmd.split(' '))
 
-        cmd = '%s/scripts/generate-self-signed-certificate.sh' % sharepath
+        Util.printStep('Generating test certificate and moving into place')
+        Util.execute(self._testCertCmd.split(' '))
+
+        Util.execute('mv -f cacrt.pem /etc/openldap/cacerts/cacrt.pem'.split(' '))
+        Util.execute('mv -f serverkey.pem /etc/openldap/serverkey.pem'.split(' '))
+        Util.execute('mv -f servercrt.pem /etc/openldap/servercrt.pem'.split(' '))
+
+        os.chmod('/etc/openldap/serverkey.pem', stat.S_IRUSR | stat.S_IWUSR)
+        Util.execute('chown ldap:ldap /etc/openldap/serverkey.pem'.split(' '))
+
+        Util.printStep('Updating server config. for generated certs')
+        cmd = "ldapmodify -Y EXTERNAL -H ldapi:/// -f %s" % self._certConfigLdif
         Util.execute(cmd.split(' '))
 
-        move('cacrt.pem', '/etc/openldap/cacerts/')
-        move('serverkey.pem', '/etc/openldap/')
-        move('servercrt.pem', '/etc/openldap/')
-
-        cmd = "ldapmodify -Y EXTERNAL -H ldapi:/// -f %s/ldif/certificates-config.ldif" % sharedir
-        Util.execute(cmd.split(' '))
-
-        Util.appendOrReplaceInFile('/etc/openldap/ldap.conf',
+        Util.printStep('Updating client config. for generated certs')
+        Util.appendOrReplaceInFile(self._ldapClientConfig,
                                    'TLS_CACERT', 
                                    'TLS_CACERT /etc/openldap/cacerts/cacrt.pem')
 
-        databaseDefinition = '%s/ldif/cloud-db-defn.ldif' % sharedir
-        copy(databaseDefinition, 'cloud-db-defn.ldif')
-        Util.appendOrReplaceInFile('cloud-db-defn.ldif', 
-                                   'olcRootPW', 
-                                   ('olcRootPW: %s' % self.openldapPasswordHash))
+        Util.printStep('Creating o=cloud database')
+        Util.filePutContent(self._completeDatabaseTemplate,
+                            Util.fileGetContent(self._databaseTemplate) % self.__dict__)
 
-        databaseTemplate = '%s/ldif/cloud-db-defn.ldif' % sharedir
-        completeDatabaseTemplate = 'cloud-db-defn.ldif' 
-        Util.filePutContent(completeDatabaseTemplate,
-                            Util.fileGetContent(databaseTemplate) % self.__dict__)
-
-        cmd = "ldapadd -Y EXTERNAL -H ldapi:/// -f %s" % completeDatabaseTemplate
+        cmd = "ldapadd -Y EXTERNAL -H ldapi:/// -f %s" % self._completeDatabaseTemplate
         Util.execute(cmd.split(' '))
 
-        cmd = "ldapadd -x -H ldaps://localhost -D cn=admin,o=cloud -w %s -f %s/ldif/cloud-data.ldif" % (self.openldapPassword, sharedir)
+        Util.printStep('Adding cloud database entries')
+        cmd = "ldapadd -x -H ldaps://%s -D %s -w %s -f %s" % (self._nodename, self._openLdapAdminDn, self.openldapPassword, self._cloudDatabaseSkeleton)
+        print cmd
         Util.execute(cmd.split(' '))
 
 
-    def _restartService(self, service):
-        Util.printStep("Adding slapd to chkconfig and restarting")
-        cmd = 'chkconfig --add %s' % service
+    def _restartService(self):
+        Util.printStep("Adding %s to chkconfig and restarting" % self._serviceName)
+        cmd = 'chkconfig --add %s' % self._serviceName
         Util.execute(cmd.split(' '))
-        cmd = 'service %s restart' % service
+        cmd = 'service %s restart' % self._serviceName
         Util.execute(cmd.split(' '))
