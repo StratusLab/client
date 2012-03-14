@@ -67,6 +67,8 @@ class Registration(object):
             raise ValidationException('registration_mail_ssl is not defined')
         if not self.registrationMailDebug:
             raise ValidationException('registration_mail_debug is not defined')
+        if not self.registrationSslTruststore:
+            self.registrationSslTruststore = ''
 
 
     def _configure(self):

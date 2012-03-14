@@ -10,3 +10,4 @@ mail.user=%(registrationMailUser)s
 mail.password=%(registrationMailPassword)s
 mail.ssl=%(registrationMailSsl)s
 mail.debug=%(registrationMailDebug)s
+ssl.truststore=%(registrationSslTruststore)s

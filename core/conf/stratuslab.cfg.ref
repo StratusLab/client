@@ -275,6 +275,7 @@ registration_mail_user =
 registration_mail_password =
 registration_mail_ssl = true
 registration_mail_debug = true
+registration_ssl_truststore = 
 
 [caching]
 caching = False
