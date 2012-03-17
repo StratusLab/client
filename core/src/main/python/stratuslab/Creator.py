@@ -510,10 +510,15 @@ class Creator(object):
             if self.newImageGroupVersion:
                 info.version = '%s.%s' % (self.newImageGroupVersion, info.identifier)
         else:
-            info.version = self.newImageGroupVersion or str(float(info.version) + 0.1)
+            info.version = self.newImageGroupVersion or self._getIncrementedMinorVersionNumber(info.version)
         info.comment = self.comment or info.comment
 
         return info
+
+    def _getIncrementedMinorVersionNumber(self, version):
+        vsplit = version.split('.')
+        vsplit[1] = str(int(vsplit[1]) + 1)
+        return '.'.join(vsplit)
 
     def _updateManifestForLocation(self):
         newLocation = '%s/%s' % (self.apprepoEndpoint, 
