@@ -30,10 +30,10 @@ class LdapAuthenticationTest(unittest.TestCase):
     oneEndpoint = 'onehost-5.lal.in2p3.fr'
     pemCert = '/tmp/stratuslab-test-user/stratuslab-test-user-cert.pem'
     pemKey = '/tmp/stratuslab-test-user/stratuslab-test-user-key.pem'
-    baseUrl = 'https://localhost:8444'
-    ldapUrl = 'ldap://localhost:10389/'
+    baseUrl = 'https://onehost-5.lal.in2p3.fr:8444'
+    ldapUrl = 'ldap://onehost-5.lal.in2p3.fr:389/'
 
-    managerDn = 'uid=admin,ou=system'
+    managerDn = 'cn=admin,o=cloud'
     managerPassword = 'secret'
 
     username = 'jsmith'
@@ -44,7 +44,6 @@ class LdapAuthenticationTest(unittest.TestCase):
     cloudAccessDn = 'cn=cloud-access,ou=groups,o=cloud'
     
     headers = {'cache-control':'no-cache'}
-
 
     def registerUser(self):
         h = httplib2.Http()

@@ -31,7 +31,7 @@ from stratuslab.installator.Claudia import Claudia
 from stratuslab.installator.Monitoring import Monitoring
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.Registration import Registration
-from stratuslab.installator.RegistrationLdap import RegistrationLdap
+from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab import Util
@@ -56,8 +56,10 @@ class BaseInstallator(object):
         self.onedTpl = os.path.join(getTemplateDir(), 'oned.conf.tpl')
         self.cloudVarLibDir = '/var/lib/one'
         self.registration = False
-        self.registrationLdap = False
+        self.openldap = False
         self.caching = False
+        self.installRegistration = False
+        self.installOpenLdap = False
         self.shareType = Defaults.SHARE_TYPE
 
     def runInstall(self, configHolder):
@@ -91,6 +93,12 @@ class BaseInstallator(object):
         elif self.installMonitoring:
             printAction('Monitoring installation')
             self._runInstallMonitoring()
+            return
+        elif self.installOpenLdap:
+            self._configureOpenLDAP()
+            return
+        elif self.installRegistration:
+            self._configureRegistration()
             return
         
         # Front-end installation
@@ -227,9 +235,9 @@ class BaseInstallator(object):
         printStep('Adding default ACLs')
         self._addDefaultAcls()
 
-        self._configureRegistrationLdap()
+        self._configureOpenLDAP()
 
-        self._configureRegistrationApplication()
+        self._configureRegistration()
 
         self._runInstallFrontEndPersistentDisk()
         
@@ -288,12 +296,14 @@ class BaseInstallator(object):
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
 
-    def _configureRegistrationLdap(self):
-        if self._isTrue(self.registrationLdap):
-            RegistrationLdap(self.configHolder).run()
+    def _configureOpenLDAP(self):
+        if self._isTrue(self.openldap) or self._isTrue(self.installOpenLdap):
+            printAction('Configuring OpenLDAP')
+            OpenLDAP(self.configHolder).run()
 
-    def _configureRegistrationApplication(self):
-        if self._isTrue(self.registration):
+    def _configureRegistration(self):
+        if self._isTrue(self.registration) or self._isTrue(self.installRegistration):
+            printAction('Configuring Registration Service')
             Registration(self.configHolder).run()
 
     def _configureMarketPlacePolicyValidation(self):

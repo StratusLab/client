@@ -1,8 +1,13 @@
+ldap.scheme=%(registrationLdapScheme)s
+ldap.host=%(registrationLdapHost)s
+ldap.port=%(registrationLdapPort)s
+ldap.manager.dn=%(registrationLdapManagerDn)s
 ldap.manager.password=%(registrationLdapManagerPassword)s
-admin.email=%(registrationMailAdmin)s
+admin.email=%(registrationAdminEmail)s
 mail.host=%(registrationMailHost)s
 mail.port=%(registrationMailPort)s
-mail.user=%(registrationMailReplyUser)s
+mail.user=%(registrationMailUser)s
 mail.password=%(registrationMailPassword)s
 mail.ssl=%(registrationMailSsl)s
 mail.debug=%(registrationMailDebug)s
+ssl.truststore=%(registrationSslTruststore)s

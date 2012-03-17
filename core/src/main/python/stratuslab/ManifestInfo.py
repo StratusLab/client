@@ -104,7 +104,6 @@ class ManifestInfo(object):
                              ('os','os',NS_SLTERMS,None),
                              ('arch','os-arch',NS_SLTERMS,None),
                              ('osversion','os-version',NS_SLTERMS,None),
-                             ('compression','compression',NS_DCTERMS,self.compression),
                              ('comment','description',NS_DCTERMS,None),
                              ('version','version',NS_SLTERMS,None))
 
@@ -179,6 +178,16 @@ class ManifestInfo(object):
                     raise ExecutionException("Missing element '%s' in namespace '%s'" % (elemXml, ns))
             else:
                 setattr(self, attrObj, attrVal)
+
+        # treat compression differently to allow backward compatibility
+        try:
+            self.compression = getattr(xml.find('.//{%s}compression' % NS_SLTERMS), 'text')
+        except AttributeError:
+            try:
+                self.compression = getattr(xml.find('.//{%s}compression' % NS_DCTERMS), 'text')
+            except AttributeError:
+                if self.compression == None:
+                    raise ExecutionException("Missing compression element")
 
         # email and endorsement timestamp if present
         self.email = getattr(xml.find('.//{%s}email' % NS_SLREQ), 'text',
