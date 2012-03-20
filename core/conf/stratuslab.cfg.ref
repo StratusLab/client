@@ -49,6 +49,10 @@ vm_polling_interval = 60
 vnc_base_port = 5000
 one_port = 2633
 
+[stratuslab_tm]
+# "Reply to" email address to be used with save image feature
+save_image_reply_to_email = noreply@stratuslab.eu
+
 [one-network]
 # For public and local networks, use DHCP controlled IP/MAC addresses mapping.
 # For this define a set or addresses and mac, but make sure they define the
