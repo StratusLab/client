@@ -37,12 +37,12 @@ class VmListGenerator(ListGenerator):
         super(VmListGenerator, self).__init__(configFile)
         self.title = 'List of instances'
         self.fields = [['id', 'Id'],
-                       ['username', 'User'],
+                       ['uname', 'User'],
                        ['name', 'Name'],
                        ['state', 'Stat'],
                        ['cpu', 'CPU'],
                        ['memory', 'Mem'],
-                       ['history_hostname', 'Node'],
+                       ['history_records_history_hostname', 'Node'],
                        ['template_nic_ip', 'IP'],
                        ['stime', 'Time']]
         self.idTemplate = '            <td><a href="vmdetail.py?id=%(value)s"/>%(value)s</a></td>\n'
