@@ -22,9 +22,11 @@ import os
 from BaseInstallator import BaseInstallator
 from stratuslab.Util import fileGetContent
 import stratuslab.Util as Util
-from stratuslab.Exceptions import OneException
+from stratuslab.Exceptions import OneException, ExecutionException
 from stratuslab import Defaults
 from stratuslab.installator.OneDefaults import OneDefaults
+
+etree = Util.importETree()
 
 class OneInstallator(BaseInstallator):
     
@@ -65,7 +67,7 @@ class OneInstallator(BaseInstallator):
 
     def _addDefaultNetworkAcl(self):
         # * NET/#<id> USE (allow to use all networks by all users)
-        for net_id in [0, 1, 2]:
+        for net_id in self._getVnetIdsFromVnetNames():
             try:
                 self.cloud.addNetworkAcl(hex(self.cloud.ACL_USERS['ALL']),
                                          net_id,
@@ -73,6 +75,41 @@ class OneInstallator(BaseInstallator):
             except OneException, ex:
                 Util.printWarning("Couldn't add ACL on NET %i: %s" % (net_id, str(ex)))
 
+    def _getVnetIdsFromVnetNames(self):
+        net_ids = []
+        for vnet_name in self.defaultStaticNetworks + self.defaultRangedNetworks:
+            vnet_id = self._getVnetIdFromVnetName(vnet_name)
+            net_ids.append(int(vnet_id))
+
+        return net_ids
+    
+    def _getVnetIdFromVnetName(self, vnet_name):
+            vnet_info = self._getVnetInfoXml(vnet_name)
+            try:
+                vnet_tree = etree.fromstring(vnet_info)
+            except SyntaxError, ex:
+                raise ExecutionException('Unable to parse vnet %s info: %s' % 
+                                         (vnet_name, str(ex)))
+            try:
+                vnet_id = vnet_tree.find('ID').text
+            except Exception, ex:
+                raise ExecutionException("Failed to find ID of vnet %s in %s with %s" %
+                                         (vnet_name, vnet_info, str(ex)))
+            if not vnet_id:
+                raise ExecutionException("Failed to find ID of vnet %s in %s." %
+                                         (vnet_name, vnet_info))
+
+            return vnet_id
+
+    @staticmethod
+    def _getVnetInfoXml(vnet_name):
+        rc, output = Util.execute('onevnet show --xml %s' % vnet_name, 
+                                  withOutput=True)
+        if rc != 0:
+            raise ExecutionException("Couldn't get network info for network '%s'." % vnet_name)
+
+        return output
+        
     def _addDefaultUserAcl(self):
         # * VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE
         __acls = '* VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE'
