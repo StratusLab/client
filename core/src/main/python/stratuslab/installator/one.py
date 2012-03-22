@@ -103,7 +103,7 @@ class OneInstallator(BaseInstallator):
 
     @staticmethod
     def _getVnetInfoXml(vnet_name):
-        rc, output = Util.execute('onevnet show --xml %s' % vnet_name, 
+        rc, output = Util.execute(['onevnet', 'show', '--xml', vnet_name], 
                                   withOutput=True)
         if rc != 0:
             raise ExecutionException("Couldn't get network info for network '%s'." % vnet_name)
