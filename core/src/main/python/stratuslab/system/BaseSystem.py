@@ -294,6 +294,7 @@ class BaseSystem(object):
         oneAuthFile = '%s/.one/one_auth' % self.oneHome
         self.appendOrReplaceInFileCmd(oneAuthFile,
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
+        os.environ['ONE_AUTH'] = oneAuthFile
 
         self.addCloudAdminToExtraGroups()
 
