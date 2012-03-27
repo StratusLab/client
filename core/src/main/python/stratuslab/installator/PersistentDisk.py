@@ -108,7 +108,7 @@ class PersistentDisk(object):
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
         createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS storage"
 
-        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist), 
+        rc, output = self.system.execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist), 
                                    withOutput=True, shell=True)
         if rc != 0:
             Util.printWarning("Couldn't create database '%s'.\n%s" % output)

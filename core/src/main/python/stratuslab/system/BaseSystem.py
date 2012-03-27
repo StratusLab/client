@@ -465,8 +465,8 @@ class BaseSystem(object):
     #     Front-end related methods
     # -------------------------------------------
 
-    def execute(self, commandAndArgsList):
-        return self._execute(commandAndArgsList)
+    def execute(self, commandAndArgsList, **kwargs):
+        return self._execute(commandAndArgsList, **kwargs)
 
     def _execute(self, commandAndArgsList, **kwargs):
         stdout = kwargs.get('stdout', self.stdout)
