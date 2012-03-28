@@ -56,6 +56,10 @@ class PersistentDisk(object):
         # with the proper suffix attached for the authentication
         # method being used.
         self.endpoint = None
+
+        if not self.pdiskEndpoint:
+            self.pdiskEndpoint = configHolder.endpoint
+
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
