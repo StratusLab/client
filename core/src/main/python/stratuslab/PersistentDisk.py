@@ -47,6 +47,7 @@ class PersistentDisk(object):
         self.verboseLevel = Util.NORMAL_VERBOSE_LEVEL
         self.pdiskEndpoint = None
         self.endpointSuffix = ''
+        self.maxMounts = 10
 
         self.configHolder = configHolder
         self.configHolder.assign(self)
@@ -178,7 +179,8 @@ class PersistentDisk(object):
         volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
-        return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
+        count = int(json.loads(content)['count'])
+        return self.maxMounts-count, self.maxMounts
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
