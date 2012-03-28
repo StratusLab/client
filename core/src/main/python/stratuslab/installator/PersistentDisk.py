@@ -96,7 +96,8 @@ class PersistentDisk(object):
         self._service('pdisk', 'restart')
         if self.persistentDiskShare == 'nfs':
             return
-        self._service('tgtd', 'restart')
+        self._service('tgtd', 'stop')
+        self._service('tgtd', 'start')
         if self.persistentDiskStorage == 'lvm':
             self._createLvmGroup()
             self._fixUdevForLvmMonitoring()
