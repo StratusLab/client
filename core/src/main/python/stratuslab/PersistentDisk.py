@@ -58,8 +58,10 @@ class PersistentDisk(object):
         self.endpoint = None
 
         if not self.pdiskEndpoint:
-            self.pdiskEndpoint = configHolder.endpoint
-
+            try:
+                self.pdiskEndpoint = configHolder.endpoint
+            except AttributeError:
+                pass
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
