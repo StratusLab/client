@@ -114,6 +114,16 @@ class PersistentDisk(object):
         body = urlencode(keyvalues)
         self._putJson(url, body)
 
+    def getValue(self, key, uuid):
+        self._setPDiskUserCredentials()
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        headers, jsonDisk = self._getJson(url)
+        self._raiseOnErrors(headers, jsonDisk)
+        disk = json.loads(jsonDisk)
+        return disk[key]
+
     def _setPDiskUserCredentials(self):
         '''Assign the super pdisk username/password'''
         if self.pdiskUsername and self.pdiskPassword:
@@ -256,6 +266,7 @@ class PersistentDisk(object):
         # always be default values set for the certificate.
         if (user and password):
             self.endpointSuffix = '/pswd'
+            self.endpointSuffix = ''
             self.client.addCredentials(user, password)
         elif (cert and key):
             self.endpointSuffix = '/cert'
