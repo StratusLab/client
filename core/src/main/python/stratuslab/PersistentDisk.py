@@ -266,7 +266,6 @@ class PersistentDisk(object):
         # always be default values set for the certificate.
         if (user and password):
             self.endpointSuffix = '/pswd'
-            self.endpointSuffix = ''
             self.client.addCredentials(user, password)
         elif (cert and key):
             self.endpointSuffix = '/cert'
