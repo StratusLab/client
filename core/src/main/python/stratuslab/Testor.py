@@ -605,7 +605,7 @@ touch %s
         '''Check if VM creation error message is on Web Monitor's VM details page'''
 
         # invalid image
-        self.image += '.gz'
+        self.image += '.invalid'
 
         info, vmId = self._startStopVmAndGetVmInfo()
 
@@ -628,7 +628,7 @@ touch %s
         page = fh.read()
 
         for line in errorMessage.replace('\\n', '\n').split('\n'):
-            self.failUnless(re.search(line, page, re.M),
+            self.failUnless(line in page,
                             "Line '%s' of error message '%s' for VM %s wasn't found at %s" %
                             (line, errorMessage, vmId, url))
 
