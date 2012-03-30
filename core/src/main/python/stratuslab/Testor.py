@@ -453,7 +453,7 @@ touch %s
         finally:
             os.unlink(script_file)
 
-        timeout = 600
+        timeout = 1000
         t_stop = time.time() + timeout
         t_step  = 10
         print "Waiting %i sec for image bundling. One dot %i sec." % (timeout,
