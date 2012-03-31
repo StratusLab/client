@@ -86,12 +86,10 @@ class PersistentDisk(object):
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
         self._copyCloudNodeKey()
-        self._service('pdisk', 'start')
-        
-    def _configureFrontend(self):
-        self._writePdiskConfig()
-        self._setPdiskUserAndPassword()
-        # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
+
+        self._startServices()
+
+    def _startServices(self):
         try:
             self._service('pdisk', 'stop')
         except:
@@ -100,11 +98,16 @@ class PersistentDisk(object):
 
         if self.persistentDiskShare == 'nfs':
             return
+
         try:
             self._service('tgtd', 'stop')
         except:
             pass # it's ok
         self._service('tgtd', 'start')
+        
+    def _configureFrontend(self):
+        self._writePdiskConfig()
+        self._setPdiskUserAndPassword()
 
         if self.persistentDiskStorage == 'lvm':
             self._createLvmGroup()
