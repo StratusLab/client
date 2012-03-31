@@ -92,16 +92,26 @@ class PersistentDisk(object):
         self._writePdiskConfig()
         self._setPdiskUserAndPassword()
         # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
-        self._service('pdisk', 'restart')
+        try:
+            self._service('pdisk', 'stop')
+        except:
+            pass # it's ok
+        self._service('pdisk', 'start')
+
         if self.persistentDiskShare == 'nfs':
             return
-        self._service('tgtd', 'stop')
+        try:
+            self._service('tgtd', 'stop')
+        except:
+            pass # it's ok
         self._service('tgtd', 'start')
+
         if self.persistentDiskStorage == 'lvm':
             self._createLvmGroup()
             self._fixUdevForLvmMonitoring()
         else:
             self._createFileHddDirectory()
+            
         self._createDatabase()
         
     def _createDatabase(self):
