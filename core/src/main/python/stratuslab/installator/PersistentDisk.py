@@ -86,22 +86,45 @@ class PersistentDisk(object):
         self.system.setNodeAddr(self.persistentDiskIp)
         self._commonInstallActions()
         self._copyCloudNodeKey()
+
+        self._startServices()
+
+    def _startServices(self):
+        try:
+            self._service('pdisk', 'stop')
+        except:
+            pass # it's ok
         self._service('pdisk', 'start')
+
+        if self.persistentDiskShare == 'nfs':
+            return
+
+        try:
+            self._service('tgtd', 'stop')
+        except:
+            pass # it's ok
+        self._service('tgtd', 'start')
         
     def _configureFrontend(self):
         self._writePdiskConfig()
-        self._setAutorunZookeeper()
         self._setPdiskUserAndPassword()
-        # self._mergeAuthWithProxy()  ### No longer needed, using common cfg.
-        self._service('pdisk', 'restart')
-        if self.persistentDiskShare == 'nfs':
-            return
-        self._service('tgtd', 'restart')
+
         if self.persistentDiskStorage == 'lvm':
             self._createLvmGroup()
             self._fixUdevForLvmMonitoring()
         else:
             self._createFileHddDirectory()
+            
+        self._createDatabase()
+        
+    def _createDatabase(self):
+        mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
+        createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS storage"
+
+        rc, output = self.system.execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist), 
+                                   withOutput=True, shell=True)
+        if rc != 0:
+            Util.printWarning("Couldn't create database '%s'.\n%s" % output)
     
     def runNode(self):
         self.installNode()
@@ -144,7 +167,7 @@ class PersistentDisk(object):
             self.system.installNodePackages(self.packages[self.profile][section])
 
     def _randomPassword(self, length=12, chars=string.letters+string.digits):
-        return ''.join([choice(chars) for i in range(length)])
+        return ''.join([choice(chars) for _ in range(length)])
             
     def _commonInstallActions(self):
         self.system.workOnNode()
@@ -157,7 +180,7 @@ class PersistentDisk(object):
         
     def _service(self, service, action):
         printStep("Trying to %s %s service..." % (action, service))
-        self.system._nodeShell('/etc/init.d/%s %s' % (service, action))
+        self.system._nodeShell('service %s %s' % (service, action))
         
     def _overrideConfig(self, key, value):
         self._overrideValueInFile(key, value, self.pdiskConfigFile)    
@@ -213,17 +236,10 @@ class PersistentDisk(object):
         self._overrideConfig('disk.store.lvm.device', self.persistentDiskLvmDevice)
         self._overrideConfig('disk.store.lvm.create', self.persistentDiskLvmCreate)
         self._overrideConfig('disk.store.lvm.remove', self.persistentDiskLvmRemove)
-        self._overrideConfig('disk.store.zookeeper.address', self.persistentDiskZookeeperAddr)
         self._overrideConfig('disk.store.cloud.node.admin', self.oneUsername)
         self._overrideConfig('disk.store.cloud.node.ssh_keyfile', self.cloudNodeKey)
         self._overrideConfig('disk.store.cloud.node.vm_dir', self.persistentDiskCloudVmDir)
         
-    def _setAutorunZookeeper(self):
-        # By default script auto run
-        if not self.persistentDiskAutorunZookeeper:
-            printStep('Setting Zookeeper to run with pdisk...')
-            self._overrideValueInFile('persistentDisk', 0, '/etc/init.d/pdisk')
-
     def _setPdiskUserAndPassword(self):
         self._overrideValueInFile(self.pdiskUsername, 
                                   '%s,cloud-access' % (self.pdiskPassword), 

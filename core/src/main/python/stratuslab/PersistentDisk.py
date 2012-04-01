@@ -47,6 +47,7 @@ class PersistentDisk(object):
         self.verboseLevel = Util.NORMAL_VERBOSE_LEVEL
         self.pdiskEndpoint = None
         self.endpointSuffix = ''
+        self.maxMounts = 10
 
         self.configHolder = configHolder
         self.configHolder.assign(self)
@@ -55,6 +56,12 @@ class PersistentDisk(object):
         # with the proper suffix attached for the authentication
         # method being used.
         self.endpoint = None
+
+        if not self.pdiskEndpoint:
+            try:
+                self.pdiskEndpoint = configHolder.endpoint
+            except AttributeError:
+                pass
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
@@ -106,6 +113,16 @@ class PersistentDisk(object):
         url = '%s/disks/%s' % (self.endpoint, uuid)
         body = urlencode(keyvalues)
         self._putJson(url, body)
+
+    def getValue(self, key, uuid):
+        self._setPDiskUserCredentials()
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        headers, jsonDisk = self._getJson(url)
+        self._raiseOnErrors(headers, jsonDisk)
+        disk = json.loads(jsonDisk)
+        return disk[key]
 
     def _setPDiskUserCredentials(self):
         '''Assign the super pdisk username/password'''
@@ -178,7 +195,8 @@ class PersistentDisk(object):
         volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
-        return int(headers['x-diskuser-remaining']), int(headers['x-diskuser-limit'])
+        count = int(json.loads(content)['count'])
+        return self.maxMounts-count, self.maxMounts
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()

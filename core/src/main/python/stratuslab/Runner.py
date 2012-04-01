@@ -76,11 +76,18 @@ class Runner(object):
         self.quiet = False
         self.instanceNumber = 1
         self.authorEmail = ''
+        self.pdiskEndpoint = None
+        self.endpoint = None
+        
         configHolder.assign(self)
         self.configHolder = configHolder
 
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
+
+        if not self.pdiskEndpoint:
+            self.pdiskEndpoint = self.endpoint
+
         self.endpoint = self.cloud.setEndpoint(self.endpoint)
         self.pdisk = None
 
