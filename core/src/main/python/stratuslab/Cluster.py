@@ -189,12 +189,19 @@ class Cluster(object):
 
     def doUpdateEnvironmentVariables(self, ssh, master_node):
         printStep('Updating environment variables')
+        # Find the total available number of cores
+        total_cores = 0
+        for node in self.hosts:
+            total_cores += node.cores
+
         counter = 0
         for node in self.hosts:
             target = []
             target.append(node)
             ssh.run_remote_command(target, "'echo export STRATUS_NC=" + str(counter) + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUS_MASTER=" + master_node.public_dns + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUS_CMASTER=" + master_node.public_dns + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUS_CSIZE=" + str(len(self.hosts)) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUS_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
             counter += 1
 
 
