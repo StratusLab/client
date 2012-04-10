@@ -119,6 +119,7 @@ class HttpClient(object):
 
         h = httplib2.Http(".cache")
         h.force_exception_to_status_code = False
+        h.disable_ssl_certificate_validation=True
         self._printDetail('Contacting the server with %s, at: %s' % (method, url))
         headers = {}
         if contentType:
