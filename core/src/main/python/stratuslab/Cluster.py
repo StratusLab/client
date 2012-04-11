@@ -198,10 +198,10 @@ class Cluster(object):
         for node in self.hosts:
             target = []
             target.append(node)
-            ssh.run_remote_command(target, "'echo export STRATUS_NC=" + str(counter) + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUS_CMASTER=" + master_node.public_dns + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUS_CSIZE=" + str(len(self.hosts)) + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUS_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUSLAB_NC=" + str(counter) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUSLAB_CMASTER=" + master_node.public_dns + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUSLAB_CSIZE=" + str(len(self.hosts)) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUSLAB_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
             counter += 1
 
 
