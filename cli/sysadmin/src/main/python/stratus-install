@@ -69,6 +69,9 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('--openldap', dest='installOpenLdap',
                                help='Install OpenLDAP for registration', 
                                action='store_true', default=False)
+        self.parser.add_option('--port-translation', dest='installPortTranslation',
+                               help='Install Port Translation system',
+                               action='store_true', default=False)
         
         # ONE specific parameters
         self.parser.add_option('-t', '--template', dest='onedTpl', 
