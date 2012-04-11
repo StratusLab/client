@@ -56,7 +56,7 @@ class SSHUtil(object):
         
     def run_remote_command(self, hostlist, command):
         for host in hostlist:
-            cmd = "ssh" + self._options + " -i " + self._private_key + " " + self._username + "@" + host.public_ip + " " + command
+            cmd = "ssh -y" + self._options + " -i " + self._private_key + " " + self._username + "@" + host.public_ip + " " + command
             # print "Command: " + cmd
             # print "Executing in host " + host.public_ip
             error = os.system(cmd)
@@ -150,10 +150,10 @@ class Cluster(object):
         ssh.run_remote_command(self.hosts, "mkdir -p " + self.shared_folder)
         ssh.run_remote_command(master_only, "'echo " + self.shared_folder + " \"*(rw,no_root_squash)\" >> /etc/exports'")
 
-        print "Trying RedHat configuration..."
-        if ssh.run_remote_command(master_only, "service nfs restart"):
-            print "Trying debian configuration..."
-            ssh.run_remote_command(master_only, "service nfs-kernel-server restart")
+        print "\tTrying RedHat configuration..."
+        if ssh.run_remote_command(master_only, "service nfs restart &> /dev/null"):
+            print "\tTrying debian configuration..."
+            ssh.run_remote_command(master_only, "service nfs-kernel-server restart &> /dev/null")
 
         ssh.run_remote_command(worker_nodes, "mount " + master_node.public_ip + ":" + self.shared_folder + " " + self.shared_folder)
 
@@ -161,13 +161,14 @@ class Cluster(object):
     def doSetupSSHHostBasedCluster(self, ssh):
         printStep('Configuring passwordless host-based ssh authentication')
         ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config'")
-        ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\" >> /etc/ssh/sshd_config'")
-        ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\" >> /etc/ssh/ssh_config'")
-        ssh.run_remote_command(self.hosts, "'echo \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config'")
-        ssh.run_remote_command(self.hosts, "'echo \"EnableSSHKeysign yes\" >> /etc/ssh/ssh_config'")
-        ssh.run_remote_command(self.hosts, "service sshd restart")
+        ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\n" +
+                                           "HostbasedAuthentication yes\n" +
+                                           "StrictHostKeyChecking no\n" +
+                                           "EnableSSHKeysign yes\" >> /etc/ssh/ssh_config'")
+        ssh.run_remote_command(self.hosts, "service sshd restart &> /dev/null")
+
         for host in self.hosts:
-            ssh.run_remote_command(self.hosts, "'ssh-keyscan -t rsa " + host.public_dns + " >> /etc/ssh/ssh_known_hosts'")
+            ssh.run_remote_command(self.hosts, "'ssh-keyscan -t rsa " + host.public_dns + " 2>/dev/null >> /etc/ssh/ssh_known_hosts'")
             ssh.run_remote_command(self.hosts, "'echo " + host.public_dns + " root >> /root/.shosts'")
 
     def doCreateClusterUser(self, ssh, master_node):
@@ -198,18 +199,18 @@ class Cluster(object):
         for node in self.hosts:
             target = []
             target.append(node)
-            ssh.run_remote_command(target, "'echo export STRATUSLAB_NC=" + str(counter) + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUSLAB_CMASTER=" + master_node.public_dns + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUSLAB_CSIZE=" + str(len(self.hosts)) + " >> /etc/profile'")
-            ssh.run_remote_command(target, "'echo export STRATUSLAB_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUSLAB_NC=" + str(counter) + " >> /etc/profile && " \
+                                            "echo export STRATUSLAB_CMASTER=" + master_node.public_dns + " >> /etc/profile && " \
+                                            "echo export STRATUSLAB_CSIZE=" + str(len(self.hosts)) + " >> /etc/profile && " \
+                                            "echo export STRATUSLAB_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
             counter += 1
 
 
     def doUpdateHostsFile(self, ssh, master_node, worker_nodes):
         printStep('Updating hosts file')
-        ssh.run_remote_command(self.hosts, " 'echo  >> /etc/hosts'")
-        ssh.run_remote_command(self.hosts, " 'echo \"# Cluster nodes\" >> /etc/hosts'")
-        ssh.run_remote_command(self.hosts, " 'echo " + master_node.public_ip + " " + master_node.public_dns + " " + "master >> /etc/hosts'")
+        ssh.run_remote_command(self.hosts, "'echo  >> /etc/hosts && " \
+                                           " echo \"# Cluster nodes\" >> /etc/hosts && " \
+                                           " echo " + master_node.public_ip + " " + master_node.public_dns + " " + "master >> /etc/hosts'")
 
         counter=0
         for host in worker_nodes:
@@ -224,9 +225,9 @@ class Cluster(object):
         vmStartTimeout = 600
         
         # wait until the each machine is up or timeout after 15 minutes
-        print "Waiting for all cluster VMs to be instantiated"
+        printStep("Waiting for all cluster VMs to be instantiated...")
         if self._is_heterogeneous:
-            print "Waiting for master"
+            printStep("Waiting for master")
             self._runner.waitUntilVmRunningOrTimeout(self._master_vmid, vmStartTimeout)
             vmNetworkDetails.append(self._runner.getNetworkDetail(self._master_vmid))
 
@@ -252,7 +253,7 @@ class Cluster(object):
                 host.swap = vm_swap
                 self.hosts.append(host)
             
-        print "Waiting for all instances to become accessible..."
+        printStep("Waiting for all instances to become accessible...")
 
         failedHosts = []
 
@@ -285,10 +286,10 @@ class Cluster(object):
 
         worker_nodes.remove(master_node)
 
-        print "\nMaster is " + master_node.public_dns
+        print "\n\tMaster is " + master_node.public_dns
 
         for node in worker_nodes:
-            print "Worker:" + node.public_dns
+            print "\tWorker:" + node.public_dns
 
         # Configure the hosts
         printAction('Configuring nodes')       
