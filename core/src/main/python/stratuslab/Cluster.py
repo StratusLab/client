@@ -160,16 +160,15 @@ class Cluster(object):
 
     def doSetupSSHHostBasedCluster(self, ssh):
         printStep('Configuring passwordless host-based ssh authentication')
-        ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config'")
+        ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config && service sshd restart &> /dev/null'")
         ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\n" +
                                            "HostbasedAuthentication yes\n" +
                                            "StrictHostKeyChecking no\n" +
                                            "EnableSSHKeysign yes\" >> /etc/ssh/ssh_config'")
-        ssh.run_remote_command(self.hosts, "service sshd restart &> /dev/null")
 
         for host in self.hosts:
-            ssh.run_remote_command(self.hosts, "'ssh-keyscan -t rsa " + host.public_dns + " 2>/dev/null >> /etc/ssh/ssh_known_hosts'")
-            ssh.run_remote_command(self.hosts, "'echo " + host.public_dns + " root >> /root/.shosts'")
+            ssh.run_remote_command(self.hosts, "'ssh-keyscan -t rsa " + host.public_dns + " 2>/dev/null >> /etc/ssh/ssh_known_hosts && " \
+                                                "echo " + host.public_dns + " root >> /root/.shosts'")
 
     def doCreateClusterUser(self, ssh, master_node):
         printStep('Creating additional user')
