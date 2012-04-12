@@ -26,6 +26,7 @@ from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.OpenNebula import OpenNebula
 from stratuslab.installator.Registration import Registration
+from stratuslab.installator.Sunstone import Sunstone
 
 class BaseInstallator(object):
         
@@ -40,7 +41,8 @@ class BaseInstallator(object):
                 'opennebula': OpenNebula,
                 'persistent-disk': PersistentDisk,
                 'web-monitor': WebMonitor,
-                'registration': Registration }
+                'registration': Registration,
+                'sunstone' : Sunstone }
         
     def runInstallator(self, configHolder):
         self.configHolder = configHolder

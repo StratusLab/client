@@ -277,3 +277,9 @@ caching = False
 #Version of Opennebula installed with claudia. It might be 2.2 or 3.0
 claudia_oneversion = 2.2
 
+[sunstone]
+sunstone = True
+sunstone_port = 9868
+sunstone_ssl_proxy_port = 9869
+# If not set, a dummy certificate will be used.
+sunstone_ssl_proxy_cert = 
