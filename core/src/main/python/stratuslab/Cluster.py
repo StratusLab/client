@@ -187,11 +187,17 @@ class Cluster(object):
                 ssh.run_remote_command(self.hosts,  ' "su - ' + self.cluster_user + " -c 'echo " + host.public_dns + " " + self.cluster_user + " >> ~/.shosts'" +'"')
 
 
-    def doUpdateEnvironmentVariables(self, ssh, master_node):
+    def doUpdateEnvironmentVariables(self, ssh, master_node, worker_nodes):
         printStep('Updating environment variables')
+        active_nodes = []
+        if self.include_master:
+            active_nodes = self.hosts
+        else:
+            active_nodes = worker_nodes
+
         # Find the total available number of cores
         total_cores = 0
-        for node in self.hosts:
+        for node in active_nodes:
             total_cores += node.cores
 
         counter = 0
@@ -200,7 +206,7 @@ class Cluster(object):
             target.append(node)
             ssh.run_remote_command(target, "'echo export STRATUSLAB_NC=" + str(counter) + " >> /etc/profile && " \
                                             "echo export STRATUSLAB_CMASTER=" + master_node.public_dns + " >> /etc/profile && " \
-                                            "echo export STRATUSLAB_CSIZE=" + str(len(self.hosts)) + " >> /etc/profile && " \
+                                            "echo export STRATUSLAB_CSIZE=" + str(len(active_nodes)) + " >> /etc/profile && " \
                                             "echo export STRATUSLAB_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
             counter += 1
 
@@ -313,7 +319,7 @@ class Cluster(object):
             self.doSetupSSHHostBasedCluster(ssh)
                     
         # Update /etc/profile with StratusLab specific environment variables
-        self.doUpdateEnvironmentVariables(ssh, master_node)
+        self.doUpdateEnvironmentVariables(ssh, master_node, worker_nodes)
 
         # Store the list of cluster nodes in a file under /tmp
         self.doPrepareNodeList(ssh, worker_nodes)
