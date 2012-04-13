@@ -81,7 +81,6 @@ class Testor(unittest.TestCase):
         self.testsToRun = []
         self.quotaCpu = 2
         self.runner = None
-        self.imageIdCreateImage = ''
 
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
@@ -281,11 +280,19 @@ class Testor(unittest.TestCase):
         self._testRepoConnection()
         self._uploadAndDeleteDummyImage()
 
+    def _checkAttributePresentAndInitialized(self, attrs):
+        self._checkAttributePresent(attrs)
+        self._checkAttributeInitialized(attrs)
+
     def _checkAttributePresent(self, attrs):
         for attr in attrs:
             if attr not in self.__dict__:
                 raise Exception('Missing attribute %s. Missing an option argument?' % attr)
 
+    def _checkAttributeInitialized(self, attrs):
+        for attr in attrs:
+            if not getattr(self, attr):
+                raise Exception('Attribute %s is not set. Missing an option argument?' % attr)
 
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -426,6 +433,9 @@ class Testor(unittest.TestCase):
 
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
+
+        self._checkAttributePresentAndInitialized(['imageIdCreateImage',
+                                                   'authorEmailCreateImage'])
         self._doCreateImage()
 
     def _doCreateImage(self):
@@ -525,7 +535,7 @@ touch %s
         options['v1'] = v1
         
         if not v1:
-            options['authorEmail'] = 'konstan@sixsq.com'
+            options['authorEmail'] = self.authorEmailCreateImage
             options['saveDisk'] = True
         if v1:
             options['extraDiskSize'] = str(7 * 1024)
@@ -539,8 +549,8 @@ touch %s
     
         options['verboseLevel'] = self.verboseLevel
 
-        options['author'] = 'Konstantin Skaburskas'
-        options['comment'] = 'Image with python-dirq.'
+        options['author'] = 'Jane Tester'
+        options['comment'] = 'NB! Test image.'
         options['newImageGroupVersion'] = '1.99'
         options['newImageGroupName'] = 'base'
         options['newInstalledSoftwareName'] = 'Linux'
