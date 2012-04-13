@@ -167,6 +167,13 @@ class OneConnector(object):
         xml = etree.fromstring(info)
         return xml.find('UNAME').text
     
+    def getVmDiskSource(self, vmId, diskId):
+        info = self._vmInfo(vmId)
+        xml = etree.fromstring(info)
+        sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK') 
+                   if x.find('DISK_ID').text == str(diskId)]
+        return sources[0]
+    
     def getCreateImageInfo(self, vmId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)

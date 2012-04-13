@@ -34,6 +34,7 @@ from stratuslab.installator.Registration import Registration
 from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.WebMonitor import WebMonitor
+from stratuslab.installator.PortTranslation import PortTranslation
 from stratuslab import Util
 from stratuslab import Defaults
 
@@ -60,6 +61,7 @@ class BaseInstallator(object):
         self.caching = False
         self.installRegistration = False
         self.installOpenLdap = False
+        self.installPortTranslation = False
         self.shareType = Defaults.SHARE_TYPE
 
     def runInstall(self, configHolder):
@@ -100,6 +102,10 @@ class BaseInstallator(object):
         elif self.installRegistration:
             self._configureRegistration()
             return
+        elif self.installPortTranslation:
+            self._configurePortTranslation()
+            return
+
         
         # Front-end installation
         printAction('Frontend installation')
@@ -240,6 +246,8 @@ class BaseInstallator(object):
         self._configureRegistration()
 
         self._runInstallFrontEndPersistentDisk()
+
+        self._configurePortTranslation()
         
     def _runInstallFrontEndPersistentDisk(self):
         if self._isTrue(self.persistentDisk):
@@ -308,6 +316,11 @@ class BaseInstallator(object):
 
     def _configureMarketPlacePolicyValidation(self):
         PolicyValidator(self.configHolder).run()
+
+    def _configurePortTranslation(self):
+        if self._isTrue(self.patEnable) or self._isTrue(self.installPortTranslation):
+            printAction('Configuring PortTranslation')
+            PortTranslation(self.configHolder).run()
 
     def _isTrue(self, value):
         return Util.isTrueConfVal(value)
