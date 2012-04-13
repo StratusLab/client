@@ -60,8 +60,8 @@ class MainProgram(Runnable):
                 default=False)
         
         self.parser.add_option('--include-master', dest='include_master', action='store_true',
-                help='Defines that the master node should be considered as part of the worker nodes. (Default=True)',
-                default=True)
+                help='Defines that the master node should be considered as part of the worker nodes. (Default=False)',
+                default=False)
                 
         self.parser.add_option('--add-packages', dest='add_packages', action='store',
                 help='Provide comma separated list of additional packages that you wish to install',
