@@ -399,38 +399,6 @@ class Testor(unittest.TestCase):
                (attrib.lower().startswith('test') or attrib.lower().endswith('test')) and \
                not attrib.startswith('_')
 
-    def createImageV1Test(self):
-        '''Create a machine image based on a given one. Old version v1.'''
-        self._doCreateImageV1()
-
-    def _doCreateImageV1(self):
-        creator = self._createCreator(self.imageIdCreateImage, v1=True)
-
-        newImage = creator.showName()
-        newImageUri = '%s/%s' % (creator.apprepoEndpoint, newImage)
-
-        self._deleteImageAndManifestFromAppRepo(newImageUri)
-
-        try:
-            creator.create()
-        except Exception, e:
-            try:
-                creator._stopMachine()
-            except:
-                pass
-            raise e
-
-        assert creator.targetImageUri == newImageUri
-        assert Util.checkUrlExists(creator.targetImageUri)
-        assert Util.checkUrlExists(creator.targetManifestUri)
-
-        self.image = creator.targetImageUri
-        self.oneUsername = self.username
-        self.proxyOneadminPassword = self.password
-        self._runInstanceTest(cmdToRun=['python -c "import dirq"'])
-
-        self._deleteImageAndManifestFromAppRepo(newImageUri)
-
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
 
@@ -526,24 +494,16 @@ touch %s
                      verboseLevel=self.verboseLevel,
                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
-    def _createCreator(self, image, v1=False, script_file=''):
-        'For both new and old "v1" versions.'
+    def _createCreator(self, image, script_file=''):
 
         Util.generateSshKeyPair(self.sshKey)
         options = {}
 
-        options['v1'] = v1
+        # For backward compatibility
+        options['v1'] = False
         
-        if not v1:
-            options['authorEmail'] = self.authorEmailCreateImage
-            options['saveDisk'] = True
-        if v1:
-            options['extraDiskSize'] = str(7 * 1024)
-            options['apprepoEndpoint'] = self.apprepoEndpoint
-            options['apprepoUsername'] = self.apprepoUsername
-            options['apprepoPassword'] = self.apprepoPassword
-            options['p12Certificate'] = self.p12Certificate
-            options['p12Password'] = self.p12Password
+        options['authorEmail'] = self.authorEmailCreateImage
+        options['saveDisk'] = True
     
         options['instanceType'] = 'c1.medium'
     
