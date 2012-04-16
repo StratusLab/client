@@ -68,6 +68,12 @@ class MainProgram(Runnable):
                 help='Email address of the author of the new image',
                 default='', metavar='EMAIL')
 
+        self.parser.add_option('--marketplace-endpoint-newimage', dest='marketplaceEndpointNewimage',
+                help='Marketplace to register the new image manifest in. '
+                'No default. If not provided, either base image Marketplace or defined '
+                'by cloud site will be used.',
+                default='', metavar='URL')
+
         self.parser.add_option('--v1', dest='v1',
                 help='create image using old method.',
                 default=False, action='store_true')

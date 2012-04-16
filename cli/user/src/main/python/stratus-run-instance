@@ -69,6 +69,12 @@ class MainProgram(Runnable):
                 'with further instructions.',
                 default='', metavar='EMAIL')
 
+        self.parser.add_option('--marketplace-endpoint-newimage', dest='marketplaceEndpointNewimage',
+                help='Used with --save option. Marketplace to register the new image manifest in. '
+                'No default. If not provided, either base image Marketplace or defined '
+                'by cloud site will be used.',
+                default='', metavar='URL')
+
         self.parser.add_option('-o', '--output', dest='outVmIdsFile',
                 help='save vm-id to a file', metavar='FILE',
                 default=None)

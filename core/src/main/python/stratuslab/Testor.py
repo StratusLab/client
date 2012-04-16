@@ -81,7 +81,6 @@ class Testor(unittest.TestCase):
         self.testsToRun = []
         self.quotaCpu = 2
         self.runner = None
-        self.imageIdCreateImage = ''
 
         Testor.configHolder.assign(self)
         self._setFieldsFromEnvVars()
@@ -281,11 +280,19 @@ class Testor(unittest.TestCase):
         self._testRepoConnection()
         self._uploadAndDeleteDummyImage()
 
+    def _checkAttributePresentAndInitialized(self, attrs):
+        self._checkAttributePresent(attrs)
+        self._checkAttributeInitialized(attrs)
+
     def _checkAttributePresent(self, attrs):
         for attr in attrs:
             if attr not in self.__dict__:
                 raise Exception('Missing attribute %s. Missing an option argument?' % attr)
 
+    def _checkAttributeInitialized(self, attrs):
+        for attr in attrs:
+            if not getattr(self, attr):
+                raise Exception('Attribute %s is not set. Missing an option argument?' % attr)
 
     def _testRepoConnection(self):
         passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -392,40 +399,11 @@ class Testor(unittest.TestCase):
                (attrib.lower().startswith('test') or attrib.lower().endswith('test')) and \
                not attrib.startswith('_')
 
-    def createImageV1Test(self):
-        '''Create a machine image based on a given one. Old version v1.'''
-        self._doCreateImageV1()
-
-    def _doCreateImageV1(self):
-        creator = self._createCreator(self.imageIdCreateImage, v1=True)
-
-        newImage = creator.showName()
-        newImageUri = '%s/%s' % (creator.apprepoEndpoint, newImage)
-
-        self._deleteImageAndManifestFromAppRepo(newImageUri)
-
-        try:
-            creator.create()
-        except Exception, e:
-            try:
-                creator._stopMachine()
-            except:
-                pass
-            raise e
-
-        assert creator.targetImageUri == newImageUri
-        assert Util.checkUrlExists(creator.targetImageUri)
-        assert Util.checkUrlExists(creator.targetManifestUri)
-
-        self.image = creator.targetImageUri
-        self.oneUsername = self.username
-        self.proxyOneadminPassword = self.password
-        self._runInstanceTest(cmdToRun=['python -c "import dirq"'])
-
-        self._deleteImageAndManifestFromAppRepo(newImageUri)
-
     def createImageTest(self):
         '''Create a machine image based on a given one.'''
+
+        self._checkAttributePresentAndInitialized(['imageIdCreateImage',
+                                                   'authorEmailCreateImage'])
         self._doCreateImage()
 
     def _doCreateImage(self):
@@ -516,31 +494,23 @@ touch %s
                      verboseLevel=self.verboseLevel,
                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
-    def _createCreator(self, image, v1=False, script_file=''):
-        'For both new and old "v1" versions.'
+    def _createCreator(self, image, script_file=''):
 
         Util.generateSshKeyPair(self.sshKey)
         options = {}
 
-        options['v1'] = v1
+        # For backward compatibility
+        options['v1'] = False
         
-        if not v1:
-            options['authorEmail'] = 'konstan@sixsq.com'
-            options['saveDisk'] = True
-        if v1:
-            options['extraDiskSize'] = str(7 * 1024)
-            options['apprepoEndpoint'] = self.apprepoEndpoint
-            options['apprepoUsername'] = self.apprepoUsername
-            options['apprepoPassword'] = self.apprepoPassword
-            options['p12Certificate'] = self.p12Certificate
-            options['p12Password'] = self.p12Password
+        options['authorEmail'] = self.authorEmailCreateImage
+        options['saveDisk'] = True
     
         options['instanceType'] = 'c1.medium'
     
         options['verboseLevel'] = self.verboseLevel
 
-        options['author'] = 'Konstantin Skaburskas'
-        options['comment'] = 'Image with python-dirq.'
+        options['author'] = 'Jane Tester'
+        options['comment'] = 'NB! Test image.'
         options['newImageGroupVersion'] = '1.99'
         options['newImageGroupName'] = 'base'
         options['newInstalledSoftwareName'] = 'Linux'

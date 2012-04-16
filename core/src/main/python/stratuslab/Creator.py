@@ -81,6 +81,7 @@ class Creator(object):
         self.comment = ''
         self.os = ''
         self.authorEmail = ''
+        self.marketplaceEndpointNewimage = ''
 
         self.endpoint = ''
         self.apprepoEndpoint = ''
@@ -361,7 +362,8 @@ class Creator(object):
         return {'CREATOR_EMAIL' : self.authorEmail,
                 'CREATOR_NAME' : self.author,
                 'NEWIMAGE_COMMENT' : self.comment,
-                'NEWIMAGE_VERSION' : self.newImageGroupVersion}
+                'NEWIMAGE_VERSION' : self.newImageGroupVersion,
+                'NEWIMAGE_MARKETPLACE' : self.marketplaceEndpointNewimage }
 
     def __createRunner(self):
         self.configHolder.set('vmName', 

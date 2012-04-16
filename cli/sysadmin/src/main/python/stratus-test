@@ -95,7 +95,9 @@ class MainProgram(CommandBase):
                                'Default: ArCnG4gBogiprglBUdG6V8YX20y',
                                default='ArCnG4gBogiprglBUdG6V8YX20y', metavar='ID')
 
-        
+        self.parser.add_option('--author-email-createimage', dest='authorEmailCreateImage',
+                               help='New image author email to be used with createImageTest. '
+                               'Mandatory with createImageTest.', metavar='EMAIL')
 
         Uploader.buildAppRepoOptionsParser(self.parser)
 

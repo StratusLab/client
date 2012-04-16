@@ -47,6 +47,12 @@ pdiskProtocol = 'https'
 
 patEnable = False
 patServiceDbname = '/var/lib/one/ports.db'
+patPortsRange = '15000:17000'
+patTranslatedPorts = [22]
+patNetworks = ['local']
+patFirewallChainPrefix = 'PAT'
+patMaxTranslations = 0
+patVerboseLevel = 0
 
 ETC_DIR = '/etc/stratuslab'
 SHARE_DIR = '/var/share/stratuslab'
