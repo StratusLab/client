@@ -314,8 +314,9 @@ monitoring_mysql_root_password = root
 monitoring_webserverport = 8080
 
 [marketplace_client]
-# To be used on Frontend by sysadmin CLI utilites
-marketplace_endpoint = http://marketplace.stratuslab.eu
+# Local Marketplace. To be used on Frontend by TM scripts for policy check 
+# and image creation.
+marketplace_endpoint_local = 
 
 [messaging]
 # JSON encoded dictionary with REST endpoints as keys
