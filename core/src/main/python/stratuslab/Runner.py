@@ -76,6 +76,7 @@ class Runner(object):
         self.quiet = False
         self.instanceNumber = 1
         self.authorEmail = ''
+        self.marketplaceEndpointNewimage = ''
         self.pdiskEndpoint = None
         self.endpoint = None
         
@@ -91,7 +92,8 @@ class Runner(object):
         self.endpoint = self.cloud.setEndpoint(self.endpoint)
         self.pdisk = None
 
-        self.createImageData = {'CREATOR_EMAIL': self.authorEmail}
+        self.createImageData = {'CREATOR_EMAIL': self.authorEmail,
+                                'NEWIMAGE_MARKETPLACE': self.marketplaceEndpointNewimage }
 
         self._initVmAttributes()
         
