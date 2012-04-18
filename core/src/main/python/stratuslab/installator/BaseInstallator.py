@@ -121,6 +121,8 @@ class BaseInstallator(object):
         self.infoDriver = (True and self.infoDriver) or ('im_%s' % self.hypervisor)
         self.virtDriver = (True and self.virtDriver) or ('vmm_%s' % self.hypervisor)
         self.transfertDriver = (True and self.transfertDriver) or ('tm_%s' % self.shareType)
+        self.networkDriver = (True and self.networkDriver) or 'dummy'
+
 
     def _runInstallNodes(self):
 

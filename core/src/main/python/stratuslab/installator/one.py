@@ -40,7 +40,7 @@ class OneInstallator(BaseInstallator):
         # already.  A better implementation would check to see if it 
         # really does exists and if so, returns the existing node id.
         try:
-            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver, self.networkDriver)
         except OneException:
             Util.printWarning('Couldn\'t add host, already present?')
             # The id is actually ignored, so this should be ok.

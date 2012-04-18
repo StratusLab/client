@@ -295,8 +295,8 @@ class OneConnector(object):
     #    Host management
     # -------------------------------------------
 
-    def hostCreate(self, hostname, im, vmm, tm, inDomain=True):
-        ret, id, error_code = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, tm, inDomain)
+    def hostCreate(self, hostname, im, vmm, tm, vnm='dummy', inDomain=True):
+        ret, id, error_code = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, vnm, tm, inDomain)
 
         if not ret:
             raise OneException(id)

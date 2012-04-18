@@ -338,6 +338,7 @@ class Testor(unittest.TestCase):
         configHolder.options['infoDriver'] = 'kvm'
         configHolder.options['virtDriver'] = 'kvm'
         configHolder.options['transfertDriver'] = 'nfs'
+        configHolder.options['networkDriver'] = 'dummy'
         configHolder.options['username'] = self.oneUsername
         configHolder.options['password'] = self.proxyOneadminPassword
         registrar = Registrar(configHolder)
