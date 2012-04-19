@@ -80,6 +80,8 @@ class Runner(object):
         self.pdiskEndpoint = None
         self.endpoint = None
         
+        self.saveDisk = False
+        
         configHolder.assign(self)
         self.configHolder = configHolder
 
@@ -147,8 +149,7 @@ class Runner(object):
                     self.public_key += line
 
     def _setSaveDisk(self):
-        saveDisk = getattr(self, 'saveDisk', False)
-        self.save_disk = (saveDisk and 'yes') or 'no'
+        self.save_disk = self.saveDisk and 'yes' or 'no'
 
     def _setExtraDiskOptional(self):
         try:
