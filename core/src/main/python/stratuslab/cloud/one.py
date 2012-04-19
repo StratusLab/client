@@ -42,16 +42,10 @@ class OneConnector(object):
         "GROUP"         : 0x40000000000
     }
     ACL_RIGHTS = {
-        "CREATE"        : 0x1,  # Auth. to create an object
-        "DELETE"        : 0x2,  # Auth. to delete an object
-        "USE"           : 0x4,  # Auth. to use an object
-        "MANAGE"        : 0x8,  # Auth. to manage an object
-        "INFO"          : 0x10, # Auth. to view an object
-        "INFO_POOL"     : 0x20, # Auth. to view any object in the pool
-        "INFO_POOL_MINE": 0x40, # Auth. to view user and/or group objects
-        "INSTANTIATE"   : 0x80, # Auth. to instantiate a VM from a TEMPLATE
-        "CHOWN"         : 0x100,# Auth. to change ownership of an object
-        "DEPLOY"        : 0x200 # Auth. to deploy a VM in a Host
+        "USE"           : 0x1,  # Auth. to use an object
+        "MANAGE"        : 0x2,  # Auth. to perform management actions
+        "ADMIN"         : 0x4,  # Auth. to perform administrative actions
+        "CREATE"        : 0x8   # Auth. to create an object
     }
 
     def __init__(self, credentials):
