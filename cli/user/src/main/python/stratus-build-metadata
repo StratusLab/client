@@ -26,7 +26,6 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBase
 from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageFormats
-from stratuslab.Creator import Creator
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Compressor import Compressor
 import stratuslab.Util as Util
@@ -158,7 +157,7 @@ class MainProgram(CommandBase):
         if not checkSumsToDo and not self.options.sha1:
             checkSumsToDo = ManifestInfo.MANDATORY_CHECKSUMS
 
-        chksums = Creator.checksumImageLocal(self.image, checkSumsToDo)
+        chksums = Image.checksumImage(self.image, checkSumsToDo)
 
         self.options.__dict__.update(chksums)
 

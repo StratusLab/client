@@ -18,11 +18,14 @@
 # limitations under the License.
 #
 import re
+import commands
 
 from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
 import stratuslab.Util as Util
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
+from stratuslab.Exceptions import ExecutionException
+from stratuslab.ManifestInfo import ManifestInfo
 
 class Image(object):
     
@@ -57,6 +60,12 @@ class Image(object):
         else:
             # Unknown image reference.
             raise Exceptions.ValidationException('Image reference must be a URL, image ID or disk ID:  %s' % image)
+
+    @staticmethod
+    def checksumImage(filename, checksums=ManifestInfo.MANDATORY_CHECKSUMS):
+        """Return dictionary of checksums."""
+
+        return Util.checksum_file(filename, checksums)
 
     @staticmethod
     def isImageUrl(imageReference):
