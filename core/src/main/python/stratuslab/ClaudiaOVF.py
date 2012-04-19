@@ -29,7 +29,6 @@ from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
-from stratuslab.Creator import Creator
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Exceptions import InputException
