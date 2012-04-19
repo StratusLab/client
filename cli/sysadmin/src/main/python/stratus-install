@@ -83,6 +83,8 @@ class MainProgram(CommandBaseSysadmin):
                                help='virtualization driver', metavar='VM_NAME', default=None)
         self.parser.add_option('--tm', dest='transfertDriver', 
                                help='transfert driver', metavar='VM_NAME', default=None)
+        self.parser.add_option('--vnm', dest='networkDriver',
+                               help='network driver', metavar='VM_NAME', default='dummy')
         
         self.options, _ = self.parser.parse_args()
 

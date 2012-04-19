@@ -370,6 +370,21 @@ IMAGE_MAD = [
 #   remote    : values,
 #               - YES, The hook is executed in the host
 #               - NO, The hook is executed in the OpenNebula server (default)
+#
+#
+# User Hooks (USER_HOOK) defined by:
+#   name      : for the hook, useful to track the hook (OPTIONAL)
+#   on        : when the hook should be executed,
+#               - CREATE, when the User is created (oneuser create)
+#               - UPDATE, when the User is modified
+#   command   : path is relative to $ONE_LOCATION/var/remotes/hook
+#               (self-contained) or to /var/lib/one/remotes/hook (system-wide).
+#               That directory will be copied on the hosts under
+#               SCRIPTS_REMOTE_DIR. It can be an absolute path that must exist
+#               on the target host.
+#   arguments : for the hook. You can use the following User information:
+#               - $UID, the ID of the user
+#               - $TEMPLATE, the User template in xml and base64 encoded
 #-------------------------------------------------------------------------------
 
 HM_MAD = [
@@ -544,6 +559,18 @@ HM_MAD = [
 #
 #-------------------------------------------------------------------------------
 
+#USER_HOOK = [
+#    name      = "new_user",
+#    on        = "CREATE",
+#    command   = "user",
+#    arguments = "create $UID $TEMPLATE"]
+#
+#USER_HOOK = [
+#    name      = "change_user",
+#    on        = "UPDATE",
+#    command   = "user",
+#    arguments = "update $UID $TEMPLATE"]
+
 #*******************************************************************************
 # Auth Manager Configuration
 #*******************************************************************************
@@ -565,6 +592,8 @@ AUTH_MAD = [
     executable = "one_auth_mad",
     arguments = "--authz quota --authn dummy,plain"
 ]
+
+SESSION_EXPIRATION_TIME = 900
 
 #------------------------------ Notification Hooks -----------------------------
 

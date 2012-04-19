@@ -190,13 +190,16 @@ class PersistentDisk(object):
         return headers.status == 200
     
     def getVolumeUsers(self, uuid):
+        count = self.getVolumeUserCount(uuid)
+        return self.maxMounts-count, self.maxMounts
+    
+    def getVolumeUserCount(self, uuid):
         self._initPDiskConnection()
         self._printContacting()
         volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
-        count = int(json.loads(content)['count'])
-        return self.maxMounts-count, self.maxMounts
+        return int(json.loads(content)['count'])
     
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()

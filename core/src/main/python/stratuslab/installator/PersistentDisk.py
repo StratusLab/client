@@ -42,7 +42,7 @@ class PersistentDisk(object):
         
         # Package to be installed
         self.packages = { 'frontend': {
-                            'pdisk': ['pdisk-server', ],
+                            'pdisk': ['stratuslab-pdisk-server', ],
                             'iscsi': ['scsi-target-utils', ],
                             'nfs': ['nfs-utils', 'nfs-utils-lib'],
                             'lvm': ['lvm2', ],

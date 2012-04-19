@@ -456,6 +456,13 @@ class Runner(object):
 
         return self.vmIds
 
+    def save_instance_as_new_image(self, vm_id):
+        self._printContacting()
+        self._checkInstanceExists(vm_id)
+
+        self.printStep('Instructing cloud to save instance as new image on shutdown')
+
+
     def getNetworkDetail(self, vmId):
         networkName, ip = self.cloud.getVmIp(vmId)
         return networkName, ip

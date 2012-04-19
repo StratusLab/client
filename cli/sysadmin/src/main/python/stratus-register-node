@@ -59,7 +59,9 @@ class MainProgram(CommandBaseSysadmin):
                                help='virtualization driver', metavar='VM_NAME')
         self.parser.add_option('--tm', dest='transfertDriver', 
                                help='transfert driver', metavar='VM_NAME')
-        
+        self.parser.add_option('--vnm', dest='networkDriver',
+                               help='network driver', metavar='VM_NAME')
+
         self.options, self.nodes = self.parser.parse_args()
 
     def checkOptions(self):
@@ -69,6 +71,8 @@ class MainProgram(CommandBaseSysadmin):
             self.parser.error('Missing --vmm')
         if not self.options.transfertDriver:
             self.parser.error('Missing --tm')
+        if not self.options.networkDriver:
+            self.parser.error('Missing --vnm')
         if not self.options.password:
             self.parser.error('Missing --password')
             

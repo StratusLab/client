@@ -40,7 +40,7 @@ class OneInstallator(BaseInstallator):
         # already.  A better implementation would check to see if it 
         # really does exists and if so, returns the existing node id.
         try:
-            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver, self.networkDriver)
         except OneException:
             Util.printWarning('Couldn\'t add host, already present?')
             # The id is actually ignored, so this should be ok.
@@ -112,7 +112,7 @@ class OneInstallator(BaseInstallator):
         
     def _addDefaultUserAcl(self):
         # * VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE
-        __acls = '* VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE'
+        __acls = '* VM+IMAGE+TEMPLATE/* CREATE+USE'
 
         users = hex(self.cloud.ACL_USERS['ALL'])
         resources = hex(self.cloud.ACL_RESOURCES['VM'] +
@@ -120,8 +120,7 @@ class OneInstallator(BaseInstallator):
                         self.cloud.ACL_RESOURCES['TEMPLATE'] +
                         self.cloud.ACL_USERS['ALL'])
         rights = hex(self.cloud.ACL_RIGHTS['CREATE'] + 
-                    self.cloud.ACL_RIGHTS['INFO_POOL_MINE'] +
-                    self.cloud.ACL_RIGHTS['INSTANTIATE'])
+                    self.cloud.ACL_RIGHTS['USE'])
         try:
             self.cloud.addUserAcl(users, resources, rights)
         except OneException, ex:
