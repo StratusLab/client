@@ -17,10 +17,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import tempfile
 import unittest
 
 import stratuslab.Util as Util
 import stratuslab.Exceptions as Exceptions
+import os
 
 class UtilTest(unittest.TestCase):
 
@@ -132,6 +134,26 @@ start block
         self.assertEquals(Util.sanitizeEndpoint('localhost', 'https', 888), 'https://localhost:888')
         self.assertEquals(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
         self.assertEquals(Util.sanitizeEndpoint('localhost'), 'http://localhost:80')
+
+    def testChecksumFile(self):
+        fd, filename = tempfile.mkstemp()
+        os.write(fd, 'foo')
+        # checksums of 'foo'
+        checksums_ref = {'md5' : 'acbd18db4cc2f85cedef654fccc4a4d8',
+                         'sha1': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',}
+        os.close(fd)
+        try:
+            self.assertEquals(Util.checksum_file(filename, ['sha1']),
+                              {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
+
+            sums = Util.checksum_file(filename, ['md5', 'sha1'])
+            for sum, val in sums.items():
+                self.assertEquals(checksums_ref[sum], val)
+
+            self.failUnlessRaises(Exception, Util.checksum_file, filename, ['bar'])
+
+        finally:
+            os.unlink(filename)
 
 if __name__ == "__main__":
     unittest.main()

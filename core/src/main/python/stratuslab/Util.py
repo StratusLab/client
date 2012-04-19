@@ -52,6 +52,18 @@ SSH_EXIT_STATUS_ERROR = 255
 SSH_CONNECTION_RETRY_NUMBER = 2
 SSH_CONNECTION_RETRY_SLEEP_MAX = 5
 
+CHECKSUM_COMMAND_SYSTEMS = ['Linux', 'Darwin']
+CHECKSUM_COMMANDS_LINUX = {'md5'   :'md5sum',
+                           'sha1'  :'sha1sum',
+                           'sha256':'sha256sum',
+                           'sha512':'sha512sum'}
+CHECKSUM_COMMANDS_DARWIN = {'md5'   :'md5 -q',
+                            'sha1'  :'shasum -a 1',
+                            'sha256':'shasum -a 256',
+                            'sha512':'shasum -a 512'}
+CHECKSUM_COMMANDS = {'Linux'  : CHECKSUM_COMMANDS_LINUX,
+                     'Darwin' : CHECKSUM_COMMANDS_DARWIN}
+
 def getShareDir():
     if os.path.exists(Defaults.SHARE_DIR):
         return Defaults.SHARE_DIR
@@ -608,3 +620,36 @@ def isValidNetLocation(url):
 
 def systemName():
     return platform.system()
+
+def checksum_file(filename, checksums=[]):
+    """Return dictionary of checksums. 
+    
+    TODO: Consider using hashlib instead of CLI. To have a good performance with 
+    hashlib buffer size for file reads has to be dynamic growing with the 
+    file sizes."""
+
+    if not checksums:
+        return {}
+    
+    system = systemName()
+    if system not in CHECKSUM_COMMAND_SYSTEMS:
+        raise Exception("Don't know how to checksum a file on system %s" % system)
+
+    checksum_commands = {}
+    for checksum in checksums:
+        try:
+            checksum_commands[checksum] = CHECKSUM_COMMANDS[system][checksum]
+        except KeyError:
+            raise Exception("Command for checksum '%s' is not defined on system '%s'" %
+                            (checksum, system))
+
+    results = {}
+    for chksum, cmd in checksum_commands.items():
+        _cmd = [cmd, filename]
+        rc, output = execute(_cmd, shell=True, withOutput=True)
+        if rc != 0:
+            raise ExecutionException("Failed to checksum. %s\n%s" % (_cmd, 
+                                                                     output))
+        results[chksum] = output.split(' ')[0].strip()
+
+    return results
