@@ -74,10 +74,6 @@ class MainProgram(Runnable):
                 'by cloud site will be used.',
                 default='', metavar='URL')
 
-        self.parser.add_option('--v1', dest='v1',
-                help='create image using old method.',
-                default=False, action='store_true')
-
         self.parser.add_option('--comment', dest='comment',
                 help='description of the new image',
                 default='', metavar='TEXT')
@@ -137,9 +133,6 @@ class MainProgram(Runnable):
         self.parser.add_option('--curl-option', dest='uploadOption', metavar='OPTION',
                 help='additional curl option', default='')
 
-        AuthnCommand.addP12CertOptions(self.parser)
-        Uploader.buildAppRepoOptionsParser(self.parser)
-
         super(MainProgram, self).parse()
 
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
@@ -165,16 +158,8 @@ you\'ll never be able to retrieve the new image')
         if not self.options.author:
             self.parser.error('Provide an author for the new image')
 
-        if not self.options.v1 and not self.options.authorEmail:
+        if self.options.authorEmail:
             self.parser.error('Provide a valid Email address of the author of the image.')
-
-        if not self.options.v1:
-            # This should be True for Runner in the case of image creation to
-            # define required data in deployment script.
-            self.options.saveDisk = True
-
-        if self.options.v1:
-            AuthnCommand.checkP12CertOptionsOnly(self)
 
         if not self.options.noUpload:
             Uploader.checkAppRepoOptions(self.options, self.parser)
