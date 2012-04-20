@@ -20,7 +20,6 @@
 import os
 import xmlrpclib
 
-import Util
 import urllib
 from stratuslab.Exceptions import ValidationException
 from stratuslab.Configurator import SimpleConfigParser
@@ -106,7 +105,7 @@ class UsernamePasswordCredentialsConnector(CredentialsConnector):
         return xmlrpclib.ServerProxy(url)
 
     def createSessionString(self):
-        return '%s:%s' % (self.username, Util.shaHexDigest(self.password))
+        return '%s:%s' % (self.username, self.password)
 
 
 class CertificateCredentialsConnector(CredentialsConnector):
