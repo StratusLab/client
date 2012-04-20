@@ -590,7 +590,7 @@ HM_MAD = [
 
 AUTH_MAD = [
     executable = "one_auth_mad",
-    arguments = "--authz quota --authn dummy,plain"
+    arguments = "--authz quota --authn default,dummy,plain"
 ]
 
 SESSION_EXPIRATION_TIME = 900
