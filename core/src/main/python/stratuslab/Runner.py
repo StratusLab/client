@@ -30,8 +30,13 @@ from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
 from stratuslab.Exceptions import ExecutionException
+import urllib2
 
 class Runner(object):
+
+    class HeadRequest(urllib2.Request):
+        def get_method(self):
+            return "HEAD"
 
     EXTRA_DISK = '''DISK=[
   FORMAT=ext3,
@@ -419,11 +424,16 @@ class Runner(object):
 
     def runInstance(self):
         self._printContacting()
-        self._checkImageExists(self.vm_image)
 
-        self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
-
-        self.vm_image = self._createDiskUrlIfDiskId(self.vm_image)
+        if (Image.isImageId(self.vm_image)):
+            self._checkImageExists(self.vm_image)
+            self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
+        elif (Image.isDiskId(self.vm_image)):
+            self.vm_image = self._createDiskUrlIfDiskId(self.vm_image)
+        elif (self._isAliasUrl(self.vm_image)):
+            self.vm_image = self._resolveUrl(self.vm_image)
+        else:
+            raise Exceptions.ValidationException('Image reference must be an Alias URL, Marketplace Image ID or Disk ID:  %s' % vm_image)
 
         self.printAction('Starting machine(s)')
 
@@ -462,7 +472,6 @@ class Runner(object):
 
         self.printStep('Instructing cloud to save instance as new image on shutdown')
 
-
     def getNetworkDetail(self, vmId):
         networkName, ip = self.cloud.getVmIp(vmId)
         return networkName, ip
@@ -484,6 +493,10 @@ class Runner(object):
 
     def shutdownInstances(self, ids=[]):
         self._operateOnInstance('Shutdown', ids=ids)
+
+    def _isAliasUrl(self, url):
+        # TODO: Put in real implementation.
+        return True
 
     def _operateOnInstance(self, operation, ids=[]):
         operations = ('Shutdown', 'Kill')
@@ -527,14 +540,13 @@ class Runner(object):
     def getVmState(self, vmId):
         return self.cloud.getVmState(vmId)
 
-    def _checkImageExists(self, image):
-        '''image - URL or image ID'''
+    def _checkImageExists(self, imageId):
         self.printDetail('Checking image availability.')
         if self.noCheckImageUrl:
             Util.printWarning('Image availability check is disabled.')
             return
         imageObject = Image(self.configHolder)
-        imageObject.checkImageExists(image)
+        imageObject.checkImageExists(imageId)
 
     def _prependMarketplaceUrlIfImageId(self, image):
         if Image.isImageId(image):
@@ -551,3 +563,11 @@ class Runner(object):
 
     def _printContacting(self):
         self.printDetail('Accessing compute service at: %s' % self.endpoint)
+
+    def _resolveUrl(self, url):
+        '''Uses a HEAD request to resolve an http(s) URL with a possible redirect.'''
+        if (url.startswith("http")):
+            response = urllib2.urlopen(Runner.HeadRequest(url))
+            return response.geturl()
+        else:
+            return url
