@@ -306,7 +306,6 @@ class Creator(object):
     def __createRunner(self):
         self.configHolder.set('vmName', 
                               '%s: %s' % (self.vmName, Util.getTimeInIso8601()))
-        self.configHolder.set('extraDiskSize', self._getExtraDiskSizeBasedOnManifest())
         self.configHolder.set('noCheckImageUrl', True)
 
         self.configHolder.set('saveDisk', True)
