@@ -74,6 +74,7 @@ class ManifestInfoTest(unittest.TestCase):
         <slterms:os-version>9.7</slterms:os-version>
         <slterms:os-arch>i486</slterms:os-arch>
         <slterms:hypervisor>kvm</slterms:hypervisor>
+        <dcterms:compression>test</dcterms:compression>
         
         <slterms:location>%(location1)s</slterms:location>
         <slterms:location>%(location2)s</slterms:location>
