@@ -62,9 +62,10 @@ class Image(object):
         return Image.re_diskId.match(diskId)
 
     def getImageFormatByImageId(self, imageId):
-        if Image.isImageUrl(imageId):
+        if Image.isImageId(imageId):
+            return self.manifestDownloader.getImageElementValue('format', imageId)
+        else:
             raise Exceptions.ValidationException('Image ID was expected. Given %s' % imageId)
-        return self.manifestDownloader.getImageElementValue('format', imageId)
             
     def _checkImageByUrl(self, imageUrl):
         try:
