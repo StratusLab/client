@@ -51,7 +51,8 @@ class ManifestDownloader(object):
 
         return self._extractManifestInfos(self._parseXml(metadataEntries))
     
-    def _parseXml(self, xmlAsString):
+    @staticmethod
+    def _parseXml(xmlAsString):
         return etree.fromstring(xmlAsString)
 
     def _extractManifestInfos(self, manifestRootElement):
