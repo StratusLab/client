@@ -27,8 +27,6 @@ from stratuslab.ManifestInfo import ManifestInfo
 
 class Image(object):
     
-    re_imageUrl = re.compile('(ftp|http)[s]?://.*\.(img|qco|qcow|qcow2)(\.%s)?$' % 
-                             '|\.'.join(Compressor.compressionFormats))
     re_imageId = re.compile('^[A-Za-z0-9_-]{27}$')
     re_diskId = re.compile('^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 
@@ -42,22 +40,10 @@ class Image(object):
         configHolder = self.configHolder.copy()
         return ManifestDownloader(configHolder)
     
-    def checkImageExists(self, image):
-        """image - URL, image ID, or disk ID"""
-
-        if Image.isImageId(image):
-            imageId = image
+    def checkImageExists(self, imageId):
+        """dereferences the entry and checks the image location if an image id"""
+        if Image.isImageId(imageId):
             self._checkImageByIdInMarketplace(imageId)
-        elif Image.isDiskId(image):
-            # Don't check whether the disk image is 
-            # available as this requires authentication.
-            return True
-        elif Image.isImageUrl(image):
-            imageUrl = image
-            self._checkImageByUrl(imageUrl)
-        else:
-            # Unknown image reference.
-            raise Exceptions.ValidationException('Image reference must be a URL, image ID or disk ID:  %s' % image)
 
     @staticmethod
     def checksumImage(filename, checksums=ManifestInfo.MANDATORY_CHECKSUMS):
@@ -66,16 +52,12 @@ class Image(object):
         return Util.checksum_file(filename, checksums)
 
     @staticmethod
-    def isImageUrl(imageReference):
-        return Image.re_imageUrl.match(imageReference)
+    def isImageId(imageId):
+        return Image.re_imageId.match(imageId)
 
     @staticmethod
-    def isImageId(imageReference):
-        return Image.re_imageId.match(imageReference.split('/')[0])
-
-    @staticmethod
-    def isDiskId(imageReference):
-        return Image.re_diskId.match(imageReference)
+    def isDiskId(diskId):
+        return Image.re_diskId.match(diskId)
 
     def getImageFormatByImageId(self, imageId):
         return self._getImageElementValue('format', imageId)
@@ -84,10 +66,11 @@ class Image(object):
         return self._getImageElementValue('disks-bus', imageId)
 
     def _getImageElementValue(self, element, imageId):
-        if Image.isImageUrl(imageId):
+        if Image.isImageId(imageId):
+            return self.manifestDownloader.getImageElementValue(element, imageId)
+        else:
             raise Exceptions.ValidationException('Image ID was expected. Given %s' % imageId)
-        return self.manifestDownloader.getImageElementValue(element, imageId)
-
+            
     def _checkImageByUrl(self, imageUrl):
         try:
             Util.checkUrlExists(imageUrl)
