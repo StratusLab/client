@@ -42,12 +42,12 @@ class SSHUtil(object):
         self._private_key = private_key
         self._username = username
         
-    def copy_file_to_hosts(self, hostlist, file, remotepath): 
+    def copy_file_to_hosts(self, hostlist, srcfile, remotepath): 
         cmd = "scp" + self._options + " -i " + self._private_key
     
         for host in hostlist:
             # print "Copying to host " + host.public_ip
-            error = os.system(cmd + " " + file + " " + self._username + "@" + host.public_ip + ":" + remotepath)
+            error = os.system(cmd + " " + srcfile + " " + self._username + "@" + host.public_ip + ":" + remotepath)
             if error > 0 :
                 print "Error while executing command"
                 return error
@@ -160,11 +160,10 @@ class Cluster(object):
 
     def doSetupSSHHostBasedCluster(self, ssh):
         printStep('Configuring passwordless host-based ssh authentication')
-        ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config && service sshd restart &> /dev/null'")
-        ssh.run_remote_command(self.hosts, "'echo \"HostbasedAuthentication yes\n" +
-                                           "HostbasedAuthentication yes\n" +
-                                           "StrictHostKeyChecking no\n" +
-                                           "EnableSSHKeysign yes\" >> /etc/ssh/ssh_config'")
+        ssh.run_remote_command(self.hosts, "'echo \"IgnoreRhosts no\" >> /etc/ssh/sshd_config && service sshd restart &> /dev/null && " + 
+                                            "echo \"HostbasedAuthentication yes\n" +
+                                            "StrictHostKeyChecking no\n" +
+                                            "EnableSSHKeysign yes\" >> /etc/ssh/ssh_config'")
 
         for host in self.hosts:
             ssh.run_remote_command(self.hosts, "'ssh-keyscan -t rsa " + host.public_dns + " 2>/dev/null >> /etc/ssh/ssh_known_hosts && " \
@@ -222,6 +221,12 @@ class Cluster(object):
             ssh.run_remote_command(self.hosts, " 'echo " + host.public_ip + " " + host.public_dns + " worker-"+ str(counter)+" >> /etc/hosts'")
             counter+=1
 
+    def doStartClusterServices(self, ssh, master_node):
+        printStep("Applying user defined cluster services")
+        master_only = []
+        master_only.append(master_node)
+        ssh.run_remote_command(master_only, "/etc/rc.cluster-services")
+        
     def deploy(self):
         ssh = SSHUtil(self._runner.userPrivateKeyFile, self.cluster_admin)
         
@@ -326,6 +331,9 @@ class Cluster(object):
         
         # Update the /etc/hosts file for all hosts
         self.doUpdateHostsFile(ssh, master_node, worker_nodes)
+        
+        # Start any services defined in rc.cluster-services
+        self.doStartClusterServices(ssh, master_node)
 
         return 0
             
