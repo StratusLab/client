@@ -38,20 +38,20 @@ class Runner(object):
   READONLY=no,
   SAVE=no,
   SIZE=%(extraDiskSize)s,
-  TARGET=hdc,
+  TARGET=%(vm_disks_prefix)sc,
   TYPE=fs ]'''
 
     # Don't hard code disk target to allow multiple pdisk attachment
     PERSISTENT_DISK = '''DISK=[
   SOURCE=pdisk:%(pdiskEndpointHostname)s:%(pdiskPort)s:%(persistentDiskUUID)s,
-  TARGET=hdc,
+  TARGET=%(vm_disks_prefix)sc,
   TYPE=block ]'''
 
     READONLY_DISK = '''DISK=[
   SOURCE="%(readonlyDiskId)s",
   READONLY=yes,
   SAVE=no,
-  TARGET=hdc,
+  TARGET=%(vm_disks_prefix)sc,
   DRIVER="raw" ]'''
 
     NOTIFICATION = '''NOTIFICATION = [
@@ -64,6 +64,10 @@ class Runner(object):
     CREATE_IMAGE = '''CREATE_IMAGE = [
 %s
 ]'''
+
+    DISKS_BUS_PREFIX_MAP = {'ide'    : 'hd',
+                            'scsi'   : 'sd',
+                            'virtio' : 'vd'}
 
     DEFAULT_INSTANCE_TYPE = 'm1.small'
 
@@ -79,12 +83,39 @@ class Runner(object):
         self.marketplaceEndpointNewimage = ''
         self.pdiskEndpoint = None
         self.endpoint = None
+        self.instanceType = Runner.DEFAULT_INSTANCE_TYPE
+        self.vmCpu = ''
+        self.vmRam = ''
+        self.vmSwap = ''
+        self.vmCpuAmount = ''
+        self.vmName = ''
+        self.vmKernel = ''
+        self.vmRamdisk = ''
+        self.isLocalIp = False
+        self.isPrivateIp = False
+        self.specificAddressRequest = False
+        self.rawData = ''
+        self.extraContextFile = ''
+        self.extraContextData = ''
+        self.vncPort = ''
+        self.vncListen = ''
+        self.noCheckImageUrl = False
         
         self.saveDisk = False
         
         configHolder.assign(self)
         self.configHolder = configHolder
 
+        self._setCloudContext()
+
+        self.createImageData = {'CREATOR_EMAIL': self.authorEmail,
+                                'NEWIMAGE_MARKETPLACE': self.marketplaceEndpointNewimage }
+
+        self._initVmAttributes()
+        
+        self.instancesDetail = []
+
+    def _setCloudContext(self):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
 
@@ -94,29 +125,10 @@ class Runner(object):
         self.endpoint = self.cloud.setEndpoint(self.endpoint)
         self.pdisk = None
 
-        self.createImageData = {'CREATOR_EMAIL': self.authorEmail,
-                                'NEWIMAGE_MARKETPLACE': self.marketplaceEndpointNewimage }
-
-        self._initVmAttributes()
-        
-        self.instancesDetail = []
-
     def _initVmAttributes(self):
-        # VM template parameters initialization
-        self.vm_cpu = 0
-        self.vm_vcpu = 0
-        self.vm_ram = 0
-        self.vm_swap = 0
-        self.vm_nic = ''
-        self.vm_name = ''
-        self.os_options = ''
-        self.raw_data = ''
-        self.extra_context = ''
-        self.graphics = ''
-        self.vmIds = []
-        self.diskImageFormat = None
-        self.disk_driver = None
+        self._initVmAttributesStatic()
 
+        self._setDiskBusType()
         self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
@@ -124,6 +136,23 @@ class Runner(object):
         self._setPersistentDiskOptional()
         self._setReadonlyDiskOptional()
         self._setDiskImageFormat()
+
+    def _initVmAttributesStatic(self):
+        # VM template parameters initialization
+        self.vm_cpu = 0
+        self.vm_vcpu = 0
+        self.vm_ram = 0
+        self.vm_swap = 0
+        self.vm_nic = ''
+        self.vm_name = ''
+        self.vm_disks_prefix = 'vd' # virtio disk bus
+        self.os_options = ''
+        self.raw_data = ''
+        self.extra_context = ''
+        self.graphics = ''
+        self.vmIds = []
+        self.diskImageFormat = None
+        self.disk_driver = None
 
     def _setMsgRecipients(self):
         try:
@@ -140,6 +169,15 @@ class Runner(object):
                 self.disk_driver = image.getImageFormatByImageId(self.vm_image)
                 return
         self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
+
+    def _setDiskBusType(self):
+        image = Image(self.configHolder)
+        disks_bus = image.getImageDisksBusTypeByImageId(self.vm_image)
+        
+        try:
+            self.vm_disks_prefix = Runner.DISKS_BUS_PREFIX_MAP[disks_bus]
+        except KeyError:
+            raise Exception('Unknown disks bus type %s' % disks_bus)
 
     def _setUserKeyIfDefined(self):
         if getattr(self, 'userPublicKeyFile', None):
@@ -277,17 +315,9 @@ class Runner(object):
 
     def _buildVmTemplate(self, template):
         baseVmTemplate = Util.fileGetContent(template)
-        self.vm_cpu, self.vm_ram, self.vm_swap = self._getVmResourceValues()
-        self.vm_vcpu = self.vm_cpu
 
-        if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
-            self.vm_cpu = self.vmCpuAmount
-
-        if self.vmName:
-            self.vm_name = 'NAME = "%s"' % self.vmName
-        else:
-            self.vm_name = ''
-
+        self._manageCpuRamSwap()
+        self._manageVmName()
         self._manageOsOptions()
         self._manageNetwork()
         self._manageRawData()
@@ -304,6 +334,18 @@ class Runner(object):
             params[param] = getattr(self, param, '')
 
         return params
+
+    def _manageCpuRamSwap(self):
+        self.vm_cpu, self.vm_ram, self.vm_swap = self._getVmResourceValues()
+        self.vm_vcpu = self.vm_cpu
+        if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
+            self.vm_cpu = self.vmCpuAmount
+
+    def _manageVmName(self):
+        if self.vmName:
+            self.vm_name = 'NAME = "%s"' % self.vmName
+        else:
+            self.vm_name = ''
 
     def _manageOsOptions(self):
         if not self.vmKernel and not self.vmRamdisk:

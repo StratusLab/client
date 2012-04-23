@@ -18,13 +18,11 @@
 # limitations under the License.
 #
 import re
-import commands
 
 from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
 import stratuslab.Util as Util
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
-from stratuslab.Exceptions import ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
 
 class Image(object):
@@ -80,10 +78,16 @@ class Image(object):
         return Image.re_diskId.match(imageReference)
 
     def getImageFormatByImageId(self, imageId):
+        return self._getImageElementValue('format', imageId)
+
+    def getImageDisksBusTypeByImageId(self, imageId):
+        return self._getImageElementValue('disks-bus', imageId)
+
+    def _getImageElementValue(self, element, imageId):
         if Image.isImageUrl(imageId):
             raise Exceptions.ValidationException('Image ID was expected. Given %s' % imageId)
-        return self.manifestDownloader.getImageElementValue('format', imageId)
-            
+        return self.manifestDownloader.getImageElementValue(element, imageId)
+
     def _checkImageByUrl(self, imageUrl):
         try:
             Util.checkUrlExists(imageUrl)
