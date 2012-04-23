@@ -60,7 +60,7 @@ class ManifestDownloader(object):
         manifests = []
         for e in manifestElements:
             manifest = ManifestInfo()
-            manifest.parseManifestFromXml(e)
+            manifest.parseManifestFromXmlTree(e)
             manifests.append(manifest)
         return manifests        
 
@@ -94,7 +94,7 @@ class ManifestDownloader(object):
         manifestInfo = ManifestInfo(self.configHolder)
         
         try:
-            manifestInfo.parseManifestFromXml(manifest)
+            manifestInfo.parseManifestFromXmlTree(manifest)
         except ExecutionException, ex:
             raise InputException('Error parsing the metadata corresponding to url %s, with detail %s' % (url, ex))
         return manifestInfo
