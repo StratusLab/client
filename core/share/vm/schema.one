@@ -8,7 +8,7 @@ RANK = "- RUNNING_VMS"
 %(os_options)s
 DISK = [
 source   = "%(vm_image)s",
-target   = "hda",
+target   = "%(vm_disks_prefix)sa",
 save     = %(save_disk)s,
 readonly = "no",
 driver = "%(disk_driver)s"
@@ -16,7 +16,7 @@ driver = "%(disk_driver)s"
 DISK = [
 type     = swap,
 size     = %(vm_swap)s,
-target   = "hdb",
+target   = "%(vm_disks_prefix)sb",
 readonly = "no"
 ]
 %(extra_disk)s

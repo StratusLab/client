@@ -90,22 +90,34 @@ class ManifestInfo(object):
         self.hypervisor = '' # kvm, xen, ..
 
         self.publisher = 'StratusLab'
+        
+        self.disksbus = 'virtio'
 
         configHolder.assign(self)
 
         self.user = self.creator
 
-        self._template = os.path.join(os.path.join(Util.getTemplateDir(), 'manifest.xml.tpl'))
+        self._template = os.path.join(os.path.join(Util.getTemplateDir(),
+                                                   'manifest.xml.tpl'))
 
-        self._attrsAndNamespaces = \
-                            (('type','type',NS_DCTERMS,None),
-                             ('created','created',NS_DCTERMS,None),
-                             ('valid','valid',NS_DCTERMS,None),
-                             ('os','os',NS_SLTERMS,None),
-                             ('arch','os-arch',NS_SLTERMS,None),
-                             ('osversion','os-version',NS_SLTERMS,None),
-                             ('comment','description',NS_DCTERMS,None),
-                             ('version','version',NS_SLTERMS,None))
+        self._manifestTemplateElements = \
+                (('type',       'type',       NS_DCTERMS, None),
+                 ('created',    'created',    NS_DCTERMS, None),
+                 ('valid',      'valid',      NS_DCTERMS, None),
+                 ('comment',    'description',NS_DCTERMS, None),
+                 ('compression','compression',NS_DCTERMS, None),
+                 ('creator',    'creator',    NS_DCTERMS, self.creator),
+                 ('user',       'creator',    NS_DCTERMS, self.creator),
+                 ('format',     'format',     NS_DCTERMS, self.format),
+                 ('publisher',  'publisher',  NS_DCTERMS, self.publisher),
+                 ('os',         'os',         NS_SLTERMS, None),
+                 ('arch',       'os-arch',    NS_SLTERMS, None),
+                 ('osversion',  'os-version', NS_SLTERMS, None),
+                 ('version',    'version',    NS_SLTERMS, None),
+                 ('kind',       'kind',       NS_SLTERMS, self.kind),
+                 ('disksbus',   'disks-bus',  NS_SLTERMS, self.disksbus),
+                 ('hypervisor', 'hypervisor', NS_SLTERMS, self.hypervisor),
+                 ('email',      'email',      NS_SLREQ,   self.email))
 
     @staticmethod
     def addElementToManifest(root, elementName, value):
@@ -137,40 +149,44 @@ class ManifestInfo(object):
     def parseManifest(self, manifest):
 
         try:
-            xml = etree.fromstring(manifest)
+            xml_tree = etree.fromstring(manifest)
         except SyntaxError, ex:
             raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' % 
                                      (str(ex), manifest))
         
-        return self.parseManifestFromXml(xml)
+        self.parseManifestFromXmlTree(xml_tree)
 
-    def parseManifestFromXml(self, xml):
-
+    def _setEndorserFromXmlTree(self, xml_tree):
         xpathPrefix = './/{http://mp.stratuslab.eu/slreq#}%s/{http://mp.stratuslab.eu/slreq#}'
-        self.endorser = xml.findtext(xpathPrefix % 'endorser' + 'email')
+        self.endorser = xml_tree.findtext(xpathPrefix % 'endorser' + 'email')
 
-        # required by Schema attributes
-        for elem,ns in [('identifier',NS_DCTERMS), ('bytes',NS_SLREQ)]:
+    def _setRequiredAttributesFromXmlTree(self, xml_tree):
+        """Attributes required by Schema."""
+
+        for elem, ns in [('identifier', NS_DCTERMS), ('bytes', NS_SLREQ)]:
             try:
-                val = getattr(xml.find('.//{%s}%s' % (ns, elem)), 'text')
+                val = getattr(xml_tree.find('.//{%s}%s' % (ns, elem)), 'text')
             except AttributeError:
-                raise ExecutionException("Missing mandatory element '%s' in namespace '%s'" %
-                                         (elem, ns))
+                raise ExecutionException(
+                    "Missing mandatory element '%s' in namespace '%s'" % (elem, ns))
             else:
                 attr = elem
                 setattr(self, attr, val)
-
-        checksums = xml.findall('.//{%s}checksum' % NS_SLREQ)
+        
+        checksums = xml_tree.findall('.//{%s}checksum' % NS_SLREQ)
         for checksum in checksums:
             checkSumType = checksum.find('.//{%s}algorithm' % NS_SLREQ).text
             checkSumType = _normalizeForInstanceAttribute(checkSumType)
             checkSumValue = checksum.find('.//{%s}value' % NS_SLREQ).text
             setattr(self, checkSumType, checkSumValue)
+        
 
-        # attributes from integration XML template
-        for attrObj,elemXml,ns,default in self._attrsAndNamespaces:
+    def _setClientXmlTemplateAttributesFromXmlTree(self, xml_tree):
+        """Attributes from client XML template."""
+
+        for attrObj, elemXml, ns, default in self._manifestTemplateElements:
             try:
-                attrVal = getattr(xml.find('.//{%s}%s' % (ns, elemXml)), 'text')
+                attrVal = getattr(xml_tree.find('.//{%s}%s' % (ns, elemXml)), 'text')
             except AttributeError:
                 if default != None:
                     attrVal = default
@@ -179,39 +195,23 @@ class ManifestInfo(object):
             else:
                 setattr(self, attrObj, attrVal)
 
-        # treat compression differently to allow backward compatibility
-        try:
-            self.compression = getattr(xml.find('.//{%s}compression' % NS_SLTERMS), 'text')
-        except AttributeError:
-            try:
-                self.compression = getattr(xml.find('.//{%s}compression' % NS_DCTERMS), 'text')
-            except AttributeError:
-                if self.compression == None:
-                    raise ExecutionException("Missing compression element")
 
-        # email and endorsement timestamp if present
-        self.email = getattr(xml.find('.//{%s}email' % NS_SLREQ), 'text',
-                            self.email)
-        self.created = getattr(xml.find('.//{%s}endorsement/{%s}created' % (NS_SLREQ, NS_DCTERMS)), 'text',
-                            self.created)
-
-        # extra elements with defaults
-        self.user = getattr(xml.find('.//{%s}creator' % NS_DCTERMS), 'text',
-                            self.creator)
-        self.creator = self.user
-        self.kind = getattr(xml.find('.//{%s}kind' % NS_SLTERMS), 'text',
-                            self.kind)
-        self.format = getattr(xml.find('.//{%s}format' % NS_DCTERMS), 'text',
-                                   self.format)
-        self.hypervisor = getattr(xml.find('.//{%s}hypervisor' % NS_SLTERMS), 'text',
-                                  self.hypervisor)
-        self.publisher = getattr(xml.find('.//{%s}publisher' % NS_DCTERMS), 'text',
-                                 self.publisher)
-        locations = xml.findall('.//{%s}location' % NS_SLTERMS)
+    def _setLocationFromXmlTree(self, xml_tree):
+        locations = xml_tree.findall('.//{%s}location' % NS_SLTERMS)
         for location in locations:
             uri = getattr(location, 'text', self.locations)
             if uri and uri not in self.locations:
                 self.locations.append(uri)
+
+    def parseManifestFromXmlTree(self, xml_tree):
+
+        self._setEndorserFromXmlTree(xml_tree)
+        self._setRequiredAttributesFromXmlTree(xml_tree)
+        self._setClientXmlTemplateAttributesFromXmlTree(xml_tree)
+        self._setLocationFromXmlTree(xml_tree)
+
+        self.created = getattr(xml_tree.find('.//{%s}endorsement/{%s}created' % (NS_SLREQ, NS_DCTERMS)), 'text',
+                            self.created)
 
     def parseManifestFromFile(self, filename):
         manifest = file(filename).read()
