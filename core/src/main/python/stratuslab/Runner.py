@@ -131,6 +131,9 @@ class Runner(object):
         self.pdisk = None
 
     def _initVmAttributes(self):
+        if not self.vm_image:
+            return
+
         self._initVmAttributesStatic()
 
         self._setDiskBusType()
