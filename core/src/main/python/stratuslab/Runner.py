@@ -29,7 +29,7 @@ from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
-from stratuslab.Exceptions import ExecutionException
+import stratuslab.Exceptions as Exceptions
 import urllib2
 
 class Runner(object):
@@ -78,7 +78,7 @@ class Runner(object):
 
     def __init__(self, image, configHolder):
         if image == '':
-            raise ValueError('Image ID or full image endpoint should be provided.')
+            raise ValueError('Image ID should be provided.')
 
         self.vm_image = image
         self.persistentDiskUUID = None
@@ -478,7 +478,9 @@ class Runner(object):
         elif (self._isAliasUrl(self.vm_image)):
             self.vm_image = self._resolveUrl(self.vm_image)
         else:
-            raise Exceptions.ValidationException('Image reference must be an Alias URL, Marketplace Image ID or Disk ID:  %s' % vm_image)
+            raise Exceptions.ValidationException('Image reference must be an '
+                             'Alias URL, Marketplace Image ID or Disk ID:  %s' %\
+                             self.vm_image)
 
         self.printAction('Starting machine(s)')
 
@@ -546,7 +548,7 @@ class Runner(object):
     def _operateOnInstance(self, operation, ids=[]):
         operations = ('Shutdown', 'Kill')
         if operation not in operations:
-            raise ExecutionException('Unsupported operation on instance: %s' %
+            raise Exceptions.ExecutionException('Unsupported operation on instance: %s' %
                                      operation)
         _ids = ids or self.vmIds
         if self.inVmIdsFile:
