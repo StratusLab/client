@@ -60,6 +60,10 @@ VM_HOOK = [
     def _cleanConfiguration(self):
         try:
             self.patNetworks = self.patNetworks.split(',')
+        except AttributeError:
+            pass
+
+        try:
             self.patTranslatedPorts = map(int, self.patTranslatedPorts.split(','))
         except AttributeError:
             pass
