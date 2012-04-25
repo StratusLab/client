@@ -19,9 +19,11 @@
 #
 import os
 import re
+import urllib2
 
-from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 import stratuslab.Util as Util
+import stratuslab.Exceptions as Exceptions
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Image import Image
 from stratuslab import Defaults
@@ -29,8 +31,7 @@ from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
-import stratuslab.Exceptions as Exceptions
-import urllib2
+from stratuslab.ManifestInfo import ManifestInfo
 
 class Runner(object):
 
@@ -105,9 +106,8 @@ class Runner(object):
         self.vncPort = ''
         self.vncListen = ''
         self.noCheckImageUrl = False
-        
         self.saveDisk = False
-        
+
         configHolder.assign(self)
         self.configHolder = configHolder
 
