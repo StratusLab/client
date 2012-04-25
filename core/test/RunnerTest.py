@@ -23,7 +23,7 @@ import unittest
 from mock.mock import Mock
 
 from stratuslab.Runner import Runner
-from stratuslab.ConfigHolder import ConfigHolder
+import stratuslab.ConfigHolder as ConfigHolder
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 class RunnerTest(unittest.TestCase):
@@ -31,11 +31,8 @@ class RunnerTest(unittest.TestCase):
     def setUp(self):
         Runner._setCloudContext = Mock()
 
-        self.configHolder = ConfigHolder()
-        self.configHolder.set('verboseLevel', 0)
-
     def tearDown(self):
-        self.configHolder = None
+        reload(ConfigHolder)
 
     def testDisksBusTypeVirtio(self):
 
@@ -53,57 +50,93 @@ class RunnerTest(unittest.TestCase):
 
     def testDisksBusTypeExtraDisk(self):
         
-        self.configHolder.set('extraDiskSize', '1')
+        ch = ConfigHolder.ConfigHolder()
+        ch.set('extraDiskSize', '1')
 
-        # ide        
+        # IDE        
         runner = self._getRunnerForManifestInFile('manifest-disks-bus-ide.xml',
-                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_')
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  ch)
         vm_params = runner._vmParamDict()
         extra_disk = Runner.EXTRA_DISK % {'extraDiskSize' : '1',
                                           'vm_disks_prefix' : 'hd'}
         self.failUnlessEqual(extra_disk, vm_params['extra_disk'])
 
-        # virtio        
+        # VIRTIO        
         runner = self._getRunnerForManifestInFile('manifest-disks-bus-virtio.xml',
-                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_')
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  ch)
         vm_params = runner._vmParamDict()
         extra_disk = Runner.EXTRA_DISK % {'extraDiskSize' : '1',
                                           'vm_disks_prefix' : 'vd'}
         self.failUnlessEqual(extra_disk, vm_params['extra_disk'])
-
+        
     def testDisksBusTypeReadonlyDisk(self):
-        uuid = 'f25cd0dc-e56f-4eea-be0c-88d866a2c73c'
-        self.configHolder.set('readonlyDiskId', uuid)
+        configHolder = ConfigHolder.ConfigHolder()
 
-        # ide        
+        uuid = 'f25cd0dc-e56f-4eea-be0c-88d866a2c73c'
+        configHolder.set('readonlyDiskId', uuid)
+
+        # IDE        
         runner = self._getRunnerForManifestInFile('manifest-disks-bus-ide.xml',
-                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_')
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  configHolder)
         vm_params = runner._vmParamDict()
         readonly_disk = Runner.READONLY_DISK % {'readonlyDiskId' : uuid,
                                                 'vm_disks_prefix' : 'hd'}
         self.failUnlessEqual(readonly_disk, vm_params['readonly_disk'])
 
-        # virtio        
+        # VIRTIO        
         runner = self._getRunnerForManifestInFile('manifest-disks-bus-virtio.xml',
-                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_')
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  configHolder)
         vm_params = runner._vmParamDict()
         readonly_disk = Runner.READONLY_DISK % {'readonlyDiskId' : uuid,
                                                 'vm_disks_prefix' : 'vd'}
         self.failUnlessEqual(readonly_disk, vm_params['readonly_disk'])
 
-    def _getRunnerForManifestInFile(self, filename, imageid):
+    def testDisksBusTypeFromCommandLine(self):
+        configHolder = ConfigHolder.ConfigHolder()
+
+        # IDE
+        configHolder.set('vmDisksBus', 'ide')
+        runner = self._getRunnerForManifestInFile('manifest-disks-bus-virtio.xml',
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  configHolder)
+        vm_params = runner._vmParamDict()
+        self.failUnlessEqual('hd', vm_params['vm_disks_prefix'])
+
+        # VIRTIO
+        configHolder.set('vmDisksBus', 'virtio')
+        runner = self._getRunnerForManifestInFile('manifest-disks-bus-ide.xml',
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  configHolder)
+        vm_params = runner._vmParamDict()
+        self.failUnlessEqual('vd', vm_params['vm_disks_prefix'])
+        
+        # SCSI
+        configHolder.set('vmDisksBus', 'scsi')
+        runner = self._getRunnerForManifestInFile('manifest-disks-bus-virtio.xml',
+                                                  'MMZu9WvwKIro-rtBQfDk4PsKO7_',
+                                                  configHolder)
+        vm_params = runner._vmParamDict()
+        self.failUnlessEqual('sd', vm_params['vm_disks_prefix'])
+
+    def _getRunnerForManifestInFile(self, filename, imageid, ch=ConfigHolder.ConfigHolder()):
+        ch.set('verboseLevel', 0)
+    
         self._mockManifestDownloaderToReadFromFile(filename)
         
-        runner = Runner(imageid, self.configHolder)
-        runner._setDiskBusType()
+        runner = Runner(imageid, ch)
         
         return runner
 
-    def _mockManifestDownloaderToReadFromFile(self, filename):
+    @staticmethod
+    def _mockManifestDownloaderToReadFromFile(filename):
         manifest = open(os.path.join(os.path.dirname(__file__), 'resources',
                                      filename)).read()
         mock = Mock(return_value = ManifestDownloader._parseXml(manifest))
         ManifestDownloader._download = mock
-
+    
 if __name__ == "__main__":
     unittest.main()

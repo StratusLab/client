@@ -71,9 +71,12 @@ class Runner(object):
 %s
 ]'''
 
+    DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
+    DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
     DISKS_BUS_PREFIX_MAP = {'ide'    : 'hd',
                             'scsi'   : 'sd',
                             'virtio' : 'vd'}
+    vmDisksBus = None
 
     DEFAULT_INSTANCE_TYPE = 'm1.small'
 
@@ -136,7 +139,7 @@ class Runner(object):
 
         self._initVmAttributesStatic()
 
-        self._setDiskBusType()
+        self._setDisksBusType()
         self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
@@ -153,7 +156,7 @@ class Runner(object):
         self.vm_swap = 0
         self.vm_nic = ''
         self.vm_name = ''
-        self.vm_disks_prefix = 'vd' # virtio disk bus
+        self.vm_disks_prefix = Runner.DISKS_BUS_PREFIX_MAP[Runner.DISKS_BUS_DEFAULT]
         self.os_options = ''
         self.raw_data = ''
         self.extra_context = ''
@@ -178,10 +181,13 @@ class Runner(object):
                 return
         self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
 
-    def _setDiskBusType(self):
-        image = Image(self.configHolder)
-        disks_bus = image.getImageDisksBusTypeByImageId(self.vm_image)
-        
+    def _setDisksBusType(self):
+        if self.vmDisksBus:
+            disks_bus = self.vmDisksBus
+        else:
+            image = Image(self.configHolder)
+            disks_bus = image.getImageDisksBusTypeByImageId(self.vm_image)
+
         try:
             self.vm_disks_prefix = Runner.DISKS_BUS_PREFIX_MAP[disks_bus]
         except KeyError:
@@ -287,6 +293,7 @@ class Runner(object):
                     'vmCpu': None,
                     'vmRam': None,
                     'vmSwap': None,
+                    'vmDisksBus': Runner.vmDisksBus,
                     'isLocalIp': False,
                     'isPrivateIp': False,
                     'extraContextFile': '',

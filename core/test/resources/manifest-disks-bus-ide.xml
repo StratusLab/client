@@ -7,8 +7,6 @@
 
         <dcterms:identifier>MMZu9WvwKIro-rtBQfDk4PsKO7_</dcterms:identifier>
 
-        <slterms:disks-bus>ide</slterms:disks-bus>
-
         <slterms:os>linux</slterms:os>
         <slterms:os-arch>linux</slterms:os-arch>
         <slterms:os-version>0.1</slterms:os-version>

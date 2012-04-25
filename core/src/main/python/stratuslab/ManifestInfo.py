@@ -51,6 +51,8 @@ class ManifestInfo(object):
     MANDATORY_CHECKSUMS = ('sha1',)
     CHECKSUM_NAMES = ('md5','sha1','sha256','sha512')
 
+    DISKS_BUS_DEFAULT = 'ide'
+
     def __init__(self, configHolder=ConfigHolder()):
 
         self.os = ''
@@ -91,7 +93,7 @@ class ManifestInfo(object):
 
         self.publisher = 'StratusLab'
         
-        self.disksbus = 'virtio'
+        self.disksbus = ManifestInfo.DISKS_BUS_DEFAULT
 
         configHolder.assign(self)
 

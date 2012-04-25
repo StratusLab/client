@@ -97,6 +97,15 @@ class Runnable(AuthnCommand):
                      'predefined instance types is used.',
                 default=defaultOptions['vmCpuAmount'])
 
+        self.parser.add_option('--vm-disks-bus', dest='vmDisksBus', metavar='BUSTYPE',
+                help='VM disks bus type defined for all disks. Overrides "disks-bus" '
+                'element value defined in image manifest. '
+                'Available types: %s. ' % ', '.join(Runner.DISKS_BUS_AVAILABLE) + 
+                'If not provided, by default the value is taken from disks-bus '
+                'element of image manifest. If the latter is not set, '
+                'by default "%s" is assumed.' % Runner.DISKS_BUS_DEFAULT,
+                default=defaultOptions['vmDisksBus'])
+
         MarketplaceUtil.addEndpointOption(self.parser)
 
         AuthnCommand.addCloudEndpointOptions(self.parser)
