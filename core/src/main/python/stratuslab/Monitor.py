@@ -24,6 +24,7 @@ from stratuslab.CloudInfo import CloudInfo
 from stratuslab.Configurable import Configurable
 from stratuslab.Authn import AuthnFactory
 import stratuslab.Util as Util
+import socket
 
 from stratuslab.pat.Client import PortTranslationWebClient
 
@@ -42,10 +43,10 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16]]
-        self.vmInfoListAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_ip', 16], ['name', 16]]
+        self.vmInfoDetailAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_hostname', 24], ['name', 16]]
+        self.vmInfoListAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_hostname', 24], ['name', 16]]
 
-        self.labelDecorator = {'state_summary': 'state', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
+        self.labelDecorator = {'state_summary': 'state', 'template_nic_hostname': 'host/ip', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
         if Util.isTrueConfVal(self.patEnable):
             self.portTranslation = PortTranslationWebClient(configHolder)
@@ -86,11 +87,28 @@ class Monitor(Configurable):
     def _vmDetail(self, id):
         res = self.cloud.getVmInfo(int(id))
         vm = etree.fromstring(res)
+        self._addHostnameElement(vm)
         if Util.isTrueConfVal(self.patEnable):
             self.portTranslation.addPortTranslationToSingleVmInfo(vm)
         info = CloudInfo()
         info.populate(vm)
         return info
+
+    def _addHostnameElement(self, info):
+        parent = info.find("TEMPLATE/NIC")
+
+        ip = info.find("TEMPLATE/NIC/IP")
+        hostname = self._ipToHostname(ip.text)
+
+        host_element = etree.Element("HOSTNAME")
+        host_element.text = hostname
+        parent.append(host_element)
+
+    def _ipToHostname(self, ip):
+        try:
+            return socket.gethostbyaddr(ip)[0]
+        except:
+            return ip
 
     def listNodes(self):
         nodes = self.cloud.listHosts()
