@@ -35,7 +35,7 @@ endpoints =
 endpoint_timeout = 5
 
 # Marketplace
-#marketplace_endpoint = http://marketplace.stratuslab.eu
+#marketplace_endpoint = https://marketplace.stratuslab.eu
 
 # Appliance repository
 #apprepo_endpoint = http://appliances.stratuslab.org/images

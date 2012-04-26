@@ -35,8 +35,8 @@ p12Directory = _globusDirectory
 p12CertificateFile = 'usercert.p12'
 p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
 
-marketplaceEndpoint = 'http://marketplace.stratuslab.eu'
-marketplaceProtocol = 'http'
+marketplaceEndpoint = 'https://marketplace.stratuslab.eu'
+marketplaceProtocol = 'https'
 marketplaceHostname = 'marketplace.stratuslab.eu'
 marketplacePort = 80
 
