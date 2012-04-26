@@ -1,16 +1,19 @@
 ##############################################################################
 #                                                                            #
-#                  StratusLab Configuration Reference                        #
-#                  ----------------------------------                        #
+#               StratusLab User Configuration Reference                      #
+#               ---------------------------------------                      #
 #                                                                            #
 #                                                                            #
-#     Note: parameters have to have a unique name, across the                #
-#           sections, as sections are only there to provide                  #
-#           structure and documentation.                                     #
+#  Note: the [default] section is mandatory. Other sections can be used      #
+#        to override the default section. This allows you to group           #
+#        parameters for different cloud accounts and endpoints, and switch   #
+#        between them using an environment variable, command-line options    #
+#        of the 'selected_section'. Refer to the client help for details     #
+#        (i.e. -h/--help) and online documentation.                          #
 #                                                                            #
 ##############################################################################
 
-[user]
+[default]
 
 # Cloud frontend. NB! There is no default value for the endpoint in the code.
 endpoint = <cloud.frontend.hostname>
@@ -51,3 +54,14 @@ p12_password = password
 # Persistent disk storage service
 pdisk_endpoint = <pdisk.service.hostname>
 #pdiskPort = 8445
+
+# Select a section to override the default section
+#selected_section = my-section
+
+# Create user specific sections, which you can activate using
+# the default_section parameter in the default section
+# or using the --user-config-section command-line option
+#[my-section]
+#endpoint = <another.cloud.frontend.hostname>
+#username = <another.username>
+#password = <another.password>
