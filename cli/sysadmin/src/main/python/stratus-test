@@ -32,6 +32,7 @@ from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
 import stratuslab.Util as Util
 from stratuslab.Uploader import Uploader
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
 
 class MainProgram(CommandBase):
     '''A command-line program to test StratusLab.'''
@@ -106,6 +107,8 @@ class MainProgram(CommandBase):
                                'If not provided, either base image Marketplace or defined '
                                'by cloud site will be used.',
                                default='', metavar='URL')
+
+        MarketplaceUtil.addEndpointOption(self.parser)
 
         Uploader.buildAppRepoOptionsParser(self.parser)
 
