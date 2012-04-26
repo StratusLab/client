@@ -100,12 +100,9 @@ class MainProgram(CommandBase):
                                help='Used with createImageTest. New image author email. '
                                'Mandatory with createImageTest.', metavar='EMAIL')
 
-        self.parser.add_option('--marketplace-endpoint-newimage', 
-                               dest='marketplaceEndpointNewimage',
-                               help='Used with createImageTest. Marketplace to '
-                               'register the new image manifest in. No default. '
-                               'If not provided, either base image Marketplace or defined '
-                               'by cloud site will be used.',
+        self.parser.add_option('--marketplace-endpoint-upload', 
+                               dest='marketplaceEndpointUpload',
+                               help='Used with tests which upload manifests to Marketplace.',
                                default='', metavar='URL')
 
         MarketplaceUtil.addEndpointOption(self.parser)
