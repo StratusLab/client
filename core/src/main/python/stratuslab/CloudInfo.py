@@ -51,3 +51,6 @@ class CloudInfo(object):
 
     def getAttributes(self):
         return self.attribs
+
+    def set(self, key, value):
+        setattr(self, key, value)
