@@ -27,7 +27,8 @@ import json
 import stratuslab.Util as Util
 from stratuslab.VersionChecker import VersionChecker
 import stratuslab.Exceptions as Exceptions
-from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.ConfigHolder import ConfigHolder, UserConfigurator
+from stratuslab.Exceptions import ConfigurationException
 
 class CommandBase(object):
     
@@ -39,7 +40,12 @@ class CommandBase(object):
         self.verboseLevel = 0
         self.parser = None
         self._setParserAndParse()
-        self._loadConfigFileAndUpdateOptions()
+
+        try:
+            self, self._loadConfigFileAndUpdateOptions()
+        except Exception, ex:
+            self.raiseOrDisplayError(str(ex))
+
         self.checkOptions()
         self._callAndHandleErrors(self, self.doWork.__name__)
 
@@ -142,16 +148,23 @@ class CommandBaseUser(CommandBase):
             return
 
         configFile = self.options.configFile
-        try:
-            self.config, self._configKeysClassAttrsTwoWayMap = \
-                ConfigHolder.configFileToDictWithFormattedKeys(configFile, withMap=True)
-        except Exceptions.ConfigurationException:
-            if configFile == Util.defaultConfigFileUser:
-                Util.printDetail('[WARNING] Default configuration file does not exists: %s' % 
+
+        if configFile == Util.defaultConfigFileUser:
+            if not os.path.exists(configFile):
+                Util.printDetail('[WARNING] Default configuration file does not exist: %s' % 
                                   configFile, verboseLevel=self.verboseLevel)
                 return
-            else:
-                raise
+            selected_section = None
+            if hasattr(self.options, 'selected_section'):
+                selected_section = self.options.selected_section
+            try:
+                self.config, self._configKeysClassAttrsTwoWayMap = \
+                    UserConfigurator.configFileToDictWithFormattedKeys(configFile, withMap=True, selected_section=selected_section)
+            except ConfigurationException, ex:
+                raise ConfigurationException('Error parsing user configuration file %s' % configFile + '. Details: %s' % ex)
+        else:
+            self.config, self._configKeysClassAttrsTwoWayMap = \
+                ConfigHolder.configFileToDictWithFormattedKeys(configFile, withMap=True)
 
     def _updateOptionsFromConfigFile(self):
         """Order of precedence:
