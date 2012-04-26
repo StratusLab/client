@@ -6,7 +6,7 @@
 # a given metric.
 #-------------------------------------------------------------------------------
 :defaults:
-  :cpu: %(quotaCpu)s
-  :memory: %(quotaMemoryKB)s
-  :num_vms:
-  :storage:
+  :CPU: %(quotaCpu)s
+  :MEMORY: %(quotaMemoryKB)s
+  :NUM_VMS:
+  :STORAGE:
