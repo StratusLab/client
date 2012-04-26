@@ -562,6 +562,9 @@ deb %(name)s
             except:
                 pass
 
+    def _localCleanUp(self):
+        Util.execute(['rm', '-rf', self.manifestLocalFileName])
+
     def _scp(self, src, dst, **kwargs):
         return Util.scp(src, dst, self.userPrivateKeyFile,
                         verboseLevel=self.verboseLevel, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
