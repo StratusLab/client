@@ -22,6 +22,7 @@ from ConfigParser import SafeConfigParser
 
 import Util
 from Exceptions import ConfigurationException
+import ConfigParser
 
 class ConfigHolder(object):
 
@@ -48,7 +49,7 @@ class ConfigHolder(object):
         dicts = {}
         for section in config.sections():
             dict = {}
-            for k,v in config.items(section):
+            for k, v in config.items(section):
                 dict[k] = v
             dicts[section] = dict
         return dicts
@@ -57,7 +58,7 @@ class ConfigHolder(object):
     def _convertToDict(config):
         dict = {}
         for section in config.sections():
-            for k,v in config.items(section):
+            for k, v in config.items(section):
                 _v = v
                 if '\n' in v:
                     _v = ConfigHolder._convertToMultiLineValue(v)
@@ -79,18 +80,22 @@ class ConfigHolder(object):
 
     @staticmethod
     def addConfigFileSysadminOption(parser):
-        parser.add_option('-c', '--config', dest='configFile', 
-                            help='configuration file. Default %s' % Util.defaultConfigFile, 
+        parser.add_option('-c', '--config', dest='configFile',
+                            help='configuration file. Default %s' % Util.defaultConfigFile,
                             metavar='FILE',
                             default=Util.defaultConfigFile)
         return parser
 
     @staticmethod
     def addConfigFileUserOption(parser):
-        parser.add_option('-c', '--config', dest='configFile', 
-                           help='user configuration file. Default %s' % Util.defaultConfigFileUser, 
+        parser.add_option('-c', '--config', dest='configFile',
+                           help='user configuration file. Default %s' % Util.defaultConfigFileUser,
                            metavar='FILE',
                            default=Util.defaultConfigFileUser)
+        parser.add_option('--user-config-section', dest='selected_section',
+                           help='Section to load in the user configuration file. ' \
+                           'Can also be set via environment variable: %s' % Util.userConfigFileSelectedSection,
+                           default=os.getenv(Util.userConfigFileSelectedSection, None))
         return parser
 
     @staticmethod
@@ -141,7 +146,7 @@ class ConfigHolder(object):
                 output += '** %s:\n' % attr.upper()
                 pkeys = getattr(self, attr).keys()
                 pkeys.sort()
-                output += '\n'.join(['  %s = %s'%(k,getattr(self, attr)[k]) for k in pkeys]) + '\n'
+                output += '\n'.join(['  %s = %s' % (k, getattr(self, attr)[k]) for k in pkeys]) + '\n'
         return output
 
     def __getattribute__(self, key):
@@ -161,3 +166,71 @@ class ConfigHolder(object):
 
     def __setattr__(self, key, value):
         self.options[key] = value
+    
+    
+class UserConfigurator(object):
+    
+    SELECTED_SECTION = 'selected_section'
+    
+    @staticmethod
+    def parseConfig(configFileName):
+        if not os.path.isfile(configFileName):
+            msg = 'Configuration file %s does not exist' % configFileName
+            raise ConfigurationException(msg)
+        config = SafeConfigParser()
+        config.read(configFileName)
+        return config
+
+    @staticmethod
+    def configFileToDict(configFileName):
+        config = ConfigHolder.parseConfig(configFileName)
+        dict = ConfigHolder._convertToDict(config)
+        return dict
+
+    @staticmethod
+    def configFileToDictWithFormattedKeys(configFileName, withMap=False, selected_section=None):
+        
+        config = UserConfigurator().getDict(selected_section)
+        return ConfigHolder._formatConfigKeys(config, withMap)
+
+    def __init__(self, configFile=None):
+        self._dict = {}
+        self._parser = SafeConfigParser()
+        try:
+            if configFile:
+                self._parser.readfp(configFile)
+            else:
+                self._parser.read(Util.defaultConfigFileUser)
+        except ConfigParser.ParsingError, ex:
+            raise ConfigurationException(ex)
+    
+    def _loadDefaults(self):
+        self._loadSection('default')
+    
+    def _loadSection(self, section):
+        self._dict.update(dict(self._parser.items(section)))
+    
+    def getDict(self, selected_section=None):
+        if not os.path.isfile(Util.defaultConfigFileUser):
+            msg = 'Configuration file %s does not exist' % Util.defaultConfigFileUser
+            raise ConfigurationException(msg)
+        self._dict = {}
+        try:
+            self._loadDefaults()
+        except ConfigParser.NoSectionError, ex:
+            raise ConfigurationException(ex)
+
+        if not selected_section:
+            if self._parser.has_option('default', UserConfigurator.SELECTED_SECTION):
+                selected_section = self._parser.get('default', UserConfigurator.SELECTED_SECTION)
+
+        if selected_section:
+            try:
+                self._loadSection(selected_section)
+            except ConfigParser.NoSectionError, ex:
+                raise ConfigurationException(ex)
+        ConfigHolder._formatConfigKeys(self._dict)
+        return self._dict
+
+
+
