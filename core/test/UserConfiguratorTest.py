@@ -56,7 +56,7 @@ username = <yet.another.username>
 endpoint = <cloud.frontend.hostname>
 username = <username>
 password = <password>
-default_section = my-section
+selected_section = my-section
 
 [my-section]
 endpoint = <another.cloud.frontend.hostname>
@@ -72,7 +72,7 @@ username = <yet.another.username>
 endpoint
 '''
     
-    INVALID_CONFIG_NO_DEFAULT_SECTION = '''
+    INVALID_CONFIG_NO_SELECTED_SECTION = '''
 [nodefault]
 endpoint = <nodefault.cloud.frontend.hostname>
 username = <username>
@@ -84,7 +84,7 @@ password = <password>
 endpoint = <cloud.frontend.hostname>
 username = <username>
 password = <password>
-default_section = my-section-doesnt-exist
+selected_section = my-section-doesnt-exist
 
 [my-section]
 endpoint = <another.cloud.frontend.hostname>
@@ -122,7 +122,7 @@ username = <another.username>
         self.assertRaises(ConfigurationException, UserConfigurator, file)
 
     def testMissingDefaultSection(self):
-        file = StringIO.StringIO(self.INVALID_CONFIG_NO_DEFAULT_SECTION)
+        file = StringIO.StringIO(self.INVALID_CONFIG_NO_SELECTED_SECTION)
         configurator = UserConfigurator(file)
         self.assertRaises(ConfigurationException, configurator.getDict)
 
