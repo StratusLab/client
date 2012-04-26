@@ -31,6 +31,9 @@ from stratuslab.pat.Client import PortTranslationWebClient
 etree = Util.importETree()
 
 class Monitor(Configurable):
+    
+    TEMPLATE_NIC_IP = 'template_nic_ip'
+    TEMPLATE_NIC_HOSTNAME = 'template_nic_hostname'
 
     def __init__(self, configHolder):
         self.endpoint = None
@@ -43,10 +46,10 @@ class Monitor(Configurable):
         self.hostInfoDetailAttributes = (['id',4], ['name',16], ['im_mad',8], ['vm_mad',8], ['tm_mad',8])
         self.hostInfoListAttributes = (['id',4], ['name',16])
 
-        self.vmInfoDetailAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_hostname', 24], ['name', 16]]
-        self.vmInfoListAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], ['template_nic_hostname', 24], ['name', 16]]
+        self.vmInfoDetailAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], [Monitor.TEMPLATE_NIC_HOSTNAME, 24], ['name', 16]]
+        self.vmInfoListAttributes = [['id',4], ['state_summary', 10], ['template_vcpu', 5], ['memory', 10], ['cpu', 5], [Monitor.TEMPLATE_NIC_HOSTNAME, 24], ['name', 16]]
 
-        self.labelDecorator = {'state_summary': 'state', 'template_nic_hostname': 'host/ip', 'template_nic_ip': 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
+        self.labelDecorator = {'state_summary': 'state', Monitor.TEMPLATE_NIC_HOSTNAME: 'host/ip', Monitor.TEMPLATE_NIC_IP: 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
         if Util.isTrueConfVal(self.patEnable):
             self.portTranslation = PortTranslationWebClient(configHolder)
@@ -87,22 +90,16 @@ class Monitor(Configurable):
     def _vmDetail(self, id):
         res = self.cloud.getVmInfo(int(id))
         vm = etree.fromstring(res)
-        self._addHostnameElement(vm)
         if Util.isTrueConfVal(self.patEnable):
             self.portTranslation.addPortTranslationToSingleVmInfo(vm)
         info = CloudInfo()
         info.populate(vm)
+        self._addHostnameElement(info)
         return info
 
-    def _addHostnameElement(self, info):
-        parent = info.find("TEMPLATE/NIC")
-
-        ip = info.find("TEMPLATE/NIC/IP")
-        hostname = self._ipToHostname(ip.text)
-
-        host_element = etree.Element("HOSTNAME")
-        host_element.text = hostname
-        parent.append(host_element)
+    def _addHostnameElement(self, vm):
+        ip = vm.attribs[Monitor.TEMPLATE_NIC_IP]
+        vm.set(Monitor.TEMPLATE_NIC_HOSTNAME, self._ipToHostname(ip))
 
     def _ipToHostname(self, ip):
         try:
@@ -130,7 +127,8 @@ class Monitor(Configurable):
 
         correct_vms = []
         for vm in self._iterate(vms):
-            if (vm.attribs['uname'].startswith('CN')):
+            self._addHostnameElement(vm)
+            if vm.attribs['uname'].startswith('CN'):
                 vm.attribs['uname'] = vm.attribs['uname'].replace("CN%3D","")\
                 .replace("%2COU%3D"," OrgUnit:").replace("%2CO%3D"," Org:").replace("%2CC%3D", " Country:")\
                 .replace("+"," ")
@@ -197,7 +195,6 @@ class Monitor(Configurable):
     def _printInfo(self, info, headerAttributes):
         for attrib in headerAttributes[:-1]:
             sys.stdout.write(getattr(info, attrib[0], '').ljust(int(attrib[1])))
-
         self._printVmName(headerAttributes, info)
 
         self._printErrorIfRequired(info, headerAttributes)
@@ -239,7 +236,7 @@ class Monitor(Configurable):
             host = self.patGatewayHost
         else:
             port = vmPort
-            host = getattr(vmInfo, 'template_nic_ip', None)
+            host = getattr(vmInfo, Monitor.TEMPLATE_NIC_IP, None)
         return (host, port)
 
 import signal
