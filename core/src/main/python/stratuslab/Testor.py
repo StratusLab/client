@@ -568,7 +568,7 @@ touch %s
         image_id = manifestInfo.identifier
         
         configHolder = ConfigHolder()
-        configHolder.set('marketplaceEndpoint', self.self.marketplaceEndpoint)
+        configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
         uploader = marketplaceUploader(configHolder)
         uploader.upload(manifest_file)
 
