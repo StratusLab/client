@@ -96,8 +96,16 @@ class MainProgram(CommandBase):
                                default='ArCnG4gBogiprglBUdG6V8YX20y', metavar='ID')
 
         self.parser.add_option('--author-email-createimage', dest='authorEmailCreateImage',
-                               help='New image author email to be used with createImageTest. '
+                               help='Used with createImageTest. New image author email. '
                                'Mandatory with createImageTest.', metavar='EMAIL')
+
+        self.parser.add_option('--marketplace-endpoint-newimage', 
+                               dest='marketplaceEndpointNewimage',
+                               help='Used with createImageTest. Marketplace to '
+                               'register the new image manifest in. No default. '
+                               'If not provided, either base image Marketplace or defined '
+                               'by cloud site will be used.',
+                               default='', metavar='URL')
 
         Uploader.buildAppRepoOptionsParser(self.parser)
 

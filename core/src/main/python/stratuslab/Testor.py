@@ -500,9 +500,8 @@ touch %s
         Util.generateSshKeyPair(self.sshKey)
         options = {}
 
-        # For backward compatibility
-        options['v1'] = False
-        
+        options['marketplaceEndpointNewimage'] = getattr(self, 'marketplaceEndpointNewimage', '')
+
         options['authorEmail'] = self.authorEmailCreateImage
         options['saveDisk'] = True
     
