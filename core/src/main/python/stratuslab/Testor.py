@@ -50,7 +50,6 @@ import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Util import sleep, printStep
 from stratuslab.Image import Image
-import tempfile
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
