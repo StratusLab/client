@@ -28,7 +28,7 @@ class MainProgram(CommandBaseSysadmin):
 
 <marketplace id or URL>    can be either a Marketplace identifier (e.g.
                            MNb7A8XGnNwwJAaZUBj5fwYVoFf) or a URL (e.g. 
-                           http://marketplace.stratuslab.eu/metadata/MNb7A8XGnNwwJAaZUBj5fwYVoFf)'''
+                           https://marketplace.stratuslab.eu/metadata/MNb7A8XGnNwwJAaZUBj5fwYVoFf)'''
 
         self.parser.usage = usage
 

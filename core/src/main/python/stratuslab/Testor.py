@@ -25,11 +25,13 @@ import unittest
 import urllib2
 import re
 import sys
+import tempfile
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
 from stratuslab.Uploader import Uploader
+from stratuslab.marketplace.Uploader import Uploader as marketplaceUploader
 from stratuslab.Creator import Creator
 from stratuslab.Exceptions import NetworkException, OneException,\
     ClientException
@@ -43,12 +45,12 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.MonitoringTest as MonitoringTest
-import stratuslab.RegistrationTest as RegistrationTest
-import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
+#import stratuslab.RegistrationTest as RegistrationTest
+#import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Util import sleep, printStep
 from stratuslab.Image import Image
-import tempfile
+from stratuslab.ManifestInfo import ManifestInfo
 
 VM_START_TIMEOUT = 5 * 60 # 5 min
 
@@ -228,6 +230,7 @@ class Testor(unittest.TestCase):
         options['specificAddressRequest'] = requestedIpAddress
         options['persistentDiskUUID'] = persistentDiskUUID
         options['pdiskEndpoint'] = self.pdiskEndpoint
+        options['marketplaceEndpoint'] = self.marketplaceEndpoint
 
         if withLocalNetwork:
             options['isLocalIp'] = True
@@ -500,7 +503,7 @@ touch %s
         Util.generateSshKeyPair(self.sshKey)
         options = {}
 
-        options['marketplaceEndpointNewimage'] = getattr(self, 'marketplaceEndpointNewimage', '')
+        options['marketplaceEndpointNewimage'] = getattr(self, 'marketplaceEndpointUpload', '')
 
         options['authorEmail'] = self.authorEmailCreateImage
         options['saveDisk'] = True
@@ -555,13 +558,38 @@ touch %s
             except Exception, ex:
                 self.fail("Failed to open %s.\n%s" % (url, ex))
 
+    def _registerInvalidImageInMarketplace(self):
+        manifest_file = os.path.join(Util.getResourcesDir(), 
+                                     'manifest-invalid-sha1.xml')
+        
+        manifestInfo = ManifestInfo()
+        manifestInfo.parseManifestFromFile(manifest_file)
+        
+        image_id = manifestInfo.identifier
+        
+        configHolder = ConfigHolder()
+        configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
+        uploader = marketplaceUploader(configHolder)
+        uploader.upload(manifest_file)
+
+        return image_id
+
+    def _startStopInvalidImage(self):
+        mpendp_save = self.marketplaceEndpoint
+        self.marketplaceEndpoint = self.marketplaceEndpointUpload or mpendp_save
+
+        try:
+            self.image = self._registerInvalidImageInMarketplace()    
+            info, vmId = self._startStopVmAndGetVmInfo()
+        finally:
+            self.marketplaceEndpoint = mpendp_save
+
+        return info, vmId
+
     def oneReportsErrorViaXmlRpcTest(self):
         '''Test if ONE reports error messages via XML RPC'''
-        
-        # invalid image
-        self.image += '.gz'
 
-        info, vmId = self._startStopVmAndGetVmInfo()
+        info, vmId = self._startStopInvalidImage()
 
         try:
             errorMessage = info.attribs['template_error_message']
@@ -570,14 +598,11 @@ touch %s
         else:
             self.failUnless(errorMessage, "Empty error message.")
             print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
-    
+
     def errorMessageInWebMonitorTest(self):
         '''Check if VM creation error message is on Web Monitor's VM details page'''
 
-        # invalid image
-        self.image += '.invalid'
-
-        info, vmId = self._startStopVmAndGetVmInfo()
+        info, vmId = self._startStopInvalidImage()
 
         try:
             errorMessage = info.attribs['template_error_message']

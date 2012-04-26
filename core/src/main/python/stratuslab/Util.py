@@ -77,6 +77,12 @@ def getTemplateDir():
     else:
         return os.path.join(os.path.dirname(__file__),'../../../../share/template')
 
+def getResourcesDir():
+    if os.path.exists(Defaults.RESOURCES_DIR):
+        return Defaults.RESOURCES_DIR
+    else:
+        return os.path.join(os.path.dirname(__file__),'../../../../share/resources')
+
 def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())

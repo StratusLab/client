@@ -35,8 +35,8 @@ p12Directory = _globusDirectory
 p12CertificateFile = 'usercert.p12'
 p12CertificateLocation = path.join(p12Directory, p12CertificateFile)
 
-marketplaceEndpoint = 'http://marketplace.stratuslab.eu'
-marketplaceProtocol = 'http'
+marketplaceEndpoint = 'https://marketplace.stratuslab.eu'
+marketplaceProtocol = 'https'
 marketplaceHostname = 'marketplace.stratuslab.eu'
 marketplacePort = 80
 
@@ -57,6 +57,7 @@ patVerboseLevel = 0
 ETC_DIR = '/etc/stratuslab'
 SHARE_DIR = '/var/share/stratuslab'
 TEMPLATE_DIR = path.join(SHARE_DIR, 'template')
+RESOURCES_DIR = path.join(SHARE_DIR, 'resources')
 ONE_PROXY_DIR = '/opt/stratuslab/one-proxy'
 
 AUTHN_CONFIG_FILE = ETC_DIR + '/authn/login-pswd.properties'

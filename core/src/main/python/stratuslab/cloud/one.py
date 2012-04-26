@@ -176,7 +176,8 @@ class OneConnector(object):
              'creatorEmail': xml.find('%s/CREATOR_EMAIL' % createImageElem).text,
              'creatorName': xml.find('%s/CREATOR_NAME' % createImageElem).text,
              'newImageComment': xml.find('%s/NEWIMAGE_COMMENT' % createImageElem).text,
-             'newImageVersion': xml.find('%s/NEWIMAGE_VERSION' % createImageElem).text
+             'newImageVersion': xml.find('%s/NEWIMAGE_VERSION' % createImageElem).text,
+             'newImageMarketplace': xml.find('%s/NEWIMAGE_MARKETPLACE' % createImageElem).text
         }
         return infos
     

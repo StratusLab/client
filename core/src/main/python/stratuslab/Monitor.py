@@ -97,15 +97,29 @@ class Monitor(Configurable):
         self._addHostnameElement(info)
         return info
 
-    def _addHostnameElement(self, vm):
-        ip = vm.attribs[Monitor.TEMPLATE_NIC_IP]
-        vm.set(Monitor.TEMPLATE_NIC_HOSTNAME, self._ipToHostname(ip))
+    def _addHostnameElement(self, info):
+        ip = info.attribs[Monitor.TEMPLATE_NIC_IP]
+        info.set(Monitor.TEMPLATE_NIC_HOSTNAME, self._ipv4ToHostname(ip))
 
-    def _ipToHostname(self, ip):
+    def _addHostnameToVmsInfo(self, vmsInfo):
+        for vmInfo in vmsInfo.findall('VM'):
+            self._addHostnameToSingleVmInfo(vmInfo)
+
+    def _addHostnameToSingleVmInfo(self, vmInfo):
+        for nic in vmInfo.findall('TEMPLATE/NIC'):
+            ipv4 = nic.find('IP').text
+            hostname = self._ipv4ToHostname(ipv4)
+
+            host_element = etree.Element("HOSTNAME")
+            host_element.text = hostname
+
+            nic.append(host_element)
+
+    def _ipv4ToHostname(self, ipv4):
         try:
-            return socket.gethostbyaddr(ip)[0]
+            return socket.gethostbyaddr(ipv4)[0]
         except:
-            return ip
+            return ipv4
 
     def listNodes(self):
         nodes = self.cloud.listHosts()
@@ -121,6 +135,8 @@ class Monitor(Configurable):
     def listVms(self, showVmsFromAllUsers=False):
         res = self.cloud.listVms(showVmsFromAllUsers)
         vms = etree.fromstring(res)
+
+        self._addHostnameToVmsInfo(vms)
 
         if Util.isTrueConfVal(self.patEnable):
             self.portTranslation.addPortTranslationToVmsInfo(vms)

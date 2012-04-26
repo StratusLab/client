@@ -19,7 +19,6 @@
 #
 import re
 
-from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
 import stratuslab.Util as Util
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
