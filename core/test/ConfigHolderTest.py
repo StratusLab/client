@@ -37,7 +37,6 @@ class ConfigHolderTest(unittest.TestCase):
         self.assertEquals('oneTwoThree', key)
         self.assertEquals('123', value)
 
-
     def testCopy(self):
         original = ConfigHolder({'a':'A'},{'b':'B'})
 
