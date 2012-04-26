@@ -80,7 +80,7 @@ class ConfigHolderTest(unittest.TestCase):
         
     def testGetterSetterEmpty2(self):
         self.assertRaises(TypeError, ConfigHolder, None, None)
-        
+
 
 if __name__ == "__main__":
     unittest.main()
