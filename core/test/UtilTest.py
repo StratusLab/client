@@ -133,7 +133,7 @@ start block
         self.assertEquals(Util.sanitizeEndpoint('http://localhost', 'https', 888), 'http://localhost')
         self.assertEquals(Util.sanitizeEndpoint('localhost', 'https', 888), 'https://localhost:888')
         self.assertEquals(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
-        self.assertEquals(Util.sanitizeEndpoint('localhost'), 'http://localhost:80')
+        self.assertEquals(Util.sanitizeEndpoint('localhost'), 'https://localhost:80')
 
     def testChecksumFile(self):
         fd, filename = tempfile.mkstemp()
