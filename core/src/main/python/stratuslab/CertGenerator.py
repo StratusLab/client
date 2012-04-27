@@ -25,13 +25,14 @@ import shutil
 
 from stratuslab.Exceptions import ExecutionException
 import stratuslab.Util as Util 
+from stratuslab.ConfigHolder import ConfigHolder
 
 class CertGenerator(object):
     
     descrtiptionP12 = 'generate p12 self-signed certificate.'
     
-    def __init__(self, options):
-        self.options = options
+    def __init__(self, configHolder=ConfigHolder):
+        self.configHolder = configHolder
         self.tmp_dir = ''
 
     @staticmethod
@@ -83,13 +84,13 @@ class CertGenerator(object):
     def generateP12(self):
         self.tmp_dir = tempfile.mkdtemp()
         Util.printDetail("Temporary directory for certificate generation: %s" %
-                         self.tmp_dir, self.options.verboseLevel, 
+                         self.tmp_dir, self.configHolder.verboseLevel, 
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
         try:
             self._generateOpensslConfig()
             self._runCommandsP12()
         finally:
-            if self.options.noCleanup:
+            if self.configHolder.noCleanup:
                 print "Intermediate files are in", self.tmp_dir
             else:
                 try:
@@ -121,19 +122,19 @@ keyUsage=critical, digitalSignature, nonRepudiation, keyEncipherment, dataEnciph
 subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 subjectAltName=email:%(subjectEmail)s
-""" % self.options.__dict__
+""" % self.configHolder.options
 
         conf_filename = os.path.join(self.tmp_dir, 'openssl.cfg')
         open(conf_filename, 'w').write(config)
 
         Util.printDetail("Generated openssl configuration in: %s" % conf_filename, 
-                         self.options.verboseLevel)
+                         self.configHolder.verboseLevel)
         Util.printDetail("Openssl configuration: %s" % open(conf_filename).read(),
-                         self.options.verboseLevel,
+                         self.configHolder.verboseLevel,
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
     def _runCommandsP12(self):
-        opts = dict(self.options.__dict__.items() + [('tmp', self.tmp_dir)])
+        opts = dict(self.configHolder.options.items() + [('tmp', self.tmp_dir)])
 
         cmds = []
 
@@ -162,7 +163,7 @@ subjectAltName=email:%(subjectEmail)s
             self._runCommand(cmd)
 
     def _runCommand(self, cmd):
-        Util.printDetail("Running: %s" % cmd, self.options.verboseLevel)
+        Util.printDetail("Running: %s" % cmd, self.configHolder.verboseLevel)
         rc, output = commands.getstatusoutput(cmd)
         if rc != 0:
             raise ExecutionException('Failed running %s:\n%s' % (cmd, output))
