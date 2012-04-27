@@ -31,7 +31,7 @@ class CertGenerator(object):
     
     descrtiptionP12 = 'generate p12 self-signed certificate.'
     
-    def __init__(self, configHolder=ConfigHolder):
+    def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
         self.tmp_dir = ''
 
