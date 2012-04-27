@@ -185,8 +185,11 @@ class Runner(object):
         if self.vmDisksBus:
             disks_bus = self.vmDisksBus
         else:
-            image = Image(self.configHolder)
-            disks_bus = image.getImageDisksBusTypeByImageId(self.vm_image)
+            if Image.isImageId(self.vm_image):
+                image = Image(self.configHolder)
+                disks_bus = image.getImageDisksBusTypeByImageId(self.vm_image)
+            else:
+                return
 
         try:
             self.vm_disks_prefix = Runner.DISKS_BUS_PREFIX_MAP[disks_bus]
