@@ -139,7 +139,6 @@ class Runner(object):
 
         self._initVmAttributesStatic()
 
-        self._setDisksBusType()
         self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
@@ -147,6 +146,7 @@ class Runner(object):
         self._setPersistentDiskOptional()
         self._setReadonlyDiskOptional()
         self._setDiskImageFormat()
+        self._setDisksBusType()
 
     def _initVmAttributesStatic(self):
         # VM template parameters initialization
