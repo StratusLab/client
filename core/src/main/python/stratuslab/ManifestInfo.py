@@ -97,8 +97,6 @@ class ManifestInfo(object):
 
         configHolder.assign(self)
 
-        self.user = self.creator
-
         self._template = os.path.join(os.path.join(Util.getTemplateDir(),
                                                    'manifest.xml.tpl'))
 
