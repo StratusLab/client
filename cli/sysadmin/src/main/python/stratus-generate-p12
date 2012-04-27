@@ -25,6 +25,7 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.CertGenerator import CertGenerator
+from stratuslab.ConfigHolder import ConfigHolder
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to generate p12 certificate.'''
@@ -41,7 +42,8 @@ class MainProgram(CommandBaseSysadmin):
         self.options, self.args = self.parser.parse_args()
 
     def doWork(self):
-        CertGenerator(self.options).generateP12()
+        configHolder = ConfigHolder(self.options.__dict__)
+        CertGenerator(configHolder).generateP12()
 
 if __name__ == '__main__':
     try:

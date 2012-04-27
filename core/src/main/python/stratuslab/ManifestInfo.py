@@ -97,8 +97,6 @@ class ManifestInfo(object):
 
         configHolder.assign(self)
 
-        self.user = self.creator
-
         self._template = os.path.join(os.path.join(Util.getTemplateDir(),
                                                    'manifest.xml.tpl'))
 
@@ -219,11 +217,12 @@ class ManifestInfo(object):
         manifest = file(filename).read()
         self.parseManifest(manifest)
 
-    def buildAndSave(self):
+    def buildAndSave(self, filename=''):
         manifestText = self.build()
-        filename = '%s-%s-%s-%s-%s%s' % (self.os, self.osversion,
-                                          self.arch, self.type,
-                                          self.version, Util.manifestExt)
+        if not filename:
+            filename = '%s-%s-%s-%s-%s%s' % (self.os, self.osversion,
+                                             self.arch, self.type,
+                                             self.version, Util.manifestExt)
         file(filename, 'w').write(manifestText)
         Util.printDetail("Manifest: %s"%filename, verboseLevel=self.verboseLevel,
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
