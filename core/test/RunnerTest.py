@@ -93,6 +93,7 @@ class RunnerTest(unittest.TestCase):
     
     def setUp(self):
         Runner._setCloudContext = Mock()
+        self.ch = ConfigHolder.ConfigHolder()
 
     def tearDown(self):
         reload(ConfigHolder)
@@ -110,75 +111,68 @@ class RunnerTest(unittest.TestCase):
         self.failUnlessEqual('hd', vm_params['vm_disks_prefix'])
 
     def testDisksBusTypeExtraDiskIde(self):
-        ch = ConfigHolder.ConfigHolder()
-        ch.set('extraDiskSize', '1')
+        self.ch.set('extraDiskSize', '1')
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_IDE,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         extra_disk = Runner.EXTRA_DISK % {'extraDiskSize' : '1',
                                           'vm_disks_prefix' : 'hd'}
         self.failUnlessEqual(extra_disk, vm_params['extra_disk'])
 
     def testDisksBusTypeExtraDiskVirtio(self):
-        ch = ConfigHolder.ConfigHolder()
-        ch.set('extraDiskSize', '1')
+        self.ch.set('extraDiskSize', '1')
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         extra_disk = Runner.EXTRA_DISK % {'extraDiskSize' : '1',
                                           'vm_disks_prefix' : 'vd'}
         self.failUnlessEqual(extra_disk, vm_params['extra_disk'])
         
     def testDisksBusTypeReadonlyDiskIde(self):
-        ch = ConfigHolder.ConfigHolder()
         uuid = 'f25cd0dc-e56f-4eea-be0c-88d866a2c73c'
-        ch.set('readonlyDiskId', uuid)
+        self.ch.set('readonlyDiskId', uuid)
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_IDE,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         readonly_disk = Runner.READONLY_DISK % {'readonlyDiskId' : uuid,
                                                 'vm_disks_prefix' : 'hd'}
         self.failUnlessEqual(readonly_disk, vm_params['readonly_disk'])
 
     def testDisksBusTypeReadonlyDiskVirtio(self):
-        ch = ConfigHolder.ConfigHolder()
         uuid = 'f25cd0dc-e56f-4eea-be0c-88d866a2c73c'
-        ch.set('readonlyDiskId', uuid)
+        self.ch.set('readonlyDiskId', uuid)
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         readonly_disk = Runner.READONLY_DISK % {'readonlyDiskId' : uuid,
                                                 'vm_disks_prefix' : 'vd'}
         self.failUnlessEqual(readonly_disk, vm_params['readonly_disk'])
 
     def testDisksBusTypeFromCommandLineIde(self):
-        ch = ConfigHolder.ConfigHolder()
-        ch.set('vmDisksBus', 'ide')
+        self.ch.set('vmDisksBus', 'ide')
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         self.failUnlessEqual('hd', vm_params['vm_disks_prefix'])
 
     def testDisksBusTypeFromCommandLineVirtio(self):
-        ch = ConfigHolder.ConfigHolder()
-        ch.set('vmDisksBus', 'virtio')
+        self.ch.set('vmDisksBus', 'virtio')
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_IDE,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         self.failUnlessEqual('vd', vm_params['vm_disks_prefix'])
         
     def testDisksBusTypeFromCommandLineScsi(self):
-        ch = ConfigHolder.ConfigHolder()
-        ch.set('vmDisksBus', 'scsi')
+        self.ch.set('vmDisksBus', 'scsi')
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
-                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_', ch)
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         self.failUnlessEqual('sd', vm_params['vm_disks_prefix'])
 
-    def _getRunnerForManifest(self, manifest, imageid, ch=ConfigHolder.ConfigHolder()):
+    def _getRunnerForManifest(self, manifest, imageid):
         self._mockManifestDownloader(manifest)
-        ch.set('verboseLevel', 0)
-        return Runner(imageid, ch)
+        self.ch.set('verboseLevel', 0)
+        return Runner(imageid, self.ch)
 
     @staticmethod
     def _mockManifestDownloader(manifest):
