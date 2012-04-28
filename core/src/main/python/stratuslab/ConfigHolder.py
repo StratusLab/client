@@ -177,7 +177,9 @@ class UserConfigurator(object):
     @staticmethod
     def configFileToDictWithFormattedKeys(configFile, withMap=False, selected_section=None):
         '''This accepts either a file-like object or a filename.'''
-        config = UserConfigurator(configFile).getDict(selected_section)
+        usercfg = UserConfigurator(configFile)
+        config = usercfg.getDict(selected_section)
+        config['user_defined_instance_types'] = usercfg.getUserDefinedInstanceTypes()
         return ConfigHolder._formatConfigKeys(config, withMap)
 
     def __init__(self, configFile=Util.defaultConfigFileUser):
