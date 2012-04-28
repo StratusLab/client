@@ -252,10 +252,6 @@ class Runner(object):
         return types
 
     @staticmethod
-    def getInstanceType():
-        return Runner.getDefaultInstanceTypes()
-
-    @staticmethod
     def getVmTemplatesParameters(instance=None):
         vmTemplate = Runner.getTemplatePath(instance)
 
