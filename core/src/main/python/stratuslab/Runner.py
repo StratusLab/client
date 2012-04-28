@@ -142,11 +142,13 @@ class Runner(object):
         self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
+        self._setDiskImageFormat()
+        self._setDisksBusType()
+
+        # should go after all runtime fields are initialized 
         self._setExtraDiskOptional()
         self._setPersistentDiskOptional()
         self._setReadonlyDiskOptional()
-        self._setDiskImageFormat()
-        self._setDisksBusType()
 
     def _initVmAttributesStatic(self):
         # VM template parameters initialization
