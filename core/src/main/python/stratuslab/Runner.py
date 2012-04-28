@@ -239,7 +239,7 @@ class Runner(object):
             self.readonly_disk = (self.readonlyDiskId and Runner.READONLY_DISK % self.__dict__) or ''
 
     @staticmethod
-    def getInstanceType():
+    def getDefaultInstanceTypes():
         types = {
             # name      :   (cpu, ram, swap)
             't1.micro'  :   (1, 128, 512),
@@ -250,6 +250,10 @@ class Runner(object):
             'c1.xlarge' :   (4, 2048, 2048),
         }
         return types
+
+    @staticmethod
+    def getInstanceType():
+        return Runner.getDefaultInstanceTypes()
 
     @staticmethod
     def getVmTemplatesParameters(instance=None):
