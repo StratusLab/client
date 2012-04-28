@@ -166,13 +166,13 @@ class Runnable(AuthnCommand):
         columnSize = 10
 
         print 'Type'.ljust(columnSize),
-        print 'CPU'.ljust(columnSize),
-        print 'RAM'.ljust(columnSize),
-        print 'SWAP'.ljust(columnSize)
+        print 'CPU'.rjust(columnSize),
+        print 'RAM'.rjust(columnSize),
+        print 'SWAP'.rjust(columnSize)
         for name, spec in types.items():
             cpu, ram, swap = spec
             print '%s %s %s %s' % (name.ljust(columnSize),
-                            ('%s CPU' % cpu).ljust(columnSize),
-                            ('%s MB' % ram).ljust(columnSize),
-                            ('%s MB' % swap).ljust(columnSize))
+                            ('%s CPU' % cpu).rjust(columnSize),
+                            ('%s MB' % ram).rjust(columnSize),
+                            ('%s MB' % swap).rjust(columnSize))
         sys.exit(0)
