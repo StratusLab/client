@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 import os
+import re
 from ConfigParser import SafeConfigParser
 
 import Util
@@ -171,6 +172,7 @@ class ConfigHolder(object):
 class UserConfigurator(object):
     
     SELECTED_SECTION = 'selected_section'
+    INSTANCE_TYPES_SECTION = 'instance_types'
     
     @staticmethod
     def configFileToDictWithFormattedKeys(configFile, withMap=False, selected_section=None):
@@ -196,6 +198,39 @@ class UserConfigurator(object):
     
     def _loadSection(self, section):
         self._dict.update(dict(self._parser.items(section)))
+
+    def getUserDefinedInstanceTypes(self):
+        types = self.getSectionDict(UserConfigurator.INSTANCE_TYPES_SECTION)
+        for name in types.keys():
+            t = UserConfigurator._instanceTypeStringToTuple(types[name])
+            if UserConfigurator._validInstanceTypeTuple(t):
+                types[name] = t
+            else:
+                del types[name]
+        return types
+
+    @staticmethod
+    def _validInstanceTypeTuple(t):
+        if (len(t) != 3):
+            return None
+        cpu, ram, swap = t
+        if (not isinstance(cpu, int) or cpu <= 0):
+            return None
+        if (not isinstance(ram, int) or ram <=0):
+            return None
+        if (not isinstance(swap, int) or swap < 0):
+            return None
+        return t
+
+    @staticmethod
+    def _instanceTypeStringToTuple(s):
+        return tuple(map (int, re.findall('\d+', s)))
+
+    def getDefaultInstanceType(self):
+        if (hasattr(self, 'defaultInstanceType') and self.defaultInstanceType):
+            return self.defaultInstanceType
+        else:
+            return None
 
     def getDict(self, selected_section=None):
         self._dict = {}
