@@ -24,6 +24,8 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.ConfigHolder import UserConfigurator
 from stratuslab import Util
 import StringIO
+import tempfile
+import os
 from stratuslab.Exceptions import ConfigurationException
 
 
@@ -90,6 +92,49 @@ selected_section = my-section-doesnt-exist
 endpoint = <another.cloud.frontend.hostname>
 username = <another.username>
 '''
+
+    def _createTemporaryFile(self, contents):
+        '''user is responsible for deleting the created file'''
+        temp = tempfile.NamedTemporaryFile(delete=False)
+        try:
+            temp.write(contents)
+        finally:
+            temp.close()
+        return temp.name
+    
+    def testStaticLoader(self):
+        file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
+        configHolder = UserConfigurator.configFileToDictWithFormattedKeys(file)
+        self.assertEqual(configHolder['username'], '<username>')
+    
+    def testStaticLoaderWithNamedFile(self):
+        file = self._createTemporaryFile(self.VALID_CONFIG_DEFAULT_ONLY)
+        try:
+            configHolder = UserConfigurator.configFileToDictWithFormattedKeys(file)
+        finally:
+            os.remove(file)
+        self.assertEqual(configHolder['username'], '<username>')
+
+    def testSectionDictWithNoArgument(self):
+        file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
+        usercfg = UserConfigurator(file)
+        values = usercfg.getSectionDict()
+        self.assertEquals(len(values), 0)
+    
+    def testSectionDictWithNonexistentSection(self):
+        file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
+        usercfg = UserConfigurator(file)
+        values = usercfg.getSectionDict('non-existent-section')
+        self.assertEquals(len(values), 0)
+    
+    def testSectionDictWithDefaultSection(self):
+        file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
+        usercfg = UserConfigurator(file)
+        values = usercfg.getSectionDict('default')
+        self.assertEquals(len(values), 3)
+        self.assertEquals(values['endpoint'], '<cloud.frontend.hostname>')
+        self.assertEquals(values['username'], '<username>')
+        self.assertEquals(values['password'], '<password>')
     
     def testDefaultOnly(self):
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)

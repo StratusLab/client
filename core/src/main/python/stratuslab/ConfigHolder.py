@@ -173,34 +173,21 @@ class UserConfigurator(object):
     SELECTED_SECTION = 'selected_section'
     
     @staticmethod
-    def parseConfig(configFileName):
-        if not os.path.isfile(configFileName):
-            msg = 'Configuration file %s does not exist' % configFileName
-            raise ConfigurationException(msg)
-        config = SafeConfigParser()
-        config.read(configFileName)
-        return config
-
-    @staticmethod
-    def configFileToDict(configFileName):
-        config = ConfigHolder.parseConfig(configFileName)
-        dict = ConfigHolder._convertToDict(config)
-        return dict
-
-    @staticmethod
-    def configFileToDictWithFormattedKeys(configFileName, withMap=False, selected_section=None):
-        
-        config = UserConfigurator().getDict(selected_section)
+    def configFileToDictWithFormattedKeys(configFile, withMap=False, selected_section=None):
+        '''This accepts either a file-like object or a filename.'''
+        config = UserConfigurator(configFile).getDict(selected_section)
         return ConfigHolder._formatConfigKeys(config, withMap)
 
-    def __init__(self, configFile=None):
+    def __init__(self, configFile=Util.defaultConfigFileUser):
+        '''Reads argument as file-like object first, then as a filename.
+           Note that NO checks are made on the existance of the referenced file.'''
         self._dict = {}
         self._parser = SafeConfigParser()
         try:
-            if configFile:
+            try:
                 self._parser.readfp(configFile)
-            else:
-                self._parser.read(Util.defaultConfigFileUser)
+            except AttributeError:
+                self._parser.read(configFile)
         except ConfigParser.ParsingError, ex:
             raise ConfigurationException(ex)
     
@@ -209,11 +196,8 @@ class UserConfigurator(object):
     
     def _loadSection(self, section):
         self._dict.update(dict(self._parser.items(section)))
-    
+
     def getDict(self, selected_section=None):
-        if not os.path.isfile(Util.defaultConfigFileUser):
-            msg = 'Configuration file %s does not exist' % Util.defaultConfigFileUser
-            raise ConfigurationException(msg)
         self._dict = {}
         try:
             self._loadDefaults()
@@ -232,5 +216,15 @@ class UserConfigurator(object):
         ConfigHolder._formatConfigKeys(self._dict)
         return self._dict
 
+    def getSectionDict(self, section=None):
+        '''Create dictionary from configuration file section.
+           Returns an empty dictionary if section doesn't exist.'''
+        values = {}
 
+        if section:
+            try:
+                values = dict(self._parser.items(section))
+            except ConfigParser.NoSectionError, ex:
+                pass
 
+        return values
