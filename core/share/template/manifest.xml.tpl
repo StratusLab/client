@@ -42,7 +42,7 @@
 
         <dcterms:format>%(format)s</dcterms:format>
 
-        <dcterms:creator>%(user)s</dcterms:creator>
+        <dcterms:creator>%(creator)s</dcterms:creator>
 
         <dcterms:created>%(created)s</dcterms:created>
         <dcterms:valid>%(valid)s</dcterms:valid>
