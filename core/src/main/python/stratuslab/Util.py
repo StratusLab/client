@@ -661,7 +661,7 @@ def checksum_file(filename, checksums=[]):
 
     return results
 
-def incrementMinorVersionNumber(self, version_string):
+def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')
     vsplit[1] = str(int(vsplit[1]) + 1)
     return '.'.join(vsplit)
