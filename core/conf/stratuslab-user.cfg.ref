@@ -55,6 +55,14 @@ p12_password = password
 pdisk_endpoint = <pdisk.service.hostname>
 #pdiskPort = 8445
 
+#
+# Set the following parameter to change the default
+# instance type to use.  It may also appear in specific
+# sections to provide separate defaults for different
+# cloud infrastructures.
+#
+#default_instance_type=my.type
+
 # Select a section to override the default section
 #selected_section = my-section
 
@@ -65,3 +73,17 @@ pdisk_endpoint = <pdisk.service.hostname>
 #endpoint = <another.cloud.frontend.hostname>
 #username = <another.username>
 #password = <another.password>
+
+#
+# You may add your own instance types to this section
+# to provide different combinations of CPU, RAM, and
+# swap space.  Use only printable characters for the
+# instance type name.  The value should be a triple of 
+# CPU, RAM, and swap values, respectively.  The RAM
+# and swap values are in MiB.
+#
+# The values defined here can also be used for the
+# default instance type(s).
+#
+[instance_types]
+#my.type = 4, 2048, 2048

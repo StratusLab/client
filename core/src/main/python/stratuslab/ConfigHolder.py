@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 import os
+import re
 from ConfigParser import SafeConfigParser
 
 import Util
@@ -171,36 +172,26 @@ class ConfigHolder(object):
 class UserConfigurator(object):
     
     SELECTED_SECTION = 'selected_section'
+    INSTANCE_TYPES_SECTION = 'instance_types'
     
     @staticmethod
-    def parseConfig(configFileName):
-        if not os.path.isfile(configFileName):
-            msg = 'Configuration file %s does not exist' % configFileName
-            raise ConfigurationException(msg)
-        config = SafeConfigParser()
-        config.read(configFileName)
-        return config
-
-    @staticmethod
-    def configFileToDict(configFileName):
-        config = ConfigHolder.parseConfig(configFileName)
-        dict = ConfigHolder._convertToDict(config)
-        return dict
-
-    @staticmethod
-    def configFileToDictWithFormattedKeys(configFileName, withMap=False, selected_section=None):
-        
-        config = UserConfigurator().getDict(selected_section)
+    def configFileToDictWithFormattedKeys(configFile, withMap=False, selected_section=None):
+        '''This accepts either a file-like object or a filename.'''
+        usercfg = UserConfigurator(configFile)
+        config = usercfg.getDict(selected_section)
+        config['user_defined_instance_types'] = usercfg.getUserDefinedInstanceTypes()
         return ConfigHolder._formatConfigKeys(config, withMap)
 
-    def __init__(self, configFile=None):
+    def __init__(self, configFile=Util.defaultConfigFileUser):
+        '''Reads argument as file-like object first, then as a filename.
+           Note that NO checks are made on the existance of the referenced file.'''
         self._dict = {}
         self._parser = SafeConfigParser()
         try:
-            if configFile:
+            try:
                 self._parser.readfp(configFile)
-            else:
-                self._parser.read(Util.defaultConfigFileUser)
+            except AttributeError:
+                self._parser.read(configFile)
         except ConfigParser.ParsingError, ex:
             raise ConfigurationException(ex)
     
@@ -209,11 +200,41 @@ class UserConfigurator(object):
     
     def _loadSection(self, section):
         self._dict.update(dict(self._parser.items(section)))
-    
+
+    def getUserDefinedInstanceTypes(self):
+        types = self.getSectionDict(UserConfigurator.INSTANCE_TYPES_SECTION)
+        for name in types.keys():
+            t = UserConfigurator._instanceTypeStringToTuple(types[name])
+            if UserConfigurator._validInstanceTypeTuple(t):
+                types[name] = t
+            else:
+                del types[name]
+        return types
+
+    @staticmethod
+    def _validInstanceTypeTuple(t):
+        if (len(t) != 3):
+            return None
+        cpu, ram, swap = t
+        if (not isinstance(cpu, int) or cpu <= 0):
+            return None
+        if (not isinstance(ram, int) or ram <=0):
+            return None
+        if (not isinstance(swap, int) or swap < 0):
+            return None
+        return t
+
+    @staticmethod
+    def _instanceTypeStringToTuple(s):
+        return tuple(map (int, re.findall('\d+', s)))
+
+    def getDefaultInstanceType(self):
+        if (hasattr(self, 'defaultInstanceType') and self.defaultInstanceType):
+            return self.defaultInstanceType
+        else:
+            return None
+
     def getDict(self, selected_section=None):
-        if not os.path.isfile(Util.defaultConfigFileUser):
-            msg = 'Configuration file %s does not exist' % Util.defaultConfigFileUser
-            raise ConfigurationException(msg)
         self._dict = {}
         try:
             self._loadDefaults()
@@ -232,5 +253,15 @@ class UserConfigurator(object):
         ConfigHolder._formatConfigKeys(self._dict)
         return self._dict
 
+    def getSectionDict(self, section=None):
+        '''Create dictionary from configuration file section.
+           Returns an empty dictionary if section doesn't exist.'''
+        values = {}
 
+        if section:
+            try:
+                values = dict(self._parser.items(section))
+            except ConfigParser.NoSectionError, ex:
+                pass
 
+        return values
