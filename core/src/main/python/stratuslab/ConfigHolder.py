@@ -116,8 +116,11 @@ class ConfigHolder(object):
 
     @staticmethod
     def _camelCase(key):
+        if '_' not in key:
+            return key
+
         formattedKey = ''.join([part.title() for part in key.split('_')])
-        if len(formattedKey) > 0:
+        if len(formattedKey) > 1:
             formattedKey = formattedKey[0].lower() + formattedKey[1:]
         return formattedKey
 
