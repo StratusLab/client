@@ -114,6 +114,13 @@ class Runnable(AuthnCommand):
         super(Runnable, self).parse()
 
         options, self.args = self.parser.parse_args()
+
+        # Inject placeholders for instance information coming from 
+        # the configuration file.  Real values cannot be used because
+        # the configuration file hasn't yet been read.
+        options.__dict__['defaultInstanceType'] = None
+        options.__dict__['availableInstanceTypes'] = None
+
         self._assignOptions(defaultOptions, options)
 
 
@@ -123,14 +130,17 @@ class Runnable(AuthnCommand):
         Util.assignAttributes(obj, options.__dict__)
         self.options = obj
 
-
     def checkOptions(self):
 
         if self.options.listType:
             self.displayInstanceType()
- 
+
+        # Inject the real values for the default and available instance types.
+        self.options.defaultInstanceType = self.getDefaultInstanceType()
+        self.options.availableInstanceTypes = self.getAvailableInstanceTypes();
+
         if self.options.instanceType is None:
-            self.options.instanceType = self.getDefaultInstanceType;
+            self.options.instanceType = self.getDefaultInstanceType();
 
         self._checkArgs()
 

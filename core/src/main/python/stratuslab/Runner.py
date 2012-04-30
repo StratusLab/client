@@ -322,8 +322,8 @@ class Runner(object):
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
 
-    def _getVmResourceValues(self):
-        cpu, ram, swap = self.getDefaultInstanceTypes().get(self.instanceType)
+    def getInstanceResourceValues(self):
+        cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
         if self.vmCpu is not None:
             cpu = self.vmCpu
         if self.vmRam is not None:
@@ -356,7 +356,7 @@ class Runner(object):
         return params
 
     def _manageCpuRamSwap(self):
-        self.vm_cpu, self.vm_ram, self.vm_swap = self._getVmResourceValues()
+        self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceResourceValues()
         self.vm_vcpu = self.vm_cpu
         if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
             self.vm_cpu = self.vmCpuAmount
