@@ -27,7 +27,7 @@ class ConfigHolderTest(unittest.TestCase):
         configHolder = ConfigHolder()
         self.assertEquals('oneTwoThree', configHolder._camelCase('One_Two_Three'))
         self.assertEquals('oneTwoThree', configHolder._camelCase('one_two_three'))
-        self.assertEquals('a', configHolder._camelCase('A'))
+        self.assertEquals('a', configHolder._camelCase('a'))
         self.assertEquals('', configHolder._camelCase(''))
 
     def testConfigToDict(self):
