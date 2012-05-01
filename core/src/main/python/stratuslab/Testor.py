@@ -485,6 +485,8 @@ touch %s
         self.proxyOneadminPassword = self.testPassword
         cmds = ['python -c "import dirq"',
                 'ls -l %s' % remote_test_file]
+
+        self.marketplaceEndpoint = marketplace_url
         self._runInstanceTest(cmdToRun=cmds)
 
     def _deleteImageAndManifestFromAppRepo(self, imageUri):
