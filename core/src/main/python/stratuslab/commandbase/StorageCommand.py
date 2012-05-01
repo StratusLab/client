@@ -20,9 +20,10 @@
 import os
 
 from stratuslab import Defaults
-from stratuslab.AuthnCommand import AuthnCommand, UsernamePassword
+from stratuslab.AuthnCommand import UsernamePassword
+from stratuslab.CommandBase import CommandBaseSysadmin
 
-class StorageCommand(AuthnCommand):
+class StorageCommand(CommandBaseSysadmin):
     
     @staticmethod
     def pdiskOptions():
