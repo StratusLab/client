@@ -178,7 +178,7 @@ bad4 =
     def testValidTuples(self):
         testValues = { (1,2,3),
                        (1,1,0),
-                       (24,256,1024),
+                       (24,256,1024)
                        }
         for t in testValues:
             result = UserConfigurator._validInstanceTypeTuple(t);
@@ -194,7 +194,7 @@ bad4 =
                        (1,1,-1),
                        ('a',2,3),
                        (1,'a',3),
-                       (1,2,'a'),
+                       (1,2,'a')
                        }
         for t in testValues:
             result = UserConfigurator._validInstanceTypeTuple(t);
