@@ -323,7 +323,10 @@ class Runner(object):
         return defaultOp
 
     def getInstanceResourceValues(self):
-        cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
+        try:
+            cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
+        except AttributeError:
+            cpu, ram, swap = self.getDefaultInstanceTypes().get(self.instanceType)
         if self.vmCpu is not None:
             cpu = self.vmCpu
         if self.vmRam is not None:
