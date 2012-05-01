@@ -265,7 +265,7 @@ class UserConfigurator(object):
         if section:
             try:
                 values = dict(self._parser.items(section))
-            except ConfigParser.NoSectionError, ex:
+            except ConfigParser.NoSectionError:
                 pass
 
         return values
