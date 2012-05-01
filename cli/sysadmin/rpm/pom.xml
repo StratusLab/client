@@ -117,9 +117,9 @@
 	  <mappings>
 		<mapping>
 			<directory>/etc</directory>
-			<filemode>640</filemode>
+			<filemode>644</filemode>
 			<username>root</username>
-			<groupname>cloud</groupname>
+			<groupname>root</groupname>
 			<configuration>false</configuration>
 			<directoryIncluded>false</directoryIncluded>
 			<sources>
@@ -174,13 +174,17 @@
 	    </mapping>
 	    <mapping>
 	      <directory>/etc/stratuslab/</directory>
-	      <directoryIncluded>false</directoryIncluded>
-          <configuration>noreplace</configuration>
-	      <username>root</username>
-	      <groupname>root</groupname>
+        <filemode>640</filemode>
+        <username>root</username>
+        <groupname>cloud</groupname>
+        <directoryIncluded>false</directoryIncluded>
+        <configuration>noreplace</configuration>
 	      <sources>
 	        <source>
 		      <location>${project.build.directory}/zip-sources/conf</location>
+            <includes>
+              <include>stratuslab*</include>
+            </includes>     
 	        </source>
 	      </sources>
 	    </mapping>
