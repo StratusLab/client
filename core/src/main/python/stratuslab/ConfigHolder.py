@@ -173,29 +173,16 @@ class UserConfigurator(object):
     SELECTED_SECTION = 'selected_section'
     
     @staticmethod
-    def parseConfig(configFileName):
-        if not os.path.isfile(configFileName):
-            msg = 'Configuration file %s does not exist' % configFileName
-            raise ConfigurationException(msg)
-        config = SafeConfigParser()
-        config.read(configFileName)
-        return config
-
-    @staticmethod
-    def configFileToDict(configFileName):
-        config = ConfigHolder.parseConfig(configFileName)
-        dict = ConfigHolder._convertToDict(config)
-        return dict
-
-    @staticmethod
     def configFileToDictWithFormattedKeys(configFileName, withMap=False, selected_section=None):
-        
-        config = UserConfigurator().getDict(selected_section)
+        print configFileName
+        configFile = open(configFileName)
+        config = UserConfigurator(configFile).getDict(selected_section)
         return ConfigHolder._formatConfigKeys(config, withMap)
 
     def __init__(self, configFile=None):
         self._dict = {}
         self._parser = SafeConfigParser()
+
         try:
             if configFile:
                 self._parser.readfp(configFile)

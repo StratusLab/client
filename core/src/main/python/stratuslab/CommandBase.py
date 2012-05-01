@@ -151,20 +151,19 @@ class CommandBaseUser(CommandBase):
 
         if configFile == Util.defaultConfigFileUser:
             if not os.path.exists(configFile):
-                Util.printDetail('[WARNING] Default configuration file does not exist: %s' % 
+                Util.printDetail('[WARNING] Default user configuration file does not exist: %s' % 
                                   configFile, verboseLevel=self.verboseLevel)
                 return
-            selected_section = None
-            if hasattr(self.options, 'selected_section'):
-                selected_section = self.options.selected_section
-            try:
-                self.config, self._configKeysClassAttrsTwoWayMap = \
-                    UserConfigurator.configFileToDictWithFormattedKeys(configFile, withMap=True, selected_section=selected_section)
-            except ConfigurationException, ex:
-                raise ConfigurationException('Error parsing user configuration file %s' % configFile + '. Details: %s' % ex)
-        else:
+
+        selected_section = None
+        if hasattr(self.options, 'selected_section'):
+            selected_section = self.options.selected_section
+
+        try:
             self.config, self._configKeysClassAttrsTwoWayMap = \
-                ConfigHolder.configFileToDictWithFormattedKeys(configFile, withMap=True)
+                UserConfigurator.configFileToDictWithFormattedKeys(configFile, withMap=True, selected_section=selected_section)
+        except ConfigurationException, ex:
+            raise ConfigurationException('Error parsing user configuration file %s' % configFile + '. Details: %s' % ex)
 
     def _updateOptionsFromConfigFile(self):
         """Order of precedence:
