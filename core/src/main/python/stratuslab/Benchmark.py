@@ -31,7 +31,7 @@ class Benchmark(object):
 
     def run(self):
         allocatedIp = self.prepareMachine(self.vmId)
-        vm_cpu, vm_ram, vm_swap = self._runner.getInstanceType().get(self._runner.instanceType)
+        vm_cpu, vm_ram, vm_swap = self._runner.getInstanceResourceValues()
         if self.output_folder:
             self.output_xml=self.output_folder
         else:

@@ -142,11 +142,13 @@ class Runner(object):
         self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
+        self._setDiskImageFormat()
+        self._setDisksBusType()
+
+        # should go after all runtime fields are initialized 
         self._setExtraDiskOptional()
         self._setPersistentDiskOptional()
         self._setReadonlyDiskOptional()
-        self._setDiskImageFormat()
-        self._setDisksBusType()
 
     def _initVmAttributesStatic(self):
         # VM template parameters initialization
@@ -237,7 +239,7 @@ class Runner(object):
             self.readonly_disk = (self.readonlyDiskId and Runner.READONLY_DISK % self.__dict__) or ''
 
     @staticmethod
-    def getInstanceType():
+    def getDefaultInstanceTypes():
         types = {
             # name      :   (cpu, ram, swap)
             't1.micro'  :   (1, 128, 512),
@@ -320,8 +322,11 @@ class Runner(object):
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
 
-    def _getVmResourceValues(self):
-        cpu, ram, swap = self.getInstanceType().get(self.instanceType)
+    def getInstanceResourceValues(self):
+        try:
+            cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
+        except AttributeError:
+            cpu, ram, swap = self.getDefaultInstanceTypes().get(self.instanceType)
         if self.vmCpu is not None:
             cpu = self.vmCpu
         if self.vmRam is not None:
@@ -354,7 +359,7 @@ class Runner(object):
         return params
 
     def _manageCpuRamSwap(self):
-        self.vm_cpu, self.vm_ram, self.vm_swap = self._getVmResourceValues()
+        self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceResourceValues()
         self.vm_vcpu = self.vm_cpu
         if self.vmCpuAmount and self.vmCpuAmount <= self.vm_cpu:
             self.vm_cpu = self.vmCpuAmount

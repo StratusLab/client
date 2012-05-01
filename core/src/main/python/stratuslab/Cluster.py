@@ -246,7 +246,7 @@ class Cluster(object):
             self._runner.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout)
             vmNetworkDetails.append(self._runner.getNetworkDetail(vmId))
             
-        vm_cpu, vm_ram, vm_swap = self._runner.getInstanceType().get(self._runner.instanceType)
+        vm_cpu, vm_ram, vm_swap = self._runner.getInstanceResourceValues()
         
         for vmNetwork in vmNetworkDetails:
             if vmNetwork[0] == 'public':

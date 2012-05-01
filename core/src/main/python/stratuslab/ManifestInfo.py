@@ -95,6 +95,8 @@ class ManifestInfo(object):
         
         self.disksbus = ManifestInfo.DISKS_BUS_DEFAULT
 
+        self.verboseLevel = 0
+
         configHolder.assign(self)
 
         self._template = os.path.join(os.path.join(Util.getTemplateDir(),

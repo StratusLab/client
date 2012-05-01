@@ -19,6 +19,7 @@
 #
 import os
 import sys
+import pprint
 
 from stratuslab.Runner import Runner
 from stratuslab.AuthnCommand import AuthnCommand
@@ -52,8 +53,8 @@ class Runnable(AuthnCommand):
                 default=defaultOptions['userPublicKeyFile'])
 
         self.parser.add_option('-t', '--type', dest='instanceType',
-                help='instance type to start', metavar='TYPE',
-                default=defaultOptions['instanceType'])
+                help='instance type to start (see --list-type for default)', metavar='TYPE',
+                default=None)
 
         self.parser.add_option('-l', '--list-type', dest='listType',
                 help='list available instance type',
@@ -113,6 +114,13 @@ class Runnable(AuthnCommand):
         super(Runnable, self).parse()
 
         options, self.args = self.parser.parse_args()
+
+        # Inject placeholders for instance information coming from 
+        # the configuration file.  Real values cannot be used because
+        # the configuration file hasn't yet been read.
+        options.__dict__['defaultInstanceType'] = None
+        options.__dict__['availableInstanceTypes'] = None
+
         self._assignOptions(defaultOptions, options)
 
 
@@ -122,10 +130,17 @@ class Runnable(AuthnCommand):
         Util.assignAttributes(obj, options.__dict__)
         self.options = obj
 
-
     def checkOptions(self):
+
         if self.options.listType:
             self.displayInstanceType()
+
+        # Inject the real values for the default and available instance types.
+        self.options.defaultInstanceType = self.getDefaultInstanceType()
+        self.options.availableInstanceTypes = self.getAvailableInstanceTypes();
+
+        if self.options.instanceType is None:
+            self.options.instanceType = self.getDefaultInstanceType();
 
         self._checkArgs()
 
@@ -135,7 +150,7 @@ class Runnable(AuthnCommand):
 
         self._checkKeyPair()
 
-        if self.options.instanceType not in Runner.getInstanceType().keys():
+        if self.options.instanceType not in self.getAvailableInstanceTypes().keys():
             self.parser.error('Specified instance type not available')
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
@@ -161,18 +176,40 @@ class Runnable(AuthnCommand):
                 if not os.path.isfile(key):
                     self.parser.error('Key `%s` does not exist' % key)
 
+    def getDefaultInstanceType(self):
+        try:
+            return self.config['defaultInstanceType']
+        except KeyError:
+            return Runner.DEFAULT_INSTANCE_TYPE
+
+    def getAvailableInstanceTypes(self):
+        availableTypes = Runner.getDefaultInstanceTypes()
+        userDefinedTypes = self.config['userDefinedInstanceTypes']
+
+        availableTypes.update(userDefinedTypes)
+
+        return availableTypes
+
     def displayInstanceType(self):
-        types = Runner.getInstanceType()
+        types = self.getAvailableInstanceTypes()
+        default = self.getDefaultInstanceType();
+
         columnSize = 10
 
+        print ' '.ljust(1),
         print 'Type'.ljust(columnSize),
-        print 'CPU'.ljust(columnSize),
-        print 'RAM'.ljust(columnSize),
-        print 'SWAP'.ljust(columnSize)
+        print 'CPU'.rjust(columnSize),
+        print 'RAM'.rjust(columnSize),
+        print 'SWAP'.rjust(columnSize)
         for name, spec in types.items():
+            if (name == default):
+                flag = '*'
+            else:
+                flag = ' '
             cpu, ram, swap = spec
-            print '%s %s %s %s' % (name.ljust(columnSize),
-                            ('%s CPU' % cpu).ljust(columnSize),
-                            ('%s MB' % ram).ljust(columnSize),
-                            ('%s MB' % swap).ljust(columnSize))
+            print '%s %s %s %s %s' % (flag.ljust(1), 
+                                      name.ljust(columnSize),
+                                      ('%s CPU' % cpu).rjust(columnSize),
+                                      ('%s MB' % ram).rjust(columnSize),
+                                      ('%s MB' % swap).rjust(columnSize))
         sys.exit(0)
