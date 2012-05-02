@@ -25,6 +25,8 @@ from mock.mock import Mock
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.tm.TMSaveCache import TMSaveCache
+from stratuslab.Signator import Signator
+import sys
 
 class TMSaveCacheTest(unittest.TestCase):
 
@@ -125,12 +127,14 @@ one_port = 2633
             tm._generateP12Cert()
             self.failUnless(os.path.exists(tm.p12cert))
 
-            tm._createManifest()
+            tm._generateP12Cert()
+            tm._retrieveManifestsPath()
+            tm.pdiskPathNew = tm._buildPDiskPath(tm.createdPDiskId)
+            tm._buildAndSaveManifest()
             self.failUnless(os.path.exists(tm.manifestNotSignedPath))
-            self.failUnless(os.path.exists(tm.manifestPath))
             
             minfo = ManifestInfo()
-            minfo.parseManifestFromFile(tm.manifestPath)
+            minfo.parseManifestFromFile(tm.manifestNotSignedPath)
             assert minfo.comment == 'test'
             assert minfo.creator == 'Jay Random'
             assert minfo.version == '0.0'
@@ -138,6 +142,12 @@ one_port = 2633
             assert minfo.locations == [PDISK_ENDPOINT+':foo-bar-baz']
 
             self.failUnless('New image created' in str(tm._composeEmailToUser()))
+
+            if not Signator.findJar():
+                print "Skipping signature sub-test as Signator jar can not be found."
+                return
+            tm._signManifest()
+            self.failUnless(os.path.exists(tm.manifestPath))
         finally:
             tm._cleanup()
 
