@@ -123,7 +123,11 @@ class Runner(object):
         self._initVmAttributes()
         
         self.instancesDetail = []
-
+    
+        self.availableInstanceTypes = self._getAvailableInstanceTypes()
+        
+        self._validateInstanceType()
+        
     def _setCloudContext(self):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
@@ -133,6 +137,18 @@ class Runner(object):
 
         self.endpoint = self.cloud.setEndpoint(self.endpoint)
         self.pdisk = None
+
+    def _getAvailableInstanceTypes(self):
+        availableTypes = Runner.getDefaultInstanceTypes()
+        userDefinedTypes = self.userDefinedInstanceTypes
+
+        availableTypes.update(userDefinedTypes)
+
+        return availableTypes
+
+    def _validateInstanceType(self):
+        if self.instanceType not in self.availableInstanceTypes:
+            raise ValueError('Unknown instance type: %s' % self.instanceType)
 
     def _initVmAttributes(self):
         if not self.vm_image:
@@ -325,11 +341,8 @@ class Runner(object):
 
     def getInstanceResourceValues(self):
         
-        if self.instanceType not in self.getAvailableInstanceTypes():
-            raise ValueError('Unknown instance type: %s' % self.instanceType)
-
         try:
-            cpu, ram, swap = self.getAvailableInstanceTypes().get(self.instanceType)
+            cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
         except AttributeError:
             cpu, ram, swap = self.getDefaultInstanceTypes().get(self.instanceType)
         if self.vmCpu is not None:
@@ -639,16 +652,8 @@ class Runner(object):
         else:
             return url
 
-    def getAvailableInstanceTypes(self):
-        availableTypes = Runner.getDefaultInstanceTypes()
-        userDefinedTypes = self.userDefinedInstanceTypes
-
-        availableTypes.update(userDefinedTypes)
-
-        return availableTypes
-
     def listInstanceTypes(self):
-        types = self.getAvailableInstanceTypes()
+        types = self.availableInstanceTypes
 
         columnSize = 10
 
@@ -658,7 +663,7 @@ class Runner(object):
         print 'RAM'.rjust(columnSize),
         print 'SWAP'.rjust(columnSize)
         for name in sorted(types.iterkeys()):
-            flag = (name == Runner.DEFAULT_INSTANCE_TYPE and '*') or ' '
+            flag = (name == self.instanceType and '*') or ' '
             cpu, ram, swap = types[name]
             print '%s %s %s %s %s' % (flag.ljust(1), 
                                       name.ljust(columnSize),
