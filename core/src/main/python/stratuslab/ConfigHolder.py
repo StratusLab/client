@@ -72,9 +72,12 @@ class ConfigHolder(object):
 
     @staticmethod
     def parseConfig(configFileName):
-        if not os.path.isfile(configFileName):
-            msg = 'Configuration file %s does not exist' % configFileName
-            raise ConfigurationException(msg)
+        try:
+            open(configFileName)
+        except Exception as ex:
+            msg = 'Cannot access configuration file %s: %s' % (configFileName,
+                                                               str(ex))
+            raise Exceptions.ConfigurationException(msg)
         config = SafeConfigParser()
         config.read(configFileName)
         return config
