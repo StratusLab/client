@@ -176,16 +176,16 @@ bad4 =
             self.assertEquals(t, trueValue, 'incorrect value mapping: %s, %s, %s' % (s, t, trueValue))
 
     def testValidTuples(self):
-        testValues = { (1,2,3),
+        testValues = [ (1,2,3),
                        (1,1,0),
                        (24,256,1024)
-                       }
+                       ]
         for t in testValues:
             result = UserConfigurator._validInstanceTypeTuple(t);
             self.assertTrue(result, 'valid tuple marked as invalid: %s' % str(t))
 
     def testInvalidTuples(self):
-        testValues = { (0,1,0),
+        testValues = [ (0,1,0),
                        (1,0,0),
                        (),
                        (1,2,3,4),
@@ -195,7 +195,7 @@ bad4 =
                        ('a',2,3),
                        (1,'a',3),
                        (1,2,'a')
-                       }
+                       ]
         for t in testValues:
             result = UserConfigurator._validInstanceTypeTuple(t);
             self.assertFalse(result, 'invalid tuple marked as valid: %s' % str(t))
