@@ -19,11 +19,11 @@
 #
 import os
 import re
-from ConfigParser import SafeConfigParser
 
-import Util
-from Exceptions import ConfigurationException
+from ConfigParser import SafeConfigParser
 import ConfigParser
+import stratuslab.Util as Util
+from stratuslab.Exceptions import ConfigurationException
 
 class ConfigHolder(object):
 
@@ -72,8 +72,11 @@ class ConfigHolder(object):
 
     @staticmethod
     def parseConfig(configFileName):
-        if not os.path.isfile(configFileName):
-            msg = 'Configuration file %s does not exist' % configFileName
+        try:
+            open(configFileName)
+        except Exception as ex:
+            msg = 'Cannot access configuration file %s: %s' % (configFileName,
+                                                               str(ex))
             raise ConfigurationException(msg)
         config = SafeConfigParser()
         config.read(configFileName)
@@ -203,7 +206,6 @@ class UserConfigurator(object):
         self._dict = {}
         self._dict['userDefinedInstanceTypes'] = self.getUserDefinedInstanceTypes()
         
-
     def _loadDefaults(self):
         self._loadSection('default')
     

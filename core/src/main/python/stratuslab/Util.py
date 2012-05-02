@@ -199,6 +199,16 @@ def fileGetExtension(filename):
         return ''
     return ending
 
+def fileFind(dir, start='', end=''):
+    try:
+        for file in os.listdir(dir):
+            if file.startswith(start) and file.endswith(end):
+                return os.path.join(dir, file)
+    except OSError:
+        pass
+
+    raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
+
 def shaHexDigest(string):
     shaMethod = None
     try:

@@ -19,13 +19,29 @@
 #
 import os
 
-import Util
+import stratuslab.Util as Util
 from Configurable import Configurable
 from Exceptions import ConfigurationException
 
-
 class Signator(Configurable):
-    
+
+    @staticmethod
+    def findJar():
+        dirs = []
+        module_dirname = os.path.dirname(__file__)
+        devRelativePath = '../../../../../../stratuslab-marketplace/metadata/target'
+        dirs.append(os.path.join(module_dirname, devRelativePath))
+        tarballRelativePath = '../../../../java/'
+        dirs.append(os.path.join(module_dirname, tarballRelativePath))
+        dirs.append('/var/lib/stratuslab/java')
+        
+        for dir in dirs:
+            try:
+                jarFile = Util.fileFind(dir, 'marketplace-metadata', 'dependencies.jar')
+                return jarFile
+            except ValueError:
+                pass
+
     def __init__(self, manifestFile, configHolder):
         self.outputManifestFile = None
         self.renamedInputManifestFile = manifestFile
@@ -48,6 +64,7 @@ class Signator(Configurable):
 
     def _sign(self):
         jarLocation = self._findJar()
+        self.printDetail('Signature jar file: %s' % jarLocation)
         javaMainArgs = ' ' + self.manifestFile + ' ' + self.tempManifestFile + \
                        ' ' + self.p12Certificate + ' ' + self.p12Password + \
                        ' ' + self.email
@@ -57,35 +74,10 @@ class Signator(Configurable):
         return Util.execute(cmd.split(' '),withOutput=True)
 
     def _findJar(self):
-        dirs = []
-        devRelativePath = '../../../../../../stratuslab-marketplace/metadata/target'
-        dirs.append(os.path.join(self._moduleDirname(), devRelativePath))
-        tarballRelativePath = '../../../../java/'
-        dirs.append(os.path.join(self._moduleDirname(), tarballRelativePath))
-        dirs.append('/var/lib/stratuslab/java')
-        
-        for dir in dirs:
-            try:
-                jarFile = self._findFile(dir, 'marketplace-metadata', 'dependencies.jar')
-                self.printDetail('Loading signature jar file: %s' % jarFile)
-                return jarFile
-            except ValueError:
-                pass
-
-        raise ConfigurationException('Failed to find metadata jar file')
-
-    def _moduleDirname(self):
-        return os.path.dirname(__file__)
-        
-    def _findFile(self, dir, start='', end=''):
-        try:
-            for file in os.listdir(dir):
-                if file.startswith(start) and file.endswith(end):
-                    return os.path.join(dir, file)
-        except OSError:
-            pass
-
-        raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
+        jarLocation = self.findJar()
+        if not jarLocation:
+            raise ConfigurationException('Failed to find metadata jar file')
+        return jarLocation
 
     def _renameFiles(self):
         self.printDetail('Renaming input file from %s to %s' % (self.manifestFile, self.renamedInputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
