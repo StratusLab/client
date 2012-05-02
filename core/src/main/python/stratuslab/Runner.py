@@ -110,7 +110,8 @@ class Runner(object):
         self.vncListen = ''
         self.noCheckImageUrl = False
         self.saveDisk = False
-
+        self.userDefinedInstanceTypes = {}
+        
         configHolder.assign(self)
         self.configHolder = configHolder
 
@@ -323,8 +324,12 @@ class Runner(object):
         return defaultOp
 
     def getInstanceResourceValues(self):
+        
+        if self.instanceType not in self.getAvailableInstanceTypes():
+            raise ValueError('Unknown instance type: %s' % self.instanceType)
+
         try:
-            cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
+            cpu, ram, swap = self.getAvailableInstanceTypes().get(self.instanceType)
         except AttributeError:
             cpu, ram, swap = self.getDefaultInstanceTypes().get(self.instanceType)
         if self.vmCpu is not None:
@@ -633,3 +638,30 @@ class Runner(object):
             return response.geturl()
         else:
             return url
+
+    def getAvailableInstanceTypes(self):
+        availableTypes = Runner.getDefaultInstanceTypes()
+        userDefinedTypes = self.userDefinedInstanceTypes
+
+        availableTypes.update(userDefinedTypes)
+
+        return availableTypes
+
+    def listInstanceTypes(self):
+        types = self.getAvailableInstanceTypes()
+
+        columnSize = 10
+
+        print ' '.ljust(1),
+        print 'Type'.ljust(columnSize),
+        print 'CPU'.rjust(columnSize),
+        print 'RAM'.rjust(columnSize),
+        print 'SWAP'.rjust(columnSize)
+        for name in sorted(types.iterkeys()):
+            flag = (name == Runner.DEFAULT_INSTANCE_TYPE and '*') or ' '
+            cpu, ram, swap = types[name]
+            print '%s %s %s %s %s' % (flag.ljust(1), 
+                                      name.ljust(columnSize),
+                                      ('%s CPU' % cpu).rjust(columnSize),
+                                      ('%s MB' % ram).rjust(columnSize),
+                                      ('%s MB' % swap).rjust(columnSize))

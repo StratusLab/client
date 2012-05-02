@@ -182,13 +182,11 @@ class UserConfigurator(object):
         '''This accepts either a file-like object or a filename.'''
         usercfg = UserConfigurator(configFile)
         config = usercfg.getDict(selected_section)
-        config['user_defined_instance_types'] = usercfg.getUserDefinedInstanceTypes()
         return ConfigHolder._formatConfigKeys(config, withMap)
 
     def __init__(self, configFile=Util.defaultConfigFileUser):
         '''Reads argument as file-like object first, then as a filename.
            Note that NO checks are made on the existence of the referenced file.'''
-        self._dict = {}
         self._parser = SafeConfigParser()
 
         try:
@@ -198,7 +196,14 @@ class UserConfigurator(object):
                 self._parser.read(configFile) # filename
         except ConfigParser.ParsingError, ex:
             raise ConfigurationException(ex)
-    
+
+        self._initDict()
+
+    def _initDict(self):
+        self._dict = {}
+        self._dict['userDefinedInstanceTypes'] = self.getUserDefinedInstanceTypes()
+        
+
     def _loadDefaults(self):
         self._loadSection('default')
     
@@ -217,14 +222,14 @@ class UserConfigurator(object):
 
     @staticmethod
     def _validInstanceTypeTuple(t):
-        if (len(t) != 3):
+        if len(t) != 3:
             return None
         cpu, ram, swap = t
-        if (not isinstance(cpu, int) or cpu <= 0):
+        if not isinstance(cpu, int) or cpu <= 0:
             return None
-        if (not isinstance(ram, int) or ram <=0):
+        if not isinstance(ram, int) or ram <=0:
             return None
-        if (not isinstance(swap, int) or swap < 0):
+        if not isinstance(swap, int) or swap < 0:
             return None
         return t
 
@@ -239,7 +244,8 @@ class UserConfigurator(object):
             return None
 
     def getDict(self, selected_section=None):
-        self._dict = {}
+        self._initDict()
+
         try:
             self._loadDefaults()
         except ConfigParser.NoSectionError, ex:
@@ -254,12 +260,12 @@ class UserConfigurator(object):
                 self._loadSection(selected_section)
             except ConfigParser.NoSectionError, ex:
                 raise ConfigurationException(ex)
+
         ConfigHolder._formatConfigKeys(self._dict)
+
         return self._dict
 
     def getSectionDict(self, section=None):
-        '''Create dictionary from configuration file section.
-           Returns an empty dictionary if section doesn't exist.'''
         values = {}
 
         if section:

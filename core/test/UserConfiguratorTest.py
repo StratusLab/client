@@ -131,7 +131,6 @@ bad4 =
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
         configHolder = UserConfigurator.configFileToDictWithFormattedKeys(file)
         self.assertEqual(configHolder['username'], '<username>')
-        self.assertEqual(configHolder['userDefinedInstanceTypes'], {})
     
     def testStaticLoaderWithNamedFile(self):
         file = self._createTemporaryFile(self.VALID_CONFIG_DEFAULT_ONLY)
@@ -140,7 +139,6 @@ bad4 =
         finally:
             os.remove(file)
         self.assertEqual(configHolder['username'], '<username>')
-        self.assertEqual(configHolder['userDefinedInstanceTypes'], {})
 
     def testDefaultInstanceTypeWithoutConfigAttribute(self):
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
