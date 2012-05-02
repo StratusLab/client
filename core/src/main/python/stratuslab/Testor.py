@@ -45,8 +45,8 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.MonitoringTest as MonitoringTest
-#import stratuslab.RegistrationTest as RegistrationTest
-#import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
+import stratuslab.RegistrationTest as RegistrationTest
+import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Util import sleep, printStep
 from stratuslab.Image import Image
