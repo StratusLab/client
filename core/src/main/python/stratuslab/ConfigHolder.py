@@ -200,7 +200,7 @@ class UserConfigurator(object):
             except AttributeError:
                 self._parser.read(configFile) # filename
         except ConfigParser.ParsingError, ex:
-            raise ConfigurationException(ex)
+            raise Exceptions.ConfigurationException(ex)
     
     def _loadDefaults(self):
         self._loadSection('default')
@@ -246,7 +246,7 @@ class UserConfigurator(object):
         try:
             self._loadDefaults()
         except ConfigParser.NoSectionError, ex:
-            raise ConfigurationException(ex)
+            raise Exceptions.ConfigurationException(ex)
 
         if not selected_section:
             if self._parser.has_option('default', UserConfigurator.SELECTED_SECTION):
@@ -256,7 +256,7 @@ class UserConfigurator(object):
             try:
                 self._loadSection(selected_section)
             except ConfigParser.NoSectionError, ex:
-                raise ConfigurationException(ex)
+                raise Exceptions.ConfigurationException(ex)
         ConfigHolder._formatConfigKeys(self._dict)
         return self._dict
 
