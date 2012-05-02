@@ -19,11 +19,11 @@
 #
 import os
 import re
-from ConfigParser import SafeConfigParser
 
-import Util
-from Exceptions import ConfigurationException
+from ConfigParser import SafeConfigParser
 import ConfigParser
+import stratuslab.Util as Util
+import stratuslab.Exceptions as Exceptions
 
 class ConfigHolder(object):
 
