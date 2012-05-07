@@ -34,7 +34,6 @@ from stratuslab.Authn import UsernamePasswordCredentialsLoader
 from stratuslab.Exceptions import ValidationException, ClientException,\
     ServerException, ConfigurationException
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 
 class PersistentDisk(object):
     
