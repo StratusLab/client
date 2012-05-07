@@ -34,7 +34,7 @@ class CommandBase(object):
     
     def __init__(self):
         self.options = None
-        self.config  = None
+        self.config  = {}
         self._configKeysClassAttrsTwoWayMap = {}
 
         self.verboseLevel = 0
