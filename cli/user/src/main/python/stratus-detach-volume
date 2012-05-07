@@ -35,7 +35,7 @@ from stratuslab.Authn import AuthnFactory
 from stratuslab.Exceptions import OneException
 
 
-class MainProgram(StorageCommand):
+class MainProgram(AuthnCommand, StorageCommand):
     '''A command-line program to detach a persistent disk.'''
 
     def __init__(self):
@@ -57,7 +57,6 @@ class MainProgram(StorageCommand):
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
-        self.checkPDiskEndpointOptionsOnly()
         super(MainProgram, self).checkOptions()
         if not self.uuids:
             printError('Please provide at least on persistent disk UUID to detach')
@@ -75,7 +74,7 @@ class MainProgram(StorageCommand):
         self.node = self.options.cloud.getVmNode(self.options.instance)
         
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:

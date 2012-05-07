@@ -166,7 +166,7 @@ you\'ll never be able to retrieve the new image')
 
     def doWork(self):
 
-        configHolder = ConfigHolder(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__,self.config or {})
         self.creator = Creator(self.image, configHolder)
 
         if self.options.showImageName:

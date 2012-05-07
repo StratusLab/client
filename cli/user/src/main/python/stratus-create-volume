@@ -22,11 +22,11 @@
 import os
 import sys
 from optparse import OptionParser
-from stratuslab.AuthnCommand import AuthnCommand
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath, printError
+from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
@@ -96,7 +96,7 @@ and use it but can't delete it.''', action='store_true', default=False)
             printError('Tags must have less than %d characters' % self.TAG_LENGTH_MAX)
         
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__, self.config)
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
 
