@@ -133,8 +133,6 @@ class CommandBase(object):
         self.printError('Missing mandatory %s option' % option)
 
 class CommandBaseUser(CommandBase):
-    def __init__(self):
-        super(CommandBaseUser, self).__init__()
 
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileUserOption(self.parser)
@@ -213,8 +211,6 @@ class CommandBaseUser(CommandBase):
                     pass
 
 class CommandBaseSysadmin(CommandBase):
-    def __init__(self):
-        super(CommandBaseSysadmin, self).__init__()
 
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileSysadminOption(self.parser)
