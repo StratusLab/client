@@ -25,6 +25,7 @@ from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Exceptions import ValidationException
 from datetime import datetime
 from datetime import timedelta
+from stratuslab.ConfigHolder import ConfigHolder
 
 class PersistentDiskTest(unittest.TestCase):
 
@@ -41,7 +42,9 @@ class PersistentDiskTest(unittest.TestCase):
         PersistentDisk.deleteVolume = Mock()
         PersistentDisk._setPDiskUserCredentials = Mock()
         
-        pd = PersistentDisk()
+        config = ConfigHolder()
+        config.set('endpoint', 'something')
+        pd = PersistentDisk(config)
         pd.quarantinePeriod = '2d'
 
         pd.cleanQuarantine()
@@ -51,7 +54,9 @@ class PersistentDiskTest(unittest.TestCase):
         self.assertEqual(1, pd.deleteVolume.call_count)
 
     def testParseQuarantinePeriod(self):
-        pd = PersistentDisk()
+        config = ConfigHolder()
+        config.set('endpoint', 'something')
+        pd = PersistentDisk(config)
 
         pd.quarantinePeriod = None
         self.assertRaises(ValidationException, pd._getQuarantinePeriod)
