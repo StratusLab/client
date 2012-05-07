@@ -22,6 +22,7 @@
 import os
 import sys
 from optparse import OptionParser
+from stratuslab.AuthnCommand import AuthnCommand
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -31,7 +32,7 @@ from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class MainProgram(StorageCommand):
+class MainProgram(AuthnCommand, StorageCommand):
     '''A command-line program to create a persistent disk.'''
 
     def __init__(self):
@@ -75,7 +76,6 @@ and use it but can't delete it.''', action='store_true', default=False)
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
-        self.checkPDiskEndpointOptionsOnly()
         super(MainProgram, self).checkOptions()
         self._checkVolumeSize()
         self._checkTagLength()
@@ -96,7 +96,7 @@ and use it but can't delete it.''', action='store_true', default=False)
             printError('Tags must have less than %d characters' % self.TAG_LENGTH_MAX)
         
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__, self.config)
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
 

@@ -32,8 +32,9 @@ import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
 from stratuslab.Exceptions import ValidationException, ClientException,\
-    ServerException
+    ServerException, ConfigurationException
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 
 class PersistentDisk(object):
     
@@ -61,7 +62,7 @@ class PersistentDisk(object):
             try:
                 self.pdiskEndpoint = configHolder.endpoint
             except AttributeError:
-                pass
+                raise ConfigurationException('Missing persistent disk endpoint.')
         
     def _initPDiskConnection(self):
         self.client = HttpClient(self.configHolder)
