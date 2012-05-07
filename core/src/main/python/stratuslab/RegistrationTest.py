@@ -60,7 +60,7 @@ class RegistrationTest(unittest.TestCase):
 
 
     def pageExistsWithNonZeroLength(self, url):
-        h = httplib2.Http(".cache")
+        h = httplib2.Http(".cache", disable_ssl_certificate_validation=True)
         resp, content = h.request(url);
 
         self.assertEquals(200, resp.status, url + ': invalid status ' + str(resp.status))
@@ -70,7 +70,7 @@ class RegistrationTest(unittest.TestCase):
 
 
     def registerUseCase(self):
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
         h.follow_redirects = False
 
         data = {
@@ -135,7 +135,7 @@ class RegistrationTest(unittest.TestCase):
 
 
     def profileExistsWithNonZeroLength(self):
-        h = httplib2.Http(".cache")
+        h = httplib2.Http(".cache", disable_ssl_certificate_validation=True)
         h.add_credentials(self.username, self.userPassword)
         resp, content = h.request(self.baseUrl + '/profile/')
 
@@ -146,7 +146,7 @@ class RegistrationTest(unittest.TestCase):
 
 
     def startPasswordReset(self):
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
         h.follow_redirects = False
 
         data = {
@@ -186,7 +186,7 @@ class RegistrationTest(unittest.TestCase):
 
 
     def confirmPasswordReset(self, actionUuid):
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
 
         url = self.baseUrl + '/action/' + actionUuid
         resp, content = h.request(url)
