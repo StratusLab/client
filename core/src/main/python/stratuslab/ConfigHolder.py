@@ -96,7 +96,7 @@ class ConfigHolder(object):
                            help='user configuration file. Default %s' % Util.defaultConfigFileUser,
                            metavar='FILE',
                            default=Util.defaultConfigFileUser)
-        parser.add_option('--user-config-section', dest='selected_section',
+        parser.add_option('-S', '--user-config-section', dest='selected_section',
                            help='Section to load in the user configuration file. ' \
                            'Can also be set via environment variable: %s' % Util.userConfigFileSelectedSection,
                            default=os.getenv(Util.userConfigFileSelectedSection, None))
