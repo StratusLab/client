@@ -46,7 +46,7 @@ class LdapAuthenticationTest(unittest.TestCase):
     headers = {'cache-control':'no-cache'}
 
     def registerUser(self):
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
         h.follow_redirects = False
 
         data = {
@@ -72,7 +72,7 @@ class LdapAuthenticationTest(unittest.TestCase):
 
 
     def verifyProfile(self):
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
         h.add_credentials(self.username, self.userPassword)
         url = self.baseUrl + '/profile/'
         resp, content = h.request(url)

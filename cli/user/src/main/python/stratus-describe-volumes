@@ -26,12 +26,13 @@ from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath, printError
+from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class MainProgram(StorageCommand):
+class MainProgram(AuthnCommand, StorageCommand):
     '''A command-line program to view the persistent disk.'''
 
     def __init__(self):
@@ -56,12 +57,8 @@ that have a tag matching the regex pattern.''',
 
         self.options, self.uuids = self.parser.parse_args()
 
-    def checkOptions(self):
-        self.checkPDiskEndpointOptionsOnly()
-        super(MainProgram, self).checkOptions()
-        
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         pdisk = PersistentDisk(configHolder)
         filters = self._formatFilter()
         volumes = pdisk.describeVolumes(filters)

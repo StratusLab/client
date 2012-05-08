@@ -27,11 +27,12 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import modulePath, printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
+from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class MainProgram(StorageCommand):
+class MainProgram(AuthnCommand, StorageCommand):
     '''A command-line program to create a persistent disk.'''
 
     def __init__(self):
@@ -48,7 +49,6 @@ class MainProgram(StorageCommand):
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
-        self.checkPDiskEndpointOptionsOnly()
         super(MainProgram, self).checkOptions()
         self._getUuid()
         self._checkUuid()
@@ -63,7 +63,7 @@ class MainProgram(StorageCommand):
                 printError('Invalid UUID %s' % uuid)
         
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:
