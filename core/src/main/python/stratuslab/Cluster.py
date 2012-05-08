@@ -120,7 +120,6 @@ class Cluster(object):
             ssh.run_remote_command(self.hosts, "apt-get -q -y install " + packages )
 
     def doPrepareMPImachineFile(self, ssh, worker_nodes):
-        # TODO: Let user choose where to place the machine file
         printStep('Preparing MPI machine file')
         target = []
         if self.include_master:
@@ -203,10 +202,10 @@ class Cluster(object):
         for node in self.hosts:
             target = []
             target.append(node)
-            ssh.run_remote_command(target, "'echo export STRATUSLAB_NC=" + str(counter) + " >> /etc/profile && " \
-                                            "echo export STRATUSLAB_CMASTER=" + master_node.public_dns + " >> /etc/profile && " \
-                                            "echo export STRATUSLAB_CSIZE=" + str(len(active_nodes)) + " >> /etc/profile && " \
-                                            "echo export STRATUSLAB_CMAX_CORES=" + str(total_cores) + " >> /etc/profile'")
+            ssh.run_remote_command(target, "'echo export STRATUSLAB_NC=" + str(counter) + " > /etc/profile.d/stratuslab_cluster.sh && " \
+                                            "echo export STRATUSLAB_CMASTER=" + master_node.public_dns + " >> /etc/profile.d/stratuslab_cluster.sh && " \
+                                            "echo export STRATUSLAB_CSIZE=" + str(len(active_nodes)) + " >> /etc/profile.d/stratuslab_cluster.sh && " \
+                                            "echo export STRATUSLAB_CMAX_CORES=" + str(total_cores) + " >> /etc/profile.d/stratuslab_cluster.sh'")
             counter += 1
 
 
