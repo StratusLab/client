@@ -3,6 +3,7 @@ from dirq.QueueSimple import QueueSimple
 
 class DirectoryQueue(object):
     def __init__(self, configHolder):
+        self.msg_queue = ''
         configHolder.assign(self)
         self.queue = QueueSimple(self.msg_queue)
 

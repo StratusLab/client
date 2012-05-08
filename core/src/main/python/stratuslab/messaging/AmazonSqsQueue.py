@@ -6,6 +6,8 @@ SECRET_HEADER = {'User-Agent':'StratusLab'}
 
 class AmazonSqsQueue(object):
     def __init__(self, configHolder):
+        self.msg_endpoint = ''
+        self.verboseLevel = '0'
         configHolder.assign(self)
         self.conn = httplib.HTTPSConnection(self.msg_endpoint)
         self.conn.debuglevel = self.verboseLevel
