@@ -25,6 +25,8 @@ class _RestPublisherHttpClient(object):
 
 class _RestPublisherCurl(object):
     def __init__(self, configHolder):
+        self.msg_endpoint = ''
+        self.msg_queue = ''
         self.restEndpoints = '{}'
         self.username = ''
         self.password = ''
