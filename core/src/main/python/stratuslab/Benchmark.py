@@ -65,7 +65,7 @@ class Benchmark(object):
 
 
     def io_benchmark(self,ip_vm,vm_cpu,sshkey):
-        executables=['io-mpi-o','io-mpi-i','io-mpi-io']
+        executables=['io_mpi_o','io_mpi_i','io_mpi_io']
         for executable in executables:
             cmd = executable + ' ' + str(vm_cpu) + ' ' + self.io_i + ' ' + self.io_o
             print "cmdio=", cmd
