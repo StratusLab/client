@@ -49,7 +49,7 @@ class PersistentDisk(object):
                             'file': ['qemu-img'], 
                         }, 
                          'node': {
-                            'pdisk': ['pdisk-host', ],
+                            'pdisk': ['stratuslab-pdisk-host', ],
                             'iscsi': ['iscsi-initiator-utils', ],
                             'nfs': ['nfs-utils', 'nfs-utils-lib'],
                             'lvm': [],
