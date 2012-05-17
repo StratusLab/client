@@ -25,6 +25,7 @@ from Exceptions import ConfigurationException
 class Configurator(Configurable):
 
     def __init__(self, configHolder):
+        self.section = None
         super(Configurator, self).__init__(configHolder)
         
         self.baseConfigFile = self.configFile + '.ref'
@@ -69,7 +70,11 @@ class Configurator(Configurable):
                                   'startEmphasis': startEmphasis, 'stopEmphasis': stopEmphasis})
         first = True
 
-        for section in defaultConfig.keys():
+        sections = defaultConfig.keys()
+        if self.section:
+            sections = [self.section]
+
+        for section in sections:
             if first:
                 print doubleLine
             else:

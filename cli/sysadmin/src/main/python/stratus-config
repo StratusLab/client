@@ -47,6 +47,9 @@ If the [value] is not provided, the command returns the current value of the key
         self.parser.add_option('-r', action='store_true', dest='revert',
                                help='Remove previous configuration',
                                default=False)
+        self.parser.add_option('-s', dest='section',
+                               help='Only show parameters in this section',
+                               metavar='SECTION-NAME', default=None)
 
         self.options, self.args = self.parser.parse_args()
 
