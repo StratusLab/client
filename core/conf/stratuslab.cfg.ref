@@ -169,56 +169,56 @@ certificate_authority_repo =
 
 [persistent-disks]
 persistent_disk = True
+
 # Temporary store for downloading images
 persistent_disk_temp_store = /var/lib/one/images/
+
 # Location of the persistent disk storage service
 persistent_disk_ip =
-# Target LVM device (example: /dev/pdisk)
+
+# Target LVM device (example: /dev/vg.02)
 persistent_disk_lvm_device = 
+
 # Group name of device mapper files representing LVMs.
 # one_admin will be added to the group. The group must exist.
 persistent_disk_lvm_devfiles_group = disk
-# iscsi and soon nfs
+
+# iscsi or file
 persistent_disk_share = iscsi 
-# lvm or file
+
+# lvm, netapp, v7000 (soon) or file
 persistent_disk_storage = lvm
+
 # Location of the disk for file storage. Not used with LVM
 persistent_disk_file_location = /tmp/pdisk 
 persistent_disk_system = fedora
+
 # Only used at install
 persistent_disk_private_key = /root/.ssh/id_rsa 
+
 # Shall we configure to share same auth file with one-proxy? 
 # This imply to have one-proxy on the same machine 
 # Only used at install
 persistent_disk_merge_auth_with_proxy = false
-# Shall we start ZooKeeper with PDisk service? 
-# This imply to have zookeeper on the same machine 
-# Only used at install
-persistent_disk_autorun_zookeeper = true
-persistent_disk_zookeeper_addr = 127.0.0.1:2181
+
 # Only used for nfs sharing. If specified will use this NFS share to store
 # the disk else a NFS share is created on the service
 persistent_disk_existing_nfs = 
+
 # Only used for nfs sharing.
 persistent_disk_nfs_mount_point = /mnt/
 # Location of the disk for file storage. Not used with LVM
 persistent_disk_file_location = /tmp/pdisk
+
 # Not used if LVM device already exists. Only used at install. Space separated list.
 persistent_disk_physical_devices = /dev/sdb /dev/sdc
-# Not used with file disk. Only used at install
-persistent_disk_lvm_pvcreate = /sbin/pvcreate 
-# Not used with file disk. Only used at install
-persistent_disk_lvm_vgcreate = /sbin/vgcreate
-# Not used with file disk
-persistent_disk_lvm_vgdisplay = /sbin/vgdisplay
-# Not used with file disk
-persistent_disk_lvm_create = /sbin/lvcreate
-# Not used with file disk
-persistent_disk_lvm_remove = /sbin/lvremove
+
 # Location of the VM directory on the node
 persistent_disk_cloud_vm_dir = /var/lib/one
+
 # Key for cloud admin account
 persistent_disk_cloud_node_key=/home/oneadmin/.ssh/id_rsa
+
 # Persistent Disk Service super user
 persistent_disk_cloud_service_user = pdisk
 
