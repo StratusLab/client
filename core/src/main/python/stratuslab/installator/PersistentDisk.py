@@ -127,9 +127,29 @@ class PersistentDisk(object):
             
         self._createDatabase()
         
+    def _writePdiskConfig(self):
+        printStep('Writing configuration...')
+        self._overrideConfig('disk.store.share', self.persistentDiskShare)
+        self._overrideConfig('disk.store.nfs.location', self.persistentDiskNfsMountPoint)
+        self._overrideConfig('disk.store.iscsi.type', self.persistentDiskStorage)
+        self._overrideConfig('disk.store.iscsi.file.location', self.persistentDiskFileLocation)
+        self._overrideConfig('disk.store.lvm.device', self.persistentDiskLvmDevice)
+        self._overrideConfig('disk.store.lvm.create', self.persistentDiskLvmCreate)
+        self._overrideConfig('disk.store.lvm.remove', self.persistentDiskLvmRemove)
+        self._overrideConfig('disk.store.cloud.node.admin', self.oneUsername)
+        self._overrideConfig('disk.store.cloud.node.ssh_keyfile', self.cloudNodeKey)
+        self._overrideConfig('disk.store.cloud.node.vm_dir', self.persistentDiskCloudVmDir)
+
+    def _writePdiskBackendConfig(self):
+        printStep('Writing backend configuration...')
+        config = self.__dict__.copy()
+        config['persistentDiskBackendSections'] = self._stripMultiLineValue(config['persistentDiskBackendSections'])
+        self.system._remoteFilePutContents(self.pdiskConfigBackendFile, fileGetContent(self.pdiskConfigBackendTpl) % config)
+
     def _writeTgtdConfig(self):
         pattern = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
         Util.appendOrReplaceInFile('/etc/tgt/targets.conf', pattern, pattern)
+
     def _createDatabase(self):
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
         createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS storage"
@@ -239,26 +259,7 @@ class PersistentDisk(object):
         
     def _copyCloudNodeKey(self):
         self.system.copyCmd(self.persistentDiskCloudNodeKey, self.cloudNodeKey)
-        
-    def _writePdiskConfig(self):
-        printStep('Writing configuration...')
-        self._overrideConfig('disk.store.share', self.persistentDiskShare)
-        self._overrideConfig('disk.store.nfs.location', self.persistentDiskNfsMountPoint)
-        self._overrideConfig('disk.store.iscsi.type', self.persistentDiskStorage)
-        self._overrideConfig('disk.store.iscsi.file.location', self.persistentDiskFileLocation)
-        self._overrideConfig('disk.store.lvm.device', self.persistentDiskLvmDevice)
-        self._overrideConfig('disk.store.lvm.create', self.persistentDiskLvmCreate)
-        self._overrideConfig('disk.store.lvm.remove', self.persistentDiskLvmRemove)
-        self._overrideConfig('disk.store.cloud.node.admin', self.oneUsername)
-        self._overrideConfig('disk.store.cloud.node.ssh_keyfile', self.cloudNodeKey)
-        self._overrideConfig('disk.store.cloud.node.vm_dir', self.persistentDiskCloudVmDir)
-
-    def _writePdiskBackendConfig(self):
-        printStep('Writing backend configuration...')
-        config = self.__dict__.copy()
-        config.persistent_disk_backend_sections = self._stripMultiLineValue(config.persistent_disk_backend_sections)
-        self.system._remoteFilePutContents(self.pdiskConfigBackendFile, fileGetContent(self.pdiskConfigBackendTpl) % config)
-        
+                
     def _stripMultiLineValue(self, value):
         return '\n'.join(map(lambda x: x.strip(), value.split('\n')))
         
