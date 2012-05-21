@@ -42,25 +42,28 @@ class PersistentDisk(object):
         
         # Package to be installed
         self.packages = { 'frontend': {
-                            'pdisk': ['stratuslab-pdisk-server', ],
-                            'iscsi': ['scsi-target-utils', ],
-                            'nfs': ['nfs-utils', 'nfs-utils-lib'],
-                            'lvm': ['lvm2', ],
-                            'file': ['qemu-img'], 
+                          'pdisk': ['stratuslab-pdisk-server', ],
+                          'iscsi': ['scsi-target-utils', ],
+                          'nfs': ['nfs-utils', 'nfs-utils-lib'],
+                          'lvm': ['lvm2', ],
+                          'file': ['qemu-img'], 
                         }, 
-                         'node': {
-                            'pdisk': ['stratuslab-pdisk-host', ],
-                            'iscsi': ['iscsi-initiator-utils', ],
-                            'nfs': ['nfs-utils', 'nfs-utils-lib'],
-                            'lvm': [],
-                            'file': [],
+                          'node': {
+                          'pdisk': ['stratuslab-pdisk-host', ],
+                          'iscsi': ['iscsi-initiator-utils', ],
+                          'nfs': ['nfs-utils', 'nfs-utils-lib'],
+                          'lvm': [],
+                          'file': [],
                        },
         }
 
+        self.pdiskConfigBackendFile = os.path.join(Defaults.ETC_DIR, 'pdisk-backend.cfg')
+        self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(), 'pdisk-backend.cfg.tpl')
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
         self.pdiskHostConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk-host.cfg')
-        self.cloudNodeKey = '/opt/stratuslab/storage/pdisk/cloud_node.key'
+        self.pdiskHomeDir = '/opt/stratuslab/storage/pdisk'
+        self.cloudNodeKey = os.path.join(self.pdiskHomeDir, 'cloud_node.key')
         self.pdiskUsername = 'pdisk'
         self.pdiskPassword = self._extractPdiskPassword()
         
@@ -105,8 +108,14 @@ class PersistentDisk(object):
             pass # it's ok
         self._service('tgtd', 'start')
         
+        iscsi_config_filename = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
+        if not os.path.exists(iscsi_config_filename):
+            with open(iscsi_config_filename, 'w') as config:
+                config.write(' ')
+
     def _configureFrontend(self):
         self._writePdiskConfig()
+        self._writePdiskBackendConfig()
         self._setPdiskUserAndPassword()
 
         if self.persistentDiskStorage == 'lvm':
@@ -239,6 +248,15 @@ class PersistentDisk(object):
         self._overrideConfig('disk.store.cloud.node.admin', self.oneUsername)
         self._overrideConfig('disk.store.cloud.node.ssh_keyfile', self.cloudNodeKey)
         self._overrideConfig('disk.store.cloud.node.vm_dir', self.persistentDiskCloudVmDir)
+
+    def _writePdiskBackendConfig(self):
+        printStep('Writing backend configuration...')
+        config = self.__dict__.copy()
+        config.persistent_disk_backend_sections = self._stripMultiLineValue(config.persistent_disk_backend_sections)
+        self.system._remoteFilePutContents(self.pdiskConfigBackendFile, fileGetContent(self.pdiskConfigBackendTpl) % config)
+        
+    def _stripMultiLineValue(self, value):
+        return '\n'.join(map(lambda x: x.strip(), value.split('\n')))
         
     def _setPdiskUserAndPassword(self):
         self._overrideValueInFile(self.pdiskUsername, 
@@ -250,7 +268,7 @@ class PersistentDisk(object):
         pdiskDir = 'storage/pdisk'
         oneproxyDir = 'one-proxy'
         confLine = '<Arg>%s</Arg>'
-        configFile = '/opt/stratuslab/storage/pdisk/etc/jetty-jaas-stratuslab.xml'
+        configFile = os.path.join(self.pdiskHomeDir, 'etc/jetty-jaas-stratuslab.xml')
         if not self.persistentDiskMergeAuthWithProxy:
             return
         printStep('Merging pdisk and one-proxy auth configuration...')
