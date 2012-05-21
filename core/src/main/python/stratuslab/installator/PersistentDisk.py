@@ -119,6 +119,7 @@ class PersistentDisk(object):
         self._setPdiskUserAndPassword()
 
         if self.persistentDiskStorage == 'lvm':
+            self._writeTgtdConfig()
             self._createLvmGroup()
             self._fixUdevForLvmMonitoring()
         else:
@@ -126,6 +127,9 @@ class PersistentDisk(object):
             
         self._createDatabase()
         
+    def _writeTgtdConfig(self):
+        pattern = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
+        Util.appendOrReplaceInFile('/etc/tgt/targets.conf', pattern, pattern)
     def _createDatabase(self):
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
         createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS storage"
