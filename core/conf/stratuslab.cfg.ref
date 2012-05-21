@@ -226,7 +226,7 @@ persistent_disk_cloud_service_user = pdisk
 # These are active if set in the configuration
 # parameter disk.backend.sections.names
 persistent_disk_backend_sections =
- [tgtd]
+ [%(persistent_disk_ip)s]
  type=LVM
  volume_name = /dev/vg.02
  lun_namespace = stratuslab
@@ -234,7 +234,7 @@ persistent_disk_backend_sections =
  initiator_group = 
 
 # Active backends in pdisk-backend.cfg
-persistent_disk_backend_sections_names = tgtd,
+persistent_disk_backend_sections_names = %(persistent_disk_ip)s,
 
 [quarantine]
 # Time to keep VMs in quarantine. m - minutes, h - hours, d - days.
