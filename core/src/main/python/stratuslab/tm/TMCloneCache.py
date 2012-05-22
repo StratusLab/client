@@ -213,6 +213,10 @@ class TMCloneCache(object):
             raise ValueError('Invalid image checksum, is %s got %s' % (manifestChecksum, computedChecksum))
         
     def _copyDownloadedImageToPartition(self):
+        
+        if self.config.getValue('persistent_disk_share').lower() == 'nfs':
+            return
+        
         imageFormat = self._getImageFormat()
         copyCmd = []
         copyDst = '%s/%s' % (self.pdiskLVMDevice, self.pdiskImageId)
