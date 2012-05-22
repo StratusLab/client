@@ -147,7 +147,7 @@ class PersistentDisk(object):
         self.system._remoteFilePutContents(self.pdiskConfigBackendFile, fileGetContent(self.pdiskConfigBackendTpl) % config)
 
     def _writeTgtdConfig(self):
-        pattern = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
+        pattern = 'include %s' % os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
         Util.appendOrReplaceInFile('/etc/tgt/targets.conf', pattern, pattern)
 
     def _createDatabase(self):
