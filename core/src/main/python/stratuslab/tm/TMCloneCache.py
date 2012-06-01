@@ -143,6 +143,7 @@ class TMCloneCache(object):
             self._retrieveAndCachePDiskImage()
             
         try:
+            self._checkAuthirization()
             self._createPDiskSnapshot()
             self._setSnapshotOwner()
             self._createDestinationDir()
@@ -321,6 +322,9 @@ class TMCloneCache(object):
         snapshotIdentifier = 'snapshot:%s' % self.pdiskImageId
         self.pdiskSnapshotId = self.pdisk.createCowVolume(self.pdiskImageId, None)
         self._setPDiskIdentifier(snapshotIdentifier, self.pdiskSnapshotId)
+
+    def _checkAuthirization(self):
+        pass
     
     def _setSnapshotOwner(self):
         instanceId = self._retrieveInstanceId()
