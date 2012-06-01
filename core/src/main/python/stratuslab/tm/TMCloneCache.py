@@ -4,7 +4,7 @@
 # co-funded by the European Commission under the Grant Agreement
 # INFSO-RI-261552."
 #
-# Copyright (c) 2011, SixSq Sarl
+# Copyright (c) 2012, SixSq Sarl
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -214,17 +214,20 @@ class TMCloneCache(object):
             raise ValueError('Invalid image checksum, is %s got %s' % (manifestChecksum, computedChecksum))
         
     def _copyDownloadedImageToPartition(self):
+        copyCmd = []
         
         if self.config.getValue('persistent_disk_share').lower() == 'nfs':
-            return
-        
-        imageFormat = self._getImageFormat()
-        copyCmd = []
-        copyDst = '%s/%s' % (self.pdiskLVMDevice, self.pdiskImageId)
-        if imageFormat.startswith('qcow'):
-            copyCmd = imageFormat.startswith('qcow') and ['cp', '-f', self.downloadedLocalImageLocation, copyDst] 
+            copyDst = '%s/%s/%s' % (self.config.getValue('persistent_disk_nfs_mount_point'), \
+                                    'pdisks', self.pdiskImageId)
+            copyCmd = ['cp', self.downloadedLocalImageLocation, copyDst]
         else:
-            copyCmd = ['dd', 'if=%s' % self.downloadedLocalImageLocation, 'of=%s' % copyDst, 'bs=2048']
+            imageFormat = self._getImageFormat()
+            copyDst = '%s/%s' % (self.pdiskLVMDevice, self.pdiskImageId)
+            if imageFormat.startswith('qcow'):
+                copyCmd = imageFormat.startswith('qcow') and ['cp', '-f', self.downloadedLocalImageLocation, copyDst] 
+            else:
+                copyCmd = ['dd', 'if=%s' % self.downloadedLocalImageLocation, 'of=%s' % copyDst, 'bs=2048']
+
         self._sshPDisk(copyCmd, 'Unable to copy image')
 
     def _getImageFormat(self):
