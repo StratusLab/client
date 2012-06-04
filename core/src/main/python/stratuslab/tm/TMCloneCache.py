@@ -61,8 +61,7 @@ class TMCloneCache(object):
     _COUNT_KEY = 'count'
 
     def __init__(self, args, **kwargs):
-        self.args = args
-        
+
         self.diskSrc = None
         self.diskDstPath = None
         self.diskDstHost = None
@@ -72,35 +71,48 @@ class TMCloneCache(object):
         self.pdiskSnapshotId = None
         self.downloadedLocalImageLocation = None
         self.downloadedLocalImageSize = 0
+
+        self._parseArgs(args)
         
-        configFile = kwargs.get('config', defaultConfigFile)
-        config = ConfigHolder.configFileToDict(configFile)
+        configFile = kwargs.get('conf_filename', defaultConfigFile)
+        config = ConfigHolder.configFileToDictWithFormattedKeys(configFile)
         options = PDiskEndpoint.options()
         options.update({'verboseLevel': 0, 'configFile': configFile})
         self.configHolder = ConfigHolder(options, config)
-        self.config = Configurator(self.configHolder)
-        self.pdiskEndpoint = self.config.getValue('persistent_disk_ip')    
-        self.pdiskLVMDevice = self.config.getValue('persistent_disk_lvm_device')
-        self.configHolder.set('pdiskEndpoint', self.pdiskEndpoint)
-        
-        self.pdisk = PersistentDisk(self.configHolder)
-        self.manifestDownloader = ManifestDownloader(self.configHolder)
-        
+        self.configHolder.assign(self)
+
+        self._initPdiskClient()
+        self._initMarketplaceRelated()
+
         self.defaultSignalHandler = None
+
+    def _initPdiskClient(self):
+        self.pdiskEndpoint = self.configHolder.persistentDiskIp
+        self.pdiskLVMDevice = self.configHolder.persistentDiskLvmDevice
+        self.configHolder.set('pdiskEndpoint', self.pdiskEndpoint)
+        self.pdisk = PersistentDisk(self.configHolder)
     
+    def _initMarketplaceRelated(self):
+        self._retrieveMarketplaceInfos()
+        self._initManifestDownloader()
+
+    def _initManifestDownloader(self):
+        self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
+        self.manifestDownloader = ManifestDownloader(self.configHolder)
+
     def run(self):
-        self._checkArgs()
-        self._parseArgs()
         self._retrieveDisk()
     
-    def _checkArgs(self):
-        self._assertLength(self.args, 3, 'Invalid number of arguments')
+    def _checkArgs(self, args):
+        self._assertLength(args, 3, 'Invalid number of arguments')
     
-    def _parseArgs(self):
-        dst = self.args[self._ARG_DST_POS]
+    def _parseArgs(self, args):
+        self._checkArgs(args)
+
+        dst = args[self._ARG_DST_POS]
         self.diskDstHost = self._getDiskHost(dst)
         self.diskDstPath = self._getDiskPath(dst)
-        self.diskSrc = self.args[self._ARG_SRC_POS]
+        self.diskSrc = args[self._ARG_SRC_POS]
 
     def _retrieveDisk(self):
         if self.diskSrc.startswith('pdisk:'):
@@ -136,9 +148,7 @@ class TMCloneCache(object):
         if user_count != 0:
             raise Exception('User count must be zero on the live disk to boot from.')
 
-    def _startFromCowSnapshot(self):
-        self._retrieveMarketplaceInfos()
-        
+    def _startFromCowSnapshot(self):        
         if self._cacheMiss():
             self._retrieveAndCachePDiskImage()
             
@@ -216,8 +226,8 @@ class TMCloneCache(object):
     def _copyDownloadedImageToPartition(self):
         copyCmd = []
         
-        if self.config.getValue('persistent_disk_share').lower() == 'nfs':
-            copyDst = '%s/%s/%s' % (self.config.getValue('persistent_disk_nfs_mount_point'), \
+        if self.configHolder.persistentDiskShare.lower() == 'nfs':
+            copyDst = '%s/%s/%s' % (self.configHolder.persistentDiskNfsMountPoint, \
                                     'pdisks', self.pdiskImageId)
             copyCmd = ['cp', self.downloadedLocalImageLocation, copyDst]
         else:
@@ -252,7 +262,7 @@ class TMCloneCache(object):
         else: # Local marketplace
             self.marketplaceEndpoint = 'http://localhost'
             try:
-                self.marketplaceEndpoint = self.config.getValue('marketplace_endpoint_local')
+                self.marketplaceEndpoint = self.configHolder.marketplaceEndpointLocal
             except:
                 pass
             # SunStone adds '<hostname>:' to the image ID
@@ -261,7 +271,12 @@ class TMCloneCache(object):
     def _getMarketplaceEndpointFromURI(self, uri):
         uri_parts = urlparse(uri)
         return '%s://%s/' % (uri_parts.scheme, uri_parts.netloc)
-    
+
+    def _getImageIdFromURI(self, uri):
+        fragments = uri.split('/')
+        # POP two times if trailing slash
+        return fragments.pop() or fragments.pop()
+
     def _validateMarketplaceImagePolicy(self):
         try:
             self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
@@ -317,7 +332,7 @@ class TMCloneCache(object):
         self._setPDiskInfo('type', 'MACHINE_IMAGE_ORIGINE', self.pdiskImageId)
         
     def _getPDiskTempStore(self):
-        store = self.config.getValue('persistent_disk_temp_store') or '/tmp'
+        store = self.configHolder.persistentDiskTempStore or '/tmp'
         self._sshDst(['mkdir', '-p', store], 'Unable to create temporary store')
         return store
     
@@ -427,9 +442,9 @@ class TMCloneCache(object):
         return output
         
     def _getVMOwner(self, instanceId):
-        credentials = LocalhostCredentialsConnector(self.config)
+        credentials = LocalhostCredentialsConnector(self.configHolder)
         cloud = CloudConnectorFactory.getCloud(credentials)
-        cloud.setEndpointFromParts('localhost', self.config.onePort)
+        cloud.setEndpointFromParts('localhost', self.configHolder.onePort)
         return cloud.getVmOwner(instanceId)
              
     def _retrieveInstanceId(self):
@@ -440,8 +455,3 @@ class TMCloneCache(object):
             raise ValueError(errorMsg % ((len(instanceId) == 0) and 'Unable to find' 
                                          or 'Too many candidates'))
         return instanceId.pop()
-            
-    def _getImageIdFromURI(self, uri):
-        fragments = uri.split('/')
-        # POP two times if trailing slash
-        return fragments.pop() or fragments.pop()
