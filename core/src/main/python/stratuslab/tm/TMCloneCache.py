@@ -177,7 +177,7 @@ class TMCloneCache(object):
         self.downloadedLocalImageLocation = '%s/%s.%s' % (pdiskTmpStore,
                                                           int(time()),
                                                           imageName)
-        self._sshPDisk(['curl', '-o', self.downloadedLocalImageLocation, imageMarketplaceLocation], 
+        self._sshPDisk(['curl', '-L', '-o', self.downloadedLocalImageLocation, imageMarketplaceLocation], 
                         'Unable to download "%s"' % imageMarketplaceLocation)
     
     def _uncompressDownloadedImage(self):
