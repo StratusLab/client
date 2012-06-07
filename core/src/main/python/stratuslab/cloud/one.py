@@ -55,14 +55,17 @@ class OneConnector(object):
         self._credentials = credentials
 
     def setEndpointFromParts(self, server, port=2634, path='xmlrpc', protocol='https'):
-        self.server = '%s://%s:%s/%s' % (protocol, server, port, path)
+        self._setEndpointFromParts(self, server, port, path, protocol)
         self.setEndpoint(self.server)
+
+    def _setEndpointFromParts(self, server, port=2634, path='xmlrpc', protocol='https'):
+        self.server = '%s://%s:%s/%s' % (protocol, server, port, path)
 
     def setEndpoint(self, address):
         if not address:
             raise ValueError('Missing endpoint')
         if not address.startswith('http'):
-            self.setEndpointFromParts(address)
+            self._setEndpointFromParts(address)
         else:
             self.server = address
         self._createRpcConnection()
