@@ -35,10 +35,19 @@ class Monitor(Configurable):
     TEMPLATE_NIC_IP = 'template_nic_ip'
     TEMPLATE_NIC_HOSTNAME = 'template_nic_hostname'
 
+    ipToHostname = True
+
+    @staticmethod
+    def addOptions(parser):
+        parser.add_option('-n', dest='ipToHostname', action='store_false', 
+            help='Don\'t do reverse DNS resolution - print IPs of instances.', 
+            default=Monitor.ipToHostname)
+
     def __init__(self, configHolder):
         self.endpoint = None
         self.verboseLevel = 1
         self.patEnable = False
+
         super(Monitor, self).__init__(configHolder)
 
         self._setCloud()
@@ -116,10 +125,12 @@ class Monitor(Configurable):
             nic.append(host_element)
 
     def _ipv4ToHostname(self, ipv4):
-        try:
-            return socket.gethostbyaddr(ipv4)[0]
-        except:
-            return ipv4
+        if self.ipToHostname:
+            try:
+                return socket.gethostbyaddr(ipv4)[0]
+            except:
+                pass
+        return ipv4
 
     def listNodes(self):
         nodes = self.cloud.listHosts()

@@ -49,9 +49,9 @@ class MainProgram(AuthnCommand, PortTranslationCommand):
 Without the parameter [vm-id] the command lists the available VMs belonging
 to the user (-u/--username).'''
 
-
         PortTranslationCommand.addCommonOptions(self.parser)
         AuthnCommand.addCloudEndpointOptions(self.parser)
+        Monitor.addOptions(self.parser)
 
         self.parser.add_option('-m', dest='multi_site', action='store_true', 
                 help='Print state of virtual machines on multiple sites. '
