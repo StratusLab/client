@@ -75,6 +75,12 @@ class Runnable(AuthnCommand):
                 help='IP to listen on',
                 default=defaultOptions['vncListen'])
 
+        self.parser.add_option('--vm-requirements', dest='vmRequirements', metavar='REQUIREMENTS',
+                help='Advanced requirements for VM placement. '
+                     'Available values depend on the cloud configuration. '
+                     'e.g. --vm-requirements \'CLUSTER = \\"test\\" & MAGICNUMBER = 42\'',
+                default=None)
+
         self.parser.add_option('--vm-template-file', dest='vmTemplateFile', metavar='FILE',
                 help='VM template file. Default %s' % defaultOptions['vmTemplateFile'],
                 default=defaultOptions['vmTemplateFile'])
