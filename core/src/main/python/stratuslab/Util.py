@@ -620,6 +620,17 @@ def importETree():
                         import elementtree.ElementTree as etree
                     except ImportError:
                         raise Exception("Failed to import ElementTree from any known place")
+
+    if not hasattr(etree, '_fromstring'):
+        etree._fromstring = etree.fromstring
+
+        def fromstring(text):
+            if isinstance(text, unicode):
+                return etree._fromstring(text.encode('utf-8'))
+            return etree._fromstring(text)
+
+        etree.fromstring = fromstring
+    
     return etree
 
 def escapeDoubleQuotes(string, times=1):
