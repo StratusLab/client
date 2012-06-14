@@ -176,6 +176,7 @@ class Runner(object):
         self.vm_nic = ''
         self.vm_name = ''
         self.vm_disks_prefix = Runner.DISKS_BUS_PREFIX_MAP[Runner.DISKS_BUS_DEFAULT]
+        self.vm_requirements = ''
         self.os_options = ''
         self.raw_data = ''
         self.extra_context = ''
@@ -316,6 +317,7 @@ class Runner(object):
                     'vmRam': None,
                     'vmSwap': None,
                     'vmDisksBus': Runner.vmDisksBus,
+                    'vmRequirements': '',
                     'isLocalIp': False,
                     'isPrivateIp': False,
                     'extraContextFile': '',
@@ -366,6 +368,7 @@ class Runner(object):
         self._manageVnc()
         self._manageNotifications()
         self._manageCreateImage()
+        self._manageRequirements()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -387,6 +390,12 @@ class Runner(object):
             self.vm_name = 'NAME = "%s"' % self.vmName
         else:
             self.vm_name = ''
+
+    def _manageRequirements(self):
+        if self.vmRequirements:
+            self.vm_requirements = 'REQUIREMENTS = "%s"' % self.vmRequirements
+        else:
+            self.vm_requirements = ''
 
     def _manageOsOptions(self):
         if not self.vmKernel and not self.vmRamdisk:
