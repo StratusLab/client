@@ -65,6 +65,8 @@ class MainProgram(Runnable):
         runner.save_instance_as_new_image()
 
 if __name__ == '__main__':
+    print 'Sorry, this command is not yet implemented'
+    sys.exit(1)
     try:
         MainProgram()
     except KeyboardInterrupt:
