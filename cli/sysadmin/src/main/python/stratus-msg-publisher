@@ -77,7 +77,7 @@ class MainProgram(CommandBaseSysadmin):
         config = ConfigHolder.configFileToDict(self.options.configFile) 
         configHolder = ConfigHolder(self.options.__dict__, config)
 
-        client = getMsgClient()
+        client = getMsgClient(configHolder)
         if self.options.msg_type.lower() == 'rest' and self.options.imageid:
             message = self.options.imageid
         else:

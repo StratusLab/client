@@ -1,7 +1,7 @@
 from .Defaults import MSG_CLIENTS
 
 def getMsgClient(configHolder):
-    MsgClientFactory(configHolder).getClient()
+    return MsgClientFactory(configHolder).getClient()
 
 class MsgClientFactory(object):
 
