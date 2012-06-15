@@ -38,7 +38,11 @@ class CloudInfo(object):
             # skip the root element
             hierachy = parentHierachy[1:] + [element.tag]
             attributeName = '_'.join(hierachy)
-            self.attribs.__setitem__(attributeName.lower(), element.text)
+            if isinstance(element.text, unicode):
+                text = element.text.encode('utf-8')
+            else:
+                text = element.text
+            self.attribs.__setitem__(attributeName.lower(), text)
         return
 
     def _getChildren(self, parent):
