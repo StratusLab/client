@@ -44,13 +44,13 @@ class MainProgram(AuthnCommand):
 
     def checkOptions(self):
         if len(self.args) != 1:
-            self.parser.error('Please specify an appliance manifest')
+            self.parser.error('Please specify an image manifest')
         self.manifest = self.args[0]
 
         Uploader.checkUploadOptions(self.options, self.parser)
 
         if not os.path.isfile(self.manifest):
-            self.parser.error('Appliance manifest does not exist: ' + self.manifest)
+            self.parser.error('Image manifest does not exist: ' + self.manifest)
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
