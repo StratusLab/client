@@ -303,6 +303,9 @@ class Creator(object):
                 'NEWIMAGE_VERSION' : self.newImageGroupVersion,
                 'NEWIMAGE_MARKETPLACE' : self.marketplaceEndpointNewimage }
 
+    def createRunner(self):
+        self.__createRunner()
+
     def __createRunner(self):
         self.configHolder.set('vmName', 
                               '%s: %s' % (self.vmName, Util.getTimeInIso8601()))
