@@ -274,7 +274,7 @@ class Creator(object):
             self._sshCmdWithOutputVerb(cmd)
         except ExecutionException, e:
             sleepTime = 5
-            maxCount = 2
+            maxCount = 10
             counter = 0
             while True:
                 try:
