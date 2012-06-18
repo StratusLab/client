@@ -267,7 +267,7 @@ class Creator(object):
         callListener()
 
     def _checkIfCanConnectToMachine(self):
-        self._printStep('Check if we can connect to machine')
+        self._printStep('Check if we can connect to the machine')
 
         cmd = 'true'
         try:
