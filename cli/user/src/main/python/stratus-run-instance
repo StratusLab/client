@@ -25,6 +25,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Runner import Runner
+from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
@@ -68,6 +69,18 @@ class MainProgram(Runnable):
                 'the new image. After image is saved a notification is sent ' \
                 'with further instructions.',
                 default='', metavar='EMAIL')
+
+        self.parser.add_option('--author', dest='author',
+                help='Used with --save option. Author of the new image',
+                default='', metavar='NAME')
+
+        self.parser.add_option('--image-version', dest='newImageGroupVersion',
+                help='Used with --save option. Version for the new image.',
+                default='', metavar='VERSION')
+
+        self.parser.add_option('--comment', dest='comment',
+                help='Used with --save option. Description of the new image',
+                default='', metavar='TEXT')
 
         self.parser.add_option('--marketplace-endpoint-newimage', dest='marketplaceEndpointNewimage',
                 help='Used with --save option. Marketplace to register the new image manifest in. '
@@ -128,12 +141,26 @@ class MainProgram(Runnable):
 
         super(MainProgram, self).checkOptions()
 
-        if self.options.saveDisk == True and not self.options.authorEmail:
-            self.parser.error('Provide a valid Email address of the author of the image.')
+        if self.options.saveDisk:
+            pre_message = 'With the --save option, please '
+            if not self.options.author:
+                self.parser.error(pre_message + 'provide a valid author name of the image (--author).')
+            if not self.options.authorEmail:
+                self.parser.error(pre_message + 'provide a valid email address of the author of the image (--author-email).')
+            if not self.options.newImageGroupVersion:
+                self.parser.error(pre_message + 'provide a version number for the new image (--image-version).')
+            if not self.options.comment:
+                self.parser.error(pre_message + 'provide a comment for the image (--comment).')
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config)
-        runner = Runner(self.image, configHolder)
+        
+        if self.options.saveDisk:
+            creator = Creator(self.image, configHolder)
+            creator.createRunner()
+            runner = creator.runner
+        else:
+            runner = Runner(self.image, configHolder)
         
         if self.options.listType:
             runner.listInstanceTypes()
