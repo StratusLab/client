@@ -158,11 +158,8 @@ you\'ll never be able to retrieve the new image')
         if not self.options.author:
             self.parser.error('Provide an author for the new image')
 
-        if self.options.authorEmail:
+        if not self.options.authorEmail:
             self.parser.error('Provide a valid Email address of the author of the image.')
-
-        if not self.options.noUpload:
-            Uploader.checkAppRepoOptions(self.options, self.parser)
 
     def doWork(self):
 
