@@ -180,9 +180,12 @@ class OneConnector(object):
              'creatorName': xml.find('%s/CREATOR_NAME' % createImageElem).text,
              'newImageComment': xml.find('%s/NEWIMAGE_COMMENT' % createImageElem).text,
              'newImageVersion': xml.find('%s/NEWIMAGE_VERSION' % createImageElem).text,
-             'newImageMarketplace': xml.find('%s/NEWIMAGE_MARKETPLACE' % createImageElem).text
+             'newImageMarketplace': self._findXmlText(xml, '%s/NEWIMAGE_MARKETPLACE' % createImageElem)
         }
         return infos
+    
+    def _findXmlText(self, xml, query):
+        return xml.find(query).text.strip('"')
     
     def isVmRunning(self, vmId):
         return str(self._getVmStateSummary(vmId)) == 'Running'
