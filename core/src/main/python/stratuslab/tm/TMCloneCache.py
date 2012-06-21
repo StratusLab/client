@@ -259,6 +259,9 @@ class TMCloneCache(object):
         if self.diskSrc.startswith(('http://', 'https://')):
             self.marketplaceEndpoint = self._getMarketplaceEndpointFromURI(self.diskSrc)
             self.marketplaceImageId = self._getImageIdFromURI(self.diskSrc)
+        elif self.diskSrc.startswith(('pdisk:')): # Ignore Marketplace if pdisk is used
+            self.marketplaceEndpoint = None
+            self.marketplaceImageId = None
         else: # Local marketplace
             self.marketplaceEndpoint = 'http://localhost'
             try:
