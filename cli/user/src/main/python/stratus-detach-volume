@@ -79,7 +79,7 @@ class MainProgram(AuthnCommand, StorageCommand):
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:
             try:
-                target = pdisk.hotDetach(self.node, self.options.instance, uuid)
+                target = pdisk.hotDetach(self.options.instance, uuid)
                 print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
             except Exception, e:
                 printError('DISK %s: %s' % (uuid, e), exit=False)
