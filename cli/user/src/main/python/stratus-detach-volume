@@ -59,8 +59,8 @@ class MainProgram(AuthnCommand, StorageCommand):
     def checkOptions(self):
         super(MainProgram, self).checkOptions()
         if not self.uuids:
-            printError('Please provide at least on persistent disk UUID to detach')
-        if not self.options.instance:
+            printError('Please provide at least one persistent disk UUID to detach')
+        if (self.options.instance < 0):
             printError('Please provide a VM ID on which to detach disk')
         try:
             self._retrieveVmNode()
