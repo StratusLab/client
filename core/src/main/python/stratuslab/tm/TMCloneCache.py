@@ -332,7 +332,7 @@ class TMCloneCache(object):
     
     def _setNewPDiskProperties(self):
         self._setPDiskInfo(self._IDENTIFIER_KEY, self.marketplaceImageId, self.pdiskImageId)
-        self._setPDiskInfo('type', 'MACHINE_IMAGE_ORIGINE', self.pdiskImageId)
+        self._setPDiskInfo('type', 'MACHINE_IMAGE_ORIGIN', self.pdiskImageId)
         
     def _getPDiskTempStore(self):
         store = self.configHolder.persistentDiskTempStore or '/tmp'
