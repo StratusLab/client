@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2011, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+import sys
+from optparse import OptionParser
+
+sys.path.append('/var/lib/stratuslab/python')
+
+from stratuslab.Util import modulePath, printError
+from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
+from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.ConfigHolder import ConfigHolder
+
+
+class MainProgram(AuthnCommand, StorageCommand):
+    '''A command-line program to update persistent disk metadata.'''
+
+    def __init__(self):
+        self.TAG_LENGTH_MAX = 40
+        super(MainProgram, self).__init__()
+
+    def parse(self):
+        self.parser.usage = '%prog [options]'
+        self.parser.description = '''Update persistent disk metadata'''
+
+        self.parser.add_option('-t', '--tag', dest='volumeTag',
+                               help='Tag of the volume.', default=None)
+        
+        self.parser.add_option('--private', dest='volumeVisibility',
+                               help='''Set to private image''',
+                               action='store_const', const="PRIVATE")
+        
+        self.parser.add_option('--public', dest='volumeVisibility',
+                               help='''Set to public image''', 
+                               action='store_const', const="PUBLIC")
+
+        self.parser.add_option('--machine-image-origin', dest='volumeType',
+                               help='''Flag as original machine image''', 
+                               action='store_const', const="MACHINE_IMAGE_ORIGIN")
+
+        self.parser.add_option('--machine-image-live', dest='volumeType',
+                               help='''Flag as live machine image''', 
+                               action='store_const', const="MACHINE_IMAGE_LIVE")
+
+        self.parser.add_option('--data-image-origin', dest='volumeType',
+                               help='''Flag as original data image''', 
+                               action='store_const', const="DATA_IMAGE_ORIGIN")
+
+        self.parser.add_option('--data-image-live', dest='volumeType',
+                               help='''Flag as live data image''', 
+                               action='store_const', const="DATA_IMAGE_LIVE")
+
+        self.parser.add_option('--data-image-raw-readonly', dest='volumeType',
+                               help='''Flag as raw read-only data image''', 
+                               action='store_const', const="DATA_IMAGE_RAW_READONLY")
+
+        self.parser.add_option('--data-image-raw-read-write', dest='volumeType',
+                               help='''Flag as raw read-write data image''', 
+                               action='store_const', const="DATA_IMAGE_RAW_READ_WRITE")
+
+        StorageCommand.addPDiskEndpointOptions(self.parser)
+
+        super(MainProgram, self).parse()
+
+        self.options, self.uuids = self.parser.parse_args()
+
+    def checkOptions(self):
+        super(MainProgram, self).checkOptions()
+        self._checkTagLength()
+        self._checkUuids()
+        
+    def _checkTagLength(self):
+        if not (self.options.volumeTag is None):
+            if len(self.options.volumeTag) > self.TAG_LENGTH_MAX:
+                printError('Tags must have less than %d characters' % self.TAG_LENGTH_MAX)
+
+    def _checkUuids(self):
+        if not self.uuids:
+            printError('A disk UUID must be supplied')
+        if len(self.uuids) > 1:
+            printErrir('Only one disk UUID can be specified')
+        self.uuid = self.uuids[0]
+
+    def doWork(self):
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
+        configHolder.pdiskProtocol = "https"
+        pdisk = PersistentDisk(configHolder)
+
+        keyvalues = {}
+
+        if not (self.options.volumeTag is None):
+            keyvalues['tag'] = self.options.volumeTag
+
+        if not (self.options.volumeVisibility is None):
+            keyvalues['visibility'] = self.options.volumeVisibility
+
+        if not (self.options.volumeType is None):
+            keyvalues['type'] = self.options.volumeType
+
+        if len(keyvalues) > 0:
+            pdisk.updateVolumeAsUser(keyvalues, self.uuid)
+
+if __name__ == '__main__':
+    try:
+        MainProgram()
+    except KeyboardInterrupt:
+        print '\n\nExecution interrupted by the user... goodbye!'
