@@ -16,6 +16,7 @@ class MsgClientTest(unittest.TestCase):
         ch = ConfigHolder()
         temp_dir = tempfile.mkdtemp()
         ch.set('msg_queue', temp_dir)
+        ch.set('msg_endpoint', 'foo:1234')
         for msg_type in MSG_CLIENTS.keys():
             ch.set('msg_type', msg_type)
             getMsgClient(ch)
