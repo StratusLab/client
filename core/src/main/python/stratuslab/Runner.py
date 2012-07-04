@@ -600,11 +600,11 @@ class Runner(object):
         if operation == 'Kill':
             instance_operation = self.cloud.vmKill
         for id in _ids:
-            self.printDetail('Sending Shutdown request for instance %s.' % id)
+            self.printDetail('Sending "%s" request for instance %s.' % (operation, id))
             instance_operation(int(id))
         plural = (len(_ids) > 1 and 's') or ''
-        self.printDetail('Shutdown %s VM%s: %s' % (len(_ids), plural, 
-                                                   ', '.join(map(str,_ids))))
+        self.printDetail('"%s" %s VM%s: %s' % (operation, len(_ids), plural, 
+                                             ', '.join(map(str,_ids))))
 
     def printDetail(self, msg, verboseLevel=Util.NORMAL_VERBOSE_LEVEL):
         if self.quiet:
