@@ -15,6 +15,7 @@ class MsgClientFactory(object):
         if msg_type not in MSG_CLIENTS.keys():
             raise Exception('Unknown messaging client type: %s' % msg_type)
 
+        MsgClient = None
         exec "from stratuslab.messaging.%(msg_client)s import %(msg_client)s as MsgClient" % \
                                             {'msg_client': MSG_CLIENTS[msg_type]}
         return MsgClient(self.configHolder)
