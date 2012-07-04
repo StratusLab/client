@@ -114,6 +114,13 @@ class PersistentDisk(object):
         body = urlencode(keyvalues)
         self._putJson(url, body)
 
+    def updateVolumeAsUser(self, keyvalues, uuid):
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        body = urlencode(keyvalues)
+        self._putJson(url, body)
+
     def getValue(self, key, uuid):
         self._setPDiskUserCredentials()
         self._initPDiskConnection()
@@ -211,10 +218,10 @@ class PersistentDisk(object):
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
     
-    def hotDetach(self, node, vmId, uuid):
+    def hotDetach(self, vmId, uuid):
         self._initPDiskConnection()
         self._printContacting()
-        url = '%s/disks/%s/mounts/%s-%s' % (self.endpoint, uuid, vmId, node)
+        url = '%s/disks/%s/mounts/%s_%s' % (self.endpoint, uuid, uuid, vmId)
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']

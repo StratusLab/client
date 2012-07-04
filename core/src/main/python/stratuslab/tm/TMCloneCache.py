@@ -259,6 +259,9 @@ class TMCloneCache(object):
         if self.diskSrc.startswith(('http://', 'https://')):
             self.marketplaceEndpoint = self._getMarketplaceEndpointFromURI(self.diskSrc)
             self.marketplaceImageId = self._getImageIdFromURI(self.diskSrc)
+        elif self.diskSrc.startswith(('pdisk:')): # Ignore Marketplace if pdisk is used
+            self.marketplaceEndpoint = None
+            self.marketplaceImageId = None
         else: # Local marketplace
             self.marketplaceEndpoint = 'http://localhost'
             try:
@@ -329,7 +332,7 @@ class TMCloneCache(object):
     
     def _setNewPDiskProperties(self):
         self._setPDiskInfo(self._IDENTIFIER_KEY, self.marketplaceImageId, self.pdiskImageId)
-        self._setPDiskInfo('type', 'MACHINE_IMAGE_ORIGINE', self.pdiskImageId)
+        self._setPDiskInfo('type', 'MACHINE_IMAGE_ORIGIN', self.pdiskImageId)
         
     def _getPDiskTempStore(self):
         store = self.configHolder.persistentDiskTempStore or '/tmp'

@@ -62,6 +62,7 @@ class PersistentDisk(object):
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
         self.pdiskHostConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk-host.cfg')
+        self.pdiskHostConfigFile2 = os.path.join(Defaults.ETC_DIR, 'pdisk-host.conf')
         self.pdiskHomeDir = '/opt/stratuslab/storage/pdisk'
         self.cloudNodeKey = os.path.join(self.pdiskHomeDir, 'cloud_node.key')
         self.pdiskUsername = 'pdisk'
@@ -191,6 +192,11 @@ class PersistentDisk(object):
                                   self.pdiskHostConfigFile)
         self._overrideValueInFile('PDISK_PSWD', self.pdiskPassword,
                                   self.pdiskHostConfigFile)
+
+        self._overrideValueInFile('pdisk_user', self.pdiskUsername,
+                                  self.pdiskHostConfigFile2)
+        self._overrideValueInFile('pdisk_passwd', self.pdiskPassword,
+                                  self.pdiskHostConfigFile2)
         
     def _installPackages(self, section):
         if self.packages:

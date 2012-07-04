@@ -59,8 +59,8 @@ class MainProgram(AuthnCommand, StorageCommand):
     def checkOptions(self):
         super(MainProgram, self).checkOptions()
         if not self.uuids:
-            printError('Please provide at least on persistent disk UUID to detach')
-        if not self.options.instance:
+            printError('Please provide at least one persistent disk UUID to detach')
+        if (self.options.instance < 0):
             printError('Please provide a VM ID on which to detach disk')
         try:
             self._retrieveVmNode()
@@ -79,7 +79,7 @@ class MainProgram(AuthnCommand, StorageCommand):
         pdisk = PersistentDisk(configHolder)
         for uuid in self.uuids:
             try:
-                target = pdisk.hotDetach(self.node, self.options.instance, uuid)
+                target = pdisk.hotDetach(self.options.instance, uuid)
                 print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
             except Exception, e:
                 printError('DISK %s: %s' % (uuid, e), exit=False)
