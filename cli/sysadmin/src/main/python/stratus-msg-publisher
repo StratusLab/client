@@ -10,6 +10,7 @@ from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.MsgClientFactory import getMsgClient
+from stratuslab.messaging.Defaults import MSG_CLIENTS
 
 class MainProgram(CommandBaseSysadmin):
     
@@ -33,8 +34,9 @@ class MainProgram(CommandBaseSysadmin):
     def parse(self):
         self.parser.usage = '%prog [options] message'
 
+        msg_types = ', '.join(sorted(MSG_CLIENTS.keys()))
         self.parser.add_option('--msg-type', dest='msg_type',
-                    help='Type of messaging queue: amazonsqs. Mandatory.', 
+                    help='Type of messaging: %s. Mandatory.' % msg_types, 
                     metavar='NAME', default="")
         self.parser.add_option('--msg-endpoint', dest='msg_endpoint',
                     help='Messaging service endpoint. Mandatory.', 
