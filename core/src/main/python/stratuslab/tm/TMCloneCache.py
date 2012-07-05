@@ -27,7 +27,6 @@ from stratuslab.Util import sshCmdWithOutput, defaultConfigFile
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Configurator import Configurator
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
@@ -41,6 +40,8 @@ class TMCloneCache(object):
 
     # Debug option
     PRINT_TRACE_ON_ERROR = True
+
+    _ARGS_LEN = 3
 
     # Position of the provided args
     _ARG_SRC_POS = 1
@@ -73,18 +74,22 @@ class TMCloneCache(object):
         self.downloadedLocalImageSize = 0
 
         self._parseArgs(args)
-        
-        configFile = kwargs.get('conf_filename', defaultConfigFile)
-        config = ConfigHolder.configFileToDictWithFormattedKeys(configFile)
-        options = PDiskEndpoint.options()
-        options.update({'verboseLevel': 0, 'configFile': configFile})
-        self.configHolder = ConfigHolder(options, config)
-        self.configHolder.assign(self)
+
+        self._initFromConfig(kwargs.get('conf_filename', ''))
 
         self._initPdiskClient()
         self._initMarketplaceRelated()
 
         self.defaultSignalHandler = None
+
+    def _initFromConfig(self, conf_filename=''):
+        config = ConfigHolder.configFileToDictWithFormattedKeys(conf_filename or
+                                                                defaultConfigFile)
+        options = PDiskEndpoint.options()
+        self.configHolder = ConfigHolder(options, config)
+        self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
+        self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSELEVEL)
+        self.configHolder.assign(self)
 
     def _initPdiskClient(self):
         self.pdiskEndpoint = self.configHolder.persistentDiskIp
@@ -104,7 +109,8 @@ class TMCloneCache(object):
         self._retrieveDisk()
     
     def _checkArgs(self, args):
-        self._assertLength(args, 3, 'Invalid number of arguments')
+        if len(args) != self._ARGS_LEN:
+            raise ValueError('Invalid number of arguments')
     
     def _parseArgs(self, args):
         self._checkArgs(args)
