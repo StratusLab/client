@@ -40,6 +40,7 @@ class TMCloneCache(object):
 
     # Debug option
     PRINT_TRACE_ON_ERROR = True
+    DEFAULT_VERBOSELEVEL = 0
 
     _ARGS_LEN = 3
 
