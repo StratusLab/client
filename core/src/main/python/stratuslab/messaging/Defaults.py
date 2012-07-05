@@ -5,3 +5,5 @@ MSG_CLIENTS = {'amazonsqs' : 'AmazonSqsQueue',
                'email'     : 'EmailClient',
                'stomp'     : 'StompClient',
                'amqp'      : 'AmqpClient'}
+
+MSG_TYPES = sorted(MSG_CLIENTS.keys())

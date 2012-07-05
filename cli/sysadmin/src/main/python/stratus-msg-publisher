@@ -10,7 +10,7 @@ from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.MsgClientFactory import getMsgClient
-from stratuslab.messaging.Defaults import MSG_CLIENTS
+from stratuslab.messaging.Defaults import MSG_TYPES
 
 class MainProgram(CommandBaseSysadmin):
     
@@ -34,9 +34,8 @@ class MainProgram(CommandBaseSysadmin):
     def parse(self):
         self.parser.usage = '%prog [options] message'
 
-        msg_types = ', '.join(sorted(MSG_CLIENTS.keys()))
         self.parser.add_option('--msg-type', dest='msg_type',
-                    help='Type of messaging: %s. Mandatory.' % msg_types, 
+                    help='Type of messaging: %s. Mandatory.' % ', '.join(MSG_TYPES), 
                     metavar='NAME', default="")
         self.parser.add_option('--msg-endpoint', dest='msg_endpoint',
                     help='Messaging service endpoint. Mandatory.', 
