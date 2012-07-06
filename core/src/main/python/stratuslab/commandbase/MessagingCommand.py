@@ -25,11 +25,11 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.Defaults import MSG_TYPES
 from stratuslab.messaging.MsgClientFactory import getMsgClient
 
-class MessatingCommand(CommandBaseSysadmin):
+class MessagingCommand(CommandBaseSysadmin):
 
     def __init__(self):
         self.msg_message = ''
-        super(MessatingCommand, self).__init__()
+        super(MessagingCommand, self).__init__()
 
     @staticmethod
     def set_imageid(message, imageid):
@@ -65,7 +65,7 @@ class MessatingCommand(CommandBaseSysadmin):
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        super(MessatingCommand, self).checkOptions()
+        super(MessagingCommand, self).checkOptions()
 
         if not self.options.msg_type:
             self.printMandatoryOptionError('--msg-type')
@@ -84,7 +84,7 @@ class MessatingCommand(CommandBaseSysadmin):
 
         # We are publishing image ID. Set image ID in the message.
         if self.options.imageid:
-            self.msg_message = MessatingCommand.set_imageid(self.msg_message,
+            self.msg_message = MessagingCommand.set_imageid(self.msg_message,
                                                        self.options.imageid)
 
     def getMsgClient(self, configHolder):
