@@ -1,4 +1,6 @@
 
+import pika
+
 class AmqpClient(object):
     def __init__(self, configHolder):
         configHolder.assign(self)
