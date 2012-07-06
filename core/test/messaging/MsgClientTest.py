@@ -12,7 +12,7 @@ class MsgClientTest(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def xtestGetMsgClient(self):
+    def testGetMsgClient(self):
         ch = ConfigHolder()
         temp_dir = tempfile.mkdtemp()
         ch.set('msg_queue', temp_dir)
