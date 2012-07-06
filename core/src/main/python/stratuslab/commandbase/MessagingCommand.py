@@ -21,6 +21,7 @@
 import base64
 import json
 
+from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.Defaults import MSG_TYPES
 from stratuslab.messaging.MsgClientFactory import getMsgClient
@@ -87,12 +88,17 @@ class MessagingCommand(CommandBaseSysadmin):
             self.msg_message = MessagingCommand.set_imageid(self.msg_message,
                                                        self.options.imageid)
 
-    def getMsgClient(self, configHolder):
-        return getMsgClient(configHolder)
-
-    def getMessage(self):
+    def _getMessage(self):
         if self.options.msg_type.lower() == 'rest' and self.options.imageid:
             message = self.options.imageid
         else:
             message = self.msg_message
         return message
+
+    def sendMessage(self):
+        config = ConfigHolder.configFileToDict(self.options.configFile) 
+        configHolder = ConfigHolder(self.options.__dict__, config)
+
+        client = getMsgClient(configHolder)
+        message = self._getMessage()
+        client.send(message)

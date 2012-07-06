@@ -24,7 +24,6 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.commandbase.MessagingCommand import MessagingCommand
-from stratuslab.ConfigHolder import ConfigHolder
 
 class MainProgram(MessagingCommand):
 
@@ -32,12 +31,7 @@ class MainProgram(MessagingCommand):
         super(MainProgram, self).__init__()
 
     def doWork(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile) 
-        configHolder = ConfigHolder(self.options.__dict__, config)
-
-        client = self.getMsgClient(configHolder)
-        message = self.getMessage()
-        client.send(message)
+        self.sendMessage()
 
 if __name__ == '__main__':
     try:
