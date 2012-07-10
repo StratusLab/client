@@ -78,6 +78,7 @@ class TMSaveCache(object):
         self.manifestTempDir = ''
         self.manifestPath = None
         self.manifestNotSignedPath = None
+        self.pdiskEndpoint = None
         self.pdiskPath = None
         self.pdiskPathNew = None
         self.originImageIdUrl = None

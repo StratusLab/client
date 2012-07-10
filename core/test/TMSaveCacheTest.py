@@ -26,7 +26,6 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
-import sys
 
 class TMSaveCacheTest(unittest.TestCase):
 
