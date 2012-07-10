@@ -140,7 +140,7 @@ one_port = 2633
             assert minfo.sha1 == tm.imageSha1
             assert minfo.locations == [PDISK_ENDPOINT+':foo-bar-baz']
 
-            self.failUnless('New image created' in str(tm._composeEmailToUser()))
+            self.failUnless('foo-bar-baz' in str(tm._emailText()))
 
             if not Signator.findJar():
                 print "Skipping signature sub-test as Signator jar can not be found."
