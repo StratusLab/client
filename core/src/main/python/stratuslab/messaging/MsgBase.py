@@ -18,13 +18,28 @@
 # limitations under the License.
 #
 
-MSG_CLIENTS = {'amazonsqs' : 'AmazonSqsQueue',
-               'rest'      : 'RestPublisher',
-               'dirq'      : 'DirectoryQueue',
-               'email'     : 'EmailClient',
-               'stomp'     : 'StompClient',
-               'amqp'      : 'AmqpClient'}
+class MsgBase(object):
+    "Interface for all messaging classes."
+    
+    def __init__(self, configHolder):
+        self.msg_endpoint = ''
+        self.msg_queue = ''
+        self.username = ''
+        self.password = ''
+        self.verboseLevel = '0'
+        configHolder.assign(self)
 
-MSG_TYPES = sorted(MSG_CLIENTS.keys())
+    def connect(self):
+        pass
 
-MSG_SENDER_EMAIL = 'noreply@stratuslab.eu'
+    def send(self, message):
+        "message - string"
+        raise NotImplementedError()
+
+    def disconnect(self):
+        pass
+
+    def deliver(self, message):
+        self.connect()
+        self.send(message)
+        self.disconnect()

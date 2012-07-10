@@ -99,6 +99,6 @@ class MessagingCommand(CommandBaseSysadmin):
         config = ConfigHolder.configFileToDict(self.options.configFile) 
         configHolder = ConfigHolder(self.options.__dict__, config)
 
-        client = getMsgClient(configHolder)
         message = self._getMessage()
-        client.send(message)
+        client = getMsgClient(configHolder)
+        client.deliver(message)
