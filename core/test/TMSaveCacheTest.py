@@ -150,6 +150,24 @@ one_port = 2633
         finally:
             tm._cleanup()
 
+    def xtestSendEmail_Live(self):
+        """Remove 'x' from the test name, set correct values for 
+        email_address and smtp_host, and run the test manually. 
+        You should receive email."""
+        
+        email_address = '<your@email.com>'
+        smtp_host = '<SMTP host>'
+
+        tm = TMSaveCache({},
+                         conf_filename=self.conf_filename)
+        tm.snapshotMarketplaceId = 'ABC'
+        tm.createImageInfo = {}
+        tm.createImageInfo['creatorEmail'] = email_address
+        tm.manifestNotSignedPath = self.conf_filename
+        tm.configHolder.set('smtp_host', smtp_host)
+        
+        tm._sendEmailToUser()
+
     # Utils
     def _write_conf_file(self):
         fd, self.conf_filename = tempfile.mkstemp()
