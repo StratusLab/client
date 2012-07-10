@@ -24,6 +24,7 @@ import json
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.Defaults import MSG_TYPES
+from stratuslab.messaging.Defaults import MSG_SMTP_HOST
 from stratuslab.messaging.MsgClientFactory import getMsgClient
 
 class MessagingCommand(CommandBaseSysadmin):
@@ -57,6 +58,10 @@ class MessagingCommand(CommandBaseSysadmin):
         self.parser.add_option('--msg-queue', dest='msg_queue',
                     help='Message queue name. Mandatory.', metavar='NAME',
                     default="")
+        self.parser.add_option('--msg-smtp-host', dest='smtp_host',
+                    help="SMTP relay hostname to be used with 'email' messaging "
+                    "type. Default: %s" % MSG_SMTP_HOST, 
+                    metavar='HOSTNAME', default=MSG_SMTP_HOST)
         self.parser.add_option('--imageid', dest='imageid',
                     help='Image ID. Assumes message is JSON representation '
                     'of a dictionary on which the ID will be set. JSON can be '

@@ -27,10 +27,11 @@ from email.mime.base import MIMEBase
 
 from stratuslab.messaging.MsgBase import MsgBase
 from stratuslab.messaging.Defaults import MSG_SENDER_EMAIL
+from stratuslab.messaging.Defaults import MSG_SMTP_HOST
 
 class EmailClient(MsgBase):
     def __init__(self, configHolder):
-        self.smtp_host = 'localhost'
+        self.smtp_host = MSG_SMTP_HOST
         self.subject = ''
         self.recipient = ''
         self.sender = ''

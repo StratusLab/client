@@ -28,3 +28,4 @@ MSG_CLIENTS = {'amazonsqs' : 'AmazonSqsQueue',
 MSG_TYPES = sorted(MSG_CLIENTS.keys())
 
 MSG_SENDER_EMAIL = 'noreply@stratuslab.eu'
+MSG_SMTP_HOST = 'localhost'
