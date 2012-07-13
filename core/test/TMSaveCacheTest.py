@@ -26,6 +26,8 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
+from stratuslab.installator.PersistentDisk import PersistentDisk
+from stratuslab.Exceptions import ConfigurationException
 
 class TMSaveCacheTest(unittest.TestCase):
 
@@ -67,7 +69,7 @@ one_port = 2633
 """
 
     def setUp(self):
-        self._write_conf_file()
+        self.conf_filename = self._write_conf_file(self.CONFIG_FILE)
 
     def tearDown(self):
         os.unlink(self.conf_filename)
@@ -168,11 +170,35 @@ one_port = 2633
         
         tm._sendEmailToUser()
 
+    def test_getSnapshotPathConfParamNotInFile(self):
+        tm = TMSaveCache({},
+                         conf_filename=self.conf_filename)
+        PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
+foo = bar
+""")
+        try:
+            self.failUnlessRaises(ConfigurationException, tm._getSnapshotPath)
+        finally:
+            os.unlink(PersistentDisk.pdiskConfigBackendFile)
+
+    def test_getSnapshotPath(self):
+        tm = TMSaveCache({},
+                         conf_filename=self.conf_filename)
+        PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
+volume_name = /foo/bar
+""")
+        tm.diskName = 'baz'
+        try:
+            assert os.path.join('/foo/bar','baz') == tm._getSnapshotPath()
+        finally:
+            os.unlink(PersistentDisk.pdiskConfigBackendFile)
+
     # Utils
-    def _write_conf_file(self):
-        fd, self.conf_filename = tempfile.mkstemp()
-        os.write(fd, self.CONFIG_FILE)
+    def _write_conf_file(self, content):
+        fd, conf_filename = tempfile.mkstemp()
+        os.write(fd, content)
         os.close(fd)
+        return conf_filename
         
 if __name__ == "__main__":
     unittest.main()

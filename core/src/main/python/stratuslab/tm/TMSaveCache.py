@@ -38,8 +38,11 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.messaging.EmailClient import EmailClient
+from stratuslab.installator.PersistentDisk import PersistentDisk as PDiskInstaller
 import stratuslab.Util as Util
- 
+from stratuslab.Exceptions import ConfigurationException
+
+
 class TMSaveCache(object):
     ''' Save a running VM image in PDisk
     '''
@@ -319,7 +322,15 @@ class TMSaveCache(object):
         self.vmDir = dirname(dirname(self.diskSrcPath))
     
     def _getSnapshotPath(self):
-        return '%s/%s' % (self.persistentDiskLvmDevice, self.diskName)
+        conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
+        key = 'volume_name'
+        try:
+            volume_path = conf[key]
+        except:
+             raise ConfigurationException("Failed to get "
+                                          "'%s' from configuration file: %s" % 
+                                          (key, PDiskInstaller.pdiskConfigBackendFile))
+        return os.path.join(volume_path, self.diskName) 
 
     def _removeCarriageReturn(self, string):
         return string.replace('\r', '').replace('\n', '')

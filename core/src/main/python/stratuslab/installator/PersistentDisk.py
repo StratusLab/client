@@ -33,6 +33,9 @@ from stratuslab.Exceptions import ValidationException
 
 class PersistentDisk(object):
 
+    PDISK_BACKEND_CONF_NAME = 'pdisk-backend.cfg'
+    pdiskConfigBackendFile = os.path.join(Defaults.ETC_DIR, PDISK_BACKEND_CONF_NAME)
+
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
         self.configHolder.assign(self)
@@ -57,8 +60,8 @@ class PersistentDisk(object):
                        },
         }
 
-        self.pdiskConfigBackendFile = os.path.join(Defaults.ETC_DIR, 'pdisk-backend.cfg')
-        self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(), 'pdisk-backend.cfg.tpl')
+        self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(), 
+                                                  self.PDISK_BACKEND_CONF_NAME + '.tpl')
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
         self.pdiskHostConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk-host.cfg')
