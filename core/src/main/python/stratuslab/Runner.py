@@ -86,6 +86,8 @@ class Runner(object):
 
         self.vm_image = image
         self.persistentDiskUUID = None
+        self.readonlyDiskId = None
+        self.extraDiskSize = None
         self.quiet = False
         self.instanceNumber = 1
         self.authorEmail = ''
@@ -233,9 +235,9 @@ class Runner(object):
             pass
 
     def _setPersistentDiskOptional(self):
+        if not self.persistentDiskUUID:
+            return
         try:
-            if not self.persistentDiskUUID:
-                return
             self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
             self.pdisk = PersistentDisk(self.configHolder)
