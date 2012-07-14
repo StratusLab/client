@@ -19,11 +19,8 @@
 #
 import unittest
 
-import stratuslab.Util as Util
 from stratuslab.cloud.one import OneConnector
 from mock.mock import Mock
-
-etree = Util.importETree()
 
 class OneConnectorTest(unittest.TestCase):
 
