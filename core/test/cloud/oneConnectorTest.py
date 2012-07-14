@@ -21,6 +21,7 @@ import unittest
 
 import stratuslab.Util as Util
 from stratuslab.cloud.one import OneConnector
+from mock.mock import Mock
 
 etree = Util.importETree()
 
@@ -32,9 +33,21 @@ class OneConnectorTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test(self):
-        pass
- 
+    def testGetCreateImageInfo(self):
+        xml = """
+<VM>
+  <TEMPLATE>
+    <CREATE_IMAGE>
+      <foo>bar</foo>
+      <baz><![CDATA[]]></baz>
+    </CREATE_IMAGE>
+  </TEMPLATE>
+</VM>
+"""
+        OneConnector._vmInfo = Mock(return_value=xml)
+        one = OneConnector(object)
+        assert {'foo': 'bar', 'baz': ''} == one.getCreateImageInfo(0)
+
 if __name__ == "__main__":
     unittest.main()
         
