@@ -177,7 +177,8 @@ class OneConnector(object):
         createImage_dom = dom.find('TEMPLATE/CREATE_IMAGE')
         infos = {}
         for elem in createImage_dom:
-            infos[elem.tag] = elem.text or ''
+            value = elem.text or ''
+            infos[elem.tag] = value.strip().strip('"')
         return infos
     
     def _findXmlText(self, xml, query):
