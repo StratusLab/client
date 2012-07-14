@@ -189,7 +189,7 @@ volume_name = /foo/bar
 """)
         tm.diskName = 'baz'
         try:
-            assert os.path.join('/foo/bar','baz') == tm._getSnapshotPath()
+            assert '/foo/bar/baz' == tm._getSnapshotPath()
         finally:
             os.unlink(PersistentDisk.pdiskConfigBackendFile)
 
