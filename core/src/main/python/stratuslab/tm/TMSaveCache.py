@@ -327,9 +327,9 @@ class TMSaveCache(object):
         try:
             volume_path = conf[key]
         except:
-             raise ConfigurationException("Failed to get "
-                                          "'%s' from configuration file: %s" % 
-                                          (key, PDiskInstaller.pdiskConfigBackendFile))
+            raise ConfigurationException("Failed to get "
+                                         "'%s' from configuration file: %s" % 
+                                         (key, PDiskInstaller.pdiskConfigBackendFile))
         return os.path.join(volume_path, self.diskName) 
 
     def _removeCarriageReturn(self, string):
