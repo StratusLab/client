@@ -227,9 +227,9 @@ class TMSaveCache(object):
         manifest_info = manifest_downloader.getManifestInfo(self.originImageIdUrl)
 
         manifest_info.sha1 = self.imageSha1
-        manifest_info.creator = self.createImageInfo['creatorName']
-        manifest_info.version = self.createImageInfo['newImageVersion'] or Util.incrementMinorVersionNumber(manifest_info.version)
-        manifest_info.comment = self.createImageInfo['newImageComment']
+        manifest_info.creator = self.createImageInfo['CREATOR_NAME']
+        manifest_info.version = self.createImageInfo['NEWIMAGE_VERSION'] or Util.incrementMinorVersionNumber(manifest_info.version)
+        manifest_info.comment = self.createImageInfo['NEWIMAGE_COMMENT']
         manifest_info.locations = [self.pdiskPathNew]
         manifest_info.IMAGE_VALIDITY = self._IMAGE_VALIDITY
 
@@ -263,8 +263,8 @@ class TMSaveCache(object):
         return checksumOutput.split(' ')[0]
 
     def _retreiveTargetMarketplace(self):
-        if self.createImageInfo.get('newImageMarketplace'):
-            self.targetMarketplace = self.createImageInfo['newImageMarketplace']
+        if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):
+            self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
         elif self.configHolder.marketplaceEndpointLocal:
             self.targetMarketplace = self.configHolder.marketplaceEndpointLocal
         else:
@@ -372,12 +372,12 @@ class TMSaveCache(object):
         self._publishMessage()
 
     def _sendEmailToUser(self):
-        if not self.createImageInfo['creatorEmail']:
+        if not self.createImageInfo['CREATOR_EMAIL']:
             return
 
         configHolder = self.configHolder.copy()
         configHolder.set('subject', 'New image created %s' % self.snapshotMarketplaceId)
-        configHolder.set('recipient', self.createImageInfo['creatorEmail'])
+        configHolder.set('recipient', self.createImageInfo['CREATOR_EMAIL'])
 
         emailClient = EmailClient(configHolder)
         emailClient.send(self._emailText(),
