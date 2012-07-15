@@ -41,6 +41,7 @@ from stratuslab.messaging.EmailClient import EmailClient
 from stratuslab.installator.PersistentDisk import PersistentDisk as PDiskInstaller
 import stratuslab.Util as Util
 from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Runner import Runner 
 
 
 class TMSaveCache(object):
@@ -372,12 +373,12 @@ class TMSaveCache(object):
         self._publishMessage()
 
     def _sendEmailToUser(self):
-        if not self.createImageInfo['CREATOR_EMAIL']:
+        if not self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL]:
             return
 
         configHolder = self.configHolder.copy()
         configHolder.set('subject', 'New image created %s' % self.snapshotMarketplaceId)
-        configHolder.set('recipient', self.createImageInfo['CREATOR_EMAIL'])
+        configHolder.set('recipient', self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL])
 
         emailClient = EmailClient(configHolder)
         emailClient.send(self._emailText(),

@@ -297,11 +297,11 @@ class Creator(object):
         image.checkImageExists(self.image)
 
     def _getCreateImageTemplateDict(self):
-        return {'CREATOR_EMAIL' : self.authorEmail,
-                'CREATOR_NAME' : self.author,
-                'NEWIMAGE_COMMENT' : self.comment,
-                'NEWIMAGE_VERSION' : self.newImageGroupVersion,
-                'NEWIMAGE_MARKETPLACE' : self.marketplaceEndpointNewimage }
+        return {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
+                Runner.CREATE_IMAGE_KEY_CREATOR_NAME: self.author,
+                Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: self.comment,
+                Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: self.newImageGroupVersion,
+                Runner.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage }
 
     def createRunner(self):
         self.__createRunner()

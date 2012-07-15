@@ -71,6 +71,12 @@ class Runner(object):
 %s
 ]'''
 
+    CREATE_IMAGE_KEY_CREATOR_EMAIL = 'CREATOR_EMAIL'
+    CREATE_IMAGE_KEY_CREATOR_NAME = 'CREATOR_NAME'
+    CREATE_IMAGE_KEY_NEWIMAGE_COMMENT = 'NEWIMAGE_COMMENT'
+    CREATE_IMAGE_KEY_NEWIMAGE_VERSION = 'NEWIMAGE_VERSION'
+    CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE = 'NEWIMAGE_MARKETPLACE'
+
     DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
     DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
     DISKS_BUS_PREFIX_MAP = {'ide'    : 'hd',
@@ -119,8 +125,8 @@ class Runner(object):
 
         self._setCloudContext()
 
-        self.createImageData = {'CREATOR_EMAIL': self.authorEmail,
-                                'NEWIMAGE_MARKETPLACE': self.marketplaceEndpointNewimage }
+        self.createImageData = {self.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
+                                self.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage }
 
         self._initVmAttributes()
         
