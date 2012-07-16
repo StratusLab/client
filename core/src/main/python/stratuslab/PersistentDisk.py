@@ -166,7 +166,6 @@ class PersistentDisk(object):
         return self._getUuidFromJson(content)
     
     def rebaseVolume(self, uuid):
-        # TODO: add iscow check
         self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
