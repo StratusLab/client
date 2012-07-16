@@ -828,6 +828,14 @@ class BaseSystem(object):
                ruleSpec.get('table', self.DEFAULT_FIREWALL_TABLE)
 
     # -------------------------------------------
+    # sendmail
+    # -------------------------------------------
+
+    def installSendmail(self):
+        if getattr(self, 'smtpHost', 'localhost') == 'localhost':
+            self.installPackages([self.getPackageName('sendmail')])
+
+    # -------------------------------------------
     # CA
     # -------------------------------------------
 

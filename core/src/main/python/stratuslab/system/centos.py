@@ -105,7 +105,8 @@ enabled=1
                          'MySQLServer': PackageInfo('mysql-server',
                                                     initdScriptName='mysqld'),
                          'fetch-crl': PackageInfo('fetch-crl',
-                                                  packageVersion='3*')}
+                                                  packageVersion='3*'),
+                         'sendmail': PackageInfo('sendmail')}
 
         self.installPackagesErrorMsgs = ['No package .* available']
 
