@@ -159,7 +159,7 @@ start block
     def testfilePutGetContentUnicode(self):
         _, filename = tempfile.mkstemp()
         try:
-            Util.filePutContent(filename, unicode('Élément'))
+            Util.filePutContent(filename, unicode('Élément', encoding='utf8'))
             assert 'Élément' == Util.fileGetContent(filename)
         finally:
             os.unlink(filename)
