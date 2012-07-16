@@ -28,6 +28,7 @@ from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Runner import Runner
 
 class TMSaveCacheTest(unittest.TestCase):
 
@@ -116,11 +117,11 @@ one_port = 2633
                          conf_filename=self.conf_filename)
         tm._parseArgs()
         tm._retrievePDiskInfo()
-        tm.createImageInfo = {'creatorEmail':'jrandom@tester.org',
-                              'creatorName':'Jay Random',
-                              'newImageComment':'test',
-                              'newImageVersion':'0.0',
-                              'newImageMarketplace':'http://new.markeplace.org'}
+        tm.createImageInfo = {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL:'jrandom@tester.org',
+                              Runner.CREATE_IMAGE_KEY_CREATOR_NAME:'Jay Random',
+                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT:'test',
+                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION:'0.0',
+                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE:'http://new.markeplace.org'}
         tm.imageSha1 = 'ea7d0ddf7af4e2ea431db89639feb7036fb23062'
         tm.createdPDiskId = 'foo-bar-baz'
 

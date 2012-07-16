@@ -229,9 +229,10 @@ class TMSaveCache(object):
         manifest_info = manifest_downloader.getManifestInfo(self.originImageIdUrl)
 
         manifest_info.sha1 = self.imageSha1
-        manifest_info.creator = self.createImageInfo['CREATOR_NAME']
-        manifest_info.version = self.createImageInfo['NEWIMAGE_VERSION'] or Util.incrementMinorVersionNumber(manifest_info.version)
-        manifest_info.comment = self.createImageInfo['NEWIMAGE_COMMENT']
+        manifest_info.creator = self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_NAME]
+        manifest_info.version = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or\
+                                     Util.incrementMinorVersionNumber(manifest_info.version)
+        manifest_info.comment = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT]
         manifest_info.locations = [self.pdiskPathNew]
         manifest_info.IMAGE_VALIDITY = self._IMAGE_VALIDITY
 
