@@ -225,7 +225,7 @@ class ManifestInfo(object):
             filename = '%s-%s-%s-%s-%s%s' % (self.os, self.osversion,
                                              self.arch, self.type,
                                              self.version, Util.manifestExt)
-        file(filename, 'w').write(manifestText)
+        Util.filePutContent(filename, manifestText)
         Util.printDetail("Manifest: %s"%filename, verboseLevel=self.verboseLevel,
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 

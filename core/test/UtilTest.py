@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -152,6 +153,22 @@ start block
 
             self.failUnlessRaises(Exception, Util.checksum_file, filename, ['bar'])
 
+        finally:
+            os.unlink(filename)
+            
+    def testfilePutGetContentUnicode(self):
+        _, filename = tempfile.mkstemp()
+        try:
+            Util.filePutContent(filename, unicode('Élément'))
+            assert 'Élément' == Util.fileGetContent(filename)
+        finally:
+            os.unlink(filename)
+
+    def testfilePutGetContentStr(self):
+        _, filename = tempfile.mkstemp()
+        try:
+            Util.filePutContent(filename, str('Element'))
+            assert 'Element' == Util.fileGetContent(filename)
         finally:
             os.unlink(filename)
 

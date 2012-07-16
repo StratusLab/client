@@ -25,11 +25,13 @@ import time
 import urllib2
 import random
 import urlparse
+import platform
+import codecs
 from random import sample
 from string import ascii_lowercase
-from stratuslab.Exceptions import ExecutionException, ValidationException
+
 import Defaults
-import platform
+from stratuslab.Exceptions import ExecutionException, ValidationException
 
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
@@ -181,9 +183,12 @@ def fileGetContent(filename):
 
 def filePutContent(filename, data):
     _printDetail('Creating file %s with content: \n%s\n' % (filename, data))
-    fd = open(filename, 'wb')
-    fd.write(data)
-    fd.close()
+    if isinstance(data, unicode):
+        fh = codecs.open(filename, 'w', 'utf8')
+    else:
+        fh = os.fdopen(os.open(filename, os.O_WRONLY|os.O_CREAT), 'wb')
+    fh.write(data)
+    fh.close()
 
 def fileAppendContent(filename, data):
     fd = open(filename, 'a')
