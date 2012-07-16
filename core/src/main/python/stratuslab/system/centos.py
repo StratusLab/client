@@ -78,13 +78,13 @@ class CentOS(BaseSystem):
 
         self.extraRepos = {
             'epel' : {'content' : """[epel]
-name=Extra Packages for Enterprise Linux 5 - $basearch
-#baseurl=http://download.fedoraproject.org/pub/epel/5/$basearch
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-5&arch=$basearch
+name=Extra Packages for Enterprise Linux 6 - $basearch
+#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch
 failovermethod=priority
 enabled=1
 gpgcheck=0
-#gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL
+#gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6
 """, 'filename' : repoFileNamePattern % 'epel'},
 
             self.caRepoName : {'content' : """[EGI-trustanchors]
