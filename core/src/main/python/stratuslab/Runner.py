@@ -71,6 +71,16 @@ class Runner(object):
 %s
 ]'''
 
+    CREATE_IMAGE_KEY_CREATOR_EMAIL = 'CREATOR_EMAIL'
+    CREATE_IMAGE_KEY_CREATOR_NAME = 'CREATOR_NAME'
+    CREATE_IMAGE_KEY_NEWIMAGE_COMMENT = 'NEWIMAGE_COMMENT'
+    CREATE_IMAGE_KEY_NEWIMAGE_VERSION = 'NEWIMAGE_VERSION'
+    CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE = 'NEWIMAGE_MARKETPLACE'
+    CREATE_IMAGE_KEY_MSG_TYPE = 'MSG_TYPE'
+    CREATE_IMAGE_KEY_MSG_ENDPOINT = 'MSG_ENDPOINT'
+    CREATE_IMAGE_KEY_MSG_QUEUE = 'MSG_QUEUE'
+    CREATE_IMAGE_KEY_MSG_MESSAGE = 'MSG_MESSAGE'
+
     DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
     DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
     DISKS_BUS_PREFIX_MAP = {'ide'    : 'hd',
@@ -86,6 +96,8 @@ class Runner(object):
 
         self.vm_image = image
         self.persistentDiskUUID = None
+        self.readonlyDiskId = None
+        self.extraDiskSize = None
         self.quiet = False
         self.instanceNumber = 1
         self.authorEmail = ''
@@ -117,8 +129,8 @@ class Runner(object):
 
         self._setCloudContext()
 
-        self.createImageData = {'CREATOR_EMAIL': self.authorEmail,
-                                'NEWIMAGE_MARKETPLACE': self.marketplaceEndpointNewimage }
+        self.createImageData = {self.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
+                                self.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage }
 
         self._initVmAttributes()
         
@@ -233,9 +245,9 @@ class Runner(object):
             pass
 
     def _setPersistentDiskOptional(self):
+        if not self.persistentDiskUUID:
+            return
         try:
-            if not self.persistentDiskUUID:
-                return
             self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
             self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
             self.pdisk = PersistentDisk(self.configHolder)
@@ -600,11 +612,11 @@ class Runner(object):
         if operation == 'Kill':
             instance_operation = self.cloud.vmKill
         for id in _ids:
-            self.printDetail('Sending Shutdown request for instance %s.' % id)
+            self.printDetail('Sending "%s" request for instance %s.' % (operation, id))
             instance_operation(int(id))
         plural = (len(_ids) > 1 and 's') or ''
-        self.printDetail('Shutdown %s VM%s: %s' % (len(_ids), plural, 
-                                                   ', '.join(map(str,_ids))))
+        self.printDetail('"%s" %s VM%s: %s' % (operation, len(_ids), plural, 
+                                             ', '.join(map(str,_ids))))
 
     def printDetail(self, msg, verboseLevel=Util.NORMAL_VERBOSE_LEVEL):
         if self.quiet:

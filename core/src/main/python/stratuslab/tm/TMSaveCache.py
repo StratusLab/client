@@ -24,11 +24,7 @@ from string import ascii_uppercase, digits
 from random import choice
 from os.path import dirname
 from getpass import getuser
-from smtplib import SMTP
 from tempfile import mkstemp, mkdtemp
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
 
 from stratuslab.Signator import Signator
 from stratuslab.Util import defaultConfigFile, sshCmdWithOutput
@@ -41,8 +37,14 @@ from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
+from stratuslab.messaging.EmailClient import EmailClient
+from stratuslab.installator.PersistentDisk import PersistentDisk as PDiskInstaller
 import stratuslab.Util as Util
- 
+from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Runner import Runner 
+from stratuslab.messaging.MessagePublishers import ImageIdPublisher
+
+
 class TMSaveCache(object):
     ''' Save a running VM image in PDisk
     '''
@@ -81,6 +83,7 @@ class TMSaveCache(object):
         self.manifestTempDir = ''
         self.manifestPath = None
         self.manifestNotSignedPath = None
+        self.pdiskEndpoint = None
         self.pdiskPath = None
         self.pdiskPathNew = None
         self.originImageIdUrl = None
@@ -226,9 +229,10 @@ class TMSaveCache(object):
         manifest_info = manifest_downloader.getManifestInfo(self.originImageIdUrl)
 
         manifest_info.sha1 = self.imageSha1
-        manifest_info.creator = self.createImageInfo['creatorName']
-        manifest_info.version = self.createImageInfo['newImageVersion'] or Util.incrementMinorVersionNumber(manifest_info.version)
-        manifest_info.comment = self.createImageInfo['newImageComment']
+        manifest_info.creator = self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_NAME]
+        manifest_info.version = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or\
+                                     Util.incrementMinorVersionNumber(manifest_info.version)
+        manifest_info.comment = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT]
         manifest_info.locations = [self.pdiskPathNew]
         manifest_info.IMAGE_VALIDITY = self._IMAGE_VALIDITY
 
@@ -262,8 +266,8 @@ class TMSaveCache(object):
         return checksumOutput.split(' ')[0]
 
     def _retreiveTargetMarketplace(self):
-        if self.createImageInfo.get('newImageMarketplace'):
-            self.targetMarketplace = self.createImageInfo['newImageMarketplace']
+        if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):
+            self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
         elif self.configHolder.marketplaceEndpointLocal:
             self.targetMarketplace = self.configHolder.marketplaceEndpointLocal
         else:
@@ -321,7 +325,15 @@ class TMSaveCache(object):
         self.vmDir = dirname(dirname(self.diskSrcPath))
     
     def _getSnapshotPath(self):
-        return '%s/%s' % (self.persistentDiskLvmDevice, self.diskName)
+        conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
+        key = 'volume_name'
+        try:
+            volume_path = conf[key]
+        except:
+            raise ConfigurationException("Failed to get "
+                                         "'%s' from configuration file: %s" % 
+                                         (key, PDiskInstaller.pdiskConfigBackendFile))
+        return os.path.join(volume_path, self.diskName) 
 
     def _removeCarriageReturn(self, string):
         return string.replace('\r', '').replace('\n', '')
@@ -360,40 +372,37 @@ class TMSaveCache(object):
 
     def _notify(self):
         self._sendEmailToUser()
-        self._publishMessage()
+        self._publishImageId()
 
     def _sendEmailToUser(self):
-        if not self.createImageInfo['creatorEmail']:
+        if not self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL]:
             return
-        
-        msg = self._composeEmailToUser()
-        self._sendEmail(msg)
 
-    def _sendEmail(self, msg):
-        smtp = SMTP('localhost')
-        smtp.sendmail('noreply@stratuslab.eu', self.createImageInfo['creatorEmail'],
-                      msg.as_string())
-        smtp.quit()
+        configHolder = self.configHolder.copy()
+        configHolder.set('subject', 'New image created %s' % self.snapshotMarketplaceId)
+        configHolder.set('recipient', self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL])
 
-    def _publishMessage(self):
-        # TODO: Publish message to a message bus if defined.
-        print "TODO: Publish message to a message bus if defined."
+        emailClient = EmailClient(configHolder)
+        emailClient.send(self._emailText(),
+                         attachment=self.manifestNotSignedPath)
 
-    def _composeEmailToUser(self):
-        msg = MIMEMultipart()
-        msg['Subject'] = 'New image created %s' % self.snapshotMarketplaceId
-        msg['From'] = 'noreply@stratuslab.eu'
-        msg['To'] = self.createImageInfo['creatorEmail']
-        
-        msg.attach(MIMEText(self._emailText()))
-        
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(open(self.manifestNotSignedPath,'rb').read())
-        part.add_header('Content-Disposition', 
-                        'attachment; filename="manifest-not-signed.xml"')
-        msg.attach(part)
-        
-        return msg
+    def _publishImageId(self):
+        msg_type = self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_TYPE, '')
+        if not msg_type:
+            return
+
+        configHolder = self.configHolder.copy()
+        configHolder.set('msg_type', msg_type)
+        configHolder.set('msg_endpoint',
+                         self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_ENDPOINT, ''))
+        configHolder.set('msg_queue',
+                         self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_QUEUE, ''))
+
+        message = self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_MESSAGE, '{}')
+
+        ImageIdPublisher(message, 
+                         self.snapshotMarketplaceId, 
+                         configHolder).publish()
 
     def _emailText(self):
         return """

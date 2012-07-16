@@ -26,7 +26,9 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
-import sys
+from stratuslab.installator.PersistentDisk import PersistentDisk
+from stratuslab.Exceptions import ConfigurationException
+from stratuslab.Runner import Runner
 
 class TMSaveCacheTest(unittest.TestCase):
 
@@ -68,7 +70,7 @@ one_port = 2633
 """
 
     def setUp(self):
-        self._write_conf_file()
+        self.conf_filename = self._write_conf_file(self.CONFIG_FILE)
 
     def tearDown(self):
         os.unlink(self.conf_filename)
@@ -115,11 +117,11 @@ one_port = 2633
                          conf_filename=self.conf_filename)
         tm._parseArgs()
         tm._retrievePDiskInfo()
-        tm.createImageInfo = {'creatorEmail':'jrandom@tester.org',
-                              'creatorName':'Jay Random',
-                              'newImageComment':'test',
-                              'newImageVersion':'0.0',
-                              'newImageMarketplace':'http://new.markeplace.org'}
+        tm.createImageInfo = {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL:'jrandom@tester.org',
+                              Runner.CREATE_IMAGE_KEY_CREATOR_NAME:'Jay Random',
+                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT:'test',
+                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION:'0.0',
+                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE:'http://new.markeplace.org'}
         tm.imageSha1 = 'ea7d0ddf7af4e2ea431db89639feb7036fb23062'
         tm.createdPDiskId = 'foo-bar-baz'
 
@@ -141,7 +143,7 @@ one_port = 2633
             assert minfo.sha1 == tm.imageSha1
             assert minfo.locations == [PDISK_ENDPOINT+':foo-bar-baz']
 
-            self.failUnless('New image created' in str(tm._composeEmailToUser()))
+            self.failUnless('foo-bar-baz' in str(tm._emailText()))
 
             if not Signator.findJar():
                 print "Skipping signature sub-test as Signator jar can not be found."
@@ -151,11 +153,53 @@ one_port = 2633
         finally:
             tm._cleanup()
 
+    def xtestSendEmail_Live(self):
+        """Remove 'x' from the test name, set correct values for 
+        email_address and smtp_host, and run the test manually. 
+        You should receive email."""
+        
+        email_address = '<your@email.com>'
+        smtp_host = '<SMTP host>'
+
+        tm = TMSaveCache({},
+                         conf_filename=self.conf_filename)
+        tm.snapshotMarketplaceId = 'ABC'
+        tm.createImageInfo = {}
+        tm.createImageInfo['creatorEmail'] = email_address
+        tm.manifestNotSignedPath = self.conf_filename
+        tm.configHolder.set('smtp_host', smtp_host)
+        
+        tm._sendEmailToUser()
+
+    def test_getSnapshotPathConfParamNotInFile(self):
+        tm = TMSaveCache({},
+                         conf_filename=self.conf_filename)
+        PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
+foo = bar
+""")
+        try:
+            self.failUnlessRaises(ConfigurationException, tm._getSnapshotPath)
+        finally:
+            os.unlink(PersistentDisk.pdiskConfigBackendFile)
+
+    def test_getSnapshotPath(self):
+        tm = TMSaveCache({},
+                         conf_filename=self.conf_filename)
+        PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
+volume_name = /foo/bar
+""")
+        tm.diskName = 'baz'
+        try:
+            assert '/foo/bar/baz' == tm._getSnapshotPath()
+        finally:
+            os.unlink(PersistentDisk.pdiskConfigBackendFile)
+
     # Utils
-    def _write_conf_file(self):
-        fd, self.conf_filename = tempfile.mkstemp()
-        os.write(fd, self.CONFIG_FILE)
+    def _write_conf_file(self, content):
+        fd, conf_filename = tempfile.mkstemp()
+        os.write(fd, content)
         os.close(fd)
+        return conf_filename
         
 if __name__ == "__main__":
     unittest.main()

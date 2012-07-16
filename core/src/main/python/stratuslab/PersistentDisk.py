@@ -114,6 +114,13 @@ class PersistentDisk(object):
         body = urlencode(keyvalues)
         self._putJson(url, body)
 
+    def updateVolumeAsUser(self, keyvalues, uuid):
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s' % (self.endpoint, uuid)
+        body = urlencode(keyvalues)
+        self._putJson(url, body)
+
     def getValue(self, key, uuid):
         self._setPDiskUserCredentials()
         self._initPDiskConnection()
