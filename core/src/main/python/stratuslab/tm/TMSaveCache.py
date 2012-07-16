@@ -42,6 +42,7 @@ from stratuslab.installator.PersistentDisk import PersistentDisk as PDiskInstall
 import stratuslab.Util as Util
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Runner import Runner 
+from stratuslab.messaging.MessagePublishers import ImageIdPublisher
 
 
 class TMSaveCache(object):
@@ -370,7 +371,7 @@ class TMSaveCache(object):
 
     def _notify(self):
         self._sendEmailToUser()
-        self._publishMessage()
+        self._publishImageId()
 
     def _sendEmailToUser(self):
         if not self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL]:
@@ -384,9 +385,23 @@ class TMSaveCache(object):
         emailClient.send(self._emailText(),
                          attachment=self.manifestNotSignedPath)
 
-    def _publishMessage(self):
-        # TODO: Publish message to a message bus if defined.
-        print "TODO: Publish message to a message bus if defined."
+    def _publishImageId(self):
+        msg_type = self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_TYPE, '')
+        if not msg_type:
+            return
+
+        configHolder = self.configHolder.copy()
+        configHolder.set('msg_type', msg_type)
+        configHolder.set('msg_endpoint',
+                         self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_ENDPOINT, ''))
+        configHolder.set('msg_queue',
+                         self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_QUEUE, ''))
+
+        message = self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_MESSAGE, '{}')
+
+        ImageIdPublisher(message, 
+                         self.snapshotMarketplaceId, 
+                         configHolder).publish()
 
     def _emailText(self):
         return """
