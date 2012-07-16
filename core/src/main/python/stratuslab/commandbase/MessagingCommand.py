@@ -18,33 +18,19 @@
 # limitations under the License.
 #
 
-import base64
-import json
-
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.Defaults import MSG_TYPES
 from stratuslab.messaging.Defaults import MSG_SMTP_HOST
-from stratuslab.messaging.MsgClientFactory import getMsgClient
+from stratuslab.messaging.MessagePublishers import ImageIdPublisher, SingleMessagePublisher
+from stratuslab.Image import Image
+from stratuslab.Exceptions import ValidationException
 
 class MessagingCommand(CommandBaseSysadmin):
 
     def __init__(self):
         self.msg_message = ''
         super(MessagingCommand, self).__init__()
-
-    @staticmethod
-    def set_imageid(message, imageid):
-        'message - JSON and can be base64 encoded'
-        if not message.startswith('{'):
-            # Assume this is base64 encoded message.
-            message = base64.b64decode(message)
-        try:
-            message_dict = json.loads(message)
-        except Exception, ex:
-            raise ValueError("Couldn't load JSON message: %s" %  str(ex))
-        message_dict['imageid'] = imageid
-        return json.dumps(message_dict)
 
     def parse(self):
         self.parser.usage = '%prog [options] message'
@@ -87,23 +73,17 @@ class MessagingCommand(CommandBaseSysadmin):
             self.msg_message = self.args[0]
         else:
             self.printError('Message should be set as first argument')
-
-        # We are publishing image ID. Set image ID in the message.
+            
         if self.options.imageid:
-            self.msg_message = MessagingCommand.set_imageid(self.msg_message,
-                                                       self.options.imageid)
-
-    def _getMessage(self):
-        if self.options.msg_type.lower() == 'rest' and self.options.imageid:
-            message = self.options.imageid
-        else:
-            message = self.msg_message
-        return message
+            if not Image.isImageId(self.options.imageid):
+                raise ValidationException('Marketplace image ID is expected.')
 
     def sendMessage(self):
         config = ConfigHolder.configFileToDict(self.options.configFile) 
         configHolder = ConfigHolder(self.options.__dict__, config)
 
-        message = self._getMessage()
-        client = getMsgClient(configHolder)
-        client.deliver(message)
+        if self.options.imageid:
+            ImageIdPublisher(self.msg_message, 
+                             self.options.imageid, configHolder).publish()
+        else:
+            SingleMessagePublisher(self.msg_message, configHolder).publish()
