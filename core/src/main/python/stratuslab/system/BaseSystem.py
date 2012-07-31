@@ -211,7 +211,8 @@ class BaseSystem(object):
 
         self.executeCmd(['useradd', '-d', self.oneHome, '-g',
                         self.oneGroup, '-u', self.oneUid, self.oneUsername,
-                        '-s', '/bin/bash', '-p', self.onePassword, '--create-home'])
+                        '-s', '/bin/bash', '-p', self.onePassword, '--create-home',
+                        '--expiredate ""', '--inactive -1'])
     
     # -------------------------------------------
     #     ONE admin env config and related
