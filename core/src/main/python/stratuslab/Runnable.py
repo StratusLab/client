@@ -34,8 +34,7 @@ class Runnable(AuthnCommand):
         self.options = None
         self.args = None
         self.image = None
-        self.checkCredentials = True
-        
+
         super(Runnable, self).__init__()
 
     def parse(self):
@@ -139,8 +138,6 @@ class Runnable(AuthnCommand):
 
         AuthnCommand.checkCloudEndpointOptionsOnly(self)
 
-        self._checkKeyPair()
-
         if self.options.extraContextFile and not os.path.isfile(self.options.extraContextFile):
             self.parser.error('Extra context file does not exist')
         if self.options.vncListen and not Util.validateIp(self.options.vncListen):
@@ -153,14 +150,3 @@ class Runnable(AuthnCommand):
     def _checkArgs(self):
         if len(self.args) != 1:
             self.parser.error('Please specify the machine image to start')
-
-    def _checkKeyPair(self):
-        if self.checkCredentials:
-            if not self.options.userPublicKeyFile:
-                self.parser.error('Unspecified user public key. See --key option.')
-
-            self.options.userPrivateKeyFile = self.options.userPublicKeyFile.strip('.pub')
-
-            for key in [self.options.userPublicKeyFile, self.options.userPrivateKeyFile]:
-                if not os.path.isfile(key):
-                    self.parser.error('Key `%s` does not exist' % key)

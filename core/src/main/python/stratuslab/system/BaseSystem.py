@@ -211,7 +211,8 @@ class BaseSystem(object):
 
         self.executeCmd(['useradd', '-d', self.oneHome, '-g',
                         self.oneGroup, '-u', self.oneUid, self.oneUsername,
-                        '-s', '/bin/bash', '-p', self.onePassword, '--create-home'])
+                        '-s', '/bin/bash', '-p', self.onePassword, '--create-home',
+                        '--expiredate ""', '--inactive -1'])
     
     # -------------------------------------------
     #     ONE admin env config and related
@@ -826,6 +827,14 @@ class BaseSystem(object):
     def _getRuleAndTableFromRuleSpec(self, ruleSpec):
         return ruleSpec['rule'], \
                ruleSpec.get('table', self.DEFAULT_FIREWALL_TABLE)
+
+    # -------------------------------------------
+    # sendmail
+    # -------------------------------------------
+
+    def installSendmail(self):
+        if getattr(self, 'smtpHost', 'localhost') == 'localhost':
+            self.installPackages([self.getPackageName('sendmail')])
 
     # -------------------------------------------
     # CA

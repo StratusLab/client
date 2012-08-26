@@ -218,6 +218,8 @@ class BaseInstallator(object):
         printStep('Configuring firewall')
         self._configureFirewall()
 
+        self._installSendmail()
+
         self._configureDhcpServer()
 
         printStep('Configuring database')
@@ -326,6 +328,9 @@ class BaseInstallator(object):
 
     def _isTrue(self, value):
         return Util.isTrueConfVal(value)
+
+    def _installSendmail(self):
+        self.frontend.installSendmail()
 
     def _configureFirewall(self):
         self.frontend.configureFirewall()

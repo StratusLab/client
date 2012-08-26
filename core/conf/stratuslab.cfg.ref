@@ -335,3 +335,7 @@ marketplace_endpoint_local =
 [messaging]
 # JSON encoded dictionary with REST endpoints as keys
 rest_endpoints = {"http://example.com" : {"username" : "x", "password" : "*"} }
+# If set to 'localhost', installation of sendmail package will be done. 
+# Used with 'email' messaging client, e.g. to send email to a user with detials 
+# on newly created image.
+smtp_host = localhost
