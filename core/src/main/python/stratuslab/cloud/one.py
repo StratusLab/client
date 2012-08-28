@@ -184,18 +184,6 @@ class OneConnector(object):
     def _findXmlText(self, xml, query):
         return xml.find(query).text.strip('"')
     
-    def getCreateImageInfo(self, vmId):
-        info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
-        createImageElem = 'TEMPLATE/CREATE_IMAGE'
-        infos = {
-             'creatorEmail': xml.find('%s/CREATOR_EMAIL' % createImageElem).text,
-             'creatorName': xml.find('%s/CREATOR_NAME' % createImageElem).text,
-             'newImageComment': xml.find('%s/NEWIMAGE_COMMENT' % createImageElem).text,
-             'newImageVersion': xml.find('%s/NEWIMAGE_VERSION' % createImageElem).text
-        }
-        return infos
-    
     def getVmSource(self, vmId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
