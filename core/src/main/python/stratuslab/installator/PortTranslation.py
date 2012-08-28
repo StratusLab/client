@@ -8,9 +8,10 @@ from stratuslab import Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.system import SystemFactory
+from stratuslab.installator.Installator import Installator
 
 
-class PortTranslation(object):
+class PortTranslation(Installator):
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
         self.configHolder.assign(self)
@@ -22,6 +23,23 @@ class PortTranslation(object):
         self._setFirewallConfiguration()
         self._setSudoConfiguration()
         self._setCloudConfiguration()
+
+    def _setupFrontend(self):
+        self._cleanConfiguration()
+        self._checkConfiguration()
+
+        Util.printStep('configure firewall')
+        self._configureFirewall()
+
+        Util.printStep('configure sudo')
+        self._configureSudo()
+
+        Util.printStep('configure cloud')
+        self._configureCloud()
+
+    def _startServicesFrontend(self):
+        Util.printStep('restart cloud system')
+        self.system.startCloudSystem()
 
     def _getParametersName(self):
         return ['patPortsRange', 'patServiceHost', 'patServiceDbname',
@@ -153,22 +171,6 @@ VM_HOOK = [
         if self.patVerboseLevel > Util.NORMAL_VERBOSE_LEVEL:
             return '-%s' % ('v' * self.patVerboseLevel)
         return ''
-
-    def run(self):
-        self._cleanConfiguration()
-        self._checkConfiguration()
-
-        Util.printStep('configure firewall')
-        self._configureFirewall()
-
-        Util.printStep('configure sudo')
-        self._configureSudo()
-
-        Util.printStep('configure cloud')
-        self._configureCloud()
-
-        Util.printStep('restart cloud system')
-        self.system.startCloudSystem()
 
 class Firewall(object):
     """
