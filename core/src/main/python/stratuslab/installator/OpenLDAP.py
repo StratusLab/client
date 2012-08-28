@@ -21,9 +21,10 @@ import os
 import stat
 
 import stratuslab.system.SystemFactory as SystemFactory
-from stratuslab import Util, Defaults
+from stratuslab.installator.Installator import Installator
+from stratuslab import Util
 
-class OpenLDAP(object):
+class OpenLDAP(Installator):
 
     def __init__(self, configHolder):
         configHolder.assign(self)
@@ -55,11 +56,15 @@ class OpenLDAP(object):
         self._nodename = 'onehost-5.lal.in2p3.fr'
 
 
-    def run(self):
+    def _installFrontend(self):
         self._installPackages()
+
+    def _setupFrontend(self):
         self._configure()
+
+    def _startServicesFrontend(self):
         self._restartService()
-        
+
     def _installPackages(self):
         Util.printStep('Installing packages')
         self.system.installPackages(self._packages)
@@ -108,9 +113,7 @@ class OpenLDAP(object):
 
         Util.printStep('Adding cloud database entries')
         cmd = "ldapadd -x -H ldaps://%s -D %s -w %s -f %s" % (self._nodename, self._openLdapAdminDn, self.openldapPassword, self._cloudDatabaseSkeleton)
-        print cmd
         Util.execute(cmd.split(' '))
-
 
     def _restartService(self):
         Util.printStep("Adding %s to chkconfig and restarting" % self._serviceName)
