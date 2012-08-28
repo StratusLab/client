@@ -46,7 +46,7 @@ class PolicyValidatorTest(unittest.TestCase):
                                     'blacklistchecksums': 'blacklistchecksumsv1, blacklistchecksumsv2',
                                     })
         policyValidator = PolicyValidator(configHolder)
-        policyValidator.run()
+        policyValidator._setupFrontend()
 
     
     def testConfigurationCreationSkippedIfBackupFileExists(self):
