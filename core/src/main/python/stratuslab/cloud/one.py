@@ -76,7 +76,7 @@ class OneConnector(object):
         self._sessionString = self._credentials.createSessionString()
 
     def vmStart(self, vmTpl):
-        isSuccess, detail, error_code = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
+        isSuccess, detail, _ = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
 
         self._raiseIfError(isSuccess, detail)
 
@@ -116,7 +116,7 @@ class OneConnector(object):
         else:
             visibilitySwitch = currentUserOnly
 
-        ret, info, error_code = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch, -1, -1, -1)
+        ret, info, _ = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch, -1, -1, -1)
 
         if not ret:
             raise OneException(info)
@@ -144,7 +144,7 @@ class OneConnector(object):
         xml.append(labelElement)
 
     def _vmInfo(self, vmId):
-        isSuccess, info, error_code = self._rpc.one.vm.info(self._sessionString, vmId)
+        isSuccess, info, _ = self._rpc.one.vm.info(self._sessionString, vmId)
         self._raiseIfError(isSuccess, info)
         return info
 
@@ -282,7 +282,7 @@ class OneConnector(object):
     # -------------------------------------------
 
     def networkCreate(self, vnetTpl):
-        ret, id, error_code = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
+        ret, id, _ = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
 
         if not ret:
             error = id
@@ -291,7 +291,7 @@ class OneConnector(object):
         return id
 
     def getNetworkPoolInfo(self, filter=-2):
-        ret, info, error_code = self._rpc.one.vnpool.info(self._sessionString, filter)
+        ret, info, _ = self._rpc.one.vnpool.info(self._sessionString, filter)
 
         if not ret:
             raise OneException(info)
@@ -299,7 +299,7 @@ class OneConnector(object):
         return info
 
     def getNetworkInfo(self, vnetId):
-        ret, info, error_code = self._rpc.one.vn.info(self._sessionString, vnetId)
+        ret, info, _ = self._rpc.one.vn.info(self._sessionString, vnetId)
 
         if not ret:
             raise OneException(info)
@@ -311,7 +311,7 @@ class OneConnector(object):
     # -------------------------------------------
 
     def hostCreate(self, hostname, im, vmm, tm, vnm='dummy', inDomain=True):
-        ret, id, error_code = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, vnm, tm, inDomain)
+        ret, id, _ = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, vnm, tm, inDomain)
 
         if not ret:
             raise OneException(id)
@@ -327,7 +327,7 @@ class OneConnector(object):
         return id
 
     def getHostInfo(self, id):
-        ret, info, error_code = self._rpc.one.host.info(self._sessionString, id)
+        ret, info, _ = self._rpc.one.host.info(self._sessionString, id)
 
         if not ret:
             raise OneException(info)
@@ -335,7 +335,7 @@ class OneConnector(object):
         return info
 
     def listHosts(self):
-        ret, info, error_code = self._rpc.one.hostpool.info(self._sessionString)
+        ret, info, _ = self._rpc.one.hostpool.info(self._sessionString)
 
         if not ret:
             raise OneException(info)
@@ -356,7 +356,7 @@ class OneConnector(object):
         _magic = self.ACL_USERS['UID']
         net_resource = hex(self.ACL_RESOURCES['NET'] + _magic + net_id_int)
  
-        ret, info, error_code = self._rpc.one.acl.addrule(self._sessionString,
+        ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
                                                           users,
                                                           net_resource,
                                                           rights)
@@ -367,7 +367,7 @@ class OneConnector(object):
         return info
 
     def addUserAcl(self, users, resources, rights):
-        ret, info, error_code = self._rpc.one.acl.addrule(self._sessionString,
+        ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
                                                           users,
                                                           resources,
                                                           rights)
