@@ -17,12 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from stratuslab import Util, Defaults
-from stratuslab.Util import printStep, filePutContent, fileGetContent, \
-    restartService
-from stratuslab.installator.Installator import Installator
 import os
+
+from stratuslab import Util, Defaults
+from stratuslab.Util import printStep, filePutContent, fileGetContent
+from stratuslab.installator.Installator import Installator
 import stratuslab.system.SystemFactory as SystemFactory
+from stratuslab.Exceptions import ValidationException
 
 class Registration(Installator):
 
