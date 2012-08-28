@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import codecs
 import os.path
 import re
 import subprocess
@@ -25,14 +26,13 @@ import time
 import urllib2
 import random
 import urlparse
-import platform
-import codecs
 from random import sample
 from string import ascii_lowercase
-
-import Defaults
 from stratuslab.Exceptions import ExecutionException, ValidationException
+import Defaults
+import platform
 
+# TODO: Move to Defaults
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
 modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
@@ -181,8 +181,9 @@ def fileGetContent(filename):
     fd.close()
     return content
 
-def filePutContent(filename, data):
-    _printDetail('Creating file %s with content: \n%s\n' % (filename, data))
+def filePutContent(filename, data, neverShowData=False):
+    _printDetail('Creating file %s with content: \n%s\n' % (filename, 
+                                (neverShowData and '<hidden>' or data)))
     if isinstance(data, unicode):
         fh = codecs.open(filename, 'w', 'utf8')
     else:
@@ -317,9 +318,9 @@ def _extractAndDeleteKey(key, default, dict):
     return value
 
 def printAction(msg):
-    printAndFlush('\n :::%s:::\n' % (':' *len(msg)))
+    printAndFlush('\n :::%s:::\n' % (':' * len(msg)))
     printAndFlush(' :: %s ::\n' % msg)
-    printAndFlush(' :::%s:::\n' % (':' *len(msg)))
+    printAndFlush(' :::%s:::\n' % (':' * len(msg)))
 
 def printStep(msg):
     printAndFlush(' :: %s\n' % msg)
@@ -339,9 +340,9 @@ def printAndFlush(msg):
     print msg,
     sys.stdout.flush()
 
-def printDetail(msg,verboseLevel=1,verboseThreshold=1):
+def printDetail(msg, verboseLevel=1, verboseThreshold=1):
     if verboseLevel >= verboseThreshold:
-        _msg = (msg.endswith('\n') and msg) or msg+'\n'
+        _msg = (msg.endswith('\n') and msg) or msg + '\n'
         printAndFlush('    %s' % _msg)
 
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordPrompts=0, **kwargs):
@@ -377,7 +378,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordProm
         if isinstance(output, int):
             es = output
         else:
-            es= output[0]
+            es = output[0]
         if es != SSH_EXIT_STATUS_ERROR:
             return output
     return output
@@ -691,3 +692,28 @@ def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')
     vsplit[1] = str(int(vsplit[1]) + 1)
     return '.'.join(vsplit)
+
+def service(name, action):
+    printDetail('Trying to %s %s' % (action, name))
+    execute(['/etc/init.d/%s' % name, action])
+    
+def startService(name):
+    service(name, 'start')
+
+def stopService(name):
+    service(name, 'stop')
+
+def restartService(name):
+    service(name, 'restart')
+    
+def getValueInKB(value):
+    ''' Assume that if no unit specified, already in KB 
+    '''
+    unit = ('KB', 'MB', 'GB')
+    try:
+        valueKB = int(value)
+    except ValueError:
+        value = valueKB[:-2]
+        valueUnit = (valueKB[-2:]).strip().upper()
+        valueKB = value * (1024 ** unit.index(valueUnit))
+    return valueKB

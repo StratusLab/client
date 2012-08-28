@@ -21,15 +21,15 @@
 
 import os
 import sys
-from optparse import OptionParser
+from optparse import OptionParser, OptionGroup
 
 sys.path.append('/var/lib/stratuslab/python')
 
+import stratuslab.Util as Util
 from stratuslab import Defaults
 from stratuslab.CommandBase import CommandBaseSysadmin
-import stratuslab.installator.InstallatorFactory as InstallatorFactory
-import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.installator.BaseInstallator import BaseInstallator
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to install StratusLab.'''
@@ -48,20 +48,27 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('--apprepo', dest='appRepoAddr', 
                                help='IP address or hostname of the appliance repository to configure',
                                default=None, metavar='ADDRESS')
-        self.parser.add_option('--web-monitor', dest='webMonitor', 
-                               help='Install web monitor application',
-                               action='store_true', default=False)
         self.parser.add_option('-k', '--private-key', dest='privateKey', 
                                help='private key for ssh node connection', metavar='FILENAME',
                                default=None)
-        self.parser.add_option('--claudia', dest='installCloudia',
-                               help='Install Claudia', 
+        
+        componentGroup = OptionGroup(self.parser, 'Available components', 
+                                     'Unless specify all components will be selected')
+        self.parser.add_option_group(componentGroup)
+        self._addComponentsOptions(componentGroup)
+        
+        installGroup = OptionGroup(self.parser, 'Installation options', 
+                                   'Unless specify will perform all the actions')
+        self.parser.add_option_group(installGroup)
+        
+        installGroup.add_option('--install', dest='installStep',
+                               help='Install all or selected components', 
                                action='store_true', default=False)
-        self.parser.add_option('--monitoring', dest='installMonitoring',
-                              help='Install Monitoring tool',
-                              action='store_true', default=False)
-        self.parser.add_option('--storage', dest='installPersistentDisk',
-                               help='Install storage service', 
+        installGroup.add_option('--setup', dest='setupStep',
+                               help='Setup all or selected components', 
+                               action='store_true', default=False)
+        installGroup.add_option('--start', dest='startComponent',
+                               help='Start all or selected components', 
                                action='store_true', default=False)
         self.parser.add_option('--registration', dest='installRegistration',
                                help='Install registration service', 
@@ -73,15 +80,17 @@ class MainProgram(CommandBaseSysadmin):
                                help='Install Port Translation system',
                                action='store_true', default=False)
         
-        # ONE specific parameters
-        self.parser.add_option('-t', '--template', dest='onedTpl', 
+        oneGroup = OptionGroup(self.parser, 'OpenNebula options')
+        self.parser.add_option_group(oneGroup)
+        
+        oneGroup.add_option('-t', '--template', dest='onedTpl', 
                                help='ONe daemon template', metavar='TEMPLATE',
                                default=os.path.join(Util.getTemplateDir(), 'oned.conf.tpl'))
-        self.parser.add_option('--im', dest='infoDriver', 
+        oneGroup.add_option('--im', dest='infoDriver', 
                                help='information driver', metavar='IM_NAME', default=None)
-        self.parser.add_option('--vmm', dest='virtDriver',
+        oneGroup.add_option('--vmm', dest='virtDriver',
                                help='virtualization driver', metavar='VM_NAME', default=None)
-        self.parser.add_option('--tm', dest='transfertDriver', 
+        oneGroup.add_option('--tm', dest='transfertDriver', 
                                help='transfert driver', metavar='VM_NAME', default=None)
         self.parser.add_option('--vnm', dest='networkDriver',
                                help='network driver', metavar='VM_NAME', default='dummy')
@@ -89,16 +98,31 @@ class MainProgram(CommandBaseSysadmin):
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
-#        if self.options.onlyInstall and self.options.onlySetup:
-#            self.parser.error('--install and --setup are mutually exclusive.')
-        pass
+        if self._noInstallStepSelected():
+            self._doAllSteps()
+            
+    def _doAllSteps(self):
+        self.options.installStep = True
+        self.options.setupStep = True
+        self.options.startComponent = True
+
+    def _noInstallStepSelected(self):
+        return (not self.options.installStep 
+            and not self.options.setupStep 
+            and not self.options.startComponent)
+    
+    def _addComponentsOptions(self, parser):
+        for name in BaseInstallator.availableInstallator().keys():
+            parser.add_option('--%s' % name, dest='install%s' % name.title(), 
+                               help='%s component' % name.title().replace('-', ' '),
+                               action='store_true', default=False)
 
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)        
         configHolder = ConfigHolder(self.options.__dict__, config)
-
-        self.installator = InstallatorFactory.getInstallator()
-        self.installator.runInstall(configHolder)
+        
+        installator = BaseInstallator()
+        installator.runInstallator(configHolder)
         
 
 if __name__ == '__main__':

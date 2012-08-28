@@ -18,20 +18,20 @@
 # limitations under the License.
 #
 
-import string
 import os
 import re
 import socket
-from stratuslab.system import SystemFactory
-from stratuslab.Util import printStep, printWarning, fileGetContent
 import stratuslab.Util as Util
-from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
+import string
 from random import choice
-from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab import Defaults
-from stratuslab.Exceptions import ValidationException
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
+from stratuslab.Util import printStep, fileGetContent
+from stratuslab.system import SystemFactory
+from stratuslab.installator.Installator import Installator
 
-class PersistentDisk(object):
+class PersistentDisk(Installator):
 
     PDISK_BACKEND_CONF_NAME = 'pdisk-backend.cfg'
     pdiskConfigBackendFile = os.path.join(Defaults.ETC_DIR, PDISK_BACKEND_CONF_NAME)
@@ -40,8 +40,9 @@ class PersistentDisk(object):
         self.configHolder = configHolder
         self.configHolder.assign(self)
         
-        self.system = None
         self.profile = None # Can be frontend or node
+        self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
+        self._setPDiskEndpoint()
         
         # Package to be installed
         self.packages = { 'frontend': {
@@ -70,65 +71,40 @@ class PersistentDisk(object):
         self.cloudNodeKey = os.path.join(self.pdiskHomeDir, 'cloud_node.key')
         self.pdiskUsername = 'pdisk'
         self.pdiskPassword = self._extractPdiskPassword()
-        
-    def runFrontend(self):
-        self._validateConfiguration()
-        self._installFrontend()
-        self._configureFrontend()
-
-    def _validateConfiguration(self):
-        if not self.persistentDiskLvmDevice:
-            raise ValidationException('Missing value for configuration parameter: persistent_disk_lvm_device')
-
-    def _installFrontend(self):
-        self.profile = 'frontend'
-        self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
-        # Fool the script to avoid rewrite huge amount of code:
-        # As the pdisk service can be installed on another machine than the
-        # frontend, we need to do an installation via SSH like for node.
+            
+    def _setPDiskEndpoint(self):
+        '''Fool the script to avoid rewrite huge amount of code:
+           As the pdisk service can be installed on another machine than the
+           frontend, we need to do an installation via SSH like for node.
+        '''
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
         if not self.persistentDiskIp:
             self.persistentDiskIp = socket.gethostbyname(socket.gethostname())
         
         self.system.setNodeAddr(self.persistentDiskIp)
+
+    def _installFrontend(self):
+        self.profile = 'frontend'
+        self._validateConfiguration()
         self._commonInstallActions()
         self._copyCloudNodeKey()
-
-        self._startServices()
-
-    def _startServices(self):
-        try:
-            self._service('pdisk', 'stop')
-        except:
-            pass # it's ok
-        self._service('pdisk', 'start')
-
-        if self.persistentDiskShare == 'nfs':
-            return
-
-        try:
-            self._service('tgtd', 'stop')
-        except:
-            pass # it's ok
-        self._service('tgtd', 'start')
         
-        iscsi_config_filename = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
-        if not os.path.exists(iscsi_config_filename):
-            with open(iscsi_config_filename, 'w') as config:
-                config.write(' ')
+    def _validateConfiguration(self):
+        pass
 
-    def _configureFrontend(self):
+    def _setupFrontend(self):
         self._writePdiskConfig()
         self._writePdiskBackendConfig()
         self._setPdiskUserAndPassword()
-
+        if self.persistentDiskShare == 'nfs':
+            return
         if self.persistentDiskStorage == 'lvm':
             self._writeTgtdConfig()
             self._createLvmGroup()
             self._fixUdevForLvmMonitoring()
         else:
             self._createFileHddDirectory()
-            
+
         self._createDatabase()
         
     def _writePdiskConfig(self):
@@ -151,7 +127,13 @@ class PersistentDisk(object):
         self.system._remoteFilePutContents(self.pdiskConfigBackendFile, fileGetContent(self.pdiskConfigBackendTpl) % config)
 
     def _writeTgtdConfig(self):
-        pattern = 'include %s' % os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
+        iscsi_config_filename = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
+
+        if not os.path.exists(iscsi_config_filename):
+            with open(iscsi_config_filename, 'w') as config:
+                config.write(' ')
+
+        pattern = 'include %s' % iscsi_config_filename
         Util.appendOrReplaceInFile('/etc/tgt/targets.conf', pattern, pattern)
 
     def _createDatabase(self):
@@ -162,17 +144,24 @@ class PersistentDisk(object):
                                    withOutput=True, shell=True)
         if rc != 0:
             Util.printWarning("Couldn't create database '%s'.\n%s" % output)
-    
-    def runNode(self):
-        self.installNode()
-        self.configureNode()
-    
-    def installNode(self):
+                
+    def _startServicesFrontend(self):
+        if self.persistentDiskStorage == 'lvm':
+            self._startService('tgtd')
+        self._startService('pdisk')
+
+    def _startService(self, service):
+        try:
+            self._service(service, 'stop')
+        except:
+            pass # it's ok
+        self._service(service, 'start')
+
+    def _installNode(self):
         self.profile = 'node'
-        self.system = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
         self._commonInstallActions()
         
-    def configureNode(self):
+    def _setupNode(self):
         self._configureNodeSudo()
         self._configureNodeScripts()
         
@@ -204,7 +193,7 @@ class PersistentDisk(object):
     def _installPackages(self, section):
         if self.packages:
             printStep('Installing packages on %s for section "%s": %s' 
-                      % (self.profile, section, 
+                      % (self.profile, section,
                          ', '.join(self.packages[self.profile][section])))
             self.system.installNodePackages(self.packages[self.profile][section])
 
@@ -273,10 +262,9 @@ class PersistentDisk(object):
         return '\n'.join(map(lambda x: x.strip(), value.split('\n')))
         
     def _setPdiskUserAndPassword(self):
-        self._overrideValueInFile(self.pdiskUsername, 
-                                  '%s,cloud-access' % (self.pdiskPassword), 
+        self._overrideValueInFile(self.pdiskUsername,
+                                  '%s,cloud-access' % (self.pdiskPassword),
                                   self.authnConfigFile)
-            
     def _mergeAuthWithProxy(self):
         loginConf = os.path.join(Defaults.ETC_DIR, '%s/login.conf')
         pdiskDir = 'storage/pdisk'
@@ -301,10 +289,10 @@ class PersistentDisk(object):
     def _configureNfsServer(self):
         printStep('Configuring NFS sharing...')
         if self._nfsShareAlreadyExists():
-            self.system.configureExistingNfsShare(self.persistentDiskExistingNfs, 
+            self.system.configureExistingNfsShare(self.persistentDiskExistingNfs,
                                                   self.persistentDiskNfsMountPoint)
         elif self.profile == 'node':
-            self.system.configureExistingNfsShare('%s:%s' % (PDiskClient.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint), 
+            self.system.configureExistingNfsShare('%s:%s' % (PDiskClient.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint),
                                                   self.persistentDiskNfsMountPoint)
         else:
             self.system.configureNewNfsServer(self.persistentDiskNfsMountPoint,

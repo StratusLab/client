@@ -70,6 +70,9 @@ class PersistentDisk(object):
 
     def _getJson(self, url):
         return self.client.get(url, accept='application/json')
+    
+    def _getGzip(self, url):
+        return self.client.get(url, accept='application/x-gzip')
         
     def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
         headers, content = self.client.post(url,
@@ -225,6 +228,14 @@ class PersistentDisk(object):
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
+    
+    def downloadVolume(self, uuid, filename):
+        self._initPDiskConnection()
+        self._printContacting()
+        volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
+        headers, content = self._getGzip(volumeUrl)
+        self._raiseOnErrors(headers, content)
+        Util.filePutContent(filename, content, True)
     
     def serviceAvailable(self):
         try:
