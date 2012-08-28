@@ -27,6 +27,8 @@ from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.OpenNebula import OpenNebula
 from stratuslab.installator.Registration import Registration
 from stratuslab.installator.Sunstone import Sunstone
+from stratuslab.installator.PortTranslation import PortTranslation
+from stratuslab.installator.OpenLDAP import OpenLDAP
 
 class BaseInstallator(object):
         
@@ -42,6 +44,8 @@ class BaseInstallator(object):
                 'persistent-disk': PersistentDisk,
                 'web-monitor': WebMonitor,
                 'registration': Registration,
+                'port-translation': PortTranslation,
+                'openldap': OpenLDAP,
                 'sunstone' : Sunstone }
         
     def runInstallator(self, configHolder):

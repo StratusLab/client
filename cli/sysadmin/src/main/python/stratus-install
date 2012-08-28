@@ -70,16 +70,7 @@ class MainProgram(CommandBaseSysadmin):
         installGroup.add_option('--start', dest='startComponent',
                                help='Start all or selected components', 
                                action='store_true', default=False)
-        self.parser.add_option('--registration', dest='installRegistration',
-                               help='Install registration service', 
-                               action='store_true', default=False)
-        self.parser.add_option('--openldap', dest='installOpenLdap',
-                               help='Install OpenLDAP for registration', 
-                               action='store_true', default=False)
-        self.parser.add_option('--port-translation', dest='installPortTranslation',
-                               help='Install Port Translation system',
-                               action='store_true', default=False)
-        
+
         oneGroup = OptionGroup(self.parser, 'OpenNebula options')
         self.parser.add_option_group(oneGroup)
         
@@ -92,7 +83,7 @@ class MainProgram(CommandBaseSysadmin):
                                help='virtualization driver', metavar='VM_NAME', default=None)
         oneGroup.add_option('--tm', dest='transfertDriver', 
                                help='transfert driver', metavar='VM_NAME', default=None)
-        self.parser.add_option('--vnm', dest='networkDriver',
+        oneGroup.add_option('--vnm', dest='networkDriver',
                                help='network driver', metavar='VM_NAME', default='dummy')
         
         self.options, _ = self.parser.parse_args()
