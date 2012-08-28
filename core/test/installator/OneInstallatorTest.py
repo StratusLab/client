@@ -1,6 +1,7 @@
 import unittest
 
-from stratuslab.installator.one import OneInstallator
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.installator.OpenNebulaFrontend import OpenNebulaFrontend
 
 class OneInstallatorTest(unittest.TestCase):
 
@@ -37,7 +38,12 @@ class OneInstallatorTest(unittest.TestCase):
 """
 
     def test_getNetworkIdsFromNetworkNames(self):
-        oi = OneInstallator()
+        ch = ConfigHolder()
+        ch.set('frontendSystem', 'fedora')
+        ch.set('oneHome', '~')
+        ch.set('oneUsername', 'foo')
+        ch.set('onePassword', 'bar')
+        oi = OpenNebulaFrontend(ch)
         def _getVnetInfoXml(vnet_name):
             if vnet_name == 'public':
                 xml = OneInstallatorTest.VNET_INFO_XML % ('0', vnet_name)

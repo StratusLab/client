@@ -26,13 +26,9 @@ from stratuslab import Defaults
 class OpenNebulaCommon(object):
     
     def __init__(self, configHolder):
+        self.frontendIp = ''
         self.configHolder = configHolder
         configHolder.assign(self)
-        
-#        self.options = configHolder.options
-#        self.config = configHolder.config
-#        self.nodeAddr = None
-#        self.appRepoAddr = None
         
         self._setFrontend()
         self._setCloud()
