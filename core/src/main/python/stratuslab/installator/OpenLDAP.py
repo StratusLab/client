@@ -31,7 +31,7 @@ class OpenLDAP(Installator):
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
 
         self._serviceName = 'slapd'
-        self._packages = ['stratuslab-ldap-support']
+        self._packages = ['stratuslab-openldap-support']
 
         self._sharepath = '/usr/share/stratuslab/registration-openldap'
 
