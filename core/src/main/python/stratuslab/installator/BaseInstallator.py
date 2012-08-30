@@ -52,16 +52,16 @@ class BaseInstallator(object):
         self.configHolder = configHolder
         configHolder.assign(self)
         
-        self._selectAllcomponentIfNoOneSpecified()
+        self._selectAllComponentsIfNoneSpecified()
         self._launchInstallator()
         
-    def _selectAllcomponentIfNoOneSpecified(self):
-        componentSelected = False
+    def _selectAllComponentsIfNoneSpecified(self):
+        selectedCompoments = []
         for name in self.availableInstallator().keys():
-            componentSelected |=  not getattr(self, 'install%s' % name.title())
-        self.installAllComponents = not componentSelected
-        printDetail('All component selected: %s' % self.installAllComponents, self.verboseLevel, 3)
-        
+            selectedCompoments.append(getattr(self, 'install%s' % name.title()))
+        self.installAllComponents = not any(selectedCompoments)
+        printDetail('All components selected: %s' % self.installAllComponents, self.verboseLevel, 3)
+ 
     def _launchInstallator(self):
         for componentName, installer in self.availableInstallator().items():
             if self._isComponentSelected(componentName):
