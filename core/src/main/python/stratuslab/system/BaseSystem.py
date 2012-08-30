@@ -31,6 +31,7 @@ from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
 import stratuslab.Util as Util
 from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.system import Systems
+from stratuslab.Exceptions import ExecutionException
 
 class BaseSystem(object):
 
@@ -86,7 +87,10 @@ class BaseSystem(object):
                             self.getPackageWithVersionForInstall(package))
 
         cmd = '%s %s' % (self.installCmd, ' '.join(packages_versioned))
-        _, output = self._executeWithOutput(cmd, shell=True)
+        rc, output = self._executeWithOutput(cmd, shell=True)
+        if rc != 0:
+            raise ExecutionException('Failed to install: %s\n%s' % \
+                                     (', '.join(packages_versioned), output))
 
         Util.printDetail(output, verboseLevel=self.verboseLevel,
                          verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
