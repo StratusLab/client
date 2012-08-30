@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 import os
+import shutil
 import stat
 
 import stratuslab.system.SystemFactory as SystemFactory
@@ -73,8 +74,7 @@ class OpenLDAP(Installator):
         Util.printStep('Configuring OpenLDAP server')
 
         Util.printStep('Updating sysconfig')
-        Util.filePutContent(self._sysconfigLdap,
-                            Util.fileGetContent(self._sysconfigLdapTemplate))
+        shutil.copyfile(self._sysconfigLdapTemplate, self._sysconfigLdap)
         Util.appendOrReplaceInFile(self._sysconfigLdap, 'SLAPD_LDAP=', 'SLAPD_LDAP=yes')
 
         Util.printStep('Setting root account access')
