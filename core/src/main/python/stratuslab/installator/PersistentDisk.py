@@ -30,11 +30,13 @@ from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from stratuslab.Util import printStep, fileGetContent
 from stratuslab.system import SystemFactory
 from stratuslab.installator.Installator import Installator
+from stratuslab.Exceptions import ExecutionException
 
 class PersistentDisk(Installator):
 
     PDISK_BACKEND_CONF_NAME = 'pdisk-backend.cfg'
     pdiskConfigBackendFile = os.path.join(Defaults.ETC_DIR, PDISK_BACKEND_CONF_NAME)
+    PDISK_DB_NAME = 'storage'
 
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
@@ -138,12 +140,13 @@ class PersistentDisk(Installator):
 
     def _createDatabase(self):
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
-        createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS storage"
+        createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS %s" % PersistentDisk.PDISK_DB_NAME
 
         rc, output = self.system.execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist), 
                                    withOutput=True, shell=True)
         if rc != 0:
-            Util.printWarning("Couldn't create database '%s'.\n%s" % output)
+            raise ExecutionException("Couldn't create database '%s'.\n%s" % (PersistentDisk.PDISK_DB_NAME,
+                                                                             output))
                 
     def _startServicesFrontend(self):
         if self.persistentDiskStorage == 'lvm':
