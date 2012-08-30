@@ -87,6 +87,7 @@ class OpenLDAP(Installator):
         Util.printStep('Generating test certificate and moving into place')
         Util.execute(self._testCertCmd.split(' '))
 
+        Util.execute('mkdir -p /etc/openldap/cacerts'.split(' '))
         Util.execute('mv -f cacrt.jks /etc/openldap/cacerts/cacrt.jks'.split(' '))
         Util.execute('mv -f cacrt.pem /etc/openldap/cacerts/cacrt.pem'.split(' '))
         Util.execute('mv -f serverkey.pem /etc/openldap/serverkey.pem'.split(' '))
