@@ -45,9 +45,6 @@ class MainProgram(CommandBaseSysadmin):
         self.parser.add_option('-n', '--node', dest='nodeAddr', 
                                help='IP address or hostname of the node to configure',
                                default=None, metavar='ADDRESS')
-        self.parser.add_option('--apprepo', dest='appRepoAddr', 
-                               help='IP address or hostname of the appliance repository to configure',
-                               default=None, metavar='ADDRESS')
         self.parser.add_option('-k', '--private-key', dest='privateKey', 
                                help='private key for ssh node connection', metavar='FILENAME',
                                default=None)
