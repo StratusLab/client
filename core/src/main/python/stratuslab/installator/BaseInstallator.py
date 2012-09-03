@@ -19,9 +19,6 @@
 #
 
 from stratuslab.Util import printAction, isTrueConfVal, printDetail
-from stratuslab.installator.AppRepo import AppRepo
-from stratuslab.installator.Claudia import Claudia
-from stratuslab.installator.Monitoring import Monitoring
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.OpenNebula import OpenNebula
@@ -37,10 +34,7 @@ class BaseInstallator(object):
     
     @staticmethod
     def availableInstallator():
-        return {'app-repo': AppRepo,
-                'claudia': Claudia,
-                'monitoring': Monitoring,
-                'opennebula': OpenNebula,
+        return {'opennebula': OpenNebula,
                 'persistent-disk': PersistentDisk,
                 'web-monitor': WebMonitor,
                 'registration': Registration,
