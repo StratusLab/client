@@ -23,7 +23,8 @@ import time
 import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.installator.Installator import Installator
-from stratuslab.Util import appendOrReplaceInFile, service, printError, filePutContent
+from stratuslab.Util import appendOrReplaceInFile, service, filePutContent,\
+    printWarning, printError
 
 class Sunstone(Installator):
     def __init__(self, configHolder=ConfigHolder()):
@@ -170,7 +171,11 @@ gxkHOHYxOMO7tclnJR3HX+8HogcWHSqPTMgJYX+ihM0E5X5lm9cWBUeAseNPasy6
         cmd = 'su - %s -c "sunstone-server %s"' % (self.oneUsername, action)
         rc, output = self.system.executeCmdWithOutput(cmd, shell=True)
         if rc != 0:
-            printError("Failed to %s sunstone-server: %s" % (action, output))
+            msg = "Failed to %s sunstone-server: %s" % (action, output)
+            if action == 'start':
+                printError(msg)
+            else:
+                printWarning(msg)
 
     def _restartSslProxy(self):
         self.system.executeCmd(['chkconfig', 'lighttpd', 'on'])
