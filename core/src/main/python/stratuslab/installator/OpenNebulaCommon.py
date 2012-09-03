@@ -27,6 +27,7 @@ class OpenNebulaCommon(object):
     
     def __init__(self, configHolder):
         self.frontendIp = ''
+        self.config = configHolder.config.copy()
         self.configHolder = configHolder
         configHolder.assign(self)
         
