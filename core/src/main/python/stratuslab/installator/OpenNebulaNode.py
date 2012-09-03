@@ -25,19 +25,17 @@ from stratuslab.Util import printWarning, printError
 class OpenNebulaNode(OpenNebulaCommon):
     
     def __init__(self, configHolder):
+        self.node = None
+
         super(OpenNebulaNode, self).__init__(configHolder)
+
+        self._setNodeSystem()
+
+    def _setNodeSystem(self):
+        if self.nodeAddr:
+            self.node = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
+            self.node.workOnNode()
         
-        self.node = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
-        self._propagateNodeInfos()
-        
-    def _propagateNodeInfos(self):
-        self.node.setNodeAddr(self.nodeAddr)
-        self.node.setNodePrivateKey(self.privateKey)
-        self.node.setNodePort(self.nodeSshPort)
-        self.node.setNodeHypervisor(self.hypervisor)
-        self.node.workOnNode()
-        self.frontend.setCloudAdminName(self.oneUsername)
-            
     def _warmXenNeedReboot(self):
         if self.hypervisor == 'xen':
             print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
