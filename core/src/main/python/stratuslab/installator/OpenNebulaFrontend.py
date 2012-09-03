@@ -152,7 +152,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
 
     def _addDefaultUserAcl(self):
         # * VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE
-        __acls = '* VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE'
+        __acls = '* VM+IMAGE+TEMPLATE/* CREATE+USE'
         users,resources, rights = self._getDefaultUserAcl()
         
         try:
@@ -167,8 +167,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
                         self.cloud.ACL_RESOURCES['TEMPLATE'] +
                         self.cloud.ACL_USERS['ALL'])
         rights = hex(self.cloud.ACL_RIGHTS['CREATE'] + 
-                    self.cloud.ACL_RIGHTS['INFO_POOL_MINE'] +
-                    self.cloud.ACL_RIGHTS['INSTANTIATE'])
+                    self.cloud.ACL_RIGHTS['USE'])
         return users, resources, rights
             
     def _configureCloudSystem(self):
