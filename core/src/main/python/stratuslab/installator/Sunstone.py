@@ -48,8 +48,8 @@ class Sunstone(Installator):
         self.system.installPackages(self.packages)
 
     def _installRubyGems(self):
-        rc, output = self.system.executeCmdWithOutput(
-                                            ['gem', 'install'] + self.ruby_gems)
+        cmd = ['gem', 'install', '--no-rdoc', '--no-ri'] + self.ruby_gems 
+        rc, output = self.system.executeCmdWithOutput(cmd)
         if rc != 0:
             printError("Failed to install Ruby gems: %s" % output)
 
