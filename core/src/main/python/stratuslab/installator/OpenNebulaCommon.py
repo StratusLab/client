@@ -30,15 +30,9 @@ class OpenNebulaCommon(object):
         self.config = configHolder.config.copy()
         self.configHolder = configHolder
         configHolder.assign(self)
-        
-        self._setFrontend()
+
         self._setCloud()
         self.shareType = Defaults.SHARE_TYPE
-        
-    def _setFrontend(self):
-        if not self.frontendIp or self.frontendIp == '127.0.0.1':
-            printWarning('frontend_ip configuration parameter is %s, this is very likely not to work' % self.frontendIp)
-        self.frontend = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
         
     def _setCloud(self):
         self.username = self.oneUsername

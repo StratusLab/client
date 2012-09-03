@@ -24,6 +24,7 @@ from stratuslab.Util import printWarning, fileGetContent, printError,\
 from stratuslab import Defaults
 from os.path import join, isfile
 import stratuslab.Util as Util
+from stratuslab.system import SystemFactory
 
 etree = Util.importETree()
 
@@ -37,6 +38,13 @@ class OpenNebulaFrontend(OpenNebulaCommon):
         self.defaultStaticNetworks = ['public', 'local']
         self.defaultRangedNetworks = ['private']
         
+        self._setFrontendSystem()
+
+    def _setFrontendSystem(self):
+        if not self.frontendIp or self.frontendIp == '127.0.0.1':
+            printWarning('frontend_ip configuration parameter is %s, this is very likely not to work' % self.frontendIp)
+        self.frontend = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
+
     def _installCAs(self):
         self.frontend.installCAs()
         
