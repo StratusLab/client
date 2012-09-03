@@ -617,17 +617,8 @@ class BaseSystem(object):
     def setNodeAddr(self, nodeAddr):
         self.nodeAddr = nodeAddr
 
-    def setNodePort(self, nodePort):
-        self.nodePort = nodePort
-
     def setNodePrivateKey(self, privateKey):
         self.nodePrivateKey = privateKey
-
-    def setNodeHypervisor(self, hypervisor):
-        self.hypervisor = hypervisor
-
-    def setCloudAdminName(self, username):
-        self.oneUsername = username
 
     def workOnFrontend(self):
         self.appendOrReplaceInFileCmd = appendOrReplaceInFile
