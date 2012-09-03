@@ -120,18 +120,16 @@ gxkHOHYxOMO7tclnJR3HX+8HogcWHSqPTMgJYX+ihM0E5X5lm9cWBUeAseNPasy6
 """
             filePutContent(self.lighttpd_cert, dummy_cert, neverShowData=True)
             os.chmod(self.lighttpd_cert, 0600)
-        cmd = 'sed -i -e \'s|^[# ]*ssl.pemfile.*=.*|ssl.pemfile = "%s"|\' %s' % \
-                                        (self.lighttpd_cert, self.lighttpd_cfg)
-        self.system.executeCmd(cmd, shell=True)
+
+        appendOrReplaceInFile(self.lighttpd_cfg, 'ssl.pemfile', 
+                                   'ssl.pemfile = "%s"' % self.lighttpd_cert)
 
     def _enableSslProxy(self):
-        cmd = 'sed -i -e \'s/^[# ]*ssl.engine.*=.*/ssl.engine = "enable"/\' %s' % \
-                                                              self.lighttpd_cfg
-        self.system.executeCmd(cmd, shell=True)
+        appendOrReplaceInFile(self.lighttpd_cfg, 'ssl.engine',
+                                   'ssl.engine = "enable"')
 
-        cmd = 'sed -i -e \'s/^[# ]*server.port.*=.*/server.port = %s/\' %s' % \
-                                 (self.sunstoneSslProxyPort, self.lighttpd_cfg)
-        self.system.executeCmd(cmd, shell=True)
+        appendOrReplaceInFile(self.lighttpd_cfg, 'server.port', 
+                                   'server.port = %s' % self.sunstoneSslProxyPort)
 
         sunstone_proxy_cfg = '/etc/lighttpd/conf.d/sunstone-proxy.conf'
         conf = """
