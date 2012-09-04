@@ -55,7 +55,7 @@ class OpenLDAP(Installator):
 
         self._openLdapAdminDn = 'cn=admin,o=cloud'
 
-        self._nodename = 'onehost-5.lal.in2p3.fr'
+        self._nodename = 'localhost'
 
 
     def _installFrontend(self):
