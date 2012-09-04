@@ -24,6 +24,7 @@ import stat
 import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab import Util
+from stratuslab.Util import printError
 
 class OpenLDAP(Installator):
 
@@ -82,19 +83,19 @@ class OpenLDAP(Installator):
 
         Util.printStep('(Re-)starting slapd')
         cmd = 'service %s restart' % self._serviceName
-        Util.execute(cmd.split(' '))
+        self._executeExitOnError(cmd)
 
         Util.printStep('Generating test certificate and moving into place')
-        Util.execute(self._testCertCmd.split(' '))
+        self._executeExitOnError(self._testCertCmd)
 
-        Util.execute('mkdir -p /etc/openldap/cacerts'.split(' '))
-        Util.execute('mv -f cacrt.jks /etc/openldap/cacerts/cacrt.jks'.split(' '))
-        Util.execute('mv -f cacrt.pem /etc/openldap/cacerts/cacrt.pem'.split(' '))
-        Util.execute('mv -f serverkey.pem /etc/openldap/serverkey.pem'.split(' '))
-        Util.execute('mv -f servercrt.pem /etc/openldap/servercrt.pem'.split(' '))
+        self._executeExitOnError('mkdir -p /etc/openldap/cacerts')
+        self._executeExitOnError('mv -f cacrt.jks /etc/openldap/cacerts/cacrt.jks')
+        self._executeExitOnError('mv -f cacrt.pem /etc/openldap/cacerts/cacrt.pem')
+        self._executeExitOnError('mv -f serverkey.pem /etc/openldap/serverkey.pem')
+        self._executeExitOnError('mv -f servercrt.pem /etc/openldap/servercrt.pem')
 
         os.chmod('/etc/openldap/serverkey.pem', stat.S_IRUSR | stat.S_IWUSR)
-        Util.execute('chown ldap:ldap /etc/openldap/serverkey.pem'.split(' '))
+        self._executeExitOnError('chown ldap:ldap /etc/openldap/serverkey.pem')
 
         Util.printStep('Updating server config. for generated certs')
         cmd = "ldapmodify -Y EXTERNAL -H ldapi:/// -f %s" % self._certConfigLdif
@@ -113,8 +114,11 @@ class OpenLDAP(Installator):
         Util.execute(cmd.split(' '))
 
         Util.printStep('Adding cloud database entries')
-        cmd = "ldapadd -x -H ldaps://%s -D %s -w %s -f %s" % (self._nodename, self._openLdapAdminDn, self.openldapPassword, self._cloudDatabaseSkeleton)
-        Util.execute(cmd.split(' '))
+        cmd = "ldapadd -x -H ldaps://%s -D %s -w %s -f %s" % (self._nodename,
+                                                              self._openLdapAdminDn, 
+                                                              self.openldapPassword, 
+                                                              self._cloudDatabaseSkeleton)
+        self._executeExitOnError(cmd)
 
     def _restartService(self):
         Util.printStep("Adding %s to chkconfig and restarting" % self._serviceName)
@@ -122,3 +126,9 @@ class OpenLDAP(Installator):
         Util.execute(cmd.split(' '))
         cmd = 'service %s restart' % self._serviceName
         Util.execute(cmd.split(' '))
+
+    def _executeExitOnError(self, cmd_str):
+        rc, output = Util.execute(cmd_str.split(' '), withOutput=True, verboseLevel=self.verboseLevel,
+                                  verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        if rc != 0:
+            printError('Failed running: %s\n%s' % (cmd_str, output))
