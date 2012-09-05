@@ -70,10 +70,6 @@ class MainProgram(CommandBase):
                                help='list of tests to exclude (comma separated)',
                                default='', metavar='TESTS')
                                
-        self.parser.add_option('--monitoring', dest='monitoringEndpoint',
-                               help='Endpoint of the OVF file used by Claudia',                               
-                               default=None, metavar='ENDPOINT')
-        
         self.parser.add_option('--webmonitor-host', dest='webMonitorHost',
                                help='IP or hostname where Web Monitor is installed. If not set, cloud frontend '
                                'IP defined in configuration file will be used.',

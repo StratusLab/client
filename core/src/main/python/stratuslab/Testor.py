@@ -43,7 +43,6 @@ import Util
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 import stratuslab.ClusterTest as ClusterTest
-import stratuslab.MonitoringTest as MonitoringTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
@@ -652,21 +651,6 @@ touch %s
         '''Place holder for marketplace test'''
         pass
     
-    def monitoringTest(self):
-        '''Monitoring solution tests'''
-        try:
-            fh=open("/tmp/monitoring_test", "w+")
-            fh.write("Empezado el fichero de texto\n"
-                     "Esto esta empezando a rular!")
-            fh.close()
-        
-            suite = self._createSuiteFromTestModule(MonitoringTest)
-                                                    
-            self._executeSuite(suite)    
-                    
-        except:
-            pass
-       
     def clusterTest(self):
         '''Cluster test'''
         ClusterTest.ClusterTest.sshKeyPub = self.sshKeyPub
