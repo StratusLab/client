@@ -70,18 +70,6 @@ class MainProgram(CommandBase):
                                help='list of tests to exclude (comma separated)',
                                default='', metavar='TESTS')
                                
-        self.parser.add_option('--claudia-customer', dest='claudiaCustomer',
-                               help='Customer name used by Claudia',
-                               default=None, metavar='CUSTOMER')
-
-        self.parser.add_option('--claudia-service-name', dest='claudiaServiceName',
-                               help='Service name used by Claudia',
-                               default=None, metavar='SERVICE')
-
-        self.parser.add_option('--claudia-ovf-endpoint', dest='claudiaOvfEndpoint',
-                               help='Endpoint of the OVF file used by Claudia',
-                               default=None, metavar='ENDPOINT')
-        
         self.parser.add_option('--monitoring', dest='monitoringEndpoint',
                                help='Endpoint of the OVF file used by Claudia',                               
                                default=None, metavar='ENDPOINT')

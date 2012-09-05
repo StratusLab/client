@@ -54,7 +54,6 @@ class Tutorial:
         self._setFieldsFromEnvVars()
         self.fakeImage = 'dummy.img'
         self.fakeMetadata = 'ttylinux-9.3-i686-base-1.0.xml'
-        self.claudiaOvfEndpoint = "http://84.21.173.141:8080/telefonica.xml" 
 
     def _setFieldsFromEnvVars(self):
         self._setSingleFieldFromEnvVar('image', 'STRATUSLAB_IMAGE')
@@ -238,11 +237,6 @@ class Tutorial:
             cmd.append(uuid)
         self._execute(cmd)
 
-    def testClaudia(self, stratus_command, claudia_test, claudia_customer, claudia_service, claudia_ovf):
-        self._execute([stratus_command, claudia_test, "--claudia-customer",
-                        claudia_customer, "--claudia-service", claudia_service,
-                        "--claudia-ovf-endpoint", claudia_ovf])
-        
     def getMetadataEntries(self, metadata):
         xmltree = etree.parse(metadata)    
         return xmltree.findtext('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/{http://purl.org/dc/terms/}identifier')
@@ -346,13 +340,6 @@ class Tutorial:
         uuid = self.stratusDeleteVolume(uuid)
         self.stratusDescribeVolumes(uuid)
     
-        ##########
-        #self.printAction("Claudia test")
-        #########
-
-        #self.printStep("Executing claudia unit-test")
-        #self.testClaudia("stratus-test", "claudiaTest", "demo", "ds1", self.claudiaOvfEndpoint)
-
 
 if __name__ == "__main__":
     tutorial = Tutorial()

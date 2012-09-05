@@ -298,20 +298,6 @@ registration_ssl_truststore =
 [caching]
 caching = False
 
-[claudia]
-#Claudia's installation directory.
-claudia_home=/opt/claudia
-
-#Version of Opennebula installed with claudia. It might be 2.2 or 3.0
-claudia_oneversion = 3.0
-
-#Claudia also uses the parameter frontend_ip from Opennebula config. section.
-#Domain name for claudiaClient.properties and reportClient.properties.
-domain_name=stratuslab
-
-claudia_monitor_vm_name = workernode.replicas.1
-claudia_monitor_name = cpus.1
-
 [Monitoring]
 #Persistence jar filename.
 monitoring_persistence_jars = mysql_monpersistence.jar

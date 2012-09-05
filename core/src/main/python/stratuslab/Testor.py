@@ -42,7 +42,6 @@ from stratuslab.ConfigHolder import ConfigHolder
 import Util
 from stratuslab.marketplace.Downloader import Downloader
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
-import stratuslab.ClaudiaTest as ClaudiaTest
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.MonitoringTest as MonitoringTest
 import stratuslab.RegistrationTest as RegistrationTest
@@ -653,18 +652,6 @@ touch %s
         '''Place holder for marketplace test'''
         pass
     
-    def claudiaTest(self):
-        '''Cloudia test'''
-        if self.claudiaCustomer:
-            ClaudiaTest.ClaudiaTest.CLAUDIA_CUSTOMER = self.claudiaCustomer
-        if self.claudiaServiceName:
-            ClaudiaTest.ClaudiaTest.CLAUDIA_SERVICENAME = self.claudiaServiceName
-        if self.claudiaOvfEndpoint:
-            ClaudiaTest.ClaudiaTest.OVF = self.claudiaOvfEndpoint
-
-        suite = self._createSuiteFromTestModule(ClaudiaTest)
-        self._executeSuite(suite)
-        
     def monitoringTest(self):
         '''Monitoring solution tests'''
         try:
