@@ -28,46 +28,83 @@ from stratuslab.installator.PortTranslation import PortTranslation
 from stratuslab.installator.OpenLDAP import OpenLDAP
 
 class BaseInstallator(object):
-        
-    def __init__(self):
-        self.installAllComponents = False  
     
     @staticmethod
-    def availableInstallator():
-        return {'opennebula': OpenNebula,
-                'persistent-disk': PersistentDisk,
-                'web-monitor': WebMonitor,
-                'registration': Registration,
-                'port-translation': PortTranslation,
-                'openldap': OpenLDAP,
-                'sunstone' : Sunstone }
-        
+    def availableInstallators():
+        return (('opennebula', OpenNebula),
+                ('persistent-disk', PersistentDisk),
+                ('web-monitor', WebMonitor),
+                ('openldap', OpenLDAP),
+                ('registration', Registration),
+                ('port-translation', PortTranslation),
+                ('sunstone', Sunstone))
+
+    @staticmethod
+    def availableInstallatorNames():
+        return tuple(map(lambda x: x[0], 
+                         BaseInstallator.availableInstallators()))
+
+    @staticmethod
+    def installatorNameToConfParamName(name):
+        return name.replace('-', '_')
+
     def runInstallator(self, configHolder):
+        self._assignConfigHolder(configHolder)
+
+        components = self._selectCompenentsToInstall()
+        self._launchInstallator(components)
+
+    def _assignConfigHolder(self, configHolder):
         self.configHolder = configHolder
         configHolder.assign(self)
-        
-        self._selectAllComponentsIfNoneSpecified()
-        self._launchInstallator()
-        
-    def _selectAllComponentsIfNoneSpecified(self):
-        selectedCompoments = []
-        for name in self.availableInstallator().keys():
-            selectedCompoments.append(getattr(self, 'install%s' % name.title()))
-        self.installAllComponents = not any(selectedCompoments)
-        printDetail('All components selected: %s' % self.installAllComponents, self.verboseLevel, 3)
- 
-    def _launchInstallator(self):
-        for componentName, installer in self.availableInstallator().items():
-            if self._isComponentSelected(componentName):
-                componentInstallator = installer(self.configHolder)
-                self._executeInstall(componentName, componentInstallator)
-                
-    def _isComponentSelected(self, name):
-        return (getattr(self, 'install%s' % name.title()) 
-                or self._selectedInConfig(name)
-                or self.installAllComponents)
 
-    def _executeInstall(self, componentName, componentInstallator):
+    def _selectCompenentsToInstall(self):
+        componentsToInstall = []
+
+        componentsToInstall.extend(self._getComponentsSelectedInOptions())
+
+        if not componentsToInstall:
+            componentsToInstall.extend(self._getComponentsSelectedInConfig())
+
+        componentsToInstall = tuple(componentsToInstall)
+
+        printDetail('Components selected: %s' % ', '.join(componentsToInstall), 
+                    self.verboseLevel, 3)
+
+        return componentsToInstall
+
+    def _getComponentsSelectedInOptions(self):
+        components = []
+        for name in self.availableInstallatorNames():
+            if self._isComponentSelectedInOptions(name):
+                components.append(name)
+        return components
+
+    def _getComponentsSelectedInConfig(self):
+        components = []
+        for name in self.availableInstallatorNames():
+            if self._isComponentSelectedInConfig(name):
+                components.append(name)
+        return components
+
+    def _isComponentSelectedInOptions(self, name):
+        return getattr(self, 'install%s' % name.title())
+
+    def _isComponentSelectedInConfig(self, name):
+        selected = self.configHolder.config.get(self.installatorNameToConfParamName(name), 
+                                                False)
+        return isTrueConfVal(selected)
+
+    def _launchInstallator(self, componentsToInstall):
+        for componentName, installerClass in self.availableInstallators():
+            if componentName in componentsToInstall:
+                self._executeInstall(componentName, installerClass)
+
+    def _executeInstall(self, componentName, installerClass):
+        print "install: ", componentName
+        return
+        componentInstallator = installerClass(self.configHolder)
+
         self._installStep(componentName, componentInstallator)
         self._setupStep(componentName, componentInstallator)
         self._startService(componentName, componentInstallator)
@@ -86,6 +123,3 @@ class BaseInstallator(object):
         if self.startComponent:
             printAction('Starting %s services' % componentName)
             componentInstallator.startServices()
-            
-    def _selectedInConfig(self, value):
-        return isTrueConfVal(value.replace('-', '_'))

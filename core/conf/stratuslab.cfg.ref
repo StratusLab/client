@@ -73,6 +73,7 @@ one_private_network_addr = 172.16.0.1
 one_private_network_size = 65536
 
 [one-deployment]
+opennebula = True
 frontend_ip = 127.0.0.1
 # Can be fedora/centos/ubuntu
 frontend_system = fedora
@@ -312,8 +313,15 @@ rest_endpoints = {"http://example.com" : {"username" : "x", "password" : "*"} }
 smtp_host = localhost
 
 [sunstone]
-sunstone = True
+sunstone = False
 sunstone_port = 9868
 sunstone_ssl_proxy_port = 9869
 # If not set, a dummy certificate will be used.
 sunstone_ssl_proxy_cert = 
+
+[port-address-translation]
+port_translation = False
+pat_enable = False
+pat_service_host = localhost
+# sqlite = filename
+pat_service_dbname = /var/lib/one/ports.db

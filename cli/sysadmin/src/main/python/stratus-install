@@ -100,7 +100,7 @@ class MainProgram(CommandBaseSysadmin):
             and not self.options.startComponent)
     
     def _addComponentsOptions(self, parser):
-        for name in BaseInstallator.availableInstallator().keys():
+        for name in BaseInstallator.availableInstallatorNames():
             parser.add_option('--%s' % name, dest='install%s' % name.title(), 
                                help='%s component' % name.title().replace('-', ' '),
                                action='store_true', default=False)
