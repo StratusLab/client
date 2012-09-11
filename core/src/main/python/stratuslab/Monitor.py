@@ -46,7 +46,7 @@ class Monitor(Configurable):
     def __init__(self, configHolder):
         self.endpoint = None
         self.verboseLevel = 1
-        self.patEnable = False
+        self.portTranslation = False
 
         super(Monitor, self).__init__(configHolder)
 
@@ -60,7 +60,7 @@ class Monitor(Configurable):
 
         self.labelDecorator = {'state_summary': 'state', Monitor.TEMPLATE_NIC_HOSTNAME: 'host/ip', Monitor.TEMPLATE_NIC_IP: 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
-        if Util.isTrueConfVal(self.patEnable):
+        if Util.isTrueConfVal(self.portTranslation):
             self.portTranslation = PortTranslationWebClient(configHolder)
             self.vmInfoDetailAttributes.insert(-1, ['template_pat', 16])
             self.vmInfoListAttributes.insert(-1, ['template_pat', 16])
@@ -99,7 +99,7 @@ class Monitor(Configurable):
     def _vmDetail(self, id):
         res = self.cloud.getVmInfo(int(id))
         vm = etree.fromstring(res)
-        if Util.isTrueConfVal(self.patEnable):
+        if Util.isTrueConfVal(self.portTranslation):
             self.portTranslation.addPortTranslationToSingleVmInfo(vm)
         info = CloudInfo()
         info.populate(vm)
@@ -149,7 +149,7 @@ class Monitor(Configurable):
 
         self._addHostnameToVmsInfo(vms)
 
-        if Util.isTrueConfVal(self.patEnable):
+        if Util.isTrueConfVal(self.portTranslation):
             self.portTranslation.addPortTranslationToVmsInfo(vms)
 
         correct_vms = []
@@ -258,7 +258,7 @@ class Monitor(Configurable):
 
         vmPort = str(self.cloud.getVmSshPort(int(vmId)))
         vmInfo = self._vmDetail(vmId)
-        if Util.isTrueConfVal(self.patEnable) and self.portTranslation.hasPortTranslated(vmInfo):
+        if Util.isTrueConfVal(self.portTranslation) and self.portTranslation.hasPortTranslated(vmInfo):
             port = self.portTranslation.findGatewayPort(vmInfo, vmPort)
             host = self.patGatewayHost
         else:

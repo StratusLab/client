@@ -29,7 +29,7 @@ class PortTranslation(object):
         configHolder.assign(self)
 
     def isTranslatedNetwork(self, network):
-        return Util.isTrueConfVal(self.patEnable) and network in self.patNetworks
+        return Util.isTrueConfVal(self.portTranslation) and network in self.patNetworks
 
     def hasPortTranslated(self, vmInfo):
         if getattr(vmInfo, 'template_pat', None):

@@ -27,7 +27,7 @@ class PortTranslationCommand(CommandBaseUser):
 
     @staticmethod
     def addCommonOptions(parser):
-        parser.add_option('--pat-enable', dest='patEnable',
+        parser.add_option('--pat-enable', dest='portTranslation',
                 help='show port address translations',
                 action='store_true', default=False)
 

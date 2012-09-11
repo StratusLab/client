@@ -49,7 +49,7 @@ class VmListGenerator(ListGenerator):
 
         configHolder = ConfigHolder(config=self._loadConfiguration())
         configHolder.assign(self)
-        if Util.isTrueConfVal(self.patEnable):
+        if Util.isTrueConfVal(self.portTranslation):
             self.fields.append(['template_pat', 'PAT (VM:GW)'])
 
     def _getData(self):

@@ -45,7 +45,7 @@ apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
 pdiskPort = 8445
 pdiskProtocol = 'https'
 
-patEnable = False
+portTranslation = False
 patServiceDbname = '/var/lib/one/ports.db'
 patPortsRange = '15000:17000'
 patTranslatedPorts = [22]

@@ -321,7 +321,6 @@ sunstone_ssl_proxy_cert =
 
 [port-address-translation]
 port_translation = False
-pat_enable = False
 pat_service_host = localhost
 # sqlite = filename
 pat_service_dbname = /var/lib/one/ports.db
