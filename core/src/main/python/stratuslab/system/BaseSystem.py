@@ -457,7 +457,6 @@ class BaseSystem(object):
 #        self._execute(cmd)
 #        self._nodeShell(cmd)
 
-
     def _configureXen(self):
         self.appendOrReplaceInFileCmd('/etc/sudoers', self.oneUsername,
                                       '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xm *' % self.oneUsername)
@@ -465,6 +464,28 @@ class BaseSystem(object):
                                       '%s  ALL=(ALL) NOPASSWD: /usr/sbin/xentop *' % self.oneUsername)
         self.executeCmd(['sed -i -E \'s/Defaults[[:space:]]+requiretty/#&/\''
                         ' /etc/sudoers'])
+
+    def configureLibvirt(self):
+        libvirtConf = '/etc/libvirt/libvirtd.conf'
+
+        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_group.*$', 
+                                      'unix_sock_group = "cloud"')
+        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_ro_perms.*$', 
+                                      'unix_sock_ro_perms = "0777"')
+        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_rw_perms.*$', 
+                                      'unix_sock_rw_perms = "0770"')
+        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_ro.*$', 
+                                      'auth_unix_ro = "none"')
+        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_rw.*$', 
+                                      'auth_unix_rw = "none"')
+        self.appendOrReplaceInFileCmd(self.qemuConf, '^vnc_listen.*$', 
+                                      'vnc_listen = "0.0.0.0"')
+
+    def startLibvirt(self):
+        rc, output = self.executeCmd('/etc/init.d/libvirtd restart'.split(), 
+                                     withOutput=True)
+        if rc != 0:
+            Util.printError('Could not start libvirt.\n%s' % output)
 
     # -------------------------------------------
     #     Front-end related methods

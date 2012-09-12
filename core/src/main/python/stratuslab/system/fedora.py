@@ -19,7 +19,6 @@
 #
 from stratuslab.system.centos import CentOS
 from stratuslab.system.PackageInfo import PackageInfo
-from stratuslab import Util
 
 class Fedora(CentOS):
     
@@ -40,30 +39,9 @@ class Fedora(CentOS):
         self.executeCmd(['modprobe', 'kvm_amd'])
         
         self._configureQemuUserOnFrontend()
-        
-        self.executeCmd('/etc/init.d/libvirtd stop'.split())
-
-        libvirtConf = '/etc/libvirt/libvirtd.conf'
-        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_group.*$',
-                                      'unix_sock_group = "cloud"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_ro_perms.*$',
-                                      'unix_sock_ro_perms = "0777"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_rw_perms.*$',
-                                      'unix_sock_rw_perms = "0770"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_ro.*$',
-                                      'auth_unix_ro = "none"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_rw.*$',
-                                      'auth_unix_rw = "none"')
-
-        self.appendOrReplaceInFileCmd(self.qemuConf, '^vnc_listen.*$',
-                                      'vnc_listen = "0.0.0.0"')
 
         self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/libexec/qemu-kvm'.split())
         self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/bin/kvm'.split())
-        
-        rc, output = self.executeCmd('/etc/init.d/libvirtd start'.split(), withOutput=True)
-        if rc != 0:
-            Util.printError('Could not start libvirt.\n%s' % output)
 
 
 system = Fedora()

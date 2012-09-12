@@ -66,7 +66,13 @@ class OpenNebulaNode(OpenNebulaCommon):
     def _installNodeDependencies(self):
         self.node.installNodeDependencies()
         self.node.installHypervisor()
+
+    def _configureVirtualization(self):
         self.node.configureHypervisor()
+        self.node.configureLibvirt()
+
+    def _startVrtualization(self):
+        self.node.startLibvirt()
         
     def _configureBridgeOnNode(self):
         self.node.configureBridgeRemotely()

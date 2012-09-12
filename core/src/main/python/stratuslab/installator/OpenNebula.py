@@ -43,6 +43,9 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Configuring cloud admin account')
         self._configureCloudAdminNode()
 
+        printStep('Configuring hypervisor')
+        self._configureVirtualization()
+
         printStep('Configuring bridge')
         self._configureBridgeOnNode()
 
@@ -103,6 +106,10 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
     def _setupMarketPlacePolicyValidator(self):
         mpPolicyValidatorInstaller = PolicyValidator(self.configHolder)
         mpPolicyValidatorInstaller.setup()
+
+    def _startServicesNode(self):
+        printStep('Starting virtualization services')
+        self._startVrtualization()
 
     def _printInstalCompleted(self, stdoutFilename, stderrFilename):
         printStep('Installation completed')
