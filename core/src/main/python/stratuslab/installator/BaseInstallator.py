@@ -101,8 +101,6 @@ class BaseInstallator(object):
                 self._executeInstall(componentName, installerClass)
 
     def _executeInstall(self, componentName, installerClass):
-        print "install: ", componentName
-        return
         componentInstallator = installerClass(self.configHolder)
 
         self._installStep(componentName, componentInstallator)
