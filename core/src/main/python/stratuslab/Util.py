@@ -133,21 +133,38 @@ def appendOrReplaceInFile(filename, search, replace):
 
     filePutContent(filename, '\n'.join(newContent))
 
-def appendOrReplaceMultilineBlockInFile(filename, data):
+def appendOrReplaceMultilineBlockInFile(filename, data, start='', until=''):
     content = fileGetContent(filename)
-    newContent = appendOrReplaceMultilineBlockInString(content, data)
+    newContent = appendOrReplaceMultilineBlockInString(content, data, 
+                                                       start=start, until=until)
     filePutContent(filename, newContent)
 
-def appendOrReplaceMultilineBlockInString(content, data):
-    """Block in 'content' starts with the first line from 'data'. Block ends
-    right before an empty line or '[ ]*#.*'.
+def appendOrReplaceMultilineBlockInString(content, data, start='', until=''):
+    """A block in 'content' starts with the first line from 'data' or 'start'. 
+    Block ends right before 'until'.
     """
-    data = data.strip()
-    beginStr = data.split('\n', 1)[0]
+    if not until:
+        until = '([ ]*|[ ]*#.*)$'
+    
+    if not start:
+        data = data.strip()
+        beginStr = data.split('\n', 1)[0]
 
-    if not re.search(beginStr, content, re.M):
-        return '%s%s%s\n\n' % (content, content.endswith('\n') and '\n' or '\n\n',
-                           data)
+        if not re.search(beginStr, content, re.M):
+            return '%s%s%s\n\n' % (content, content.endswith('\n') and '\n' or '\n\n',
+                                   data)
+    else:
+        beginStr = start
+
+        beginStr_in_content = False
+        for line in content.split('\n'):
+            if line.startswith(beginStr):
+                beginStr_in_content = True
+                break
+
+        if not beginStr_in_content:
+            return '%s%s%s\n\n' % (content, content.endswith('\n') and '\n' or '\n\n',
+                                   data)
 
     lines = content.split('\n')
 
@@ -160,8 +177,8 @@ def appendOrReplaceMultilineBlockInString(content, data):
     insertIndex = lineNums[0]
     k = lineNums[0] + 1
     try:
-        emptyOrComment = re.compile('([ ]*|[ ]*#.*)$')
-        while not emptyOrComment.match(lines[k]):
+        search_until = re.compile(until)
+        while not search_until.match(lines[k]):
             lineNums.append(k)
             k += 1
     except IndexError:

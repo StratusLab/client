@@ -35,7 +35,6 @@ class UtilTest(unittest.TestCase):
 
     def testAppendOrReplaceMultilineBlockInString(self):
         self.assertEqual(Util.appendOrReplaceMultilineBlockInString('', ''), '')
-
         content = """
 line one
 line two
@@ -89,6 +88,29 @@ start block
 """
         self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data),
                          result)
+
+    def testAppendOrReplaceMultilineBlockInString_StartUntil(self):
+        content = """
+olcDatabase: {0}config
+olcAccess: {0}to *  by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=externa
+ l,cn=auth" manage  by * none
+olcAddContentAcl: TRUE
+olcLastMod: TRUE
+"""
+        data = "olcAccess: ONE LINE"
+        start = "olcAccess: {0}to *  by dn.base="
+        result = """
+olcDatabase: {0}config
+%s
+olcAddContentAcl: TRUE
+olcLastMod: TRUE
+""" % data
+
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data, start=start, until='olcAdd'),
+                         result)
+
+        self.assertEqual(Util.appendOrReplaceMultilineBlockInString(content, data, start='ABC', until='olcAdd'),
+                         content+'\n'+data+'\n\n')
 
     def testExecuteWithOutput(self):
         output = Util.execute('ls -l'.split(), withOutput=True)
