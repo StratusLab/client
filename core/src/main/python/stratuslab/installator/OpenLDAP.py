@@ -79,7 +79,10 @@ class OpenLDAP(Installator):
         Util.appendOrReplaceInFile(self._sysconfigLdap, 'SLAPD_LDAP=', 'SLAPD_LDAP=yes')
 
         Util.printStep('Setting root account access')
-        Util.appendOrReplaceInFile(self._openLdapConfig, 'olcAccess:', self._accessValue)
+        Util.appendOrReplaceMultilineBlockInFile(self._openLdapConfig, 
+                                                 self._accessValue, 
+                                                 start='olcAccess: {0}to * by', 
+                                                 until='olcAddContentAcl:')
 
         Util.printStep('(Re-)starting slapd')
         cmd = 'service %s restart' % self._serviceName
