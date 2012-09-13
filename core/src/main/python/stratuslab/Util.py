@@ -732,5 +732,5 @@ def getValueInKB(value):
     except ValueError:
         valueNum = value[:-2]
         valueUnit = (value[-2:]).strip().upper()
-        valueKB = valueNum * (1024 ** unit.index(valueUnit))
-    return valueKB
+        valueKB = int(valueNum) * (1024 ** unit.index(valueUnit))
+    return str(valueKB)

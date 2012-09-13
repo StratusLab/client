@@ -194,5 +194,13 @@ olcLastMod: TRUE
         finally:
             os.unlink(filename)
 
+    def testgetValueInKB(self):
+        self.failUnlessEqual('1', Util.getValueInKB('1'))
+        self.failUnlessEqual('123', Util.getValueInKB('123'))
+        self.failUnlessEqual('1024', Util.getValueInKB('1MB'))
+        self.failUnlessEqual('125952', Util.getValueInKB('123MB'))
+        self.failUnlessEqual('1048576', Util.getValueInKB('1GB'))
+        self.failUnlessEqual('128974848', Util.getValueInKB('123GB'))
+
 if __name__ == "__main__":
     unittest.main()
