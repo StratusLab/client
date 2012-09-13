@@ -39,10 +39,6 @@ class MainProgram(Runnable):
 
     def parse(self):
 
-        self.parser.add_option('--show-name', dest='showImageName',
-                help='show the name the new image will take',
-                default=False, action='store_true')
-
         self.parser.add_option('-n', '--name', dest='newInstalledSoftwareName',
                 help='name of the new image',
                 default='', metavar='FILE')
@@ -140,13 +136,7 @@ class MainProgram(Runnable):
 
     def checkOptions(self):
 
-        if self.options.showImageName:
-            self.checkCredentials = False
-
         super(MainProgram, self).checkOptions()
-
-        if self.options.showImageName:
-            return
 
         if self.options.noUpload and self.options.shutdownVm:
             self.parser.error('If you specify --no-upload you also need to specify --no-shutdown, otherwise \
@@ -166,10 +156,6 @@ you\'ll never be able to retrieve the new image')
         configHolder = ConfigHolder(self.options.__dict__,self.config or {})
         self.creator = Creator(self.image, configHolder)
 
-        if self.options.showImageName:
-            Util.printAction('Simulating new image name')
-            Util.printStep(self.creator.showName())
-            return
         self.creator.create()
 
 

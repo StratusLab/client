@@ -147,52 +147,6 @@ class Creator(object):
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)
 
-    def showName(self):
-
-        def _updateManifestForNewImageNameInAppRepo(manifestInfo):
-            manifestInfo.type = self.newImageGroupName or manifestInfo.type
-            manifestInfo.version = self.newImageGroupVersion or manifestInfo.version
-            manifestInfo.os = self.newInstalledSoftwareName or manifestInfo.os
-            manifestInfo.osversion = self.newInstalledSoftwareVersion or manifestInfo.osversion
-            return manifestInfo
-
-        self._updateAppRepoStructures()
-        self._retrieveManifest()
-        info = self.manifestObject
-        info = _updateManifestForNewImageNameInAppRepo(info)
-        fileName = self.appRepoFilename
-
-        self.printDetail('Building image name')
-
-        fileName = self._buildRepoNameStructure(fileName, info)
-        path = self._buildRepoNameStructure(self.appRepoStructure, info)
-        return os.path.join(path, fileName)
-
-    def _updateAppRepoStructures(self):
-        self.printDetail('Retrieving Appliance Repository structure metadata')
-        url = self._buildConfigFileUrl()
-        config = None
-        try:
-            config = Util.wread(os.path.join(url, '.stratuslab/stratuslab.repo.cfg'))
-        except urllib2.HTTPError:
-            self._printError('Failed to reach url %s' % url)
-        parser = SafeConfigParser()
-        parser.readfp(config)
-        self.appRepoStructure = parser.get('stratuslab_repo', 'repo_structure')
-        self.appRepoFilename = parser.get('stratuslab_repo', 'repo_filename')
-
-    def _buildConfigFileUrl(self):
-        url = self.apprepoEndpoint or self._extractRootPath()
-        self.printDetail('Using root url: %s' % url)
-        return url
-
-    def _extractRootPath(self):
-        root = '/'.join(self.image.split('/')[:-4])
-        return root
-
-    def _buildRepoNameStructure(self, structure, info):
-        return Uploader.buildRepoNameStructure(structure, info)
-
     def create(self):
 
         self._printAction('Starting image creation')
