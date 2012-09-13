@@ -1,7 +1,7 @@
 Client
 ======
 
-[![Build Status](https://secure.travis-ci.org/StratusLab/metadata.png)](https://secure.travis-ci.org/StratusLab/metadata.png)
+[![Build Status](https://secure.travis-ci.org/StratusLab/client.png)](https://secure.travis-ci.org/StratusLab/client.png)
 
 Command Line Interface (CLI) for StratusLab cloud services.
 
