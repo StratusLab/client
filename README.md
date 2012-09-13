@@ -1,6 +1,8 @@
 Client
 ======
 
+[![Build Status](https://secure.travis-ci.org/StratusLab/metadata.png)](https://secure.travis-ci.org/StratusLab/metadata.png)
+
 Command Line Interface (CLI) for StratusLab cloud services.
 
 License
@@ -21,5 +23,7 @@ permissions and limitations under the License.
 Acknowledgements
 ----------------
 
-StratusLab is co-funded by the European Community’s Seventh Framework
-Programme (Capacities) Grant Agreement INFSO-RI-261552.
+This software originated in the StratusLab project that was co-funded
+by the European Community’s Seventh Framework Programme (Capacities)
+Grant Agreement INFSO-RI-261552 and that ran from June 2010 to May
+2012.
