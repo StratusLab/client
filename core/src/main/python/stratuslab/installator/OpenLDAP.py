@@ -81,7 +81,7 @@ class OpenLDAP(Installator):
         Util.printStep('Setting root account access')
         Util.appendOrReplaceMultilineBlockInFile(self._openLdapConfig, 
                                                  self._accessValue, 
-                                                 start='olcAccess: {0}to * by', 
+                                                 start='olcAccess: {0}to *', 
                                                  until='olcAddContentAcl:')
 
         Util.printStep('(Re-)starting slapd')
