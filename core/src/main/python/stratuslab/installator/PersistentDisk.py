@@ -43,8 +43,8 @@ class PersistentDisk(Installator):
         self.configHolder.assign(self)
         
         self.profile = None # Can be frontend or node
-        self.system = SystemFactory.getSystem(self.persistentDiskSystem, self.configHolder)
-        self._setPDiskEndpoint()
+        self.system = SystemFactory.getSystem(self.persistentDiskSystem, 
+                                              self.configHolder)
         
         # Package to be installed
         self.packages = { 'frontend': {
@@ -86,6 +86,7 @@ class PersistentDisk(Installator):
         self.system.setNodeAddr(self.persistentDiskIp)
 
     def _installFrontend(self):
+        self._setPDiskEndpoint()
         self.profile = 'frontend'
         self._validateConfiguration()
         self._commonInstallActions()
@@ -95,6 +96,7 @@ class PersistentDisk(Installator):
         pass
 
     def _setupFrontend(self):
+        self._setPDiskEndpoint()
         self._writePdiskConfig()
         self._writePdiskBackendConfig()
         self._setPdiskUserAndPassword()
@@ -149,6 +151,7 @@ class PersistentDisk(Installator):
                                                                              output))
                 
     def _startServicesFrontend(self):
+        self._setPDiskEndpoint()
         if self.persistentDiskStorage == 'lvm':
             self._startService('tgtd')
         self._startService('pdisk')
