@@ -17,13 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from stratuslab.installator.one import OneInstallator
+from stratuslab.installator.OpenNebulaCommon import OpenNebulaCommon
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Monitor import Monitor
 from stratuslab.Exceptions import InputException
 from stratuslab.Authn import AuthnFactory
 
-class Registrar(OneInstallator):
+class Registrar(OpenNebulaCommon):
 
     def __init__(self, configHolder):
         self.configHolder = configHolder
