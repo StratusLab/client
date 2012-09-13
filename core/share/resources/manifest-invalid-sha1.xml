@@ -24,7 +24,7 @@
             <slreq:value>77e52614a141cef19a76de6193e9c845b8cffffecf4973653e5d7a5d121450fab6142890e0f794715722ba4257ee28cb0f4e3966f18e11c9e62fa6babf0a748f</slreq:value>
         </slreq:checksum>
 
-        <slreq:endorsement rdf:parseType="Resource"><created xmlns="http://purl.org/dc/terms/">2012-01-30T08:40:07Z</created><endorser xmlns="http://mp.stratuslab.eu/slreq#" rdf:parseType="Resource"><email>Konstantin.Skaburskas@cern.ch</email><subject>CN=Konstantin Skaburskas,CN=658461,CN=kskaburs,OU=Users,OU=Organic Units,DC=cern,DC=ch</subject><issuer>CN=CERN Trusted Certification Authority,DC=cern,DC=ch</issuer></endorser></slreq:endorsement>
+        <slreq:endorsement rdf:parseType="Resource"><created xmlns="http://purl.org/dc/terms/">2012-09-13T13:13:38Z</created><endorser xmlns="http://mp.stratuslab.eu/slreq#" rdf:parseType="Resource"><email>Konstantin.Skaburskas@cern.ch</email><subject>CN=Konstantin Skaburskas,CN=658461,CN=kskaburs,OU=Users,OU=Organic Units,DC=cern,DC=ch</subject><issuer>CN=CERN Trusted Certification Authority,DC=cern,DC=ch</issuer></endorser></slreq:endorsement>
 
         <dcterms:type>base</dcterms:type>
         <slterms:kind>machine</slterms:kind>
@@ -41,7 +41,7 @@
         <dcterms:creator>Konstantin Skaburskas</dcterms:creator>
 
         <dcterms:created>2012-01-30T08:33:23Z</dcterms:created>
-        <dcterms:valid>2012-07-26T08:33:23Z</dcterms:valid>
+        <dcterms:valid>2020-12-31T00:00:00Z</dcterms:valid>
 
         <dcterms:description>dummy manifest to test sha1 mismatch.</dcterms:description>
 
@@ -51,11 +51,11 @@
         <slterms:location>http://appliances.stratuslab.eu/images/base/ttylinux-9.7-i486-base/1.4/ttylinux-9.7-i486-base-1.4.qcow.gz</slterms:location> 
 
     </rdf:Description>
-<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>rhhl9MYFcJPhdd2chKXgbVM/rGc=</DigestValue></Reference></SignedInfo><SignatureValue>m7dqSr+e0c7Vrqus01q0yDNuihhYmhjoStuh8FLVoWkbI0c9yRb9EcbHzdbiFBMgNNzAp/s/2QqL
-QuRNIsFJiJF9VdGa48etDrfcn7pCLe/KANMt7lAKQTy0+Tv7/hmbLXNGfMXjZDRbhcps6EPu07GI
-rw5R5tf5CdPWCMEeiOq7Ggejm+CSO1rq6ZkllLvxbIBT1xSjicRNhgFJx/0nkKOkJFgbNG0S1FFq
-in2T5kMLmz+7G4yieUT6AX5N/ZnX9BrxmVvDHp2WImFSyGAT6MSZ4jbOJbZXENmitT5S/isjKxfM
-bmAw5+0T2Wqi9jUpHtmSQVKeVj5MHWvYcOlOqw==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIHsTCCBpmgAwIBAgIKEwqZQwACAABzZzANBgkqhkiG9w0BAQUFADBZMRIwEAYKCZImiZPyLGQB
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>MGqQWBnbC+tanxYzFrXUDWIz9lw=</DigestValue></Reference></SignedInfo><SignatureValue>tV/A47d0TR1/z4KkBOarXaiJgY0VbJcFpZmhVCwPcLvTYq/VMDXUf5uNXcIpnwydWW9Fpl2050Rt
+QyHG0FgalKxuRDRhjWmAT9kttkYmeJOw/tniJfcUO0TldOCC5cJEoQCjVj34oU1KT82OouTvoiR/
+953ZftoPtwkyllmi/l11WbDrnxNDfV62lSU8xyeSIcILWyL/dsTQrJ+Huxowq7RIdXSgErRfgTUe
+qdThIFGEGFVSPfkuU6RljQ20JEGJByUqIVVoI7tbyOcNhQixQRcFBOqhhX/s2IPXHAAA9Was8m6e
+lPCav0qZfqQaZ+kkhi3ymQkj8U6+fCUHcATO2A==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIHsTCCBpmgAwIBAgIKEwqZQwACAABzZzANBgkqhkiG9w0BAQUFADBZMRIwEAYKCZImiZPyLGQB
 GRYCY2gxFDASBgoJkiaJk/IsZAEZFgRjZXJuMS0wKwYDVQQDEyRDRVJOIFRydXN0ZWQgQ2VydGlm
 aWNhdGlvbiBBdXRob3JpdHkwHhcNMTAxMDI1MTIwOTMxWhcNMTExMDI1MTIwOTMxWjCBljESMBAG
 CgmSJomT8ixkARkWAmNoMRQwEgYKCZImiZPyLGQBGRYEY2VybjEWMBQGA1UECxMNT3JnYW5pYyBV
