@@ -204,7 +204,7 @@ def filePutContent(filename, data, neverShowData=False):
     if isinstance(data, unicode):
         fh = codecs.open(filename, 'w', 'utf8')
     else:
-        fh = os.fdopen(os.open(filename, os.O_WRONLY|os.O_CREAT), 'wb')
+        fh = open(filename, 'wb')
     fh.write(data)
     fh.close()
 
