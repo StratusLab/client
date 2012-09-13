@@ -20,8 +20,8 @@
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import printWarning
-from stratuslab.system import SystemFactory
 from stratuslab import Defaults
+from stratuslab.Exceptions import OneException
 
 class OpenNebulaCommon(object):
     
@@ -53,4 +53,14 @@ class OpenNebulaCommon(object):
         
     def _removeCloudNode(self, nodeId):
         self.cloud.hostRemove(nodeId)
-        
+
+    def _addCloudNode(self):
+        # This just assumes that a node can't be added because it exists
+        # already.  A better implementation would check to see if it 
+        # really does exists and if so, returns the existing node id.
+        try:
+            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
+        except OneException:
+            printWarning('Couldn\'t add host, already present?')
+            # The id is actually ignored, so this should be ok.
+            return -1

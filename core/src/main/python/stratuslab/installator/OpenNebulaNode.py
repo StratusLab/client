@@ -19,8 +19,7 @@
 #
 from stratuslab.installator.OpenNebulaCommon import OpenNebulaCommon
 from stratuslab.system import SystemFactory
-from stratuslab.Exceptions import OneException
-from stratuslab.Util import printWarning, printError
+from stratuslab.Util import printError
 
 class OpenNebulaNode(OpenNebulaCommon):
     
@@ -52,17 +51,6 @@ class OpenNebulaNode(OpenNebulaCommon):
         self.node.configureCloudAdminSudoNode()
         self.node.configureCloudAdminPdiskNode()
     
-    def _addCloudNode(self):
-        # This just assumes that a node can't be added because it exists
-        # already.  A better implementation would check to see if it 
-        # really does exists and if so, returns the existing node id.
-        try:
-            return self.cloud.hostCreate(self.nodeAddr, self.infoDriver, self.virtDriver, self.transfertDriver)
-        except OneException:
-            printWarning('Couldn\'t add host, already present?')
-            # The id is actually ignored, so this should be ok.
-            return -1
-        
     def _installNodeDependencies(self):
         self.node.installNodeDependencies()
         self.node.installHypervisor()
