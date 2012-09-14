@@ -103,7 +103,6 @@ class TMCloneCache(object):
         self._initManifestDownloader()
 
     def _initManifestDownloader(self):
-        self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
         self.manifestDownloader = ManifestDownloader(self.configHolder)
 
     def run(self):
@@ -277,7 +276,10 @@ class TMCloneCache(object):
                 pass
             # SunStone adds '<hostname>:' to the image ID
             self.marketplaceImageId = self._getStringPart(self.diskSrc, 1)
-        
+
+        if self.marketplaceEndpoint: 
+            self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
+
     def _getMarketplaceEndpointFromURI(self, uri):
         uri_parts = urlparse(uri)
         return '%s://%s/' % (uri_parts.scheme, uri_parts.netloc)
@@ -289,7 +291,6 @@ class TMCloneCache(object):
 
     def _validateMarketplaceImagePolicy(self):
         try:
-            self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
             policy = Policy(self.configHolder)
             policy.check(self.marketplaceImageId)
         except:
