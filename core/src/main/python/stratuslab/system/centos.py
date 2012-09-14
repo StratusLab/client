@@ -98,7 +98,7 @@ enabled=1
 
         self.packages = {'apache2': PackageInfo('httpd','/etc/httpd'),
                          'dhcp': PackageInfo('dhcp',
-                                             configFile='/etc/dhcpd.conf',
+                                             configFile='/etc/dhcp/dhcpd.conf',
                                              initdScriptName='dhcpd'),
                          'CA' : PackageInfo('ca-policy-egi-core', 
                                                 repository=self.caRepoName),
