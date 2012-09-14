@@ -587,6 +587,8 @@ def parseUri(uri):
     return protocol, hostname, port, path_and_query
 
 def sanitizeEndpoint(endpoint, protocol=Defaults.marketplaceProtocol, port=Defaults.marketplacePort):
+    if not endpoint:
+        return endpoint
     sanitized = endpoint
     _protocol, _, _, _ = parseUri(endpoint)
     if not _protocol:
