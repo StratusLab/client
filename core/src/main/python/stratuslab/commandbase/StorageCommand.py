@@ -59,15 +59,14 @@ class PDiskEndpoint(object):
         
         # TODO: Add certificate support
         parser.add_option('--pdisk-endpoint', dest='pdiskEndpoint',
-                          help='Persistent endpoint (hostname or URL). Default STRATUSLAB_PDISK_ENDPOINT or %s' % \
-                               Defaults.marketplaceEndpoint,
+                          help='Persistent Disk service endpoint (hostname or URL). Default STRATUSLAB_PDISK_ENDPOINT',
                           default=defaultOptions['pdiskEndpoint'])
         parser.add_option('--pdisk-username', dest='pdiskUsername',
-                          help='Persistent disk service username. \
+                          help='Persistent Disk service username. \
                           Default STRATUSLAB_PDISK_USERNAME, then your cloud username', 
                           metavar='NAME', default=defaultOptions['pdiskUsername'])
         parser.add_option('--pdisk-password', dest='pdiskPassword',
-                          help='Persistent disk service password. \
+                          help='Persistent Disk service password. \
                           Default STRATUSLAB_PDISK_PASSWORD, then your cloud password', 
                           metavar='NAME', default=defaultOptions['pdiskPassword'])
         
