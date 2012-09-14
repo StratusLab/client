@@ -34,14 +34,5 @@ class Fedora(CentOS):
                                             configFile='/etc/dhcp/dhcpd.conf',
                                             initdScriptName='dhcpd')
         
-    def _configureKvm(self):
-        self.executeCmd(['modprobe', 'kvm_intel'])
-        self.executeCmd(['modprobe', 'kvm_amd'])
-        
-        self._configureQemuUserOnFrontend()
-
-        self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/libexec/qemu-kvm'.split())
-        self.executeCmd('ln -s /usr/bin/qemu-kvm /usr/bin/kvm'.split())
-
 
 system = Fedora()

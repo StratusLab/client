@@ -239,6 +239,8 @@ enabled=1
                         '/var/run/libvirt/libvirt-sock'])
         self.executeCmd(['chmod', 'g+r+w', '/var/run/libvirt/libvirt-sock'])
 
+        self.executeCmd('ln -s /usr/libexec/qemu-kvm /usr/bin/qemu-kvm'.split())
+
     # -------------------------------------------
     # Network related methods
     # -------------------------------------------

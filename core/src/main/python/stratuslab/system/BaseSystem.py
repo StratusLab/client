@@ -393,10 +393,6 @@ class BaseSystem(object):
         # seen a case when permission of /dev/kvm were 0600
         self.executeCmd(['chmod', '0666', '/dev/kvm'])
         
-        # FIXME: remove when centos is removed
-        if self.frontendSystem not in ['fedora', 'ubuntu']:
-            return
-
         if self.shareType == 'nfs':
                 self._configureQemuUserOnFrontend()
 
