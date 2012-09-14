@@ -22,6 +22,7 @@ import re
 
 from stratuslab import Defaults
 import stratuslab.Util
+from stratuslab.Exceptions import ValidationException
 
 class Util(object):
 
@@ -56,6 +57,10 @@ class Util(object):
         if identifier.startswith('http'):
             return identifier
         
+        if not endpoint:
+            raise ValidationException('Marketplace endpoint is not provided ' +\
+                                      'when building metadata URL.')
+
         _endpoint = stratuslab.Util.sanitizeEndpoint(endpoint, 
                                                      Defaults.marketplaceProtocol,
                                                      Defaults.marketplacePort)
