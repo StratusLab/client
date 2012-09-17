@@ -100,6 +100,8 @@ class PersistentDisk(Installator):
         self._writePdiskConfig()
         self._writePdiskBackendConfig()
         self._setPdiskUserAndPassword()
+        # downloading images requires configured client on front-end 
+        self._updateConfigHostPDiskClient()
         if self.persistentDiskShare == 'nfs':
             return
         if self.persistentDiskStorage == 'lvm':
@@ -179,23 +181,23 @@ class PersistentDisk(Installator):
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
              'Defaults:%s !requiretty' % self.oneUsername,
              'Defaults:%s !requiretty' % self.oneUsername)
-        
+
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
-        self._overrideValueInFile('SHARE_TYPE', self.persistentDiskShare,
-                                  self.pdiskHostConfigFile)
-        self._overrideValueInFile('NFS_LOCATION', self.persistentDiskNfsMountPoint,
-                                  self.pdiskHostConfigFile)
-        self._overrideValueInFile('PDISK_USER', self.pdiskUsername,
-                                  self.pdiskHostConfigFile)
-        self._overrideValueInFile('PDISK_PSWD', self.pdiskPassword,
-                                  self.pdiskHostConfigFile)
 
-        self._overrideValueInFile('pdisk_user', self.pdiskUsername,
-                                  self.pdiskHostConfigFile2)
-        self._overrideValueInFile('pdisk_passwd', self.pdiskPassword,
-                                  self.pdiskHostConfigFile2)
-        
+        self._updateConfigHostAttachDetachScripts()
+        self._updateConfigHostPDiskClient()
+
+    def _updateConfigHostAttachDetachScripts(self):
+        self._overrideValueInFile('SHARE_TYPE', self.persistentDiskShare, self.pdiskHostConfigFile)
+        self._overrideValueInFile('NFS_LOCATION', self.persistentDiskNfsMountPoint, self.pdiskHostConfigFile)
+        self._overrideValueInFile('PDISK_USER', self.pdiskUsername, self.pdiskHostConfigFile)
+        self._overrideValueInFile('PDISK_PSWD', self.pdiskPassword, self.pdiskHostConfigFile)
+
+    def _updateConfigHostPDiskClient(self):
+        self._overrideValueInFile('pdisk_user', self.pdiskUsername, self.pdiskHostConfigFile2)
+        self._overrideValueInFile('pdisk_passwd', self.pdiskPassword, self.pdiskHostConfigFile2)
+
     def _installPackages(self, section):
         if self.packages:
             printStep('Installing packages on %s for section "%s": %s' 
