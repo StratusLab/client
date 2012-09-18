@@ -311,6 +311,10 @@ def execute(commandAndArgsList, **kwargs):
     else:
         return process.returncode
 
+def executeGetStatusOutput(commandAndArgsList, **kwargs):
+    kwargs['withOutput'] = True
+    return execute(commandAndArgsList, **kwargs)
+
 def executeRaiseOnError(cmd):
     res, output = execute(cmd.split(' '), withOutput=True)
     if res:
