@@ -919,12 +919,16 @@ touch %s
     def _localMount(self, device, mountPoint, options=[]):
         Util.printStep('Mounting device %s on %s with options %s' % (device, mountPoint, 
                                                                     (', '.join(options) or '<no options>')))
-        mountOptions = ['-o %s' % opt for opt in options]
+        mountOptions = ['-o', ','.join(options)]
         try:
             mkdir(mountPoint)
         except:
             pass
-        Util.execute(['mount', mountOptions, device, mountPoint])
+        rc, output = Util.executeGetStatusOutput(['mount'] + mountOptions + [device, mountPoint], 
+                                                 verboseLevel=self.verboseLevel)
+        if output:
+            print output
+        return rc == 0 and True or False
         
     def _localUmount(self, device):
         Util.printStep('Unmounting device %s...' % device)
