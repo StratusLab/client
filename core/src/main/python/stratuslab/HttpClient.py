@@ -148,4 +148,4 @@ class HttpClient(object):
         return resp, content
 
     def _printDetail(self, message):
-        Util.printDetail(message, self.verboseLevel, 1)
+        Util.printDetail(message, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)
