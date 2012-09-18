@@ -830,7 +830,7 @@ touch %s
         pdiskMountPoint = '/mnt/pdisk-test'
         testFile = '%s/pdisk.txt'
         testString = 'pdiskTest'
-        downloadedCompressedDisk = '/tmp/pdisk-img.gz'
+        downloadedCompressedDisk = '/var/tmp/pdisk-img.gz'
         localMountPoint = '/mnt/pdisk-check'
         localTestFile = '/tmp/pdiskGzip.tmp'
         
