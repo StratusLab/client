@@ -437,7 +437,6 @@ class TMCloneCache(object):
         return (bytesAmout / 1024**3) + 1
     
     def _sshDst(self, cmd, errorMsg, dontRaiseOnError=False):
-        print 'in _sshDst', cmd
         retCode, output = sshCmdWithOutput(' '.join(cmd), self.diskDstHost, user=getuser(),
                                            sshKey=sshPublicKeyLocation.replace('.pub', ''))
         if not dontRaiseOnError and retCode != 0:
