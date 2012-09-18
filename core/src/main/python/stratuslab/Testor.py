@@ -907,9 +907,9 @@ touch %s
         self._loginViaSsh(runner, 'mkdir -p %s' % mountPoint)
         self._loginViaSsh(runner, 'mount %s %s' % (device, mountPoint))
     
-    def _localMount(self, device, mountPoint, options={}):
-        Util.printStep('Mounting device %s on %s with options %s', (device, mountPoint, 
-                                                                    (options.join(', ') or '<no options>')))
+    def _localMount(self, device, mountPoint, options=[]):
+        Util.printStep('Mounting device %s on %s with options %s' % (device, mountPoint, 
+                                                                    (', '.join(options) or '<no options>')))
         mountOptions = ['-o %s' % opt for opt in options]
         try:
             mkdir(mountPoint)
