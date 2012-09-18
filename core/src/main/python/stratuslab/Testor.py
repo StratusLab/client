@@ -854,25 +854,34 @@ touch %s
         self._writeToFile(runner, testFile % pdiskMountPoint, testString)
         self._umountPDiskAndStopVm(runner, pdiskDevice)
         
-        Util.printAction('Downloading volume...')
-        pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
-        volume = self._gunzip(downloadedCompressedDisk)
-        
-        if not self._localMount(volume, localMountPoint, ['loop',]):
-            self.fail('Error mounting downloaded image, corrupted?')
-        
-        filePutContent(localTestFile, testString)
-        
-        fileEquals = self._compareLocalFiles(localTestFile, testFile % localMountPoint)
-        
-        if not fileEquals:
-            self.fail('Downloaded volume is corrupted')
-            
-        self._localUmount(localMountPoint)
+        try:
+            Util.printAction('Downloading volume...')
+            # compressed disk comes in HTTP response - don't print it from HTTP client!
+            pdisk.client.verboseLevel = 0
+            pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
+            volume = self._gunzip(downloadedCompressedDisk)
+        finally:
+            try: remove(downloadedCompressedDisk)
+            except: pass
 
-        Util.printAction('Post test clean-up...')
-        rmdir(localMountPoint)
-        remove(volume)
+        try:
+            if not self._localMount(volume, localMountPoint, ['loop',]):
+                self.fail('Error mounting downloaded image, corrupted?')
+            
+            filePutContent(localTestFile, testString)
+            
+            fileEquals = self._compareLocalFiles(localTestFile, testFile % localMountPoint)
+            
+            if not fileEquals:
+                self.fail('Downloaded volume is corrupted')
+                
+            self._localUmount(localMountPoint)
+        finally:
+            Util.printAction('Post test clean-up...')
+            try: remove(volume)
+            except: pass
+            try: rmdir(localMountPoint)
+            except: pass
 
     def _startVmWithPDiskAndWaitUntilUp(self, pdisk=None, image=None):
         runner = self._createRunner(persistentDiskUUID=pdisk, image=image)
