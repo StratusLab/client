@@ -322,10 +322,10 @@ def _printDetail(message, kwargs={}):
     printDetail(message, verboseLevel, verboseThreshold)
 
 def _extractVerboseLevel(kwargs):
-    return _extractAndDeleteKey('verboseLevel', 0, kwargs)
+    return _extractAndDeleteKey('verboseLevel', QUIET_VERBOSE_LEVEL, kwargs)
 
 def _extractVerboseThreshold(kwargs):
-    return _extractAndDeleteKey('verboseThreshold', 2, kwargs)
+    return _extractAndDeleteKey('verboseThreshold', DETAILED_VERBOSE_LEVEL, kwargs)
 
 def _extractAndDeleteKey(key, default, dict):
     value = default
