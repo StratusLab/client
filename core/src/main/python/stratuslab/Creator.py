@@ -20,7 +20,6 @@
 import os
 from datetime import datetime
 import time
-import urllib2
 import tempfile
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
@@ -32,8 +31,6 @@ from stratuslab.Util import getHostnameFromUri
 import stratuslab.Util as Util
 from Exceptions import ValidationException
 from Exceptions import ExecutionException
-from ManifestInfo import ManifestInfo
-from ConfigParser import SafeConfigParser
 from Authn import AuthnFactory
 from stratuslab.system.ubuntu import installCmd as aptInstallCmd
 from stratuslab.system.ubuntu import updateCmd as aptUpdateCmd
@@ -41,8 +38,6 @@ from stratuslab.system.ubuntu import cleanPackageCacheCmd as aptCleanPackageCach
 from stratuslab.system.centos import installCmd as yumInstallCmd
 from stratuslab.system.centos import updateCmd as yumUpdateCmd
 from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCacheCmd
-from stratuslab.Uploader import Uploader
-from stratuslab.ManifestInfo import ManifestIdentifier
 from stratuslab.Image import Image
 from stratuslab.system import Systems
 from stratuslab import Defaults
