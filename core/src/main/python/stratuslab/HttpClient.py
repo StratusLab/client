@@ -18,6 +18,10 @@
 # limitations under the License.
 #
 
+import os
+import stat
+import mimetools
+import mimetypes
 import httplib2
 from httplib2 import httplib
 from stratuslab import Util
@@ -42,6 +46,33 @@ class HttpClient(object):
     def post(self, url, body=None, contentType='application/xml', accept='application/xml'):
         return self._httpCall(url, 'POST', body, contentType, accept, retry=False)
     
+    def post_multipart(self, url, files=[], params=[], accept='application/xml'):
+        boundary, body = self._multipart_encode(files, params)
+        contentType = 'multipart/form-data; boundary=%s' % boundary
+        return self.post(url, body, contentType=contentType, accept=accept)
+
+    def _multipart_encode(self, files, params):
+        "files - list of (<attribute name>, <file descriptor>) tuples"
+        "params - list of (<attribute name>, <value>) tuples"
+        boundary = mimetools.choose_boundary()
+        body = ''
+        for(key, value) in params:
+            body += '--%s\r\n' % boundary
+            body += 'Content-Disposition: form-data; name="%s"' % key
+            body += '\r\n\r\n' + value + '\r\n'
+        for(key, fh) in files:
+            file_size = os.fstat(fh.fileno())[stat.ST_SIZE]
+            filename = fh.name.split('/')[-1]
+            contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+            body += '--%s\r\n' % boundary
+            body += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)
+            body += 'Content-Type: %s\r\n' % contenttype
+            body += 'Content-Length: %s\r\n' % file_size
+            fh.seek(0)
+            body += '\r\n' + fh.read() + '\r\n'
+        body += '--%s--\r\n\r\n' % boundary
+        return boundary, body
+
     def put(self, url, body=None, contentType='application/xml', accept='application/xml'):
         return self._httpCall(url, 'PUT', body, contentType, accept)
     
