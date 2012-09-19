@@ -86,7 +86,14 @@ class PersistentDisk(object):
                         body,
                         contentType,
                         accept='application/json')
-        
+
+    def _postMultipart(self, url, files, params=[]):
+        headers, content = self.client.post_multipart(url, 
+                                                      files,
+                                                      params, 
+                                                      accept='application/json')
+        return headers, content.replace('\\', '')
+    
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
         self._printContacting()
@@ -235,7 +242,20 @@ class PersistentDisk(object):
         headers, content = self._getGzip(volumeUrl)
         self._raiseOnErrors(headers, content)
         Util.filePutContent(filename, content, True)
-    
+
+    def uploadVolume(self, filename):
+        "Upload compressed image and return resource URL."
+        self._initPDiskConnection()
+        self._printContacting()
+        base_url = '%s/disks/' % self.endpoint
+        headers, content = self._uploadImageFile(base_url, filename)
+        self._raiseOnErrors(headers, content)
+        uuid = self._getUuidFromJson(content)
+        return base_url + '/' + uuid
+
+    def _uploadImageFile(self, url, filename):
+        return self._postMultipart(url, [("Image File", open(filename))])
+
     def serviceAvailable(self):
         try:
             self._initPDiskConnection()
