@@ -20,13 +20,13 @@
 import os.path
 
 import stratuslab.Util as Util
-from ManifestInfo import ManifestInfo
-from Exceptions import ExecutionException
-from Signator import Signator
-from ConfigHolder import ConfigHolder
-from Compressor import Compressor
-from marketplace.Util import Util as MarketplaceUtil
-import marketplace.Uploader
+from stratuslab.ManifestInfo import ManifestInfo
+from stratuslab.Exceptions import ExecutionException
+from stratuslab.Signator import Signator
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Compressor import Compressor
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
+from stratuslab.marketplace.Uploader import Uploader as MarketplaceUploader
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 
@@ -162,7 +162,7 @@ class Uploader(object):
                                               'location', self.imageUrl)
 
     def _uploadMarketPlaceManifest(self):
-        uploader = marketplace.Uploader.Uploader(self.configHolder)
+        uploader = MarketplaceUploader(self.configHolder)
         url = uploader.upload(self.manifestFile)
         print "Manifest uploaded: %s" % url
 
