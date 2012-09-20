@@ -59,7 +59,6 @@ class Testor(unittest.TestCase):
 
     def setUp(self):
         self.vmIds = []
-        #self.image = 'PvitUfM-uW2yWakWUNmd-TSPOiy'
         self.image = 'BN1EEkPiBx87_uLj2-sdybSI-Xb' # ttylinux v14 x86_64
         self.ubuntuImg = 'BXSSv_2udGkpKgi6fcCaVniz1Zd'
         self._unlinkFiles([self.sshKey, self.sshKeyPub])
