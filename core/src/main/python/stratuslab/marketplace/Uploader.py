@@ -75,4 +75,4 @@ class Uploader(object):
                                                        info.identifier, 
                                                        info.email, 
                                                        info.created)
-        print finalUrl
+        return finalUrl

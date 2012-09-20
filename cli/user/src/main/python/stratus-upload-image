@@ -34,7 +34,7 @@ class MainProgram(AuthnCommand):
     '''A command-line program to upload StratusLab appliance.'''
 
     def __init__(self):
-        self.manifest = None
+        self.image = None
         super(MainProgram, self).__init__()
 
     def parse(self):
@@ -49,17 +49,17 @@ class MainProgram(AuthnCommand):
 
         if len(self.args) != 1:
             self.parser.error('Please specify an appliance manifest')
-        self.manifest = self.args[0]
+        self.image = self.args[0]
 
         Uploader.checkUploadOptions(self.options, self.parser)
         self.checkP12CertOptionsOnly()
 
-        if not os.path.isfile(self.manifest):
-            self.parser.error('Appliance manifest does not exist: ' + self.manifest)
+        if not os.path.isfile(self.image):
+            self.parser.error('Image file does not exist: ' + self.image)
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        uploader = Uploader(self.manifest, configHolder)
+        uploader = Uploader(self.image, configHolder)
     
         try:
             uploader.start()
