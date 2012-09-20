@@ -226,8 +226,8 @@ class ManifestInfo(object):
                                              self.arch, self.type,
                                              self.version, Util.manifestExt)
         Util.filePutContent(filename, manifestText)
-        Util.printDetail("Manifest: %s"%filename, verboseLevel=self.verboseLevel,
-                         verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
+        Util.printDetail("Manifest: %s"%filename, self.verboseLevel,
+                         Util.VERBOSE_LEVEL_DETAILED)
 
     def build(self):
         self.created = Util.getTimeInIso8601()

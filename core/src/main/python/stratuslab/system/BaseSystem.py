@@ -92,8 +92,7 @@ class BaseSystem(object):
             raise ExecutionException('Failed to install: %s\n%s' % \
                                      (', '.join(packages_versioned), output))
 
-        Util.printDetail(output, verboseLevel=self.verboseLevel,
-                         verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
+        Util.printDetail(output, self.verboseLevel, Util.VERBOSE_LEVEL_DETAILED)
 
     def getPackageWithVersionForInstall(self, package):
         try:
