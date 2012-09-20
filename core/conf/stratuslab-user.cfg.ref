@@ -40,11 +40,6 @@ endpoint_timeout = 5
 # Marketplace
 #marketplace_endpoint = https://marketplace.stratuslab.eu
 
-# Appliance repository
-#apprepo_endpoint = http://appliances.stratuslab.org/images
-apprepo_username = username
-apprepo_password = password
-
 # SSH public key
 #user_public_key_file = <home>/.ssh/id_rsa.pub
 

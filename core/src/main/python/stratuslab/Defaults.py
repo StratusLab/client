@@ -40,8 +40,6 @@ marketplaceProtocol = 'https'
 marketplaceHostname = 'marketplace.stratuslab.eu'
 marketplacePort = 80
 
-apprepoEndpoint = 'http://appliances.stratuslab.eu/images'
-
 pdiskPort = 8445
 pdiskProtocol = 'https'
 

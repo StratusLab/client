@@ -91,8 +91,6 @@ class MainProgram(CommandBase):
 
         MarketplaceUtil.addEndpointOption(self.parser)
 
-        Uploader.buildAppRepoOptionsParser(self.parser)
-
         AuthnCommand.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
         StorageCommand.addPDiskEndpointOptions(self.parser)
 

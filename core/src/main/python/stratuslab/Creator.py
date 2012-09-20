@@ -69,7 +69,6 @@ class Creator(object):
         self.marketplaceEndpointNewimage = ''
 
         self.endpoint = ''
-        self.apprepoEndpoint = ''
 
         self.extraOsReposUrls = ''
         self.packages = ''
@@ -106,11 +105,6 @@ class Creator(object):
         self.vmId = None
         self.vmIp = None
         self.vmName = 'creator'
-
-        # Structure of the repository
-        self.appRepoStructure = '#type_#/#os#-#osversion#-#arch#-#type#/#version#'
-        # Repository image filename structure
-        self.appRepoFilename = '#os#-#osversion#-#arch#-#type#-#version#.img.#compression#'
 
         self.userPublicKeyFile = self.options.get('userPublicKeyFile',
                                                   Defaults.sshPublicKeyLocation)

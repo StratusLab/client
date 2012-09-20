@@ -30,11 +30,9 @@ import tempfile
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
 from stratuslab.Runner import Runner
-from stratuslab.Uploader import Uploader
 from stratuslab.marketplace.Uploader import Uploader as marketplaceUploader
 from stratuslab.Creator import Creator
-from stratuslab.Exceptions import NetworkException, OneException,\
-    ClientException
+from stratuslab.Exceptions import OneException, ClientException
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.Exceptions import InputException
@@ -89,9 +87,6 @@ class Testor(unittest.TestCase):
         self._setFieldsFromEnvVars()
 
     def _setFieldsFromEnvVars(self):
-        self._setSingleFieldFromEnvVar('apprepoUsername', 'STRATUSLAB_APPREPO_USERNAME')
-        self._setSingleFieldFromEnvVar('apprepoPassword', 'STRATUSLAB_APPREPO_PASSWORD')
-        self._setSingleFieldFromEnvVar('apprepoEndpoint', 'STRATUSLAB_APPREPO_ENDPOINT')
         self._setSingleFieldFromEnvVar('requestedIpAddress', 'STRATUSLAB_REQUESTED_IP_ADDRESS')
         self._setSingleFieldFromEnvVar('p12Certificate', 'STRATUSLAB_P12_CERTIFICATE')
         self._setSingleFieldFromEnvVar('p12Password', 'STRATUSLAB_P12_PASSWORD')
@@ -277,13 +272,6 @@ class Testor(unittest.TestCase):
     def _stopVm(self, runner):
         runner.killInstances(self.vmIds)
 
-    def applianceRepositoryTest(self):
-        '''Authenticate, then upload a dummy image to the appliance repository, and remove after'''
-
-        self._checkAttributePresent(['apprepoUsername', 'apprepoPassword'])
-        self._testRepoConnection()
-        self._uploadAndDeleteDummyImage()
-
     def _checkAttributePresentAndInitialized(self, attrs):
         self._checkAttributePresent(attrs)
         self._checkAttributeInitialized(attrs)
@@ -297,38 +285,6 @@ class Testor(unittest.TestCase):
         for attr in attrs:
             if not getattr(self, attr):
                 raise Exception('Attribute %s is not set. Missing an option argument?' % attr)
-
-    def _testRepoConnection(self):
-        passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passwordMgr.add_password(None,
-                                 self.apprepoEndpoint,
-                                 self.apprepoUsername,
-                                 self.apprepoPassword)
-
-        handler = urllib2.HTTPBasicAuthHandler(passwordMgr)
-        opener = urllib2.build_opener(handler)
-
-        try:
-            opener.open(self.apprepoEndpoint)
-        except RuntimeError:
-            raise NetworkException('Authentication to appliance repository failed')
-
-    def _uploadAndDeleteDummyImage(self):
-        dummyFile = '/tmp/stratus-dummy.img'
-        self._generateDummyImage(dummyFile)
-
-        manifest = ''
-        configHolder = Testor.configHolder.copy()
-        configHolder.set('apprepoUsername', self.apprepoUsername)
-        configHolder.set('apprepoPassword', self.apprepoPassword)
-        configHolder.set('apprepoEndpoint', self.apprepoEndpoint)
-        configHolder.set('uploadOption', '')
-        uploader = Uploader(manifest, configHolder)
-        uploader.uploadFile(dummyFile, os.path.join('base', os.path.basename(dummyFile)))
-        uploader.deleteFile(uploader.uploadedFile[-1])
-
-    def _openDevNull(self):
-        return open('/dev/null', 'w')
 
     def _generateDummyImage(self, filename, size=2):
         devNull = open('/dev/null', 'w')
@@ -489,17 +445,6 @@ touch %s
 
         self.marketplaceEndpoint = marketplace_url
         self._runInstanceTest(cmdToRun=cmds)
-
-    def _deleteImageAndManifestFromAppRepo(self, imageUri):
-        urlDir = imageUri.rsplit('/', 1)[0] + '/'
-
-        curlCmd = ['curl', '-k', '-f', '-u', '%s:%s' % (self.apprepoUsername,
-                                                        self.apprepoPassword)]
-        deleteUrlCmd = curlCmd + [ '-X', 'DELETE', urlDir]
-
-        Util.execute(deleteUrlCmd,
-                     verboseLevel=self.verboseLevel,
-                     verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
 
     def _createCreator(self, image, script_file=''):
 
