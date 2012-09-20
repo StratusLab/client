@@ -64,7 +64,7 @@ class PortTranslationWebClient(PortTranslation):
         return headers, content.replace('\\', '')
 
     def _handleException(self, exception):
-        if self.verboseLevel >= Util.NORMAL_VERBOSE_LEVEL:
+        if self.verboseLevel >= Util.VERBOSE_LEVEL_NORMAL:
             raise exception
         else:
             raise Exception("Couldn't get port translation. Increase verbose level to see details.")

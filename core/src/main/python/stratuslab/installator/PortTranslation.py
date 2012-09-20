@@ -168,7 +168,7 @@ VM_HOOK = [
                                          'arguments': args}
 
     def _addHookVerboseMode(self):
-        if self.patVerboseLevel > Util.NORMAL_VERBOSE_LEVEL:
+        if self.patVerboseLevel > Util.VERBOSE_LEVEL_NORMAL:
             return '-%s' % ('v' * self.patVerboseLevel)
         return ''
 

@@ -93,7 +93,7 @@ class BaseSystem(object):
                                      (', '.join(packages_versioned), output))
 
         Util.printDetail(output, verboseLevel=self.verboseLevel,
-                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+                         verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
 
     def getPackageWithVersionForInstall(self, package):
         try:
@@ -503,7 +503,7 @@ class BaseSystem(object):
                        stdout=stdout,
                        stderr=stderr,
                        verboseLevel=self.verboseLevel,
-                       verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                       verboseThreshold=Util.VERBOSE_LEVEL_DETAILED,
                        **kwargs)
 
     def _executeWithOutput(self, command, **kwargs):
@@ -551,7 +551,7 @@ class BaseSystem(object):
                       stdout=stdout,
                       stderr=stderr,
                       verboseLevel=self.verboseLevel,
-                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                      verboseThreshold=Util.VERBOSE_LEVEL_DETAILED,
                       **kwargs)
 
     def _nodeCopy(self, source, dest, **kwargs):
@@ -569,7 +569,7 @@ class BaseSystem(object):
                    stdout=stdout,
                    stderr=stderr,
                    verboseLevel=self.verboseLevel,
-                   verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                   verboseThreshold=Util.VERBOSE_LEVEL_DETAILED,
                    **kwargs)
 
     def _remoteSetCloudAdminOwner(self, path):

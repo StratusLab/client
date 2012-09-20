@@ -44,7 +44,7 @@ class PersistentDisk(object):
         self.password = None
         self.pemCertificate = None
         self.pemKey = None
-        self.verboseLevel = Util.NORMAL_VERBOSE_LEVEL
+        self.verboseLevel = Util.VERBOSE_LEVEL_NORMAL
         self.pdiskEndpoint = None
         self.endpointSuffix = ''
         self.maxMounts = 10

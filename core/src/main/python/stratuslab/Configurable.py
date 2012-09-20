@@ -56,7 +56,7 @@ class Configurable(object):
     def printStep(self, msg):
         Util.printStep(msg)
     
-    def printDetail(self, msg, verboseThreshold=Util.NORMAL_VERBOSE_LEVEL):
+    def printDetail(self, msg, verboseThreshold=Util.VERBOSE_LEVEL_NORMAL):
         Util.printDetail(msg, self.verboseLevel, verboseThreshold)
 
     def printWarning(self, msg):

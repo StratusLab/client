@@ -80,9 +80,9 @@ class Signator(Configurable):
         return jarLocation
 
     def _renameFiles(self):
-        self.printDetail('Renaming input file from %s to %s' % (self.manifestFile, self.renamedInputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        self.printDetail('Renaming input file from %s to %s' % (self.manifestFile, self.renamedInputManifestFile), verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
         os.rename(self.manifestFile, self.renamedInputManifestFile)
-        self.printDetail('Renaming output file from %s to %s' % (self.tempManifestFile, self.outputManifestFile), verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+        self.printDetail('Renaming output file from %s to %s' % (self.tempManifestFile, self.outputManifestFile), verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
         os.rename(self.tempManifestFile, self.outputManifestFile)
 
     def _cleanupTempFile(self):
@@ -99,4 +99,4 @@ class Signator(Configurable):
 
     def _printCalling(self, cmd):
         Util.printDetail('Calling: %s' % cmd, verboseLevel=self.verboseLevel,
-                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+                         verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)

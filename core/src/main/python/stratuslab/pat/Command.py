@@ -51,7 +51,7 @@ class PortTranslationCommand(CommandBaseUser):
 
     def _setOptionIfNotDefined(self, option, default):
         if not getattr(self.options, option, None):
-            if self.verboseLevel >= Util.NORMAL_VERBOSE_LEVEL:
+            if self.verboseLevel >= Util.VERBOSE_LEVEL_NORMAL:
                 sys.stdout.write("Warning: '%s' is not defined, using '%s'.\n" % (option, default))
             setattr(self.options, option, default)
 

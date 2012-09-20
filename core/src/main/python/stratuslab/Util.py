@@ -43,9 +43,9 @@ defaultConfigFileUser = os.path.join(Defaults.userHome, '.stratuslab', 'stratusl
 manifestExt = '.xml'
 cliLineSplitChar = '#'
 
-QUIET_VERBOSE_LEVEL = 0
-NORMAL_VERBOSE_LEVEL = 1
-DETAILED_VERBOSE_LEVEL = 2
+VERBOSE_LEVEL_QUIET = 0
+VERBOSE_LEVEL_NORMAL = 1
+VERBOSE_LEVEL_DETAILED = 2
 
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
@@ -326,10 +326,10 @@ def _printDetail(message, kwargs={}):
     printDetail(message, verboseLevel, verboseThreshold)
 
 def _extractVerboseLevel(kwargs):
-    return _extractAndDeleteKey('verboseLevel', QUIET_VERBOSE_LEVEL, kwargs)
+    return _extractAndDeleteKey('verboseLevel', VERBOSE_LEVEL_QUIET, kwargs)
 
 def _extractVerboseThreshold(kwargs):
-    return _extractAndDeleteKey('verboseThreshold', DETAILED_VERBOSE_LEVEL, kwargs)
+    return _extractAndDeleteKey('verboseThreshold', VERBOSE_LEVEL_DETAILED, kwargs)
 
 def _extractAndDeleteKey(key, default, dict):
     value = default

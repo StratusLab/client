@@ -93,4 +93,4 @@ class Image(object):
         return self.manifestDownloader.getImageLocations()
 
     def printDetail(self, msg):
-        return Util.printDetail(msg, self.verboseLevel, Util.DETAILED_VERBOSE_LEVEL)
+        return Util.printDetail(msg, self.verboseLevel, Util.VERBOSE_LEVEL_DETAILED)

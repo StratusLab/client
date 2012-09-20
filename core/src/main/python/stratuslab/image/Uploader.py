@@ -118,7 +118,7 @@ class Uploader(object):
         self.manifestFile = signator.outputManifestFile
 
     def _execute(self, command):
-        if self.verboseLevel <= Util.NORMAL_VERBOSE_LEVEL:
+        if self.verboseLevel <= Util.VERBOSE_LEVEL_NORMAL:
             devNull = open('/dev/null', 'w')
             ret = Util.execute(command, stdout=devNull, stderr=devNull)
             devNull.close()

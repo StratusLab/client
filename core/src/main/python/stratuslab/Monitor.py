@@ -233,7 +233,7 @@ class Monitor(Configurable):
         sys.stdout.write('\n')
 
     def _printErrorIfRequired(self, info, headerAttributes):
-        if(self.verboseLevel >= Util.NORMAL_VERBOSE_LEVEL):
+        if(self.verboseLevel >= Util.VERBOSE_LEVEL_NORMAL):
             if(getattr(info, 'template_error_message', None)):
                 print ' ' * headerAttributes[0][1] + info.template_error_message
 

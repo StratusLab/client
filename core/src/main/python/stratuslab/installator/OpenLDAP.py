@@ -132,6 +132,6 @@ class OpenLDAP(Installator):
 
     def _executeExitOnError(self, cmd_str):
         rc, output = Util.execute(cmd_str.split(' '), withOutput=True, verboseLevel=self.verboseLevel,
-                                  verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+                                  verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
         if rc != 0:
             printError('Failed running: %s\n%s' % (cmd_str, output))

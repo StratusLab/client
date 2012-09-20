@@ -548,8 +548,8 @@ class Runner(object):
         self.printStep('Starting %s %s' % (self.instanceNumber,
                                         plurial.get(self.instanceNumber > 1)))
 
-        self.printDetail('on endpoint: %s' % self.endpoint, Util.DETAILED_VERBOSE_LEVEL)
-        self.printDetail('with template:\n%s' % vmTpl, Util.DETAILED_VERBOSE_LEVEL)
+        self.printDetail('on endpoint: %s' % self.endpoint, Util.VERBOSE_LEVEL_DETAILED)
+        self.printDetail('with template:\n%s' % vmTpl, Util.VERBOSE_LEVEL_DETAILED)
 
         for vmNb in range(self.instanceNumber):
             vmId = self.cloud.vmStart(vmTpl)
@@ -618,7 +618,7 @@ class Runner(object):
         self.printDetail('"%s" %s VM%s: %s' % (operation, len(_ids), plural, 
                                              ', '.join(map(str,_ids))))
 
-    def printDetail(self, msg, verboseLevel=Util.NORMAL_VERBOSE_LEVEL):
+    def printDetail(self, msg, verboseLevel=Util.VERBOSE_LEVEL_NORMAL):
         if self.quiet:
             return
         return Util.printDetail(msg, self.verboseLevel, verboseLevel)

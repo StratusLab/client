@@ -134,7 +134,7 @@ class Creator(object):
         self.__listener = CreatorBaseListener()
 
     def printDetail(self, msg):
-        return Util.printDetail(msg, self.verboseLevel, Util.NORMAL_VERBOSE_LEVEL)
+        return Util.printDetail(msg, self.verboseLevel, Util.VERBOSE_LEVEL_NORMAL)
 
     def create(self):
 
@@ -513,7 +513,7 @@ deb %(name)s
 
     def _scp(self, src, dst, **kwargs):
         return Util.scp(src, dst, self.userPrivateKeyFile,
-                        verboseLevel=self.verboseLevel, verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                        verboseLevel=self.verboseLevel, verboseThreshold=Util.VERBOSE_LEVEL_DETAILED,
                         stderr=self.stderr, stdout=self.stdout, **kwargs)
     def _scpWithOutput(self, src, dst):
         return self._scp(src, dst, withOutput=True)
@@ -522,7 +522,7 @@ deb %(name)s
         ret = sshCmd(cmd, self.vmAddress,
                      sshKey=self.userPrivateKeyFile,
                      verboseLevel=self.verboseLevel,
-                     verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                     verboseThreshold=Util.VERBOSE_LEVEL_DETAILED,
                      **kwargs)
         if ret and throwOnError:
             raise ExecutionException('Error executing command: %s' % cmd)
@@ -532,7 +532,7 @@ deb %(name)s
         rc, output = sshCmdWithOutput(cmd, self.vmAddress,
                                       sshKey=self.userPrivateKeyFile,
                                       verboseLevel=self.verboseLevel,
-                                      verboseThreshold=Util.DETAILED_VERBOSE_LEVEL,
+                                      verboseThreshold=Util.VERBOSE_LEVEL_DETAILED,
                                       **kwargs)
         if rc and throwOnError:
             raise ExecutionException('Error executing command: %s\n%s' % (cmd, output))

@@ -85,7 +85,7 @@ class CertGenerator(object):
         self.tmp_dir = tempfile.mkdtemp()
         Util.printDetail("Temporary directory for certificate generation: %s" %
                          self.tmp_dir, self.configHolder.verboseLevel, 
-                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+                         verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
         try:
             self._generateOpensslConfig()
             self._runCommandsP12()
@@ -131,7 +131,7 @@ subjectAltName=email:%(subjectEmail)s
                          self.configHolder.verboseLevel)
         Util.printDetail("Openssl configuration: %s" % open(conf_filename).read(),
                          self.configHolder.verboseLevel,
-                         verboseThreshold=Util.DETAILED_VERBOSE_LEVEL)
+                         verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
 
     def _runCommandsP12(self):
         opts = dict(self.configHolder.options.items() + [('tmp', self.tmp_dir)])

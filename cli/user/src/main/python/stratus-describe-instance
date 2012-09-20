@@ -73,7 +73,7 @@ to the user (-u/--username).'''
         monitor = Monitor(configHolder)
         if self.vmIds:
             list = monitor.vmDetail(self.vmIds)
-            if len(list) == 1 and self.verboseLevel > Util.DETAILED_VERBOSE_LEVEL:
+            if len(list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
                 monitor.printVmAllAttributes(list)
             else:
                 monitor.printVmDetails(list)
