@@ -3,7 +3,7 @@ import json
 
 from stratuslab.messaging.MsgClientFactory import getMsgClient
 from stratuslab.Exceptions import InputException
-from stratuslab.Image import Image
+from stratuslab.image.Image import Image
 
 class SingleMessagePublisher(object):
 

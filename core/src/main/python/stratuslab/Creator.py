@@ -38,7 +38,7 @@ from stratuslab.system.ubuntu import cleanPackageCacheCmd as aptCleanPackageCach
 from stratuslab.system.centos import installCmd as yumInstallCmd
 from stratuslab.system.centos import updateCmd as yumUpdateCmd
 from stratuslab.system.centos import cleanPackageCacheCmd as yumCleanPackageCacheCmd
-from stratuslab.Image import Image
+from stratuslab.image.Image import Image
 from stratuslab.system import Systems
 from stratuslab import Defaults
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader

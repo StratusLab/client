@@ -45,7 +45,7 @@ import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.Util import sleep, printStep, filePutContent
-from stratuslab.Image import Image
+from stratuslab.image.Image import Image
 from stratuslab.ManifestInfo import ManifestInfo
 from os.path import splitext
 from os import mkdir, rmdir, remove

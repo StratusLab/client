@@ -25,7 +25,7 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 
 class Image(object):
-    
+
     re_imageId = re.compile('^[A-Za-z0-9_-]{27}$')
     re_diskId = re.compile('^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 

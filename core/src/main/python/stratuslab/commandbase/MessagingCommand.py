@@ -23,7 +23,7 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.Defaults import MSG_TYPES
 from stratuslab.messaging.Defaults import MSG_SMTP_HOST
 from stratuslab.messaging.MessagePublishers import ImageIdPublisher, SingleMessagePublisher
-from stratuslab.Image import Image
+from stratuslab.image.Image import Image
 from stratuslab.Exceptions import ValidationException
 
 class MessagingCommand(CommandBaseSysadmin):

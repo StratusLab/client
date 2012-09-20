@@ -25,7 +25,7 @@ import stratuslab.Util as Util
 import stratuslab.Exceptions as Exceptions
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Authn import AuthnFactory
-from stratuslab.Image import Image
+from stratuslab.image.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint

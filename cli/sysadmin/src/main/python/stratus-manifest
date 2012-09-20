@@ -11,7 +11,7 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Image import Image 
+from stratuslab.image.Image import Image 
 import stratuslab.Util as Util
 
 class MainProgram(CommandBaseSysadmin):

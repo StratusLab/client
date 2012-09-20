@@ -28,7 +28,7 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageFormats
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Compressor import Compressor
-from stratuslab.Image import Image
+from stratuslab.image.Image import Image
 import stratuslab.Util as Util
 
 class MainProgram(CommandBase):
