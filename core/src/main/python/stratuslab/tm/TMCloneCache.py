@@ -232,6 +232,9 @@ class TMCloneCache(object):
     def _copyDownloadedImageToPartition(self):
         copyCmd = []
         
+        # FIXME: if backend is on a different host need to attach the LUN 
+        # to this host with persistent-disk-backend.py  
+        
         if self.configHolder.persistentDiskShare.lower() == 'nfs':
             copyDst = '%s/%s/%s' % (self.configHolder.persistentDiskNfsMountPoint, \
                                     'pdisks', self.pdiskImageId)
