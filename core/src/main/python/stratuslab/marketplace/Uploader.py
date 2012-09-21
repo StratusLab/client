@@ -25,8 +25,7 @@ from stratuslab.HttpClient import HttpClient
 from stratuslab.Exceptions import InputException, ClientException,\
     ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
-from Util import Util as MarketplaceUtil
-
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.Util import importETree
 
 etree = importETree()
