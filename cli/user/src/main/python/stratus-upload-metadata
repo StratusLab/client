@@ -57,7 +57,8 @@ class MainProgram(AuthnCommand):
         uploader = Uploader(configHolder)
     
         try:
-            uploader.upload(self.manifest)
+            url = uploader.upload(self.manifest)
+            print url
         except InputException, e:
             print e
             sys.exit(1)
