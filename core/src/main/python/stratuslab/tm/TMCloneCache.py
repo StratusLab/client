@@ -447,8 +447,9 @@ class TMCloneCache(object):
         return output
         
     def _sshPDisk(self, cmd, errorMsg, dontRaiseOnError=False):
-        print 'in _sshPdisk', cmd
-        retCode, output = sshCmdWithOutput(' '.join(cmd), self.pdisk.persistentDiskIp, user=getuser(),
+        cmd_str = ' '.join(cmd)
+        print "Executing: %s" % cmd_str
+        retCode, output = sshCmdWithOutput(cmd_str, self.pdisk.persistentDiskIp, user=getuser(),
                                            sshKey=self.pdisk.persistentDiskPrivateKey.replace('.pub', ''))
         if not dontRaiseOnError and retCode != 0:
             raise Exception('%s\n: Error: %s' % (errorMsg, output))
