@@ -177,8 +177,8 @@ persistent_disk_temp_store = /var/lib/one/images/
 # Location of the persistent disk storage service
 persistent_disk_ip =
 
-# Target LVM device (example: /dev/vg.02)
-persistent_disk_lvm_device = 
+# Target LVM device
+persistent_disk_lvm_device = /dev/pdisk
 
 # Group name of device mapper files representing LVMs.
 # one_admin will be added to the group. The group must exist.
@@ -211,8 +211,9 @@ persistent_disk_nfs_mount_point = /mnt/
 # Location of the disk for file storage. Not used with LVM
 persistent_disk_file_location = /tmp/pdisk
 
-# Not used if LVM device already exists. Only used at install. Space separated list.
-persistent_disk_physical_devices = /dev/sdb /dev/sdc
+# Not used if LVM device already exists. Only used at install.
+# Space separated list (example: /dev/sdb /dev/sdc).
+persistent_disk_physical_devices =
 
 # Location of the VM directory on the node
 persistent_disk_cloud_vm_dir = /var/lib/one
