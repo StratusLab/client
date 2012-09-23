@@ -211,7 +211,8 @@ class Testor(unittest.TestCase):
 
         return self.runner
 
-    def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None, persistentDiskUUID=None, image=None):
+    def _createRunner(self, withLocalNetwork=False, requestedIpAddress=None, 
+                      persistentDiskUUID=None, image=None):
         Util.generateSshKeyPair(self.sshKey)
 
         if not image:
@@ -833,7 +834,7 @@ touch %s
         if len(vmIds) < 1:
             self.fail('An error occurred while starting a VM')
         if not runner.waitUntilVmRunningOrTimeout(vmIds[0], failOn=('Failed')):
-            self.fail('Failed starting VM: image %s, pdisk %s' % (str(image),
+            self.fail('Failed starting VM: image %s, pdisk %s' % (str(image or Runner.vm_image),
                                                                   str(pdisk)))
         self.vmIds.extend(vmIds)
         self._repeatCall(self._ping, runner)
