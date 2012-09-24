@@ -248,18 +248,22 @@ class Runner(object):
     def _setPersistentDiskOptional(self):
         if not self.persistentDiskUUID:
             return
+
+        self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
+        self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
+
+        self._checkPersistentDiskAvailable()
+
+    def _checkPersistentDiskAvailable(self):
+        self.pdisk = PersistentDisk(self.configHolder)
         try:
-            self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
-            self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
-            self.pdisk = PersistentDisk(self.configHolder)
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
-                Util.printError('disk cannot be attached; it is already mounted (%s/%s)' 
-                                % (available, self.instanceNumber))
+                Util.printError('disk cannot be attached; it is already mounted (%s/%s)' % (available, self.instanceNumber))
         except AttributeError:
             Util.printError('Persistent disk service unavailable', exit=False)
             raise
-        except Exception, e:
+        except Exception as e:
             Util.printError(e, exit=False)
             raise
 
