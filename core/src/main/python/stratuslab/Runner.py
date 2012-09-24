@@ -123,7 +123,8 @@ class Runner(object):
         self.noCheckImageUrl = False
         self.saveDisk = False
         self.userDefinedInstanceTypes = {}
-        
+        self.pdiskPort = Defaults.pdiskPort
+
         configHolder.assign(self)
         self.configHolder = configHolder
 
