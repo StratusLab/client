@@ -19,7 +19,6 @@
 #
 import os
 import tempfile
-import copy
 
 from stratuslab import Util
 from stratuslab.ManifestInfo import ManifestInfo
@@ -118,7 +117,7 @@ class Deprecator(object):
             if isError:
                 raise ExecutionException('Error signing new manifest')
             
-            self.uploader.upload(tempDeprecatedMetadataFilename)
+            return self.uploader.upload(tempDeprecatedMetadataFilename)
         finally:
             try:
                 os.unlink(tempMetadataFilename)

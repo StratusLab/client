@@ -55,7 +55,8 @@ class MainProgram(AuthnCommand):
         deprecator = Deprecator(configHolder)
 
         try:
-            deprecator.deprecate(self.imageid)
+            deprecatedUrl = deprecator.deprecate(self.imageid)
+            print deprecatedUrl
         except InputException, e:
             print e
             sys.exit(1)
