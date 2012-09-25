@@ -834,7 +834,7 @@ touch %s
         if len(vmIds) < 1:
             self.fail('An error occurred while starting a VM')
         if not runner.waitUntilVmRunningOrTimeout(vmIds[0], failOn=('Failed')):
-            self.fail('Failed starting VM: image %s, pdisk %s' % (str(image or Runner.vm_image),
+            self.fail('Failed starting VM: image %s, pdisk %s' % (str(image or runner.vm_image),
                                                                   str(pdisk)))
         self.vmIds.extend(vmIds)
         self._repeatCall(self._ping, runner)
