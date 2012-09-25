@@ -117,7 +117,7 @@ class OpenLDAP(Installator):
         Util.execute(cmd.split(' '))
 
         Util.printStep('Adding cloud database entries')
-        cmd = "ldapadd -x -H ldap://%s -D %s -w %s -f %s" % (self._nodename,
+        cmd = "ldapadd -x -H ldaps://%s -D %s -w %s -f %s" % (self._nodename,
                                                               self._openLdapAdminDn, 
                                                               self.openldapPassword, 
                                                               self._cloudDatabaseSkeleton)
