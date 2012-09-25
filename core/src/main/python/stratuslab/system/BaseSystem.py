@@ -844,8 +844,11 @@ class BaseSystem(object):
     # -------------------------------------------
 
     def installSendmail(self):
+        package = 'sendmail'
         if getattr(self, 'smtpHost', 'localhost') == 'localhost':
-            self.installPackages([self.getPackageName('sendmail')])
+            self.installPackages([self.getPackageName(package)])
+        else:
+            Util.printDetail('Skipping installation of %s' % package)
 
     # -------------------------------------------
     # CA
