@@ -22,8 +22,8 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>eu.stratuslab.marketplace</groupId>
-      <artifactId>marketplace-metadata</artifactId>
+      <groupId>eu.stratuslab.metadata</groupId>
+      <artifactId>metadata</artifactId>
       <type>jar</type>
       <classifier>jar-with-dependencies</classifier>
       <scope>compile</scope>
@@ -129,8 +129,8 @@
               <outputDirectory>${project.build.directory}/jar</outputDirectory>
               <artifactItems>
                 <artifactItem>
-                  <groupId>eu.stratuslab.marketplace</groupId>
-                  <artifactId>marketplace-metadata</artifactId>
+                  <groupId>eu.stratuslab.metadata</groupId>
+                  <artifactId>metadata</artifactId>
                   <classifier>jar-with-dependencies</classifier>
                   <type>jar</type>
                 </artifactItem>
