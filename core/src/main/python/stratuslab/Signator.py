@@ -37,7 +37,7 @@ class Signator(Configurable):
         
         for dir in dirs:
             try:
-                jarFile = Util.fileFind(dir, 'marketplace-metadata', 'dependencies.jar')
+                jarFile = Util.fileFind(dir, 'metadata', 'dependencies.jar')
                 return jarFile
             except ValueError:
                 pass
