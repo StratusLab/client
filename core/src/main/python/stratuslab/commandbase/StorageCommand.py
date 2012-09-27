@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 import os
+from optparse import OptionParser
 
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import UsernamePassword
@@ -69,9 +70,17 @@ class PDiskEndpoint(object):
                           help='Persistent Disk service password. \
                           Default STRATUSLAB_PDISK_PASSWORD, then your cloud password', 
                           metavar='NAME', default=defaultOptions['pdiskPassword'])
-        
+
     @staticmethod
     def checkOptions(options):
         if options.pdiskEndpoint:
             return True
         return False
+
+    @staticmethod
+    def checkOptionsRaiseOnError(options):
+        parser = OptionParser(version="${project.version}")
+        if not options.pdiskEndpoint:
+            parser.error('Missing Persistent Disk service endpoint. Please provide %s' 
+                         % PDiskEndpoint.optionString)
+            
