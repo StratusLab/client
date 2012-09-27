@@ -802,8 +802,10 @@ touch %s
         try:
             Util.printAction('Downloading volume...')
             # compressed disk comes in HTTP response - don't print it from HTTP client!
-            pdisk.client.verboseLevel = 0
+            verb_save = pdisk.configHolder.verboseLevel
+            pdisk.configHolder.verboseLevel = 0
             pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
+            pdisk.configHolder.verboseLevel = verb_save
             volume = self._gunzip(downloadedCompressedDisk)
         finally:
             try: remove(downloadedCompressedDisk)

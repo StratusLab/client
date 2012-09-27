@@ -1,21 +1,12 @@
-import datetime
-import inspect
 import os
 import time
-import unittest
-import urllib2
 
-from stratuslab.Runner import Runner
-from stratuslab.Exceptions import NetworkException, OneException
-from stratuslab.Exceptions import ConfigurationException
-from stratuslab.Exceptions import ExecutionException
-from stratuslab.Exceptions import InputException
-from stratuslab.ConfigHolder import ConfigHolder
 import Util
-from stratuslab.Util import sshCmd
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmdWithOutput
-VM_START_TIMEOUT = 5 * 60 # 5 min
+from stratuslab.Exceptions import OneException, ExecutionException
+
+VM_START_TIMEOUT = 15 * 60 # 5 min
 
 class Benchmark(object):
     
@@ -31,13 +22,11 @@ class Benchmark(object):
 
     def run(self):
         allocatedIp = self.prepareMachine(self.vmId)
-        vm_cpu, vm_ram, vm_swap = self._runner.getInstanceResourceValues()
+        vm_cpu, _, _ = self._runner.getInstanceResourceValues()
         if self.output_folder:
             self.output_xml=self.output_folder
         else:
             self.output_xml='/tmp'
-
-
   
         if self.openmp:  
             self.openmp_benchmark(allocatedIp,vm_cpu,self._runner.userPrivateKeyFile)      
@@ -54,9 +43,6 @@ class Benchmark(object):
         
         self._stopVm(self.vmId)       
         
-            
-
-
     def openmp_benchmark(self,ip_vm,vm_cpu,sshkey):
         executables=['openmp-jacobi','openmp-cg','openmp-matrix']
         for executable in executables:
