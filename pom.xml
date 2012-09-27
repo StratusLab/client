@@ -28,7 +28,6 @@ with minimal dependencies for maximum portability.
 
   <modules>
     <module>core</module>
-    <module>cgi</module>
     <module>cli</module>
   </modules>
 
