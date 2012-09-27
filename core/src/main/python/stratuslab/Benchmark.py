@@ -1,18 +1,6 @@
-import datetime
-import inspect
 import os
 import time
-import unittest
-import urllib2
-
-from stratuslab.Runner import Runner
-from stratuslab.Exceptions import NetworkException, OneException
-from stratuslab.Exceptions import ConfigurationException
-from stratuslab.Exceptions import ExecutionException
-from stratuslab.Exceptions import InputException
-from stratuslab.ConfigHolder import ConfigHolder
 import Util
-from stratuslab.Util import sshCmd
 from stratuslab.Util import scp
 from stratuslab.Util import sshCmdWithOutput
 VM_START_TIMEOUT = 5 * 60 # 5 min
