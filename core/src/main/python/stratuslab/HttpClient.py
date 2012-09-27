@@ -38,6 +38,7 @@ class HttpClient(object):
         self.crendentials = {}
         self.certificates = {}
         self.handleResponse = True
+        self.useHttpCache = True
         configHolder.assign(self)        
 
     def get(self, url, accept='application/xml'):
@@ -148,7 +149,10 @@ class HttpClient(object):
             if str(resp.status).startswith('5'):
                 resp, content = _handle5xx()
 
-        h = httplib2.Http(".cache")
+        if self.useHttpCache:
+            h = httplib2.Http(".cache")
+        else:
+            h = httplib2.Http()
         h.force_exception_to_status_code = False
         h.disable_ssl_certificate_validation=True
         self._printDetail('Contacting the server with %s, at: %s' % (method, url))
