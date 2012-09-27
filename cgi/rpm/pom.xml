@@ -8,7 +8,7 @@
   <name>StratusLab Web Monitor (RPM)</name>
 
   <parent>
-    <groupId>eu.stratuslab.pkgs</groupId>
+    <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-web-monitor</artifactId>
     <version>2.3-SNAPSHOT</version>
   </parent>
@@ -40,7 +40,7 @@
 		  <outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
 		  <artifactItems>
 		    <artifactItem>
-		      <groupId>eu.stratuslab.pkgs</groupId>
+		      <groupId>eu.stratuslab.client</groupId>
 		      <artifactId>stratuslab-web-monitor-zip</artifactId>
 		      <classifier>cgi-bundle</classifier>
 		      <type>zip</type>
@@ -72,7 +72,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>eu.stratuslab.pkgs</groupId>
+      <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-web-monitor-zip</artifactId>
       <version>2.3-SNAPSHOT</version>
       <classifier>cgi-bundle</classifier>

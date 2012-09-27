@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
 
   <parent>
-    <groupId>eu.stratuslab.pkgs</groupId>
+    <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli</artifactId>
     <version>2.0-SNAPSHOT</version>
   </parent>
@@ -40,7 +40,7 @@
 		  <outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
 		  <artifactItems>
 		    <artifactItem>
-		      <groupId>eu.stratuslab.pkgs</groupId>
+		      <groupId>eu.stratuslab.client</groupId>
 		      <artifactId>stratuslab-cli-user-pkg</artifactId>
 		      <!-- <classifier>cli-user-bundle</classifier> -->
 		      <type>zip</type>
@@ -72,7 +72,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>eu.stratuslab.pkgs</groupId>
+      <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-cli-user-pkg</artifactId>
       <version>1.9-SNAPSHOT</version>
       <!-- <classifier>cli-user-bundle</classifier> -->

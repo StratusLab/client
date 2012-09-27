@@ -7,7 +7,7 @@
   <name>StratusLab Core (ZIP)</name>
 
   <parent>
-    <groupId>eu.stratuslab.pkgs</groupId>
+    <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-parent</artifactId>
     <version>2.3-SNAPSHOT</version>
   </parent>
