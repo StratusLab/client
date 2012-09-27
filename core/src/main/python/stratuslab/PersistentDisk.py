@@ -236,7 +236,10 @@ class PersistentDisk(object):
         return json.loads(content)['target']
     
     def downloadVolume(self, uuid, filename):
-        self._initPDiskConnection()
+        # Don't cache http response as it will contain the image in the body.
+        configHolder = self.configHolder.copy()
+        configHolder.set('useHttpCache', False)
+        self._initPDiskConnection(configHolder=configHolder)
         self._printContacting()
         volumeUrl = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, content = self._getGzip(volumeUrl)
