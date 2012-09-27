@@ -16,7 +16,7 @@ class Benchmark(object):
         self._runner = runner
         self.vmId = vmId
         self.output_xml=''
-        self.cpustresstime='600'
+        self.cpustresstime='120'
         self.io_i='10'
         self.io_o='10'
 
