@@ -63,8 +63,8 @@ class PersistentDisk(object):
             except AttributeError:
                 raise ConfigurationException('Missing persistent disk endpoint.')
         
-    def _initPDiskConnection(self):
-        self.client = HttpClient(self.configHolder)
+    def _initPDiskConnection(self, configHolder=None):
+        self.client = HttpClient(configHolder or self.configHolder)
         self._addCredentials()
         self._buildFQNEndpoint()
 
