@@ -22,7 +22,6 @@ import inspect
 import os.path
 import time
 import unittest
-import urllib2
 import re
 import sys
 import tempfile
@@ -490,22 +489,6 @@ touch %s
 
         return Creator(image, configHolder)
 
-    def webMonitorTest(self):
-        '''Web Monitor test'''
-        
-        if not self.webMonitorHost:
-            self.webMonitorHost = self.frontendIp
-
-        uri = 'http://%s/cgi-bin' % self.webMonitorHost
-        pages = ['nodelist.py', 'nodedetail.py', 'vmlist.py', 'vmdetail.py']
-
-        for page in pages:
-            url = uri + '/' + page  
-            try:
-                urllib2.urlopen(url, timeout=5)
-            except Exception, ex:
-                self.fail("Failed to open %s.\n%s" % (url, ex))
-
     def _registerInvalidImageInMarketplace(self):
         manifest_file = os.path.join(Util.getResourcesDir(), 
                                      'manifest-invalid-sha1.xml')
@@ -546,34 +529,6 @@ touch %s
         else:
             self.failUnless(errorMessage, "Empty error message.")
             print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
-
-    def errorMessageInWebMonitorTest(self):
-        '''Check if VM creation error message is on Web Monitor's VM details page'''
-
-        info, vmId = self._startStopInvalidImage()
-
-        try:
-            errorMessage = info.attribs['template_error_message']
-        except KeyError:
-            self.fail("No error message set.")
-        else:
-            self.failUnless(errorMessage, "Empty error message.")
-            if self.verboseLevel > 1:
-                print 'VM %s failed with error message:\n%s' % (vmId, errorMessage)
-
-        # check VM details page of Web Monitor
-        if not self.webMonitorHost:
-            self.webMonitorHost = self.endpoint
-
-        url = 'http://%s/cgi-bin/vmdetail.py?id=%s' % (self.webMonitorHost, vmId)
-
-        fh = urllib2.urlopen(url, timeout=5)
-        page = fh.read()
-
-        for line in errorMessage.replace('\\n', '\n').split('\n'):
-            self.failUnless(line in page,
-                            "Line '%s' of error message '%s' for VM %s wasn't found at %s" %
-                            (line, errorMessage, vmId, url))
 
     def _startStopVmAndGetVmInfo(self):
         'Return VM monitoring info and VM id.'

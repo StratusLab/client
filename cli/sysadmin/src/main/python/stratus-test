@@ -70,11 +70,6 @@ class MainProgram(CommandBase):
                                help='list of tests to exclude (comma separated)',
                                default='', metavar='TESTS')
                                
-        self.parser.add_option('--webmonitor-host', dest='webMonitorHost',
-                               help='IP or hostname where Web Monitor is installed. If not set, cloud frontend '
-                               'IP defined in configuration file will be used.',
-                               default='', metavar='ENDPOINT')
-
         self.parser.add_option('--image-id-createimage', dest='imageIdCreateImage',
                                help='ID of the image to be used with createImageTest. '
                                'Default: ArCnG4gBogiprglBUdG6V8YX20y',
