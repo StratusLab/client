@@ -33,7 +33,6 @@ class BaseInstallator(object):
     def availableInstallators():
         return (('opennebula', OpenNebula),
                 ('persistent-disk', PersistentDisk),
-                ('web-monitor', WebMonitor),
                 ('openldap', OpenLDAP),
                 ('registration', Registration),
                 ('port-translation', PortTranslation),
