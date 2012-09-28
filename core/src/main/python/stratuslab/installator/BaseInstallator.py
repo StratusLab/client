@@ -20,7 +20,6 @@
 
 from stratuslab.Util import printAction, isTrueConfVal, printDetail
 from stratuslab.installator.PersistentDisk import PersistentDisk
-from stratuslab.installator.WebMonitor import WebMonitor
 from stratuslab.installator.OpenNebula import OpenNebula
 from stratuslab.installator.Registration import Registration
 from stratuslab.installator.Sunstone import Sunstone
