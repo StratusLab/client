@@ -29,6 +29,7 @@ from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageF
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Compressor import Compressor
 from stratuslab.image.Image import Image
+from stratuslab.Runner import Runner
 import stratuslab.Util as Util
 
 class MainProgram(CommandBase):
@@ -91,6 +92,10 @@ class MainProgram(CommandBase):
                 help='Comment to append to the manifest file',
                 default='', metavar='TEXT')
 
+        self.parser.add_option('--disks-bus', dest='disksbus',
+                help='Disks bus type. One of: %s' % ', '.join(Runner.DISKS_BUS_AVAILABLE),
+                default=Runner.DISKS_BUS_DEFAULT, metavar='TYPE')
+
         self.parser.add_option('--md5', dest='md5',
                 help='md5 checksum',
                 default='', metavar='HEX')
@@ -134,6 +139,9 @@ class MainProgram(CommandBase):
         if not self.options.compression:
             Util.printWarning("Image compression was not provided. "
                               "You'll have to set it manually in the resulting manifest.")
+        if self.options.disksbus not in Runner.DISKS_BUS_AVAILABLE:
+            self.parser.error("Unknown disks bus type %s. Available types: %s" % \
+                              (self.options.disksbus, ', '.join(Runner.DISKS_BUS_AVAILABLE)))
 
     def doWork(self):
         self._calculateCheckSums()
