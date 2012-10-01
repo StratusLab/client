@@ -50,6 +50,7 @@
         <dcterms:description>%(comment)s</dcterms:description>
 
         <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
+        <slterms:disks-bus>%(disksbus)s</slterms:disks-bus>
 
         <dcterms:publisher>%(publisher)s</dcterms:publisher>
         %(deprecated)s
