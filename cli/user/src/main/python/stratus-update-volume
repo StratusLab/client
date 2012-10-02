@@ -43,41 +43,7 @@ class MainProgram(AuthnCommand, StorageCommand):
         self.parser.usage = '%prog [options]'
         self.parser.description = '''Update persistent disk metadata'''
 
-        self.parser.add_option('-t', '--tag', dest='volumeTag',
-                               help='Tag of the volume.', default=None)
-        
-        self.parser.add_option('--private', dest='volumeVisibility',
-                               help='''Set to private image''',
-                               action='store_const', const="PRIVATE")
-        
-        self.parser.add_option('--public', dest='volumeVisibility',
-                               help='''Set to public image''', 
-                               action='store_const', const="PUBLIC")
-
-        self.parser.add_option('--machine-image-origin', dest='volumeType',
-                               help='''Flag as original machine image''', 
-                               action='store_const', const="MACHINE_IMAGE_ORIGIN")
-
-        self.parser.add_option('--machine-image-live', dest='volumeType',
-                               help='''Flag as live machine image''', 
-                               action='store_const', const="MACHINE_IMAGE_LIVE")
-
-        self.parser.add_option('--data-image-origin', dest='volumeType',
-                               help='''Flag as original data image''', 
-                               action='store_const', const="DATA_IMAGE_ORIGIN")
-
-        self.parser.add_option('--data-image-live', dest='volumeType',
-                               help='''Flag as live data image''', 
-                               action='store_const', const="DATA_IMAGE_LIVE")
-
-        self.parser.add_option('--data-image-raw-readonly', dest='volumeType',
-                               help='''Flag as raw read-only data image''', 
-                               action='store_const', const="DATA_IMAGE_RAW_READONLY")
-
-        self.parser.add_option('--data-image-raw-read-write', dest='volumeType',
-                               help='''Flag as raw read-write data image''', 
-                               action='store_const', const="DATA_IMAGE_RAW_READ_WRITE")
-
+        StorageCommand.addVolumeOptions(self.parser)
         StorageCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()

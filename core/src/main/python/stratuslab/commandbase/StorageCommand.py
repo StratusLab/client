@@ -34,6 +34,10 @@ class StorageCommand(CommandBaseSysadmin):
     def addPDiskEndpointOptions(parser, defaultOptions=None):
         return PDiskEndpoint.addOptions(parser, defaultOptions)
 
+    @staticmethod
+    def addVolumeOptions(parser):
+        return PDiskVolume.addOptions(parser)
+
     def checkPDiskEndpointOptionsOnly(self):
         if not self.checkPDiskEndpointOptions():
             self.parser.error('Missing persistent disk endpoint. Please provide %s' 
@@ -83,4 +87,42 @@ class PDiskEndpoint(object):
         if not options.pdiskEndpoint:
             parser.error('Missing Persistent Disk service endpoint. Please provide %s' 
                          % PDiskEndpoint.optionString)
-            
+
+class PDiskVolume(object):
+
+    @staticmethod    
+    def addOptions(parser):
+        parser.add_option('-t', '--tag', dest='volumeTag',
+                          help='Tag of the volume.', default=None)
+        
+        parser.add_option('--private', dest='volumeVisibility',
+                          help='''Set to private image''',
+                          action='store_const', const="PRIVATE")
+        
+        parser.add_option('--public', dest='volumeVisibility',
+                          help='''Set to public image''', 
+                          action='store_const', const="PUBLIC")
+
+        parser.add_option('--machine-image-origin', dest='volumeType',
+                          help='''Flag as original machine image''', 
+                          action='store_const', const="MACHINE_IMAGE_ORIGIN")
+
+        parser.add_option('--machine-image-live', dest='volumeType',
+                          help='''Flag as live machine image''', 
+                          action='store_const', const="MACHINE_IMAGE_LIVE")
+
+        parser.add_option('--data-image-origin', dest='volumeType',
+                          help='''Flag as original data image''', 
+                          action='store_const', const="DATA_IMAGE_ORIGIN")
+
+        parser.add_option('--data-image-live', dest='volumeType',
+                          help='''Flag as live data image''', 
+                          action='store_const', const="DATA_IMAGE_LIVE")
+
+        parser.add_option('--data-image-raw-readonly', dest='volumeType',
+                          help='''Flag as raw read-only data image''', 
+                          action='store_const', const="DATA_IMAGE_RAW_READONLY")
+
+        parser.add_option('--data-image-raw-read-write', dest='volumeType',
+                          help='''Flag as raw read-write data image''', 
+                          action='store_const', const="DATA_IMAGE_RAW_READ_WRITE")
