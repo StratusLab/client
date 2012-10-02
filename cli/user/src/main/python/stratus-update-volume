@@ -64,7 +64,7 @@ class MainProgram(AuthnCommand, StorageCommand):
         if not self.uuids:
             printError('A disk UUID must be supplied')
         if len(self.uuids) > 1:
-            printErrir('Only one disk UUID can be specified')
+            printError('Only one disk UUID can be specified')
         self.uuid = self.uuids[0]
 
     def doWork(self):
