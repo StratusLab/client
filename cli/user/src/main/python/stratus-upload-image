@@ -29,6 +29,7 @@ from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.image.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commandbase.StorageCommand import PDiskVolume
 
 class MainProgram(AuthnCommand):
     '''A command-line program to upload StratusLab appliance.'''
@@ -57,8 +58,12 @@ class MainProgram(AuthnCommand):
         if not os.path.isfile(self.image):
             self.parser.error('Image file does not exist: ' + self.image)
 
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
+        configHolder.set('imageMetadata', 
+                         PDiskVolume.extractVolumeOptionsAsDict(self.options))
+
         uploader = Uploader(self.image, configHolder)
     
         try:
