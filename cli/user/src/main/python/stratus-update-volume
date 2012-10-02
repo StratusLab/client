@@ -36,29 +36,22 @@ class MainProgram(AuthnCommand, StorageCommand):
     '''A command-line program to update persistent disk metadata.'''
 
     def __init__(self):
-        self.TAG_LENGTH_MAX = 40
         super(MainProgram, self).__init__()
 
     def parse(self):
         self.parser.usage = '%prog [options]'
         self.parser.description = '''Update persistent disk metadata'''
 
-        StorageCommand.addVolumeOptions(self.parser)
-        StorageCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
+        StorageCommand.checkVolumeOptions(self)
         super(MainProgram, self).checkOptions()
-        self._checkTagLength()
         self._checkUuids()
-        
-    def _checkTagLength(self):
-        if not (self.options.volumeTag is None):
-            if len(self.options.volumeTag) > self.TAG_LENGTH_MAX:
-                printError('Tags must have less than %d characters' % self.TAG_LENGTH_MAX)
 
     def _checkUuids(self):
         if not self.uuids:
@@ -72,16 +65,8 @@ class MainProgram(AuthnCommand, StorageCommand):
         configHolder.pdiskProtocol = "https"
         pdisk = PersistentDisk(configHolder)
 
-        keyvalues = {}
+        keyvalues = self.extractVolumeOptionsAsDict()
 
-        if not (self.options.volumeTag is None):
-            keyvalues['tag'] = self.options.volumeTag
-
-        if not (self.options.volumeVisibility is None):
-            keyvalues['visibility'] = self.options.volumeVisibility
-
-        if not (self.options.volumeType is None):
-            keyvalues['type'] = self.options.volumeType
 
         if len(keyvalues) > 0:
             pdisk.updateVolumeAsUser(keyvalues, self.uuid)
