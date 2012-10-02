@@ -48,7 +48,7 @@ class MainProgram(AuthnCommand):
             Uploader.availableCompressionFormat(True)
 
         if len(self.args) != 1:
-            self.parser.error('Please specify an appliance manifest')
+            self.parser.error('Please specify an image as <filename>.img')
         self.image = self.args[0]
 
         Uploader.checkUploadOptions(self.options, self.parser)
