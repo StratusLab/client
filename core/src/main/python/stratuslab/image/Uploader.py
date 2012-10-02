@@ -68,6 +68,8 @@ class Uploader(object):
         PDiskEndpoint.checkOptionsRaiseOnError(options)
 
     def __init__(self, imageFile, configHolder=ConfigHolder()):
+        self.imageMetadata = {}
+
         self.configHolder = configHolder
         configHolder.assign(self)
 
@@ -104,6 +106,11 @@ class Uploader(object):
         pdisk = PersistentDisk(self.configHolder)
         self.imageUrl = pdisk.uploadVolume(self.imageFile)
         print "Image uploaded: %s" % self.imageUrl 
+
+        if self.imageMetadata:
+            uuid = self.imageUrl.rsplit('/', 1)[-1]
+            pdisk.updateVolumeAsUser(self.imageMetadata, uuid)
+            print "Image metadata updated:", self.imageMetadata
 
     def _updateManifest(self):
         self._addLocationToManifest()
