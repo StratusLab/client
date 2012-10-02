@@ -80,6 +80,8 @@ class Uploader(object):
 
         self.imageUrl = ''
 
+        self.pdisk = PersistentDisk(self.configHolder)
+
     def start(self):
         Util.printAction('Starting image upload')
 
@@ -105,13 +107,15 @@ class Uploader(object):
             self._uploadMarketPlaceManifest()
 
     def _uploadImage(self):
-        pdisk = PersistentDisk(self.configHolder)
-        self.imageUrl = pdisk.uploadVolume(self.imageFile)
-        print "Image uploaded: %s" % self.imageUrl 
+        self.imageUrl = self.pdisk.uploadVolume(self.imageFile)
+        print "Image uploaded: %s" % self.imageUrl
 
+        self._updateImageMetadataInPDisk()
+
+    def _updateImageMetadataInPDisk(self):
         if self.imageMetadata:
             uuid = self.imageUrl.rsplit('/', 1)[-1]
-            pdisk.updateVolumeAsUser(self.imageMetadata, uuid)
+            self.pdisk.updateVolumeAsUser(self.imageMetadata, uuid)
             print "Image metadata updated:", self.imageMetadata
 
     def _updateManifest(self):
