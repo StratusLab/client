@@ -38,14 +38,14 @@ class PersistentDiskTest(unittest.TestCase):
                                     {'quarantine': way_past, 'uuid': 'way_past'},
                                     {'quarantine': str(now), 'uuid': 'now'}])
         
-        PersistentDisk.describeVolumes = mock
-        PersistentDisk.deleteVolume = Mock()
-        PersistentDisk._setPDiskUserCredentials = Mock()
-        
         config = ConfigHolder()
         config.set('endpoint', 'something')
         pd = PersistentDisk(config)
         pd.quarantinePeriod = '2d'
+
+        pd.describeVolumes = mock
+        pd.deleteVolume = Mock()
+        pd._setPDiskUserCredentials = Mock()
 
         pd.cleanQuarantine()
 
