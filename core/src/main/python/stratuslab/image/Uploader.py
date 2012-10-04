@@ -28,7 +28,7 @@ from stratuslab.Compressor import Compressor
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.marketplace.Uploader import Uploader as MarketplaceUploader
 from stratuslab.PersistentDisk import PersistentDisk
-from stratuslab.commandbase.StorageCommand import PDiskEndpoint
+from stratuslab.commandbase.StorageCommand import PDiskEndpoint, PDiskVolume
 
 etree = Util.importETree()
 
@@ -53,6 +53,7 @@ class Uploader(object):
         MarketplaceUtil.addEndpointOption(parser)
 
         PDiskEndpoint.addOptions(parser)
+        PDiskVolume.addOptions(parser)
 
     @staticmethod
     def checkUploadOptions(options, parser):
@@ -65,9 +66,12 @@ class Uploader(object):
         if options.compressionFormat not in Compressor.compressionFormats:
             parser.error('Unknown compression format')
         
-        PDiskEndpoint.checkOptionsRaiseOnError(options)
+        PDiskEndpoint.checkOptions(options)
+        PDiskVolume.checkOptions(options)
 
     def __init__(self, imageFile, configHolder=ConfigHolder()):
+        self.imageMetadata = {}
+
         self.configHolder = configHolder
         configHolder.assign(self)
 
@@ -75,6 +79,8 @@ class Uploader(object):
         self.manifestFile = self.imageFile.replace('.img', '.xml')
 
         self.imageUrl = ''
+
+        self.pdisk = PersistentDisk(self.configHolder)
 
     def start(self):
         Util.printAction('Starting image upload')
@@ -101,9 +107,16 @@ class Uploader(object):
             self._uploadMarketPlaceManifest()
 
     def _uploadImage(self):
-        pdisk = PersistentDisk(self.configHolder)
-        self.imageUrl = pdisk.uploadVolume(self.imageFile)
-        print "Image uploaded: %s" % self.imageUrl 
+        self.imageUrl = self.pdisk.uploadVolume(self.imageFile)
+        print "Image uploaded: %s" % self.imageUrl
+
+        self._updateImageMetadataInPDisk()
+
+    def _updateImageMetadataInPDisk(self):
+        if self.imageMetadata:
+            uuid = self.imageUrl.rsplit('/', 1)[-1]
+            self.pdisk.updateVolumeAsUser(self.imageMetadata, uuid)
+            print "Image metadata updated:", self.imageMetadata
 
     def _updateManifest(self):
         self._addLocationToManifest()

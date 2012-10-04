@@ -254,7 +254,7 @@ class PersistentDisk(object):
         headers, content = self._uploadImageFile(base_url, filename)
         self._raiseOnErrors(headers, content)
         uuid = self._getUuidFromJson(content)
-        return base_url + '/' + uuid
+        return base_url.strip('/') + '/' + uuid
 
     def _uploadImageFile(self, url, filename):
         return self._postMultipart(url, [("Image File", open(filename))])

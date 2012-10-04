@@ -32,7 +32,16 @@ class StorageCommand(CommandBaseSysadmin):
 
     @staticmethod
     def addPDiskEndpointOptions(parser, defaultOptions=None):
-        return PDiskEndpoint.addOptions(parser, defaultOptions)
+        PDiskEndpoint.addOptions(parser, defaultOptions)
+
+    @staticmethod
+    def addVolumeOptions(parser):
+        PDiskVolume.addOptions(parser)
+
+    @staticmethod
+    def addOptions(parser, defaultOptions=None):
+        StorageCommand.addPDiskEndpointOptions(parser, defaultOptions)
+        StorageCommand.addVolumeOptions(parser)
 
     def checkPDiskEndpointOptionsOnly(self):
         if not self.checkPDiskEndpointOptions():
@@ -41,6 +50,12 @@ class StorageCommand(CommandBaseSysadmin):
 
     def checkPDiskEndpointOptions(self):
         return PDiskEndpoint.checkOptions(self.options)
+    
+    def checkVolumeOptions(self):
+        PDiskVolume.checkOptions(self.options)
+
+    def extractVolumeOptionsAsDict(self):
+        return PDiskVolume.extractVolumeOptionsAsDict(self.options)
 
 class PDiskEndpoint(object):
     optionString = '--pdisk-endpoint'
@@ -83,4 +98,73 @@ class PDiskEndpoint(object):
         if not options.pdiskEndpoint:
             parser.error('Missing Persistent Disk service endpoint. Please provide %s' 
                          % PDiskEndpoint.optionString)
-            
+
+class PDiskVolume(object):
+
+    TAG_LENGTH_MAX = 40
+    TAG_DEFAULT = None
+    
+    @staticmethod    
+    def addOptions(parser):
+        parser.add_option('-t', '--tag', dest='volumeTag',
+                          help='Tag of the volume.', 
+                          default=PDiskVolume.TAG_DEFAULT)
+        
+        parser.add_option('--private', dest='volumeVisibility',
+                          help='''Set to private image''',
+                          action='store_const', const="PRIVATE")
+        
+        parser.add_option('--public', dest='volumeVisibility',
+                          help='''Set to public image''', 
+                          action='store_const', const="PUBLIC")
+
+        parser.add_option('--machine-image-origin', dest='volumeType',
+                          help='''Flag as original machine image''', 
+                          action='store_const', const="MACHINE_IMAGE_ORIGIN")
+
+        parser.add_option('--machine-image-live', dest='volumeType',
+                          help='''Flag as live machine image''', 
+                          action='store_const', const="MACHINE_IMAGE_LIVE")
+
+        parser.add_option('--data-image-origin', dest='volumeType',
+                          help='''Flag as original data image''', 
+                          action='store_const', const="DATA_IMAGE_ORIGIN")
+
+        parser.add_option('--data-image-live', dest='volumeType',
+                          help='''Flag as live data image''', 
+                          action='store_const', const="DATA_IMAGE_LIVE")
+
+        parser.add_option('--data-image-raw-readonly', dest='volumeType',
+                          help='''Flag as raw read-only data image''', 
+                          action='store_const', const="DATA_IMAGE_RAW_READONLY")
+
+        parser.add_option('--data-image-raw-read-write', dest='volumeType',
+                          help='''Flag as raw read-write data image''', 
+                          action='store_const', const="DATA_IMAGE_RAW_READ_WRITE")
+
+    @staticmethod
+    def checkOptions(options):
+        PDiskVolume.checkTagLength(options)
+
+    @staticmethod
+    def checkTagLength(options):
+        if not (options.volumeTag is PDiskVolume.TAG_DEFAULT):
+            if len(options.volumeTag) > PDiskVolume.TAG_LENGTH_MAX:
+                OptionParser(version="${project.version}").\
+                    error('Tags must have less than %d characters' % 
+                          PDiskVolume.TAG_LENGTH_MAX)
+
+    @staticmethod
+    def extractVolumeOptionsAsDict(options):
+        keyvalues = {}
+
+        if not (options.volumeTag is PDiskVolume.TAG_DEFAULT):
+            keyvalues['tag'] = options.volumeTag
+
+        if not (options.volumeVisibility is None):
+            keyvalues['visibility'] = options.volumeVisibility
+
+        if not (options.volumeType is None):
+            keyvalues['type'] = options.volumeType
+
+        return keyvalues
