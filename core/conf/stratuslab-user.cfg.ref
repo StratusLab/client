@@ -62,7 +62,7 @@ pdisk_endpoint = <pdisk.service.hostname>
 #selected_section = my-section
 
 # Create user specific sections, which you can activate using
-# the default_section parameter in the default section
+# the selected_section parameter in the default section
 # or using the --user-config-section command-line option
 #[my-section]
 #endpoint = <another.cloud.frontend.hostname>
