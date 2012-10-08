@@ -48,7 +48,7 @@ p12_password = password
 
 # Persistent disk storage service
 pdisk_endpoint = <pdisk.service.hostname>
-#pdiskPort = 8445
+#pdisk_port = 8445
 
 #
 # Set the following parameter to change the default
