@@ -230,7 +230,7 @@ persistent_disk_cloud_service_user = pdisk
 persistent_disk_backend_sections =
  [%(persistent_disk_ip)s]
  type=LVM
- volume_name = /dev/vg.02
+ volume_name = /dev/pdisk
  lun_namespace = stratuslab
  volume_snapshot_prefix = pdisk_clone
  initiator_group = 
