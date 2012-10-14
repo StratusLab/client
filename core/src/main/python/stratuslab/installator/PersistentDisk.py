@@ -49,7 +49,7 @@ class PersistentDisk(Installator):
         # Package to be installed
         self.packages = { 'frontend': {
                           'pdisk': ['stratuslab-pdisk-server', ],
-                          'iscsi': ['scsi-target-utils', ],
+                          'iscsi': ['scsi-target-utils', 'iscsi-initiator-utils'],
                           'nfs': ['nfs-utils', 'nfs-utils-lib'],
                           'lvm': ['lvm2', ],
                           'file': ['qemu-img'], 
