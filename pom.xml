@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.client</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>2.6</version>
   <name>StratusLab Parent POM</name>
 
   <url>http://github.com/StratusLab/client</url>

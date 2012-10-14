@@ -9,14 +9,14 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli-user</artifactId>
-    <version>2.6-SNAPSHOT</version>
+    <version>2.6</version>
   </parent>
 
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-core-zip</artifactId>
-      <version>2.6-SNAPSHOT</version>
+      <version>2.6</version>
       <classifier>core-bundle</classifier>
       <type>zip</type>
       <scope>compile</scope>
