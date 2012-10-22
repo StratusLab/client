@@ -102,6 +102,7 @@ class PersistentDisk(Installator):
         self._setPdiskUserAndPassword()
         # downloading images requires configured client on front-end 
         self._updateConfigHostPDiskClient()
+        self._createDatabase()
         if self.persistentDiskShare == 'nfs':
             return
         if self.persistentDiskStorage == 'lvm':
@@ -111,7 +112,6 @@ class PersistentDisk(Installator):
         else:
             self._createFileHddDirectory()
 
-        self._createDatabase()
         
     def _writePdiskConfig(self):
         printStep('Writing configuration...')
