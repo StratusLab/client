@@ -201,10 +201,13 @@ class TMCloneCache(object):
         compression = self._getImageCompressionType()
         if not compression:
             if self.downloadedLocalImageLocation.endswith('.gz'):
-                raise ValueError('Manifest doesn\'t contain a compression element but ' \
-                                 'the location element specified ends with .gz. This is likely ' \
-                                 'an error.')
-            return
+                compression = 'gz'
+            elif self.downloadedLocalImageLocation.endswith('.bz2'):
+                compression = 'bz2'
+            else:
+                # Assume image is not compressed.
+                # TODO: use 'file' command to get the downloaded file type
+                return
         uncompressTool = self._UNCOMPRESS_TOOL[compression]
         self._sshPDisk([uncompressTool, self.downloadedLocalImageLocation],
                        'Unable to uncompress image')
