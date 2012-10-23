@@ -477,7 +477,7 @@ class BaseSystem(object):
                                       'vnc_listen = "0.0.0.0"')
 
     def startLibvirt(self):
-        rc, output = self.executeCmd('/etc/init.d/libvirtd restart'.split(), 
+        rc, output = self.executeCmd('service libvirtd restart'.split(), 
                                      withOutput=True)
         if rc != 0:
             Util.printError('Could not start libvirt.\n%s' % output)
