@@ -19,6 +19,7 @@
 #
 
 import os
+import json
 import stat
 import mimetools
 import mimetypes
@@ -109,8 +110,13 @@ class HttpClient(object):
                 # If it fails (e.g. it's not a string-like media-type) ignore it
                 pass
             return content
-            
-        
+
+        def _getErrorMessageFromJsonContent(content):
+            try:
+                return json.loads(content)['message']
+            except:
+                return ''
+
         def _handle3xx():
             if resp.status == 302:
                 # Redirected
@@ -120,8 +126,9 @@ class HttpClient(object):
             return resp, content
 
         def _handle4xx():
-            raise ClientException('Failed calling method %s on url %s, with reason: %s' %
-                                  (method, url, str(resp.status) + ": " + resp.reason),
+            error_message = _getErrorMessageFromJsonContent(content)
+            raise ClientException('Failed calling method %s on url %s, with reason: %s. Error: %s' %
+                                  (method, url, str(resp.status) + ": " + resp.reason, error_message),
                                   content=content,
                                   status=str(resp.status))
 
