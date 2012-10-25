@@ -858,5 +858,7 @@ touch %s
         
     def _gunzip(self, filename):
         Util.printStep("Unzipping file %s..." % filename)
-        Util.execute(['/bin/gunzip', filename])
+        rc, output = Util.execute(['/bin/gunzip', filename], withOutput=True)
+        if rc != 0:
+            raise ExecutionException('Failed unzipping file: %s' % output)
         return splitext(filename)[0]
