@@ -21,6 +21,7 @@
 import os
 import json
 import stat
+import base64
 import mimetools
 import mimetypes
 import httplib2
@@ -72,6 +73,7 @@ class HttpClient(object):
             body += 'Content-Length: %s\r\n' % file_size
             fh.seek(0)
             body += '\r\n' + fh.read() + '\r\n'
+            fh.close()
         body += '--%s--\r\n\r\n' % boundary
         return boundary, body
 
@@ -96,6 +98,12 @@ class HttpClient(object):
     def _addCredentials(self, http):
         for u, p in self.crendentials.items():
             http.add_credentials(u, p)
+
+    def _addCredentialsToHeader(self, headers):
+        if self.crendentials:
+            u, p = self.crendentials.items()[0]
+            headers['authorization'] = 'Basic ' + base64.b64encode('%s:%s' % (u, p))
+            return headers
             
     def _addCertificate(self, http):
         for u, p in self.certificates.items():
@@ -168,6 +176,9 @@ class HttpClient(object):
             headers['Content-Type'] = contentType
         if accept:
             headers['Accept'] = accept
+        # See https://github.com/StratusLab/client/issues/8
+        if method == 'POST':
+            self._addCredentialsToHeader(headers)
         self._addCredentials(h)
         self._addCertificate(h)
         try:
