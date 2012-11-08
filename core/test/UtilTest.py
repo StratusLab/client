@@ -22,8 +22,8 @@ import tempfile
 import unittest
 
 import stratuslab.Util as Util
+from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
-import stratuslab.Compressor as Compressor
 import os
 
 class UtilTest(unittest.TestCase):
