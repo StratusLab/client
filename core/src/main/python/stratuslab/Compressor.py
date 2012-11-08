@@ -43,7 +43,7 @@ class Compressor(object):
            compression formats, this returns the compression format.
            Otherwise, it returns the empty string. """
         suffix = Util.fileGetExtension(filename).lower()
-        if suffix in compression_formats:
+        if suffix in compressionFormats:
             return suffix
         else:
             return ''
