@@ -124,6 +124,7 @@ class Runner(object):
         self.saveDisk = False
         self.userDefinedInstanceTypes = {}
         self.pdiskPort = Defaults.pdiskPort
+        self.inboundPorts = None
 
         configHolder.assign(self)
         self.configHolder = configHolder
@@ -174,6 +175,7 @@ class Runner(object):
         self._setSaveDisk()
         self._setDiskImageFormat()
         self._setDisksBusType()
+        self._setInboundPorts()
 
         # should go after all runtime fields are initialized 
         self._setExtraDiskOptional()
@@ -197,6 +199,7 @@ class Runner(object):
         self.vmIds = []
         self.diskImageFormat = None
         self.disk_driver = None
+        self.inbound_ports = ''
 
     def _setMsgRecipients(self):
         try:
@@ -272,6 +275,14 @@ class Runner(object):
             self._checkImageExists(self.readonlyDiskId)
             self.readonlyDiskId = self._prependMarketplaceUrlIfImageId(self.readonlyDiskId)
             self.readonly_disk = (self.readonlyDiskId and Runner.READONLY_DISK % self.__dict__) or ''
+
+    def _setInboundPorts(self):
+        if Image.isImageId(self.vm_image):
+            image = Image(self.configHolder)
+            try:
+                self.inboundPorts = image.getInboundPortsByImageId(self.vm_image)
+            except Exceptions.ExecutionException:
+                pass
 
     @staticmethod
     def getDefaultInstanceTypes():
@@ -386,6 +397,7 @@ class Runner(object):
         self._manageNotifications()
         self._manageCreateImage()
         self._manageRequirements()
+        self._manageInboundPorts()
 
         return baseVmTemplate % self._vmParamDict()
 
@@ -395,6 +407,12 @@ class Runner(object):
             params[param] = getattr(self, param, '')
 
         return params
+
+    def _manageInboundPorts(self):
+        if self.inboundPorts:
+            self.inbound_ports = 'INBOUND_PORTS = "%s"' % ','.join(self.inboundPorts)
+        else:
+            self.inbound_ports = ''
 
     def _manageCpuRamSwap(self):
         self.vm_cpu, self.vm_ram, self.vm_swap = self.getInstanceResourceValues()

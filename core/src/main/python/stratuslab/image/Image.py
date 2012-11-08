@@ -64,6 +64,9 @@ class Image(object):
     def getImageDisksBusTypeByImageId(self, imageId):
         return self._getImageElementValue('disks-bus', imageId)
 
+    def getInboundPortsByImageId(self, imageId):
+        return self._getImageElementValue('inboundports', imageId)
+
     def _getImageElementValue(self, element, imageId):
         if Image.isImageId(imageId):
             return self.manifestDownloader.getImageElementValue(element, imageId)
