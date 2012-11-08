@@ -28,6 +28,7 @@ import random
 import urlparse
 import hashlib
 import gzip
+import bz2
 import io
 from random import sample
 from string import ascii_lowercase
