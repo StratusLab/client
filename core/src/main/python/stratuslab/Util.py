@@ -698,7 +698,11 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
        file named by the file handle will be fully read if checksums
        are requested.  This method will close the file handle."""
 
-    with f: 
+    #
+    # "with" cannot be used here because the gzip library in python
+    # 2.6 doesn't support the __exit__ attribute needed for it
+    #
+    try: 
 
         if not checksums:
             return {}
@@ -716,6 +720,9 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
         digests = [d.hexdigest() for d in digesters]
 
         return dict(zip(checksums, digests))
+
+    finally:
+        f.close()
 
 def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
     """Return dictionary of checksums."""

@@ -174,8 +174,11 @@ olcLastMod: TRUE
         fd, filename = tempfile.mkstemp(suffix=suffix)
         os.close(fd)
 
-        with Util.openCompressedFile(filename, options='wb') as f:
+        f = Util.openCompressedFile(filename, options='wb')
+        try:
             f.write('foo')
+        finally:
+            f.close()
 
         return filename
             
