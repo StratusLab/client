@@ -692,7 +692,7 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
 
         bytes = 0
         for chunk in iter((lambda:f.read(chunk_size)),''):
-            bytes += chunk.length
+            bytes += len(chunk)
             for digester in digesters:
                 digester.update(chunk)
 
