@@ -23,6 +23,7 @@ import unittest
 
 import stratuslab.Util as Util
 import stratuslab.Exceptions as Exceptions
+import stratuslab.Compressor as Compressor
 import os
 
 class UtilTest(unittest.TestCase):
@@ -164,7 +165,7 @@ olcLastMod: TRUE
         fd, filename = tempfile.mkstemp(suffix=suffix)
         os.close(fd)
 
-        f = Util.openCompressedFile(filename, options='wb')
+        f = Compressor.openCompressedFile(filename, options='wb')
         try:
             f.write('foo')
         finally:

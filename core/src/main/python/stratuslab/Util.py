@@ -31,7 +31,7 @@ import io
 from random import sample
 from string import ascii_lowercase
 from stratuslab.Exceptions import ExecutionException, ValidationException
-import stratuslab.Compressor as Compressor
+from stratuslab.Compressor import Compressor
 import Defaults
 import platform
 
