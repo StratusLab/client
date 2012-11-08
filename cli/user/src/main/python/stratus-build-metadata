@@ -146,10 +146,6 @@ class MainProgram(CommandBase):
     def doWork(self):
         self._calculateCheckSums()
 
-        statinfo = os.stat(self.image)
-        bytes = str(statinfo.st_size)
-        self.options.__dict__.update({'bytes':bytes})
-
         configHolder = ConfigHolder(self.options.__dict__)
         manifest = ManifestInfo(configHolder)
         manifest.buildAndSave()
@@ -166,8 +162,9 @@ class MainProgram(CommandBase):
         if not checkSumsToDo and not self.options.sha1:
             checkSumsToDo = ManifestInfo.MANDATORY_CHECKSUMS
 
-        chksums = Image.checksumImage(self.image, checkSumsToDo)
+        bytes, chksums = Image.checksumImage(self.image, checkSumsToDo)
 
+        self.options.__dict__.update({'bytes':bytes})
         self.options.__dict__.update(chksums)
 
 if __name__ == '__main__':

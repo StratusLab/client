@@ -48,7 +48,7 @@ class Image(object):
     def checksumImage(filename, checksums=ManifestInfo.MANDATORY_CHECKSUMS):
         """Return dictionary of checksums."""
 
-        return Util.checksum_file(filename, checksums)[1]
+        return Util.checksum_file(filename, checksums)
 
     @staticmethod
     def isImageId(imageId):
