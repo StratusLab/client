@@ -54,7 +54,7 @@ class Compressor(object):
            filename ends with a gzip or bzip2 suffix, then the file is
            opened as a gzip or bzip2 file.  Otherwise it is opened
            without any compression filter."""
-        type = getCompressionFormat(filename)
+        type = Compressor.getCompressionFormat(filename)
         if (type == 'gz'):
             return gzip.open(filename, options)
         elif (type == 'bz2'):
