@@ -170,7 +170,7 @@ olcLastMod: TRUE
         self.assertEquals(Util.compressionFromFilename("dummy.X"), "")
         self.assertEquals(Util.compressionFromFilename("DUMMY.X"), "")
 
-    def _foo_tempfile(suffix=''):
+    def _foo_tempfile(self, suffix=''):
         fd, filename = tempfile.mkstemp(suffix=suffix)
         os.close(fd)
 
@@ -183,8 +183,8 @@ olcLastMod: TRUE
 
         filenames = []
         filenames.append(_foo_tempfile())
-        filenames.append(_foo_tempfile('.gz'))
-        filenames.append(_foo_tempfile('.bz2'))
+        #filenames.append(_foo_tempfile('.gz'))
+        #filenames.append(_foo_tempfile('.bz2'))
 
         # checksums of 'foo'
         checksums_ref = {'md5' : 'acbd18db4cc2f85cedef654fccc4a4d8',
