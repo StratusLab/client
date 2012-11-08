@@ -698,7 +698,7 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
 
         digests = [d.hexdigest() for d in digesters]
 
-        return bytes, dict(zip(checksums, digests))
+        return (bytes, dict(zip(checksums, digests)))
 
     finally:
         f.close()
@@ -706,7 +706,7 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
 def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
     """Return dictionary of checksums."""
 
-    return _checksum_f(Compressor.openCompressedFile(filename, 'rb'), checksums, chunk_size)[1]
+    return _checksum_f(Compressor.openCompressedFile(filename, 'rb'), checksums, chunk_size)
 
 def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')

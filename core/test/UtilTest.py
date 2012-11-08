@@ -187,9 +187,9 @@ olcLastMod: TRUE
 
         for filename in filenames:
             try:
-                self.assertEquals(Util.checksum_file(filename, ['sha1'])[0], foo_size)
-                self.assertEquals(Util.checksum_file(filename, ['sha1'])[1],
-                                  {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
+                size, sums = Util.checksum_file(filename, ['sha1'])
+                self.assertEquals(size, foo_size)
+                self.assertEquals(sums, {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
 
                 size, sums = Util.checksum_file(filename, ['md5', 'sha1'])
                 self.assertEquals(size, foo_size)
