@@ -19,6 +19,8 @@
 #
 
 import Util
+import gzip
+import bz2
 from Exceptions import ExecutionException
 
 class Compressor(object):
