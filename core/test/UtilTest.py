@@ -175,7 +175,7 @@ olcLastMod: TRUE
         os.close(fd)
 
         with Util.openCompressedFile(filename, options='wb') as f:
-            f.write(f, 'foo')
+            f.write('foo')
 
         return filename
             
