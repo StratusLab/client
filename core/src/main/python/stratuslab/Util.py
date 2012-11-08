@@ -711,7 +711,7 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
 
         for chunk in iter((lambda:f.read(chunk_size)),''):
             for digester in digesters:
-                digester.update(read_data)
+                digester.update(chunk)
 
         digests = [d.hexdigest() for d in digesters]
 
