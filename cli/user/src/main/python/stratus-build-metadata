@@ -137,8 +137,10 @@ class MainProgram(CommandBase):
             self.options.__dict__.update({'locations': [self.options.__dict__['locations']]})
 
         if not self.options.compression:
-            Util.printWarning("Image compression was not provided. "
-                              "You may have to set it manually in the resulting manifest.")
+            # Guess compression from file name if not given explicitly.
+            compression = Compressor.getCompressionFormat(self.image)
+            self.options.__dict__.update({'compression':compression})
+
         if self.options.disksbus not in Runner.DISKS_BUS_AVAILABLE:
             self.parser.error("Unknown disks bus type %s. Available types: %s" % \
                               (self.options.disksbus, ', '.join(Runner.DISKS_BUS_AVAILABLE)))
