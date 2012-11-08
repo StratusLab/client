@@ -138,7 +138,7 @@ class MainProgram(CommandBase):
 
         if not self.options.compression:
             Util.printWarning("Image compression was not provided. "
-                              "You'll have to set it manually in the resulting manifest.")
+                              "You may have to set it manually in the resulting manifest.")
         if self.options.disksbus not in Runner.DISKS_BUS_AVAILABLE:
             self.parser.error("Unknown disks bus type %s. Available types: %s" % \
                               (self.options.disksbus, ', '.join(Runner.DISKS_BUS_AVAILABLE)))

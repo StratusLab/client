@@ -181,15 +181,18 @@ olcLastMod: TRUE
         filenames.append(self._foo_tempfile('.bz2'))
 
         # checksums of 'foo'
+        foo_size = 3
         checksums_ref = {'md5' : 'acbd18db4cc2f85cedef654fccc4a4d8',
                          'sha1': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',}
 
         for filename in filenames:
             try:
-                self.assertEquals(Util.checksum_file(filename, ['sha1']),
+                self.assertEquals(Util.checksum_file(filename, ['sha1'])[0], foo_size)
+                self.assertEquals(Util.checksum_file(filename, ['sha1'])[1],
                                   {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
 
-                sums = Util.checksum_file(filename, ['md5', 'sha1'])
+                size, sums = Util.checksum_file(filename, ['md5', 'sha1'])
+                self.assertEquals(size, foo_size)
                 for sum, val in sums.items():
                     self.assertEquals(checksums_ref[sum], val)
 
