@@ -182,9 +182,9 @@ olcLastMod: TRUE
     def testChecksumFile(self):
 
         filenames = []
-        filenames.append(_foo_tempfile())
-        #filenames.append(_foo_tempfile('.gz'))
-        #filenames.append(_foo_tempfile('.bz2'))
+        filenames.append(self._foo_tempfile())
+        #filenames.append(self._foo_tempfile('.gz'))
+        #filenames.append(self._foo_tempfile('.bz2'))
 
         # checksums of 'foo'
         checksums_ref = {'md5' : 'acbd18db4cc2f85cedef654fccc4a4d8',
