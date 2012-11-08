@@ -728,7 +728,7 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
 def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
     """Return dictionary of checksums."""
 
-    return _checksum_f(open(filename, 'rb'), checksums, chunk_size)
+    return _checksum_f(openCompressedFile(filename, 'rb'), checksums, chunk_size)
 
 def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')
