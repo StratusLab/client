@@ -27,6 +27,7 @@ import urllib2
 import random
 import urlparse
 import hashlib
+import gzip
 import io
 from random import sample
 from string import ascii_lowercase
@@ -668,26 +669,58 @@ def isValidNetLocation(url):
 def systemName():
     return platform.system()
 
-def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
-    """Return dictionary of checksums."""
+def compressionFromFilename(filename):
+    """Will check the filename to see if it ends with a gzip or bzip2
+       suffix, ignoring case.  If so, it returns 'gz' or 'bz2',
+       respectively.  It returns the empty string otherwise. """
+    lc_filename = filename.lower()
+    if (lc_filename.endswith('.gz')):
+        return 'gz'
+    elif (lc_filename.endswith('.bz2')):
+        return 'bz2'
+    else:
+        return ''
 
-    if not checksums:
-        return {}
+def openCompressedFile(filename, options='rb'):
+    """Returns an open file handle for the given filename.  If the
+       filename ends with a gzip or bzip2 suffix, then the file is
+       opened as a gzip or bzip2 file."""
+    type = compressionFromFilename(filename)
+    if (type == 'gz'):
+        return gzip.open(filename, options)
+    elif (type == 'bz2'):
+        return bz2.BZ2File(filename, options)
+    else:
+        return open(filename, options)
 
-    digesters = []
-    try:
-        digesters = map(hashlib.new, checksums)
-    except ValueError as e:
-        raise ExecutionException('%s' % e)
+def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
+    """Return a dictionary of checksums for the given file handle.  The
+       file named by the file handle will be fully read if checksums
+       are requested.  This method will close the file handle."""
 
-    with open(filename, 'rb') as f:
+    with f: 
+
+        if not checksums:
+            return {}
+
+        digesters = []
+        try:
+            digesters = map(hashlib.new, checksums)
+        except ValueError as e:
+            raise ExecutionException('%s' % e)
+
         for chunk in iter((lambda:f.read(chunk_size)),''):
             for digester in digesters:
                 digester.update(read_data)
 
-    digests = [d.hexdigest() for d in digesters]
+        digests = [d.hexdigest() for d in digesters]
 
-    return dict(zip(checksums, digests))
+        return dict(zip(checksums, digests))
+
+def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
+    """Return dictionary of checksums."""
+
+    return _checksum_f(open(filename, 'rb'), checksums, chunk_size)
 
 def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')

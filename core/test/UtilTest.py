@@ -159,25 +159,51 @@ olcLastMod: TRUE
         self.assertEquals(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
         self.assertEquals(Util.sanitizeEndpoint('localhost'), 'https://localhost:80')
 
+    def testCompressionFromFilename(self):
+        self.assertEquals(Util.compressionFromFilename("dummy.gz"), "gz")
+        self.assertEquals(Util.compressionFromFilename("dummy.GZ"), "gz")
+        self.assertEquals(Util.compressionFromFilename("DUMMY.GZ"), "gz")
+        self.assertEquals(Util.compressionFromFilename("dummy.bz2"), "bz2")
+        self.assertEquals(Util.compressionFromFilename("dummy.BZ2"), "bz2")
+        self.assertEquals(Util.compressionFromFilename("DUMMY.BZ2"), "bz2")
+        self.assertEquals(Util.compressionFromFilename("dummy.x"), "")
+        self.assertEquals(Util.compressionFromFilename("dummy.X"), "")
+        self.assertEquals(Util.compressionFromFilename("DUMMY.X"), "")
+
+    def _foo_tempfile(suffix=''):
+        fd, filename = tempfile.mkstemp(suffix=suffix)
+        os.close(fd)
+
+        with Util.openCompressedFile(filename, options='wb') as f:
+            f.write(f, 'foo')
+
+        return filename
+            
     def testChecksumFile(self):
-        fd, filename = tempfile.mkstemp()
-        os.write(fd, 'foo')
+
+        filenames = []
+        filenames.append(_foo_tempfile())
+        filenames.append(_foo_tempfile('.gz'))
+        filenames.append(_foo_tempfile('.bz2'))
+
         # checksums of 'foo'
         checksums_ref = {'md5' : 'acbd18db4cc2f85cedef654fccc4a4d8',
                          'sha1': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',}
-        os.close(fd)
-        try:
-            self.assertEquals(Util.checksum_file(filename, ['sha1']),
-                              {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
 
-            sums = Util.checksum_file(filename, ['md5', 'sha1'])
-            for sum, val in sums.items():
-                self.assertEquals(checksums_ref[sum], val)
+        for filename in filenames:
+            println "DEBUG DEBUG DEBUG: %s" % filename 
+            try:
+                self.assertEquals(Util.checksum_file(filename, ['sha1']),
+                                  {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
 
-            self.failUnlessRaises(Exception, Util.checksum_file, filename, ['bar'])
+                sums = Util.checksum_file(filename, ['md5', 'sha1'])
+                for sum, val in sums.items():
+                    self.assertEquals(checksums_ref[sum], val)
 
-        finally:
-            os.unlink(filename)
+                self.failUnlessRaises(Exception, Util.checksum_file, filename, ['bar'])
+
+            finally:
+                os.unlink(filename)
             
     def testfilePutGetContentUnicode(self):
         _, filename = tempfile.mkstemp()
