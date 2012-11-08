@@ -52,6 +52,7 @@ class ManifestInfo(object):
     CHECKSUM_NAMES = ('md5','sha1','sha256','sha512')
 
     DISKS_BUS_DEFAULT = 'ide'
+    INBOUND_PORTS_DEFAULT = []
 
     def __init__(self, configHolder=ConfigHolder()):
 
@@ -94,6 +95,7 @@ class ManifestInfo(object):
         self.publisher = 'StratusLab'
         
         self.disksbus = ManifestInfo.DISKS_BUS_DEFAULT
+        self.inboundports = ManifestInfo.INBOUND_PORTS_DEFAULT
 
         self.verboseLevel = 0
 
@@ -205,12 +207,19 @@ class ManifestInfo(object):
             if uri and uri not in self.locations:
                 self.locations.append(uri)
 
+    def _setInboundPortsFromXmlTree(self, xml_tree):
+        ports = xml_tree.findall('.//{%s}inbound-port' % NS_SLTERMS)
+        for port in ports:
+            if hasattr(port, 'text') and port.text not in self.inboundports:
+                self.inboundports.append(port.text)
+
     def parseManifestFromXmlTree(self, xml_tree):
 
         self._setEndorserFromXmlTree(xml_tree)
         self._setRequiredAttributesFromXmlTree(xml_tree)
         self._setClientXmlTemplateAttributesFromXmlTree(xml_tree)
         self._setLocationFromXmlTree(xml_tree)
+        self._setInboundPortsFromXmlTree(xml_tree)
 
         self.created = getattr(xml_tree.find('.//{%s}endorsement/{%s}created' % (NS_SLREQ, NS_DCTERMS)), 'text',
                             self.created)
