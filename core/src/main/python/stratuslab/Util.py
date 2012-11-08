@@ -27,12 +27,11 @@ import urllib2
 import random
 import urlparse
 import hashlib
-import gzip
-import bz2
 import io
 from random import sample
 from string import ascii_lowercase
 from stratuslab.Exceptions import ExecutionException, ValidationException
+import stratuslab.Compressor as Compressor
 import Defaults
 import platform
 
@@ -670,30 +669,6 @@ def isValidNetLocation(url):
 def systemName():
     return platform.system()
 
-def compressionFromFilename(filename):
-    """Will check the filename to see if it ends with a gzip or bzip2
-       suffix, ignoring case.  If so, it returns 'gz' or 'bz2',
-       respectively.  It returns the empty string otherwise. """
-    lc_filename = filename.lower()
-    if (lc_filename.endswith('.gz')):
-        return 'gz'
-    elif (lc_filename.endswith('.bz2')):
-        return 'bz2'
-    else:
-        return ''
-
-def openCompressedFile(filename, options='rb'):
-    """Returns an open file handle for the given filename.  If the
-       filename ends with a gzip or bzip2 suffix, then the file is
-       opened as a gzip or bzip2 file."""
-    type = compressionFromFilename(filename)
-    if (type == 'gz'):
-        return gzip.open(filename, options)
-    elif (type == 'bz2'):
-        return bz2.BZ2File(filename, options)
-    else:
-        return open(filename, options)
-
 def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
     """Return a dictionary of checksums for the given file handle.  The
        file named by the file handle will be fully read if checksums
@@ -728,7 +703,7 @@ def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
 def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
     """Return dictionary of checksums."""
 
-    return _checksum_f(openCompressedFile(filename, 'rb'), checksums, chunk_size)
+    return _checksum_f(Compressor.openCompressedFile(filename, 'rb'), checksums, chunk_size)
 
 def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')

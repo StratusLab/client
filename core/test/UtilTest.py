@@ -144,6 +144,7 @@ olcLastMod: TRUE
         assert Util.fileGetExtension('file.') == ''
         assert Util.fileGetExtension('file') == ''
         assert Util.fileGetExtension('file.txt') == 'txt'
+        assert Util.fileGetExtension('file.other.txt') == 'txt'
 
     def testCheckUrlExists(self):
         self.assertRaises(ValueError, Util.checkUrlExists, (''))
@@ -158,17 +159,6 @@ olcLastMod: TRUE
         self.assertEquals(Util.sanitizeEndpoint('localhost', 'https', 888), 'https://localhost:888')
         self.assertEquals(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
         self.assertEquals(Util.sanitizeEndpoint('localhost'), 'https://localhost:80')
-
-    def testCompressionFromFilename(self):
-        self.assertEquals(Util.compressionFromFilename("dummy.gz"), "gz")
-        self.assertEquals(Util.compressionFromFilename("dummy.GZ"), "gz")
-        self.assertEquals(Util.compressionFromFilename("DUMMY.GZ"), "gz")
-        self.assertEquals(Util.compressionFromFilename("dummy.bz2"), "bz2")
-        self.assertEquals(Util.compressionFromFilename("dummy.BZ2"), "bz2")
-        self.assertEquals(Util.compressionFromFilename("DUMMY.BZ2"), "bz2")
-        self.assertEquals(Util.compressionFromFilename("dummy.x"), "")
-        self.assertEquals(Util.compressionFromFilename("dummy.X"), "")
-        self.assertEquals(Util.compressionFromFilename("DUMMY.X"), "")
 
     def _foo_tempfile(self, suffix=''):
         fd, filename = tempfile.mkstemp(suffix=suffix)
@@ -194,7 +184,6 @@ olcLastMod: TRUE
                          'sha1': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',}
 
         for filename in filenames:
-            print "DEBUG DEBUG DEBUG: %s" % filename 
             try:
                 self.assertEquals(Util.checksum_file(filename, ['sha1']),
                                   {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})

@@ -37,6 +37,31 @@ class Compressor(object):
         if ret != 0:
             raise ExecutionException('Error inflating file: %s' % filename)
 
+    @staticmethod
+    def getCompressionFormat(filename):
+        """If the file suffix (ignoring case) is in the list of supported
+           compression formats, this returns the compression format.
+           Otherwise, it returns the empty string. """
+        suffix = Util.fileGetExtension(filename).lower()
+        if suffix in compression_formats:
+            return suffix
+        else:
+            return ''
+
+    @staticmethod
+    def openCompressedFile(filename, options='rb'):
+        """Returns an open file handle for the given filename.  If the
+           filename ends with a gzip or bzip2 suffix, then the file is
+           opened as a gzip or bzip2 file.  Otherwise it is opened
+           without any compression filter."""
+        type = getCompressionFormat(filename)
+        if (type == 'gz'):
+            return gzip.open(filename, options)
+        elif (type == 'bz2'):
+            return bz2.BZ2File(filename, options)
+        else:
+            return open(filename, options)
+
     @staticmethod        
     def _getCompressionCommand(filename):
         format = filename.split('.')[-1]
