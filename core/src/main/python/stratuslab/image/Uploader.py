@@ -63,7 +63,10 @@ class Uploader(object):
 
         MarketplaceUtil.checkEndpointOption(options)
 
-        if options.compressionFormat not in Compressor.compressionFormats:
+        allowedFormats = list(Compressor.compressionFormats)
+        allowedFormats.append('none')
+
+        if options.compressionFormat not in allowedFormats:
             parser.error('Unknown compression format')
         
         PDiskEndpoint.checkOptions(options)
@@ -147,6 +150,14 @@ class Uploader(object):
         return repoFilename.split('.img')[0] + '.xml'
 
     def _compressFile(self, filename, format):
+
+        if (format.lower() == 'none'):
+            return filename
+
+        if (Compressor.getCompressionFormat(filename) != ''):
+            Util.printWarning('skipping compression; file appears to already be compressed')
+            return filename
+
         compressionCmd = Compressor._getCompressionCommandByFormat(format)
 
         compressedFilename = '%s.%s' % (filename, format)
@@ -167,8 +178,11 @@ class Uploader(object):
         self.imageFile = self._compressFile(self.imageFile, self.compressionFormat)
 
     def _addCompressionFormatToManifest(self):
-        ManifestInfo.addElementToManifestFile(self.manifestFile, 
-                                          'compression', self.compressionFormat)
+        if (self.compressionFormat.lower() != 'none'):
+            ManifestInfo.addElementToManifestFile(self.manifestFile, 
+                                                  'compression', self.compressionFormat)
+        else:
+            Util.printWarning("'none' specified for compression; manifest compression element NOT updated")
 
     def _addLocationToManifest(self):
         ManifestInfo.addElementToManifestFile(self.manifestFile, 
