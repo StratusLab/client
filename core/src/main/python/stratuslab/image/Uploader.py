@@ -39,12 +39,8 @@ class Uploader(object):
         parser.usage = '''usage: %prog [options] <image-file>'''
 
         parser.add_option('-C', '--compress', dest='compressionFormat',
-                help='Compression format',
+                help='Compression format.  One of: %s, none' % ', '.join(Compressor.compressionFormats),
                 default='gz', metavar='FORMAT')
-
-        parser.add_option('--list-compression', dest='listCompressionFormat',
-                help='List available compression formats',
-                default=False, action='store_true')
 
         parser.add_option('--image-only', dest='imageOnly',
                 help='Do not upload metadata file to Marketplace',

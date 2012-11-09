@@ -45,9 +45,6 @@ class MainProgram(AuthnCommand):
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        if self.options.listCompressionFormat:
-            Uploader.availableCompressionFormat(True)
-
         if len(self.args) != 1:
             self.parser.error('Please specify an image as <filename>.img')
         self.image = self.args[0]
