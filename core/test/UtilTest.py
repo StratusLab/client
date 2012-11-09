@@ -22,7 +22,6 @@ import tempfile
 import unittest
 
 import stratuslab.Util as Util
-from stratuslab.Compressor import Compressor
 import stratuslab.Exceptions as Exceptions
 import os
 
@@ -161,46 +160,6 @@ olcLastMod: TRUE
         self.assertEquals(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
         self.assertEquals(Util.sanitizeEndpoint('localhost'), 'https://localhost:80')
 
-    def _foo_tempfile(self, suffix=''):
-        fd, filename = tempfile.mkstemp(suffix=suffix)
-        os.close(fd)
-
-        f = Compressor.openCompressedFile(filename, options='wb')
-        try:
-            f.write('foo')
-        finally:
-            f.close()
-
-        return filename
-            
-    def testChecksumFile(self):
-
-        filenames = []
-        filenames.append(self._foo_tempfile())
-        filenames.append(self._foo_tempfile('.gz'))
-        filenames.append(self._foo_tempfile('.bz2'))
-
-        # checksums of 'foo'
-        foo_size = 3
-        checksums_ref = {'md5' : 'acbd18db4cc2f85cedef654fccc4a4d8',
-                         'sha1': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',}
-
-        for filename in filenames:
-            try:
-                size, sums = Util.checksum_file(filename, ['sha1'])
-                self.assertEquals(size, foo_size)
-                self.assertEquals(sums, {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
-
-                size, sums = Util.checksum_file(filename, ['md5', 'sha1'])
-                self.assertEquals(size, foo_size)
-                for sum, val in sums.items():
-                    self.assertEquals(checksums_ref[sum], val)
-
-                self.failUnlessRaises(Exception, Util.checksum_file, filename, ['bar'])
-
-            finally:
-                os.unlink(filename)
-            
     def testfilePutGetContentUnicode(self):
         _, filename = tempfile.mkstemp()
         try:

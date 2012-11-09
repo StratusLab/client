@@ -21,6 +21,7 @@ import re
 
 import stratuslab.Exceptions as Exceptions
 import stratuslab.Util as Util
+import stratuslab.Compressor as Compressor
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 
@@ -48,7 +49,7 @@ class Image(object):
     def checksumImage(filename, checksums=ManifestInfo.MANDATORY_CHECKSUMS):
         """Return dictionary of checksums."""
 
-        return Util.checksum_file(filename, checksums)
+        return Compressor.checksum_file(filename, checksums)
 
     @staticmethod
     def isImageId(imageId):

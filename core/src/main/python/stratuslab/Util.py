@@ -31,7 +31,6 @@ import io
 from random import sample
 from string import ascii_lowercase
 from stratuslab.Exceptions import ExecutionException, ValidationException
-import stratuslab.Compressor
 import Defaults
 import platform
 
@@ -668,45 +667,6 @@ def isValidNetLocation(url):
 
 def systemName():
     return platform.system()
-
-def _checksum_f(f, checksums=[], chunk_size=1024*1024*10):
-    """Returns a tuple with the file size in bytes and a dictionary of
-       checksums. The file named by the file handle will be fully read
-       if checksums are requested.  This method will close the file
-       handle."""
-
-    #
-    # "with" cannot be used here because the gzip library in python
-    # 2.6 doesn't support the __exit__ attribute needed for it
-    #
-    try: 
-
-        if not checksums:
-            return {}
-
-        digesters = []
-        try:
-            digesters = map(hashlib.new, checksums)
-        except ValueError as e:
-            raise ExecutionException('%s' % e)
-
-        bytes = 0
-        for chunk in iter((lambda:f.read(chunk_size)),''):
-            bytes += len(chunk)
-            for digester in digesters:
-                digester.update(chunk)
-
-        digests = [d.hexdigest() for d in digesters]
-
-        return (bytes, dict(zip(checksums, digests)))
-
-    finally:
-        f.close()
-
-def checksum_file(filename, checksums=[], chunk_size=1024*1024*10):
-    """Return dictionary of checksums."""
-
-    return _checksum_f(openCompressedFile(filename, 'rb'), checksums, chunk_size)
 
 def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')
