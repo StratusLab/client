@@ -137,18 +137,16 @@ class MainProgram(CommandBase):
             self.options.__dict__.update({'locations': [self.options.__dict__['locations']]})
 
         if not self.options.compression:
-            Util.printWarning("Image compression was not provided. "
-                              "You'll have to set it manually in the resulting manifest.")
+            # Guess compression from file name if not given explicitly.
+            compression = Compressor.getCompressionFormat(self.image)
+            self.options.__dict__.update({'compression':compression})
+
         if self.options.disksbus not in Runner.DISKS_BUS_AVAILABLE:
             self.parser.error("Unknown disks bus type %s. Available types: %s" % \
                               (self.options.disksbus, ', '.join(Runner.DISKS_BUS_AVAILABLE)))
 
     def doWork(self):
         self._calculateCheckSums()
-
-        statinfo = os.stat(self.image)
-        bytes = str(statinfo.st_size)
-        self.options.__dict__.update({'bytes':bytes})
 
         configHolder = ConfigHolder(self.options.__dict__)
         manifest = ManifestInfo(configHolder)
@@ -166,8 +164,9 @@ class MainProgram(CommandBase):
         if not checkSumsToDo and not self.options.sha1:
             checkSumsToDo = ManifestInfo.MANDATORY_CHECKSUMS
 
-        chksums = Image.checksumImage(self.image, checkSumsToDo)
+        bytes, chksums = Image.checksumImage(self.image, checkSumsToDo)
 
+        self.options.__dict__.update({'bytes':bytes})
         self.options.__dict__.update(chksums)
 
 if __name__ == '__main__':
