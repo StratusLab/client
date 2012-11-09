@@ -88,7 +88,7 @@ class ManifestDownloader(object):
         except urllib2.HTTPError:
             raise InputException(errorMessage)
         
-        if not manifest:
+        if manifest is None:
             raise InputException(errorMessage)
 
         manifestInfo = ManifestInfo(self.configHolder)
