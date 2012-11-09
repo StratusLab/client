@@ -19,6 +19,7 @@
 #
 
 import Util
+import hashlib
 import gzip
 import bz2
 from Exceptions import ExecutionException
