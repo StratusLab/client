@@ -33,3 +33,4 @@ target = "hdd"
 ]
 %(notifications)s
 %(create_image)s
+%(inbound_ports)s
