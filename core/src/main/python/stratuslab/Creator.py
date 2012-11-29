@@ -393,7 +393,7 @@ EOF
         elif self.installer == 'apt':
             for repoUrl in extraReposList:
                 repoName = getHostnameFromUri(repoUrl)
-                cmd = """cat >> /etc/apt/sourses.list.d/%(name)s.list
+                cmd = """cat >> /etc/apt/sources.list.d/%(name)s.list
 deb %(name)s
 """ % {'name' : repoName}
 
