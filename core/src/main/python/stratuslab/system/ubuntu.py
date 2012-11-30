@@ -21,7 +21,7 @@ from BaseSystem import BaseSystem
 from stratuslab.system.PackageInfo import PackageInfo
 import stratuslab.Util as Util
 
-installCmd = 'apt-get update; apt-get -y install'
+installCmd = 'apt-get update && apt-get -y --force-yes install'
 updateCmd = 'apt-get update'
 cleanPackageCacheCmd = 'apt-get clean'
 queryPackageCmd = 'dpkg -s'

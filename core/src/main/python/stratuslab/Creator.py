@@ -393,9 +393,10 @@ EOF
         elif self.installer == 'apt':
             for repoUrl in extraReposList:
                 repoName = getHostnameFromUri(repoUrl)
-                cmd = """cat >> /etc/apt/sources.list.d/%(name)s.list
-deb %(name)s
-""" % {'name' : repoName}
+                cmd = """cat >> /etc/apt/sources.list.d/%(reponame)s.list  << EOF
+deb %(repourl)s
+EOF
+""" % {'reponame' : repoName, 'repourl' : repoUrl}
 
         self._sshCmdWithOutput(cmd)
 
