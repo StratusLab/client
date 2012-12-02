@@ -50,11 +50,15 @@ class Runnable(AuthnCommand):
                 default=defaultOptions['userPublicKeyFile'])
 
         self.parser.add_option('-t', '--type', dest='instanceType',
-                help='instance type to start (see --list-type for default)', metavar='TYPE',
+                help='instance type to start (see --list-types for default)', metavar='TYPE',
                 default=Runner.DEFAULT_INSTANCE_TYPE)
 
-        self.parser.add_option('-l', '--list-type', dest='listType',
-                help='list available instance type',
+        self.parser.add_option('--list-type', dest='listType',
+                help='list available instance types (deprecated)',
+                action='store_true')
+
+        self.parser.add_option('-l', '--list-types', dest='listType',
+                help='list available instance types',
                 default=False, action='store_true')
 
         self.parser.add_option('--cpu', dest='vmCpu',
