@@ -268,10 +268,10 @@ class TMSaveCache(object):
     def _retreiveTargetMarketplace(self):
         if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):
             self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
-        elif self.configHolder.marketplaceEndpointLocal:
-            self.targetMarketplace = self.configHolder.marketplaceEndpointLocal
         else:
-            self.targetMarketplace = self.originMarketPlace
+            self.targetMarketplace = getattr(self.configHolder,
+                                             'marketplaceEndpointLocal', 
+                                             self.originMarketPlace)
     
         if not self.targetMarketplace:
             raise Exception('Markeptlace endpoint was not provided.')
