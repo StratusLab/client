@@ -1,0 +1,92 @@
+
+Quick Start
+===========
+
+The full instructions for client installation and configuration can be
+found in the "Try It" section of the [StratusLab
+website](http://stratuslab.eu/).
+
+
+Prerequisites
+-------------
+
+The client has the following prerequisites:
+
+  * Python 2.6.x or 2.7.x
+  * Java 1.6+
+  * SSH client
+  * SSH keypair
+
+Be sure that appropriate versions of Python and Java are installed.
+See the full installation documentation for information on configuring
+SSH.
+
+
+Client Installation
+-------------------
+
+Unpack the StratusLab client distribution into a convenient location.
+This directory is called $STRATUSLAB_HOME for convenience below.
+
+**Note**: The distributions (zip and tar.gz) **do not** contain a
+common root directory; you probably want to create a subdirectory
+on your file system to unpack the distribution into.
+
+
+Client Configuration
+--------------------
+
+Define your PATH and PYTHONPATH environmental variables, using your
+system specific mechanism.  The following shows the commands for a
+Linux bash shell:
+
+~~~ {bash}
+export PATH=$STRATUSLAB_HOME/bin:$PATH
+export PYTHONPATH=$STRATUSLAB_HOME/lib/stratuslab/python
+~~~
+
+Modify these commands as necessary for your operating system. 
+
+Create the subdirectory ".stratuslab" in your home area.  This may be
+in different places depending on your operating system. 
+
+Copy the file $STRATUSLAB_HOME/conf/stratuslab-user.cfg.ref to the
+".stratuslab" subdirectory you created in your home directory.
+
+**Rename this file from *.cfg.ref to *.cfg!**
+
+Provide values for the "endpoint", "pdisk_endpoint", "username", and
+"password" parameters.
+
+
+Testing the Client
+------------------
+
+If the client is correctly installed, the following commands should
+work without errors:
+
+~~~ {bash}
+stratus-describe-instance --version
+stratus-describe-instance --help
+~~~
+
+If they do not check the above instructions or the full instructions
+on the web. 
+
+To check the connection to the cloud, try the following command:
+
+~~~ {bash}
+stratus-describe-instance
+~~~
+
+This should return an empty list of your running machine instances.
+
+
+Problems
+--------
+
+See the full instructions on the web.  If you still have problems,
+then contact support@stratuslab.eu.
+
+
+
