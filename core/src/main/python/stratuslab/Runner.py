@@ -288,12 +288,13 @@ class Runner(object):
     def getDefaultInstanceTypes():
         types = {
             # name      :   (cpu, ram, swap)
-            't1.micro'  :   (1, 128, 512),
-            'm1.small'  :   (1, 128, 1024),
-            'c1.medium' :   (1, 256, 1024),
-            'm1.large'  :   (2, 512, 1024),
-            'm1.xlarge' :   (2, 1024, 1024),
-            'c1.xlarge' :   (4, 2048, 2048),
+            't1.micro'  :   (1,  512,  512),
+            'm1.small'  :   (1, 1536, 1536),
+            'm1.medium' :   (1, 3072, 3072),
+            'm1.large'  :   (2, 6144, 6144),
+            'm1.xlarge' :   (4, 8192, 8192),
+            'c1.medium' :   (2, 1536, 1536),
+            'c1.xlarge' :   (4, 6144, 6144),
         }
         return types
 
