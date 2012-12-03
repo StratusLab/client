@@ -66,6 +66,7 @@ class TMSaveCache(object):
     _CHECKSUM_CMD = '%ssum' % _CHECKSUM
     
     _IDENTIFIER_KEY = 'identifier'
+    _OWNER_KEY = 'owner'
 
     def __init__(self, args, **kwargs):
         self.args = args
@@ -192,7 +193,9 @@ class TMSaveCache(object):
 
     def _updateVolumeIdentifier(self):
         pdisk = PersistentDisk(self.configHolder)
-        pdisk.updateVolume({self._IDENTIFIER_KEY: self.snapshotMarketplaceId},
+        pdiskOwner = pdisk.getValue(self._OWNER_KEY, self.diskName)
+        pdisk.updateVolume({self._IDENTIFIER_KEY: self.snapshotMarketplaceId,
+                            self._OWNER_KEY: pdiskOwner},
                            self.createdPDiskId)
 
     #--------------------------------------------
