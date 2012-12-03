@@ -449,7 +449,7 @@ EOF
             scriptName, args = __tellScriptNameAndArgs(script)
             
             scriptDirectory = Util.sanitizePath(os.path.dirname(script))
-            scriptPathLocal = '%s/%s' % (scriptDirectory, scriptName)
+            scriptPathLocal = os.path.abspath(os.path.join(scriptDirectory, scriptName))
             scriptPathRemote = '/tmp/%s' % scriptName
 
             rc, output = self._scpWithOutput(scriptPathLocal, 'root@%s:%s' % (self.vmAddress, scriptPathRemote))
