@@ -113,7 +113,7 @@ class Cluster(object):
         packages = self.add_packages.replace(","," ")
 
         print "Trying to configure new apps with yum..."
-        if ssh.run_remote_command(self.hosts, "yum -y install " + packages ):
+        if ssh.run_remote_command(self.hosts, "yum -q -y install " + packages ):
             print "Trying to configure new apps with apt-get..."
             ssh.run_remote_command(self.hosts, "apt-get -q -y install " + packages )
 
