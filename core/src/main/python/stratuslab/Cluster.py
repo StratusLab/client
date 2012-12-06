@@ -49,7 +49,6 @@ class SSHUtil(object):
             # print "Copying to host " + host.public_ip
             error = os.system(cmd + " " + srcfile + " " + self._username + "@" + host.public_ip + ":" + remotepath)
             if error > 0 :
-                print "Error while executing command"
                 return error
 
         return 0
@@ -61,7 +60,6 @@ class SSHUtil(object):
             # print "Executing in host " + host.public_ip
             error = os.system(cmd)
             if error > 0 :
-                print "Error while executing command"
                 return error
 
         return 0
@@ -224,7 +222,7 @@ class Cluster(object):
         printStep("Applying user defined cluster services")
         master_only = []
         master_only.append(master_node)
-        ssh.run_remote_command(master_only, "/etc/rc.cluster-services")
+        ssh.run_remote_command(master_only, "'if [ -e /etc/rc.cluster-services ]; then /etc/rc.cluster-services; fi'")
         
     def deploy(self):
         ssh = SSHUtil(self._runner.userPrivateKeyFile, self.cluster_admin)
