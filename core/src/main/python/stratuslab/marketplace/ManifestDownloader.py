@@ -87,11 +87,11 @@ class ManifestDownloader(object):
             manifest = self._download(url)
         except urllib2.HTTPError:
             raise InputException(errorMessage)
-        
-        if manifest is None:
-            raise InputException(errorMessage)
 
-        manifestInfo = ManifestInfo(self.configHolder)
+        if manifest is not None:
+            manifestInfo = ManifestInfo(self.configHolder)
+        else:
+            raise InputException(errorMessage)
         
         try:
             manifestInfo.parseManifestFromXmlTree(manifest)
