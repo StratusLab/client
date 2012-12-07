@@ -78,6 +78,10 @@ class MainProgram(Runnable):
                 help='Used with --save option. Version for the new image.',
                 default='', metavar='VERSION')
 
+        self.parser.add_option('--title', dest='title',
+                help='Used with --save option. Title of the new image',
+                default='', metavar='TEXT')
+
         self.parser.add_option('--comment', dest='comment',
                 help='Used with --save option. Description of the new image',
                 default='', metavar='TEXT')
@@ -149,6 +153,9 @@ class MainProgram(Runnable):
                 self.parser.error(pre_message + 'provide a valid email address of the author of the image (--author-email).')
             if not self.options.newImageGroupVersion:
                 self.parser.error(pre_message + 'provide a version number for the new image (--image-version).')
+            if not self.options.title:
+                self.parser.error(pre_message + 'provide a title for the image (--title).')
+
             if not self.options.comment:
                 self.parser.error(pre_message + 'provide a comment for the image (--comment).')
 

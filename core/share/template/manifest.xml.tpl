@@ -47,6 +47,7 @@
         <dcterms:created>%(created)s</dcterms:created>
         <dcterms:valid>%(valid)s</dcterms:valid>
 
+        <dcterms:title>%(title)s</dcterms:title>
         <dcterms:description>%(comment)s</dcterms:description>
 
         <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>

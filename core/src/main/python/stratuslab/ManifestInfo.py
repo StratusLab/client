@@ -68,6 +68,7 @@ class ManifestInfo(object):
         self.email = '' # email address of endorser
 
         self.compression = '' # image compression: gz, bz2, ..
+        self.title = ''
         self.comment = ''
         self.filename = '' # filename of compressed image (old manifest)
 
@@ -108,6 +109,7 @@ class ManifestInfo(object):
                 (('type',       'type',       NS_DCTERMS, None),
                  ('created',    'created',    NS_DCTERMS, None),
                  ('valid',      'valid',      NS_DCTERMS, None),
+                 ('title',      'title',      NS_DCTERMS, ''),
                  ('comment',    'description',NS_DCTERMS, None),
                  ('compression','compression',NS_DCTERMS, None),
                  ('creator',    'creator',    NS_DCTERMS, self.creator),

@@ -63,6 +63,7 @@ class Creator(object):
         self.newImageGroupVersion = ''
         self.newImageGroupVersionWithManifestId = False
         self.author = ''
+        self.title = ''
         self.comment = ''
         self.os = ''
         self.authorEmail = ''
@@ -242,6 +243,7 @@ class Creator(object):
     def _getCreateImageTemplateDict(self):
         return {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
                 Runner.CREATE_IMAGE_KEY_CREATOR_NAME: self.author,
+                Runner.CREATE_IMAGE_KEY_NEWIMAGE_TITLE: self.title,
                 Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: self.comment,
                 Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: self.newImageGroupVersion,
                 Runner.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage }

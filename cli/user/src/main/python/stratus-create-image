@@ -69,6 +69,10 @@ class MainProgram(Runnable):
                 'by cloud site will be used.',
                 default='', metavar='URL')
 
+        self.parser.add_option('--title', dest='title',
+                help='title of the new image',
+                default='', metavar='TEXT')
+
         self.parser.add_option('--comment', dest='comment',
                 help='description of the new image',
                 default='', metavar='TEXT')
@@ -132,6 +136,9 @@ class MainProgram(Runnable):
         if self.options.noUpload and self.options.shutdownVm:
             self.parser.error('If you specify --no-upload you also need to specify --no-shutdown, otherwise \
 you\'ll never be able to retrieve the new image')
+
+        if not self.options.title:
+            self.parser.error('Provide a title describing the new image')
 
         if not self.options.comment:
             self.parser.error('Provide a comment describing the new image')

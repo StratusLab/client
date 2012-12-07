@@ -88,6 +88,10 @@ class MainProgram(CommandBase):
                 help='Image compression format. One of: %s' % ', '.join(Compressor.compressionFormats) ,
                 default='', metavar='EXT')
 
+        self.parser.add_option('--title', dest='title',
+                help='Title to append to the manifest file',
+                default='', metavar='TEXT')
+
         self.parser.add_option('--comment', dest='comment',
                 help='Comment to append to the manifest file',
                 default='', metavar='TEXT')
