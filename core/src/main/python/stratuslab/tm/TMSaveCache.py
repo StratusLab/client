@@ -197,8 +197,14 @@ class TMSaveCache(object):
         pdiskOwner = pdisk.getValue(self._OWNER_KEY, self.diskName)
         pdisk.updateVolume({self._IDENTIFIER_KEY: self.snapshotMarketplaceId,
                             self._OWNER_KEY: pdiskOwner,
-                            self._TAG_KEY: self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_TITLE]},
+                            self._TAG_KEY: self._getTitle()},
                            self.createdPDiskId)
+
+    def _getTitle(self):
+        try:
+            return self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_TITLE]
+        except KeyError:
+            return ""
 
     #--------------------------------------------
     # Marketplace and related
@@ -237,7 +243,7 @@ class TMSaveCache(object):
         manifest_info.creator = self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_NAME]
         manifest_info.version = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or\
                                      Util.incrementMinorVersionNumber(manifest_info.version)
-        manifest_info.title = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_TITLE]
+        manifest_info.title = self._getTitle()
         manifest_info.comment = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT]
         manifest_info.locations = [self.pdiskPathNew]
         manifest_info.IMAGE_VALIDITY = self._IMAGE_VALIDITY
