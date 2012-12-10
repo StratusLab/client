@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 import base64
+import json
+
 from gzip import GzipFile
 from StringIO import StringIO
 
@@ -92,6 +94,15 @@ def decodeMultipart(encoded_multipart):
     with closing(StringIO(gzipped_data)) as buffer:
         with closing(GzipFile('', 'rb', 9, buffer)) as f:
             return f.read()
+
+'''
+'''
+def decodeMultipartAsJson(dsmode, encoded_multipart):
+    info = {}
+    info['user-data'] = decodeMultipart(encoded_multipart)
+    info['dsmode'] = dsmode
+
+    return json.dumps(info)
 
 '''
 Creates an authorized_keys file from the given key file(s).  The

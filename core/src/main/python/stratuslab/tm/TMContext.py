@@ -14,10 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import base64
 import os
+import re
 import shutil
+import stat
+
 from os.path import dirname
 from tempfile import mkstemp, mkdtemp
+
+from stratuslab.Util import execute
+from stratuslab.cloudinit.Util import decodeMultipartAsJson
 
 class TMContext(object):
     ''' Create the disk with context information.  This is a CDROM for 
@@ -35,12 +42,6 @@ class TMContext(object):
 
     def __init__(self, args, **kwargs):
         self.args = args
-        self.contextDiskFile = None
-        self.context = None
-        self.srcFiles = None
-        self.contextMethod = "opennebula"
-        self.userData = None
-        self.authorizedKeys = None
 
     def run(self):
         try:
@@ -50,101 +51,69 @@ class TMContext(object):
 
     def _run(self):
         
-        self._checkArgs()
-        self._parseArgs()
+        _checkArgs(self.args)
 
-        contextMethod = self.parseContextFile()
-        if (self.contextMethod == 'opennebula'):
-            self._makeCdrom()
-        elif (self.contextMethod = 'cloud-init'):
-            self._makeVfat()
+        contextDiskFile = args[0]
+        contextFile = args[1]
+        cdromFiles = args[1:]
+
+        kvpairs = _parseContextFile(contextFile)
+
+        if (kvpairs['context_method'] == 'cloud-init'):
+            self._doCloudInit(contextDiskFile, kvpairs)
         else:
-            raise ValueError('context method must be "opennebula" or "cloud-init"')
+            self._doOpenNebula(contextDiskFile, cdromFiles)
 
-    def _checkArgs(self):
-        if len(self.args) < 2:
+    def _cleanup(self):
+        pass
+
+    @staticmethod
+    def _checkArgs(args):
+        if (not args or len(args) < 2):
             raise ValueError('must have at least two arguments: destination disk and context file')
 
-    def _parseArgs(self):
-        self.contextDiskFile = self.args[0]
-        self.context = self.args[1]
-        self.srcFiles = self.args[1:]
-
     '''
-       This does a "dirty" parsing of the context file looking only for the 
-       lines with the keys CONTEXT_METHOD and CLOUD_INIT_USER_DATA.  All of
-       the other key-value pairs do not need to be understood by this class.
+       This does a "dirty" parsing of the context file looking only
+       for the lines with the keys CONTEXT_METHOD,
+       CLOUD_INIT_USER_DATA and CLOUD_INIT_AUTHORIZED_KEYS.  All of
+       the other key-value pairs do not need to be understood by this
+       class.  A map with these values (if found) are returned. 
     '''
-    def _parseContextFile(self):
-        f = None
-        try:
-            f = open(self.contextFile, 'r')
+    @staticmethod
+    def _parseContextFile(context_file):
+        result = {}
+        with open(context_file, 'r') as f:
             for line in f:
                 match = re.match('\s*CONTEXT_METHOD\s*=\s*([^\s]+).*', line)
                 if match:
-                    self.contextMethod = match.group(1)
+                    result['context_method'] = match.group(1)
                 match = re.match('\s*CLOUD_INIT_USER_DATA\s*=\s*([^\s]+).*', line)
                 if match:
-                    self.userData = match.group(1)
+                    result['user_data'] = match.group(1)
                 match = re.match('\s*CLOUD_INIT_AUTHORIZED_KEYS\s*=\s*([^\s]+).*', line)
                 if match:
-                    self.authorizedKeys = match.group(1)
-        finally:
-            if f:
-                f.close()
+                    result['authorized_keys'] = match.group(1)
+        return result
 
-    def _makeCdrom(self):
-        tmpdir = None
-        cdrom_image = None
-        try:
-            tmpdir = mkdtemp()
-            for f in self.srcFiles:
-                shutil.copy(f, tmpdir)
-
-            cdrom_image = mkstemp()
-
-            cmd = ["mkisofs", "-o", cdrom_image, "-J", "-R", tmpdir]
-            execute(cmd)
-
-            os.chmod(cdrom_image, DISK_PERMS)
-
-            shutil.copy(cdrom_image, self.contextDiskFile)
-
-        finally:
-            if tmpdir:
-                shutil.rmtree(tmpdir, True)
-            if cdrom_image:
-                shutil.rm(cdrom_image)
-
-
-    def _makeVfat(self):
+    @staticmethod
+    def _doOpenNebula(contextDiskFile, cdromFiles):
         tmpdir = None
         image = None
         try:
             tmpdir = mkdtemp()
+            for f in cdromFiles:
+                shutil.copy(f, tmpdir)
 
-            image = os.join(tmpdir, "disk.vfat")
-            mnt_point = os.join(tmpdir, "context")
-            os.mkdir(mnt_point)
+            image = mkstemp()
 
-            cmd = ["mkfs.vfat", "-C", image, "1024"]
-            execute(cmd)
-
-            cmd = ["mount", "-o", "loop", mnt_point, image]
-            execute(cmd)
-
-            if self.authorizedKeys:
-                os.write("x")
-
-            if self.userData:
-                os.write("x")
-
-            cmd = ["umount", mnt_point]
-            execute(cmd)
+            cmd = ["mkisofs", "-o", image, "-J", "-R", tmpdir]
+            rc = execute(cmd)
+            if (rc != 0):
+                raise Exception("error creating cdrom")
 
             os.chmod(image, DISK_PERMS)
 
-            shutil.copy(image, self.contextDiskFile)
+            shutil.copy(image, contextDiskFile)
 
         finally:
             if tmpdir:
@@ -153,46 +122,65 @@ class TMContext(object):
                 shutil.rm(image)
 
 
-    def execute(cmd, returnType=None, exit=True, quiet=False, shell=False):
-        printCmd(' '.join(cmd))
-        if quiet:
-            devNull = open(os.devnull, 'w')
-            stdout = devNull
-            stderr = devNull
-        else:
-            stdout = subprocess.PIPE
-            stderr = subprocess.PIPE
+    @staticmethod
+    def _doCloudInit(contextDiskFile, params):
+        tmpdir = None
+        image = None
+        try:
+            tmpdir = mkdtemp()
 
-        p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, shell=shell)
-        p.wait()
+            image = os.path.join(tmpdir, "disk.vfat")
+            mnt_point = os.path.join(tmpdir, "context")
+            os.mkdir(mnt_point)
 
-        if quiet:
-            devNull.close()
-        if returnType:
-            return p.returncode
-        else:
+            cmd = ["mkfs.vfat", "-C", image, "1024"]
+            rc = execute(cmd)
+            if (rc != 0):
+                raise Exception('cannot create VFAT file system for cloud-init')
 
-            out = p.stdout.read()
-            err = p.stderr.read()
-            if p.returncode == 0:
-                if not quiet:
-                    if out:
-                        printAndFlush(out + '\n')
-                    if err:
-                        printAndFlush(err + '\n')
-                return out
-            else:
-                printAndFlush('  [ERROR] Error executing command!\n')
-                if out:
-                    printAndFlush(out + '\n')
-                if err:
-                    printAndFlush(err + '\n')
-                if exit:
-                    raise Exception
+            cmd = ["mount", "-o", "loop", image, mnt_point]
+            rc = execute(cmd)
+            if (rc != 0):
+                raise Exception('cannot mount VFAT file system for cloud-init')
 
+            try:
+                b64_content = params['authorized_keys']
 
-    def printAndFlush(msg):
-        sys.stdout.flush()
-        print msg,
-        sys.stdout.flush()
+                ssh_dir = os.path.join(mnt_point, 'root', '.ssh')
+                os.mkdirs(ssh_dir)
 
+                keys_file = os.path.join(ssh_dir, 'authorized_keys')
+
+                with open(keys_file, 'wb') as f:
+                    content = base64.b64decode(b64_content)
+                    f.write(content)
+
+            except KeyError:
+                pass
+
+            try:
+                encoded_content = params['user_data']
+                meta_content = decodeMultipartAsJson('local', encoded_content)
+
+                meta_file = os.path.join(mnt_point, 'meta.js')
+
+                with open(meta_file, 'wb') as f:
+                    f.write(meta_content)
+
+            except KeyError:
+                pass
+
+            cmd = ["umount", mnt_point]
+            rc = execute(cmd)
+            if (rc != 0):
+                raise Exception('cannot umount VFAT file system for cloud-init')
+
+            os.chmod(image, DISK_PERMS)
+
+            shutil.copy(image, contextDiskFile)
+
+        finally:
+            if tmpdir:
+                shutil.rmtree(tmpdir, True)
+            if image:
+                shutil.rm(image)
