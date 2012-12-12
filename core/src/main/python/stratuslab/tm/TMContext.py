@@ -51,25 +51,30 @@ class TMContext(object):
 
     def _run(self):
         
-        _checkArgs(self.args)
+        TMContext._checkArgs(self.args)
 
-        contextDiskFile = args[0]
-        contextFile = args[1]
-        cdromFiles = args[1:]
+        contextFile = self.args[1]
+        contextDiskFile = self.args[2]
+        cdromFiles = self.args[1:]
+        cdromFiles.remove(contextDiskFile)
 
-        kvpairs = _parseContextFile(contextFile)
+        # hack to remove the node from the destination
+        contextDiskFile = contextDiskFile.split(':')[1]
 
-        if (kvpairs['context_method'] == 'cloud-init'):
-            self._doCloudInit(contextDiskFile, kvpairs)
+        kvpairs = TMContext._parseContextFile(contextFile)
+
+        method = kvpairs.get('context_method', 'opennebula')
+        if (method == 'cloud-init'):
+            TMContext._doCloudInit(contextDiskFile, kvpairs)
         else:
-            self._doOpenNebula(contextDiskFile, cdromFiles)
+            TMContext._doOpenNebula(contextDiskFile, cdromFiles)
 
     def _cleanup(self):
         pass
 
     @staticmethod
     def _checkArgs(args):
-        if (not args or len(args) < 2):
+        if (not args or len(args) < 3):
             raise ValueError('must have at least two arguments: destination disk and context file')
 
     '''
@@ -104,22 +109,26 @@ class TMContext(object):
             for f in cdromFiles:
                 shutil.copy(f, tmpdir)
 
-            image = mkstemp()
+            _, image = mkstemp()
 
             cmd = ["mkisofs", "-o", image, "-J", "-R", tmpdir]
             rc = execute(cmd)
             if (rc != 0):
                 raise Exception("error creating cdrom")
 
-            os.chmod(image, DISK_PERMS)
+            os.chmod(image, TMContext.DISK_PERMS)
 
+            print image
+            print contextDiskFile
+            print tmpdir
+            os.makedirs(os.path.dirname(contextDiskFile))
             shutil.copy(image, contextDiskFile)
 
         finally:
             if tmpdir:
                 shutil.rmtree(tmpdir, True)
             if image:
-                shutil.rm(image)
+                os.remove(image)
 
 
     @staticmethod
@@ -133,8 +142,14 @@ class TMContext(object):
             mnt_point = os.path.join(tmpdir, "context")
             os.mkdir(mnt_point)
 
-            cmd = ["mkfs.vfat", "-C", image, "1024"]
+            print tmpdir
+            print image
+            print mnt_point
+
+            cmd = ["mkfs.vfat", "-v", "-C", image, "1024"]
+            print cmd
             rc = execute(cmd)
+            print rc
             if (rc != 0):
                 raise Exception('cannot create VFAT file system for cloud-init')
 
@@ -147,7 +162,7 @@ class TMContext(object):
                 b64_content = params['authorized_keys']
 
                 ssh_dir = os.path.join(mnt_point, 'root', '.ssh')
-                os.mkdirs(ssh_dir)
+                os.makedirs(ssh_dir)
 
                 keys_file = os.path.join(ssh_dir, 'authorized_keys')
 
@@ -175,12 +190,10 @@ class TMContext(object):
             if (rc != 0):
                 raise Exception('cannot umount VFAT file system for cloud-init')
 
-            os.chmod(image, DISK_PERMS)
+            os.chmod(image, TMContext.DISK_PERMS)
 
             shutil.copy(image, contextDiskFile)
 
         finally:
             if tmpdir:
                 shutil.rmtree(tmpdir, True)
-            if image:
-                shutil.rm(image)
