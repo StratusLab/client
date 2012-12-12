@@ -1,84 +1,147 @@
-##############################################################################
-#                                                                            #
-#               StratusLab User Configuration Reference                      #
-#               ---------------------------------------                      #
-#                                                                            #
-#                                                                            #
-#  Note: the [default] section is mandatory. Other sections can be used      #
-#        to override the default section. This allows you to group           #
-#        parameters for different cloud accounts and endpoints, and switch   #
-#        between them using an environment variable, command-line options    #
-#        of the 'selected_section'. Refer to the client help for details     #
-#        (i.e. -h/--help) and online documentation.                          #
-#                                                                            #
-##############################################################################
+# ----------------------------------------------------------------------
+# Reference StratusLab User Configuration File
+# ----------------------------------------------------------------------
+#
+# This should be copied to the $HOME/.stratuslab/stratuslab-user.cfg
+# file and then modified with the user's configuration parameters.
+#
+# NOTE: This file needs to be renamed from *.cfg.ref to *.cfg!
+#
+# NOTE: The [default] section is mandatory.  You can define other
+#       sections that can be used to override the default
+#       section. This allows you to group parameters for different
+#       cloud accounts and endpoints, and switch between them using an
+#       environment variable, command-line options or the
+#       'selected_section' parameter. Refer to the client help
+#       (i.e. -h/--help) or online documentation for details.
+#
+# ----------------------------------------------------------------------
 
 [default]
 
-# Cloud frontend. NB! There is no default value for the endpoint in the code.
-endpoint = <cloud.frontend.hostname>
+#
+# Select a section to override this default section
+#
+#selected_section = my-section
 
-# Authentication to Cloud frontend. 
-# Use either username/password or PEM key/cert.
-# If both are enabled, the username/password takes precedence.
+
+#
+# Cloud frontend hostname
+#
+# There is no default value for this endpoint.  It must be provided by
+# the user.  Replace the value below with the hostname of your cloud.
+#
+endpoint = cloud.frontend.hostname
+
+
+#
+# Persistent disk storage service endpoint
+#
+# If this parameter is not provided, then it will default to the value
+# given for the 'endpoint' parameter.  Check with the cloud provider
+# whether this parameter needs to be specified. 
+#
+#pdisk_endpoint = pdisk.service.hostname
+
+
+#
+# Marketplace endpoint URL
+#
+# Normally the default is correct.  Uncomment this line and replace
+# the value only if your cloud implementation uses a different
+# Marketplace.
+#
+#marketplace_endpoint = https://marketplace.stratuslab.eu
+
+
+#
+# SSH public key
+#
+# This key is installed by default on new machine instances to allow
+# you to log into the virtual machine.  Uncomment this line and
+# replace the value only if the default is not correct.
+#
+#user_public_key_file = <home>/.ssh/id_rsa.pub
+
+
+#
+# Authentication information.
+#
+# You can use either a username/password or X509 key/certificate to
+# access the cloud infrastructure.  Use one of the following pairs of
+# parameters to provide your authentication information.  If both are
+# used, then the username/password take precedence.
+
+# username/password access.
 username = username
 password = password
+
+# certificate access
+#
+# If using a certificate proxy (e.g. VOMS proxy), then both of these
+# parameters should point to the proxy file.
+#
 #pem_key = <home>/.globus/userkey.pem
 #pem_certificate = <home>/.globus/usercert.pem
 
-# List of Cloud frontend endpoints in the format: 
-# <endpoint> <username> <password>
-# Each line has to be indented. Any line can be commented out.
-endpoints = 
-# <endpoint> <username> <password>
-# Test Cloud
- test.could.net username password
-
-# Timeout (in sec) on each Cloud frontend
-endpoint_timeout = 5
-
-# Marketplace
-#marketplace_endpoint = https://marketplace.stratuslab.eu
-
-# SSH public key
-#user_public_key_file = <home>/.ssh/id_rsa.pub
-
-#p12_certificate = <home>/.globus/usercert.p12
-p12_password = password
-
-# Persistent disk storage service
-pdisk_endpoint = <pdisk.service.hostname>
-#pdisk_port = 8445
 
 #
-# Set the following parameter to change the default
-# instance type to use.  It may also appear in specific
-# sections to provide separate defaults for different
-# cloud infrastructures.
+# This certificate is used to sign metadata entries in the Marketplace
+# for customized machine images (appliances).  It may or may not be
+# the same certificate used to access the cloud.
+#
+# Provide the location if it is different from the default.  The
+# password may be provided here, but if not, the user will be prompted
+# for it if it is needed by a command.
+#
+#p12_certificate = <home>/.globus/usercert.p12
+#p12_password = password
+
+
+#
+# Set the following parameter to change the default instance type to
+# use.  It may also appear in specific sections to provide separate
+# defaults for different cloud infrastructures.
+#
+# These instance types can be defined in the 'instance_types' section
+# of this configuration file or be one of the defined standard types.
+# You can list those types with 'stratus-run-instance --list-types'.
 #
 #default_instance_type=my.type
 
-# Select a section to override the default section
-#selected_section = my-section
 
-# Create user specific sections, which you can activate using
-# the selected_section parameter in the default section
-# or using the --user-config-section command-line option
+#
+# Timeout (in sec) for contacting the cloud services.
+#
+endpoint_timeout = 5
+
+
+#
+# Create user specific sections, which you can activate using the
+# selected_section parameter in the default section or using the
+# --user-config-section command-line option.  This allows your to
+# switch easily between different StratusLab cloud infrastructures
+# without having to change this configuration file. 
+#
+# All of the previous parameters can appear in the user specific
+# sections, excepting the 'selected_section' parameter.  Values not
+# provided will be taken from the default section.
+#
 #[my-section]
-#endpoint = <another.cloud.frontend.hostname>
-#username = <another.username>
-#password = <another.password>
+#endpoint = another.cloud.frontend.hostname
+#username = another.username
+#password = another.password
+
 
 #
-# You may add your own instance types to this section
-# to provide different combinations of CPU, RAM, and
-# swap space.  Use only printable characters for the
-# instance type name.  The value should be a triple of 
-# CPU, RAM, and swap values, respectively.  The RAM
-# and swap values are in MiB.
+# You may add your own instance types to this section to provide
+# different combinations of CPU, RAM, and swap space.  Use only
+# printable characters for the instance type name.  The value should
+# be a triple of CPU, RAM, and swap values, respectively.  The RAM and
+# swap values are in MiB.
 #
-# The values defined here can also be used for the
-# default instance type(s).
+# The values defined here can also be used for the default instance
+# type(s).
 #
 [instance_types]
 #my.type = 4, 2048, 2048
