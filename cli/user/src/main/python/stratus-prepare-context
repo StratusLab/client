@@ -46,13 +46,15 @@ class MainProgram(CommandBase):
         authorized_keys = self._getEncodedAuthorizedKeysFile()
         user_data = self._getEncodedUserData()
 
+        # Do NOT add spaces around the equals sign.  These will leak into the
+        # values defined in the context file defined by OpenNebula.
         contents = '''
-CONTEXT_METHOD = cloud-init
+CONTEXT_METHOD=cloud-init
 '''
         if authorized_keys:
-            contents = contents + "CLOUD_INIT_AUTHORIZED_KEYS = %s\n" % authorized_keys
+            contents = contents + "CLOUD_INIT_AUTHORIZED_KEYS=%s\n" % authorized_keys
         if user_data:
-            contents = contents + "CLOUD_INIT_USER_DATA = %s\n" % user_data
+            contents = contents + "CLOUD_INIT_USER_DATA=%s\n" % user_data
 
         with open('cloud-init.txt', 'wb') as f:
             f.write(contents)

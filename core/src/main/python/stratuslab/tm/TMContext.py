@@ -84,15 +84,15 @@ class TMContext(object):
         result = {}
         with open(context_file, 'r') as f:
             for line in f:
-                match = re.match('\s*CONTEXT_METHOD\s*=\s*([^\s]+).*', line)
+                match = re.match('\s*CONTEXT_METHOD\s*=\s*"(.+)".*', line)
                 if match:
-                    result['context_method'] = match.group(1)
-                match = re.match('\s*CLOUD_INIT_USER_DATA\s*=\s*([^\s]+).*', line)
+                    result['context_method'] = match.group(1).strip()
+                match = re.match('\s*CLOUD_INIT_USER_DATA\s*=\s*"(.+)".*', line)
                 if match:
-                    result['user_data'] = match.group(1)
-                match = re.match('\s*CLOUD_INIT_AUTHORIZED_KEYS\s*=\s*([^\s]+).*', line)
+                    result['user_data'] = match.group(1).strip()
+                match = re.match('\s*CLOUD_INIT_AUTHORIZED_KEYS\s*=\s*"(.+)".*', line)
                 if match:
-                    result['authorized_keys'] = match.group(1)
+                    result['authorized_keys'] = match.group(1).strip()
         return result
 
     @staticmethod
