@@ -23,9 +23,9 @@ from stratuslab.tm.TMContext import TMContext
 class TMContextTest(unittest.TestCase):
 
     TEST_CONTEXT = '''
-  CONTEXT_METHOD = cloud-init
-  CLOUD_INIT_AUTHORIZED_KEYS = DUMMY_DATA
-  CLOUD_INIT_USER_DATA = DUMMY_DATA    
+  CONTEXT_METHOD="cloud-init"
+  CLOUD_INIT_AUTHORIZED_KEYS="DUMMY_DATA"
+  CLOUD_INIT_USER_DATA="DUMMY_DATA"   
 '''
 
     def setUp(self):
