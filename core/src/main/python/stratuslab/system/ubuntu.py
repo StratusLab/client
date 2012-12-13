@@ -34,7 +34,7 @@ class Ubuntu(BaseSystem):
         self.systemName = 'Ubuntu 10.04'
         self.installCmd = installCmd
         self.frontendDeps = [
-            'one-3.2-StratusLab', 'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
+            'ruby', 'libsqlite3-dev', 'libxmlrpc-c3-dev', 'libssl-dev',
             'scons', 'g++', 'git-core', 'ssh', 'genisoimage', 'curl', 'libxml2-dev'
         ]
         self.nodeDeps = ['ssh', 'ruby', 'curl', 'libvirt-bin', 'genisoimage' ]

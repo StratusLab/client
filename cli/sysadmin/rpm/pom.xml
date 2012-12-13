@@ -109,6 +109,7 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
+	    <require>one-3.2-StratusLab</require>
 	    <require>mysql</require>
 	    <require>python-ldap</require>
 	  </requires>

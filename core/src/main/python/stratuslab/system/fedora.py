@@ -27,7 +27,7 @@ class Fedora(CentOS):
     def __init__(self):
         super(Fedora, self).__init__()
         self.frontendDeps = [
-                'one-3.2-StratusLab', 'openssh', 'ruby', 'zlib-devel', 'curl'
+                'openssh', 'ruby', 'zlib-devel', 'curl'
         ]
         
         self.packages['dhcp'] = PackageInfo('dhcp',
