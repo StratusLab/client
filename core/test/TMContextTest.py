@@ -37,10 +37,11 @@ class TMContextTest(unittest.TestCase):
     def testCheckArgs(self):
         self.assertRaises(ValueError, TMContext._checkArgs, None)
         self.assertRaises(ValueError, TMContext._checkArgs, [])
-        self.assertRaises(ValueError, TMContext._checkArgs, ['dummy location'])
+        self.assertRaises(ValueError, TMContext._checkArgs, ['scriptname'])
+        self.assertRaises(ValueError, TMContext._checkArgs, ['scriptname', 'dummy context'])
 
         # should be ok with these fake args
-        TMContext._checkArgs(['dummy location', 'dummy context'])
+        TMContext._checkArgs(['scriptname', 'context', 'disk'])
 
     def testParseContextFile(self):
         try:
