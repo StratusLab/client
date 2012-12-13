@@ -45,6 +45,9 @@ class OpenNebulaFrontend(OpenNebulaCommon):
             printWarning('frontend_ip configuration parameter is %s, this is very likely not to work' % self.frontendIp)
         self.frontend = SystemFactory.getSystem(self.frontendSystem, self.configHolder)
 
+    def _installFrontendDependencies(self):
+        self.frontend.installFrontendDependencies()
+
     def _installCAs(self):
         self.frontend.installCAs()
 

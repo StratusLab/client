@@ -57,6 +57,9 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         self._addCloudNode()
     
     def _installFrontend(self):
+        printStep('Install frontend dependencies')
+        self._installFrontendDependencies()
+        
         printStep('Installing CAs')
         self._installCAs()
         
