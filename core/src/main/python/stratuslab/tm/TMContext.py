@@ -23,7 +23,7 @@ import stat
 from os.path import dirname
 from tempfile import mkstemp, mkdtemp
 
-from stratuslab.Util import execute
+from stratuslab.Util import execute, scp
 from stratuslab.cloudinit.Util import decodeMultipartAsJson
 
 class TMContext(object):
@@ -57,9 +57,6 @@ class TMContext(object):
         contextDiskFile = self.args[2]
         cdromFiles = self.args[1:]
         cdromFiles.remove(contextDiskFile)
-
-        # hack to remove the node from the destination
-        contextDiskFile = contextDiskFile.split(':')[1]
 
         kvpairs = TMContext._parseContextFile(contextFile)
 
@@ -111,18 +108,14 @@ class TMContext(object):
 
             _, image = mkstemp()
 
-            cmd = ["mkisofs", "-o", image, "-J", "-R", tmpdir]
+            cmd = ["mkisofs", "-V", "_STRATUSLAB", "-o", image, "-J", "-R", tmpdir]
             rc = execute(cmd)
             if (rc != 0):
                 raise Exception("error creating cdrom")
 
             os.chmod(image, TMContext.DISK_PERMS)
 
-            print image
-            print contextDiskFile
-            print tmpdir
-            os.makedirs(os.path.dirname(contextDiskFile))
-            shutil.copy(image, contextDiskFile)
+            scp(image, contextDiskFile)
 
         finally:
             if tmpdir:
@@ -146,7 +139,7 @@ class TMContext(object):
             print image
             print mnt_point
 
-            cmd = ["mkfs.vfat", "-v", "-C", image, "1024"]
+            cmd = ["mkfs.vfat", "-n", "_CLOUD_INIT", "-v", "-C", image, "1024"]
             print cmd
             rc = execute(cmd)
             print rc
@@ -192,7 +185,7 @@ class TMContext(object):
 
             os.chmod(image, TMContext.DISK_PERMS)
 
-            shutil.copy(image, contextDiskFile)
+            scp(image, contextDiskFile)
 
         finally:
             if tmpdir:
