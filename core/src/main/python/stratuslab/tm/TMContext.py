@@ -62,6 +62,9 @@ class TMContext(object):
 
         method = kvpairs.get('context_method', 'opennebula')
         if (method == 'cloud-init'):
+            vfat_script_dir = os.path.dirname(self.args[0])
+            vfat_script = os.path.join(script_dir, "TMMakeVFAT.py")
+            kvpairs['vfat_script'] = vfat_script
             TMContext._doCloudInit(contextDiskFile, kvpairs)
         else:
             TMContext._doOpenNebula(contextDiskFile, cdromFiles)
@@ -123,38 +126,41 @@ class TMContext(object):
             if image:
                 os.remove(image)
 
+    @staticmethod
+    def _makeEmptyFile(size=1024*1000):
+        _, file = tempfile.mkstemp()
+        with open(path, 'w') as f:
+            f.seek(size - 1) 
+            f.write('\0') 
+        return file
 
     @staticmethod
     def _doCloudInit(contextDiskFile, params):
-        tmpdir = None
+        content_dir = None
         image = None
+        vfat_script = params['vfat_script']
         try:
-            tmpdir = mkdtemp()
+            content_dir = mkdtemp()
 
-            image = os.path.join(tmpdir, "disk.vfat")
-            mnt_point = os.path.join(tmpdir, "context")
-            os.mkdir(mnt_point)
+            try:
+                b64_content = params['network']
 
-            print tmpdir
-            print image
-            print mnt_point
+                net_dir = os.path.join(content_dir, 'etc', 'network')
+                os.makedirs(net_dir)
 
-            cmd = ["mkfs.vfat", "-n", "_CLOUD_INIT", "-v", "-C", image, "1024"]
-            print cmd
-            rc = execute(cmd)
-            print rc
-            if (rc != 0):
-                raise Exception('cannot create VFAT file system for cloud-init')
+                net_file = os.path.join(net_dir, 'interfaces')
 
-            cmd = ["mount", "-o", "loop", image, mnt_point]
-            rc = execute(cmd)
-            if (rc != 0):
-                raise Exception('cannot mount VFAT file system for cloud-init')
+                with open(net_file, 'wb') as f:
+                    content = base64.b64decode(b64_content)
+                    f.write(content)
+
+            except KeyError:
+                pass
 
             try:
                 b64_content = params['authorized_keys']
 
-                ssh_dir = os.path.join(mnt_point, 'root', '.ssh')
+                ssh_dir = os.path.join(content_dir, 'root', '.ssh')
                 os.makedirs(ssh_dir)
 
                 keys_file = os.path.join(ssh_dir, 'authorized_keys')
@@ -170,7 +176,7 @@ class TMContext(object):
                 encoded_content = params['user_data']
                 meta_content = decodeMultipartAsJson('local', encoded_content)
 
-                meta_file = os.path.join(mnt_point, 'meta.js')
+                meta_file = os.path.join(content_dir, 'meta.js')
 
                 with open(meta_file, 'wb') as f:
                     f.write(meta_content)
@@ -178,15 +184,20 @@ class TMContext(object):
             except KeyError:
                 pass
 
-            cmd = ["umount", mnt_point]
+            #
+            # This must be run as root because the VFAT file must be
+            # mounted and unmounted from the file system.
+            #
+            image = TMContext._makeEmptyFile()
+            cmd = ['sudo', vfat_script, content_dir, image]
             rc = execute(cmd)
             if (rc != 0):
-                raise Exception('cannot umount VFAT file system for cloud-init')
-
-            os.chmod(image, TMContext.DISK_PERMS)
+                raise Exception('cannot create VFAT file system for cloud-init')
 
             scp(image, contextDiskFile)
 
         finally:
-            if tmpdir:
-                shutil.rmtree(tmpdir, True)
+            if content_dir:
+                shutil.rmtree(content_dir, True)
+            if image:
+                os.remove(image)
