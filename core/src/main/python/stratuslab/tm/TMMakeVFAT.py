@@ -15,11 +15,15 @@
 # limitations under the License.
 #
 import os
+
+import sys
+sys.path.append('/var/lib/stratuslab/python')
+
 import re
 import shutil
 import stat
 
-from os.path import dirname
+from os.path import dirname, join
 from tempfile import mkstemp, mkdtemp
 
 from stratuslab.Util import execute, scp
@@ -73,19 +77,19 @@ class TMMakeVFAT(object):
     '''
     @staticmethod
     def _copyCloudInitFiles(src, dst):
-        etc_src = os.join(src, "etc")
+        etc_src = join(src, "etc")
         if os.path.exists(etc_src):
-            etc_dst = os.join(dst, "etc")
+            etc_dst = join(dst, "etc")
             shutil.copytree(etc_src, etc_dst)
             
-        root_src = os.join(src, "root")
+        root_src = join(src, "root")
         if os.path.exists(root_src):
-            root_dst = os.join(dst, "root")
+            root_dst = join(dst, "root")
             shutil.copytree(root_src, root_dst)
                 
-        meta_js_src = os.join(src, "meta.js")
+        meta_js_src = join(src, "meta.js")
         if os.path.exists(meta_js_src): 
-            meta_js_dst = os.join(dst, "meta.js")
+            meta_js_dst = join(dst, "meta.js")
             shutil.copyfile(meta_js_src, meta_js_dst)
 
 
@@ -117,3 +121,15 @@ class TMMakeVFAT(object):
         finally:
             if tmpdir:
                 shutil.rmtree(tmpdir, True)
+
+if __name__ == '__main__':
+    try:
+        tm = TMMakeVFAT(sys.argv)
+        tm.run()
+    except Exception, e:
+        print >> sys.stderr, 'ERROR MESSAGE --8<------'
+        print >> sys.stderr, '%s: %s' % (os.path.basename(__file__), e)
+        print >> sys.stderr, 'ERROR MESSAGE ------>8--'
+        if TMMakeVFAT.PRINT_TRACE_ON_ERROR:
+            raise
+        sys.exit(1)

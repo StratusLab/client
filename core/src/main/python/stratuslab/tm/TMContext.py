@@ -62,8 +62,8 @@ class TMContext(object):
 
         method = kvpairs.get('context_method', 'opennebula')
         if (method == 'cloud-init'):
-            vfat_script_dir = os.path.dirname(self.args[0])
-            vfat_script = os.path.join(script_dir, "TMMakeVFAT.py")
+            vfat_script_dir = '/var/lib/stratuslab/python/stratuslab/tm'
+            vfat_script = os.path.join(vfat_script_dir, 'TMMakeVFAT.py')
             kvpairs['vfat_script'] = vfat_script
             TMContext._doCloudInit(contextDiskFile, kvpairs)
         else:
@@ -128,8 +128,8 @@ class TMContext(object):
 
     @staticmethod
     def _makeEmptyFile(size=1024*1000):
-        _, file = tempfile.mkstemp()
-        with open(path, 'w') as f:
+        _, file = mkstemp()
+        with open(file, 'w') as f:
             f.seek(size - 1) 
             f.write('\0') 
         return file
