@@ -312,7 +312,8 @@ class BaseSystem(object):
             self.executeCmd(['usermod', '-aG', group, self.oneUsername])
 
     def configureCloudAdminSudoFrontend(self):
-        commands = ['/sbin/lvs']
+        commands = ['/sbin/lvs',
+                    '/var/lib/stratuslab/python/stratuslab/tm/TMMakeVFAT.py']
         self._configureCloudAdminSudo(commands)
 
     def configureCloudAdminSudoNode(self):
