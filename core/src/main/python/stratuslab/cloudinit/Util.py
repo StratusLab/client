@@ -42,15 +42,15 @@ text files.
 '''
 def createMultipartString(parts):
     msg = MIMEMultipart()
-    is_multipart = (len(parts) != 1)
     index = 0
     for mimetype, content in parts:
+        print mimetype
+        print content
         part = createTextPart(content, mimetype, ('part-%s' % index))
         index = index + 1
-        if is_multipart: 
-            msg.attach(part)
-        else:
-            msg = part
+        msg.attach(part)
+        if (mimetype == 'none'):
+            return content
         
     return msg.as_string()
 
@@ -62,14 +62,15 @@ text files.
 '''
 def createMultipartStringFromFiles(parts):
     msg = MIMEMultipart()
-    is_multipart = (len(parts) != 1)
     for mimetype, file in parts:
         with open(file, 'rb') as f:
-            part = createTextPart(f.read(), mimetype, os.path.basename(file))
-        if is_multipart:
+            contents = f.read()
+            print mimetype
+            print contents
+            part = createTextPart(contents, mimetype, os.path.basename(file))
             msg.attach(part)
-        else:
-            msg = part
+            if (mimetype == 'none'):
+                return contents
 
     return msg.as_string()
 

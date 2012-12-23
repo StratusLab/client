@@ -90,24 +90,6 @@ class UtilTest(unittest.TestCase):
 
         self.assertEquals("\n".join(values)+"\n", result)
 
-    def testCreateMultipartStringSinglePart(self):
-        files = []
-        values = []
-        for i in range(1):
-            value = "value-%d" % i
-            values.append(value)
-            files.append(('plain', value))
-
-        result = Util.createMultipartString(files)
-
-        with closing(StringIO(result)) as buffer:
-            parser = Parser()
-            msg = parser.parse(buffer)
-
-        self.assertFalse(msg.is_multipart())
-        self.assertEquals(values[0], msg.get_payload())
-
-
     def testCreateMultipartString(self):
         files = []
         values = []
@@ -129,29 +111,18 @@ class UtilTest(unittest.TestCase):
                     self.assertEquals(values[i], msg.get_payload())
                     i = i + 1
 
-    def testCreateMultipartStringFromFilesSinglePart(self):
+    def testCreateMultipartStringWithNone(self):
         files = []
         values = []
-        for i in range(1):
-            _, filename = tempfile.mkstemp()
-            files.append(('plain', filename))
-            with open(filename, 'wb') as f:
-                value = "value-%d" % i
-                f.write(value)
-                values.append(value)
+        for i in range(3):
+            value = "value-%d" % i
+            values.append(value)
+            files.append(('none', value))
 
-        result = Util.createMultipartStringFromFiles(files)
+        result = Util.createMultipartString(files)
 
-        for mime, file in files:
-            os.remove(file)
+        self.assertEquals(values[0], result)
 
-        with closing(StringIO(result)) as buffer:
-            parser = Parser()
-            msg = parser.parse(buffer)
-
-        self.assertFalse(msg.is_multipart())
-        self.assertEquals(values[0], msg.get_payload())
-                    
 
     def testCreateMultipartStringFromFiles(self):
         files = []
@@ -179,6 +150,22 @@ class UtilTest(unittest.TestCase):
                 for msg in part.get_payload():
                     self.assertEquals(values[i], msg.get_payload())
                     i = i + 1
+
+
+    def testCreateMultipartStringFromFilesWithNone(self):
+        files = []
+        values = []
+        for i in range(3):
+            _, filename = tempfile.mkstemp()
+            files.append(('none', filename))
+            with open(filename, 'wb') as f:
+                value = "value-%d" % i
+                f.write(value)
+                values.append(value)
+
+        result = Util.createMultipartStringFromFiles(files)
+
+        self.assertEquals(values[0], result)
 
 
 if __name__ == "__main__":
