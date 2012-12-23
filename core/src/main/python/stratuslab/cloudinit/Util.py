@@ -15,6 +15,7 @@
 #
 import base64
 import json
+import os
 
 from gzip import GzipFile
 from StringIO import StringIO
@@ -40,12 +41,18 @@ mime-type should be the subtype ONLY.  All files are assumed to be
 text files.
 '''
 def createMultipartString(parts):
-    multipart = MIMEMultipart()
+    msg = MIMEMultipart()
+    is_multipart = (len(parts) != 1)
+    index = 0
     for mimetype, content in parts:
-        part = MIMEText(content, mimetype)
-        multipart.attach(part)
+        part = createTextPart(content, mimetype, ('part-%s' % index))
+        index = index + 1
+        if is_multipart: 
+            msg.attach(part)
+        else:
+            msg = part
         
-    return multipart.as_string()
+    return msg.as_string()
 
 '''
 This creates a single multipart file from the given parts.  Each part
@@ -54,13 +61,28 @@ mime-type should be the subtype ONLY.  All files are assumed to be
 text files.
 '''
 def createMultipartStringFromFiles(parts):
-    multipart = MIMEMultipart()
+    msg = MIMEMultipart()
+    is_multipart = (len(parts) != 1)
     for mimetype, file in parts:
         with open(file, 'rb') as f:
-            part = MIMEText(f.read(), mimetype)
-        multipart.attach(part)
+            part = createTextPart(f.read(), mimetype, os.path.basename(file))
+        if is_multipart:
+            msg.attach(part)
+        else:
+            msg = part
 
-    return multipart.as_string()
+    return msg.as_string()
+
+
+'''
+Create a text message part with the given content, mimetype, and
+filename.
+'''
+def createTextPart(content, mimetype, filename):
+    part = MIMEText(content, mimetype)
+    part.add_header('Content-Disposition', 'attachment', filename=filename)
+    return part
+
 
 '''
 This gzips the multipart content and then base64 encodes the result.

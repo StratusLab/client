@@ -90,6 +90,24 @@ class UtilTest(unittest.TestCase):
 
         self.assertEquals("\n".join(values)+"\n", result)
 
+    def testCreateMultipartStringSinglePart(self):
+        files = []
+        values = []
+        for i in range(1):
+            value = "value-%d" % i
+            values.append(value)
+            files.append(('plain', value))
+
+        result = Util.createMultipartString(files)
+
+        with closing(StringIO(result)) as buffer:
+            parser = Parser()
+            msg = parser.parse(buffer)
+
+        self.assertFalse(msg.is_multipart())
+        self.assertEquals(values[0], msg.get_payload())
+
+
     def testCreateMultipartString(self):
         files = []
         values = []
@@ -99,7 +117,6 @@ class UtilTest(unittest.TestCase):
             files.append(('plain', value))
 
         result = Util.createMultipartString(files)
-        print result
 
         with closing(StringIO(result)) as buffer:
             parser = Parser()
@@ -111,6 +128,30 @@ class UtilTest(unittest.TestCase):
                 for msg in part.get_payload():
                     self.assertEquals(values[i], msg.get_payload())
                     i = i + 1
+
+    def testCreateMultipartStringFromFilesSinglePart(self):
+        files = []
+        values = []
+        for i in range(1):
+            _, filename = tempfile.mkstemp()
+            files.append(('plain', filename))
+            with open(filename, 'wb') as f:
+                value = "value-%d" % i
+                f.write(value)
+                values.append(value)
+
+        result = Util.createMultipartStringFromFiles(files)
+
+        for mime, file in files:
+            os.remove(file)
+
+        with closing(StringIO(result)) as buffer:
+            parser = Parser()
+            msg = parser.parse(buffer)
+
+        self.assertFalse(msg.is_multipart())
+        self.assertEquals(values[0], msg.get_payload())
+                    
 
     def testCreateMultipartStringFromFiles(self):
         files = []
@@ -124,7 +165,6 @@ class UtilTest(unittest.TestCase):
                 values.append(value)
 
         result = Util.createMultipartStringFromFiles(files)
-        print result
 
         for mime, file in files:
             os.remove(file)
