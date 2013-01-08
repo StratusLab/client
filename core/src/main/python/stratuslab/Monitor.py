@@ -47,6 +47,7 @@ class Monitor(Configurable):
         self.endpoint = None
         self.verboseLevel = 1
         self.portTranslation = False
+        self.portTranslationClient = None
 
         super(Monitor, self).__init__(configHolder)
 
@@ -61,7 +62,7 @@ class Monitor(Configurable):
         self.labelDecorator = {'state_summary': 'state', Monitor.TEMPLATE_NIC_HOSTNAME: 'host/ip', Monitor.TEMPLATE_NIC_IP: 'ip', 'template_vcpu': 'vcpu', 'cpu': 'cpu%'}
 
         if Util.isTrueConfVal(self.portTranslation):
-            self.portTranslation = PortTranslationWebClient(configHolder)
+            self.portTranslationClient = PortTranslationWebClient(configHolder)
             self.vmInfoDetailAttributes.insert(-1, ['template_pat', 16])
             self.vmInfoListAttributes.insert(-1, ['template_pat', 16])
             self.labelDecorator['template_pat'] = 'pat(VM:GW)'
@@ -99,8 +100,8 @@ class Monitor(Configurable):
     def _vmDetail(self, id):
         res = self.cloud.getVmInfo(int(id))
         vm = etree.fromstring(res)
-        if Util.isTrueConfVal(self.portTranslation):
-            self.portTranslation.addPortTranslationToSingleVmInfo(vm)
+        if self.portTranslationClient:
+            self.portTranslationClient.addPortTranslationToSingleVmInfo(vm)
         info = CloudInfo()
         info.populate(vm)
         self._addHostnameElement(info)
@@ -149,8 +150,8 @@ class Monitor(Configurable):
 
         self._addHostnameToVmsInfo(vms)
 
-        if Util.isTrueConfVal(self.portTranslation):
-            self.portTranslation.addPortTranslationToVmsInfo(vms)
+        if self.portTranslationClient:
+            self.portTranslationClient.addPortTranslationToVmsInfo(vms)
 
         correct_vms = []
         for vm in self._iterate(vms):
@@ -258,8 +259,8 @@ class Monitor(Configurable):
 
         vmPort = str(self.cloud.getVmSshPort(int(vmId)))
         vmInfo = self._vmDetail(vmId)
-        if Util.isTrueConfVal(self.portTranslation) and self.portTranslation.hasPortTranslated(vmInfo):
-            port = self.portTranslation.findGatewayPort(vmInfo, vmPort)
+        if self.portTranslationClient and self.portTranslationClient.hasPortTranslated(vmInfo):
+            port = self.portTranslationClient.findGatewayPort(vmInfo, vmPort)
             host = self.patGatewayHost
         else:
             port = vmPort
