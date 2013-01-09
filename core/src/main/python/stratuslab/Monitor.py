@@ -250,7 +250,7 @@ class Monitor(Configurable):
         if _list:
             for attr in attrList:
                 for i, attrVal in enumerate(getattr(self, attr)):
-                    lenMax = max(map(lambda x: len(getattr(x, attrVal[0], '')), _list))
+                    lenMax = max(map(lambda x: len(getattr(x, attrVal[0], '') or ''), _list))
                     if lenMax >= getattr(self, attr)[i][1]:
                         getattr(self, attr)[i][1] = lenMax + 1
 
