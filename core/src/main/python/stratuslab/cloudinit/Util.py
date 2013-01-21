@@ -122,7 +122,8 @@ def decodeMultipart(encoded_multipart):
 '''
 def decodeMultipartAsJson(dsmode, encoded_multipart):
     info = {}
-    info['user-data'] = decodeMultipart(encoded_multipart)
+    if encoded_multipart :
+        info['user-data'] = decodeMultipart(encoded_multipart)
     info['dsmode'] = dsmode
 
     return json.dumps(info)

@@ -174,15 +174,15 @@ class TMContext(object):
 
             try:
                 encoded_content = params['user_data']
-                meta_content = decodeMultipartAsJson('local', encoded_content)
-
-                meta_file = os.path.join(content_dir, 'meta.js')
-
-                with open(meta_file, 'wb') as f:
-                    f.write(meta_content)
-
             except KeyError:
-                pass
+                encoded_content = None
+
+            meta_content = decodeMultipartAsJson('local', encoded_content)
+
+            meta_file = os.path.join(content_dir, 'meta.js')
+
+            with open(meta_file, 'wb') as f:
+                f.write(meta_content)
 
             #
             # This must be run as root because the VFAT file must be
