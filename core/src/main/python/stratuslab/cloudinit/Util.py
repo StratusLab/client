@@ -178,21 +178,22 @@ def encodedAuthorizedKeysFile(args):
 
 '''
 Creates the contents of the context file with the given list of
-arguments.  Each argument must be a mimetype and filename pair
-separated by a comma.
+arguments.  The method accepts an optional separator character, which
+is a newline by default. Each argument must be a mimetype and filename
+pair separated by a comma.
 '''
-def contextFile(args):
+def contextFile(args, separator="\n"):
    authorized_keys = encodedAuthorizedKeysFile(args)
    user_data = encodedUserData(args)
 
+   kvpairs = []
+
    # Do NOT add spaces around the equals sign.  These will leak into the
    # values defined in the context file defined by OpenNebula.
-   contents = '''
-CONTEXT_METHOD=cloud-init
-'''
+   kvpairs.append('CONTEXT_METHOD=cloud-init')
    if authorized_keys:
-       contents = contents + "CLOUD_INIT_AUTHORIZED_KEYS=%s\n" % authorized_keys
+       kvpairs.append("CLOUD_INIT_AUTHORIZED_KEYS=%s" % authorized_keys)
    if user_data:
-       contents = contents + "CLOUD_INIT_USER_DATA=%s\n" % user_data
+       kvpairs.append("CLOUD_INIT_USER_DATA=%s\n" % user_data)
 
-   return contents
+   return separator.join(kvpairs)
