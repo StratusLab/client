@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-import base64
 import os
 import sys
 
@@ -25,8 +24,12 @@ from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.cloudinit import Util
 
+'''
+A command-line utility for generating a cloud-init context file.
+The output file is always named cloud-init.txt and written to the
+current directory.
+'''
 class MainProgram(CommandBase):
-    '''A command-line utility for generating a cloud-init context file.'''
 
     def __init__(self):
         self.image = None
@@ -43,45 +46,10 @@ class MainProgram(CommandBase):
         pass
 
     def doWork(self):
-        authorized_keys = self._getEncodedAuthorizedKeysFile()
-        user_data = self._getEncodedUserData()
-
-        # Do NOT add spaces around the equals sign.  These will leak into the
-        # values defined in the context file defined by OpenNebula.
-        contents = '''
-CONTEXT_METHOD=cloud-init
-'''
-        if authorized_keys:
-            contents = contents + "CLOUD_INIT_AUTHORIZED_KEYS=%s\n" % authorized_keys
-        if user_data:
-            contents = contents + "CLOUD_INIT_USER_DATA=%s\n" % user_data
+        contents = Util.contextFile(self.args)
 
         with open('cloud-init.txt', 'wb') as f:
             f.write(contents)
-
-
-    def _getEncodedUserData(self):
-        mimefiles = []
-        for entry in self.args:
-            mimetype, file = entry.split(',')
-            if (mimetype != 'ssh'):
-                mimefiles.append((mimetype, file))
-        if (len(mimefiles) == 0):
-            return None
-        else:
-            return Util.encodeMultipart(Util.createMultipartStringFromFiles(mimefiles))
-
-    def _getEncodedAuthorizedKeysFile(self):
-        keyfiles = []
-        for entry in self.args:
-            mimetype, file = entry.split(',')
-            if (mimetype == 'ssh'):
-                keyfiles.append(file)
-        if (len(keyfiles) == 0):
-            return None
-        else:
-            contents = Util.createAuthorizedKeysFromFiles(keyfiles)
-            return base64.b64encode(contents)
 
 
 if __name__ == '__main__':

@@ -44,8 +44,6 @@ def createMultipartString(parts):
     msg = MIMEMultipart()
     index = 0
     for mimetype, content in parts:
-        print mimetype
-        print content
         part = createTextPart(content, mimetype, ('part-%s' % index))
         index = index + 1
         msg.attach(part)
@@ -65,8 +63,6 @@ def createMultipartStringFromFiles(parts):
     for mimetype, file in parts:
         with open(file, 'rb') as f:
             contents = f.read()
-            print mimetype
-            print contents
             part = createTextPart(contents, mimetype, os.path.basename(file))
             msg.attach(part)
             if (mimetype == 'none'):
@@ -119,6 +115,7 @@ def decodeMultipart(encoded_multipart):
             return f.read()
 
 '''
+Decodes the multipart content and returns it as JSON.
 '''
 def decodeMultipartAsJson(dsmode, encoded_multipart):
     info = {}
@@ -141,3 +138,61 @@ def createAuthorizedKeysFromFiles(keyfiles):
                 buffer.write(key.strip())
             buffer.write("\n")
         return buffer.getvalue()
+
+
+'''
+Creates the encoded contents for the user data given a list of
+arguments.  Each argument must be a mimetype and filename pair
+separated by a comma.  This treats all of the mimetypes except the
+pseudo-mimetype of 'ssh'.
+'''
+def encodedUserData(args):
+    mimefiles = []
+    for entry in args:
+        mimetype, file = entry.split(',')
+        if (mimetype != 'ssh'):
+            mimefiles.append((mimetype, file))
+    if (len(mimefiles) == 0):
+        return None
+    else:
+        return encodeMultipart(createMultipartStringFromFiles(mimefiles))
+
+
+'''
+Create the encoded contents for the authorized key file from the given
+list of arguments.  Each argument must be a mimetype and filename pair
+separated by a comma.  This ignores all entries except those with the
+pseudo-mimetype of 'ssh'.
+'''
+def encodedAuthorizedKeysFile(args):
+    keyfiles = []
+    for entry in args:
+        mimetype, file = entry.split(',')
+        if (mimetype == 'ssh'):
+            keyfiles.append(file)
+    if (len(keyfiles) == 0):
+        return None
+    else:
+        contents = createAuthorizedKeysFromFiles(keyfiles)
+        return base64.b64encode(contents)
+
+'''
+Creates the contents of the context file with the given list of
+arguments.  Each argument must be a mimetype and filename pair
+separated by a comma.
+'''
+def contextFile(args):
+   authorized_keys = encodedAuthorizedKeysFile(args)
+   user_data = encodedUserData(args)
+
+   # Do NOT add spaces around the equals sign.  These will leak into the
+   # values defined in the context file defined by OpenNebula.
+   contents = '''
+CONTEXT_METHOD=cloud-init
+'''
+   if authorized_keys:
+       contents = contents + "CLOUD_INIT_AUTHORIZED_KEYS=%s\n" % authorized_keys
+   if user_data:
+       contents = contents + "CLOUD_INIT_USER_DATA=%s\n" % user_data
+
+   return contents
