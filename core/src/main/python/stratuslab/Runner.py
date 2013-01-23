@@ -23,6 +23,7 @@ import urllib2
 
 import stratuslab.Util as Util
 import stratuslab.Exceptions as Exceptions
+import stratuslab.cloudinit.Util as CloudInitUtil
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Authn import AuthnFactory
 from stratuslab.image.Image import Image
@@ -494,7 +495,7 @@ class Runner(object):
 
         if self.cloudInit:
             cloudInitArgs = self.cloudInit.split(Util.cliLineSplitChar)
-            cloudInitData = Util.contextFile(cloudInitArgs)
+            cloudInitData = CloudInitUtil.contextFile(cloudInitArgs)
             contextElems.extend(cloudInitData.split('\n'))
 
         for line in contextElems:
