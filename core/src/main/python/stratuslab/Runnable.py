@@ -80,6 +80,10 @@ class Runnable(AuthnCommand):
                 help='extra context string (separate by %s)' % Util.cliLineSplitChar,
                 default=defaultOptions['extraContextData'])
 
+        self.parser.add_option('--cloud-init', dest='cloudInit', metavar='CLOUDINIT',
+                help='mimetype,file pairs (separate by %s)' % Util.cliLineSplitChar,
+                default=defaultOptions['cloudInit'])
+
         self.parser.add_option('--vnc-port', dest='vncPort', metavar='PORT', type='int',
                 help='VNC port number. Note for KVM it\'s the real one, not the '
                      'VNC port. So for VNC port 0 you should specify 5900, for '
