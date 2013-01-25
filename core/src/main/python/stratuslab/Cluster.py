@@ -194,7 +194,7 @@ class Cluster(object):
         # Find the total available number of cores
         total_cores = 0
         for node in active_nodes:
-            total_cores += node.cores
+            total_cores += int(node.cores)
 
         counter = 0
         for node in self.hosts:
