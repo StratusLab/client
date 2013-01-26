@@ -50,6 +50,7 @@ class MainProgram(CommandBase):
 
         with open('cloud-init.txt', 'wb') as f:
             f.write(contents)
+            f.write("\n")
 
 
 if __name__ == '__main__':
