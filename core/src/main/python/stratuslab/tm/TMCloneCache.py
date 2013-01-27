@@ -218,9 +218,12 @@ class TMCloneCache(object):
         return compression
     
     def _retrieveDowloadedImageSize(self):
-        imageFormat = self._getImageFormat()   
-        
-        if imageFormat in ManifestInfo.imageFormats:
+        imageFormat = self._getImageFormat()
+        imageKind = self._getImageKind()
+
+        # TODO: this check should be moved to somewhere more logical.
+        # Only check the image format for machine images; no sense for disk images.
+        if (imageFormat in ManifestInfo.imageFormats) or (imageKind != 'machine'):
             self.downloadedLocalImageSize = self._bytesToGiga(int(self._getImageSize()))
         else:
             raise ValueError('Unknown image format: ' + imageFormat)
@@ -255,6 +258,9 @@ class TMCloneCache(object):
 
     def _getImageFormat(self):
         return self.manifestDownloader.getImageElementValue('format')
+        
+    def _getImageKind(self):
+        return self.manifestDownloader.getImageElementValue('kind')
         
     def _getImageSize(self):
         return self.manifestDownloader.getImageElementValue('bytes')
