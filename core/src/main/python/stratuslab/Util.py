@@ -377,6 +377,10 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordProm
     for keyAppend in [('sshVerb', '-v'), ('sshQuiet', '-q'), ('pseudoTTY', '-t')]:
         _appendToSshCommandFromKwargs(*keyAppend)
 
+    # Hack to get multiple -t options to really force TTY allocation.
+    for keyAppend in [('pseudoTTY', '-t')]:
+        _appendToSshCommandFromKwargs(*keyAppend)
+
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
