@@ -72,8 +72,8 @@ class MainProgram(CommandBase):
                                
         self.parser.add_option('--image-id-createimage', dest='imageIdCreateImage',
                                help='ID of the image to be used with createImageTest. '
-                               'Default: ArCnG4gBogiprglBUdG6V8YX20y',
-                               default='ArCnG4gBogiprglBUdG6V8YX20y', metavar='ID')
+                               'Default: NhKuXe2vpdjOibeuU-ysvOAYglz',
+                               default='NhKuXe2vpdjOibeuU-ysvOAYglz', metavar='ID')
 
         self.parser.add_option('--author-email-createimage', dest='authorEmailCreateImage',
                                help='Used with createImageTest. New image author email. '
