@@ -64,7 +64,7 @@ class Util(object):
         _endpoint = stratuslab.Util.sanitizeEndpoint(endpoint, 
                                                      Defaults.marketplaceProtocol,
                                                      Defaults.marketplacePort)
-        return '%s/metadata/%s?status=valid&location=all' % (_endpoint, identifier)
+        return '%s/metadata/%s' % (_endpoint, identifier)
 
     @staticmethod
     def metadataCompleteUrl(endpoint, identifier, email, created):
