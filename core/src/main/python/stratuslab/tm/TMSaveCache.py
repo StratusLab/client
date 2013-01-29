@@ -286,7 +286,7 @@ class TMSaveCache(object):
                                              self.originMarketPlace)
     
         if not self.targetMarketplace:
-            raise Exception('Markeptlace endpoint was not provided.')
+            raise Exception('Marketplace endpoint was not provided.')
 
     #--------------------------------------------
     # Utility
