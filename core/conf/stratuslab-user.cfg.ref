@@ -33,6 +33,12 @@
 #
 endpoint = cloud.frontend.hostname
 
+#
+# Can provide default name and country for this cloud.
+# These are used mainly in the Libcloud API.
+#
+name = "StratusLab Cloud"
+country = "unknown"
 
 #
 # Persistent disk storage service endpoint
@@ -128,6 +134,8 @@ endpoint_timeout = 5
 # provided will be taken from the default section.
 #
 #[my-section]
+#name = "Another StratusLab Cloud"
+#country = "somewhere"
 #endpoint = another.cloud.frontend.hostname
 #username = another.username
 #password = another.password
