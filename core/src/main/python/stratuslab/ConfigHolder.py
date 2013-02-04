@@ -184,6 +184,10 @@ class UserConfigurator(object):
     def configFileToDictWithFormattedKeys(configFile, withMap=False, selected_section=None):
         '''This accepts either a file-like object or a filename.'''
         usercfg = UserConfigurator(configFile)
+        return UserConfigurator.userConfiguratorToDictWithFormattedKeys(usercfg, withMap, selected_section)
+
+    @staticmethod
+    def userConfiguratorToDictWithFormattedKeys(usercfg, withMap=False, selected_section=None):
         config = usercfg.getDict(selected_section)
         return ConfigHolder._formatConfigKeys(config, withMap)
 
