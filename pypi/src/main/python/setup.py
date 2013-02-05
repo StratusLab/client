@@ -14,13 +14,13 @@ except:
 
 setup(
     name='stratuslab-client',
-    version='13.02.dev',
+    version='13.02.0',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
     url='http://stratuslab.eu/',
-    license='Apache 2.0',
+    license='Apache Software License 2.0',
     description='StratusLab client',
-    long_description="Command line client for accessing StratusLab cloud infrastrutures.",
+    long_description=open('README.txt').read(),
 
     scripts=[
         'bin/stratus-attach-volume',
@@ -67,6 +67,28 @@ setup(
         'stratuslab.system',
         'stratuslab.tm',
         'stratuslab.web',
+        ],
+
+    data_files=[
+        ('java', ['java/metadata-3.3-jar-with-dependencies.jar']),
+        ('share/vm', ['share/vm/schema.one']),
+        ('share/template', ['share/template/manifest.xml.tpl']),
+        ('conf', ['conf/stratuslab-user.cfg.ref']),
+        ],
+
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: Apache Software License',
+        'Natural Language :: English',
+        'Operating System :: POSIX',
+        'Operating System :: Unix',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Programming Language :: Python :: 2.6',
+        'Topic :: System :: Distributed Computing',
         ],
 
 #    install_requires=[

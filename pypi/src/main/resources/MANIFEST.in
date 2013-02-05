@@ -1,4 +1,2 @@
 include README
-recursive-include conf *
-recursive-include java *
-recursive-include share *
+include README.txt
