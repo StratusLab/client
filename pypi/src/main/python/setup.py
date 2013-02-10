@@ -14,7 +14,7 @@ except:
 
 setup(
     name='stratuslab-client',
-    version='13.02.0',
+    version='13.02.1',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
     url='http://stratuslab.eu/',
@@ -49,24 +49,18 @@ setup(
         ],
 
      packages=[
-        'dirq',
-        'httplib2',
-        'pika',
-        'pika.adapters',
-        'stomp',
-        'stomp.bridge',
         'stratuslab',
         'stratuslab.cloud',
         'stratuslab.cloudinit',
         'stratuslab.commandbase',
         'stratuslab.image',
-        'stratuslab.installator',
+        #'stratuslab.installator',
         'stratuslab.marketplace',
         'stratuslab.messaging',
         'stratuslab.pat',
         'stratuslab.system',
-        'stratuslab.tm',
-        'stratuslab.web',
+        #'stratuslab.tm',
+        #'stratuslab.web',
         ],
 
     data_files=[
@@ -91,9 +85,10 @@ setup(
         'Topic :: System :: Distributed Computing',
         ],
 
-#    install_requires=[
-#        "dirq",
-#        "stomp",
-#        "pika",
-#    ],
+    install_requires=[
+        "dirq >= 1.2.2",
+        "stomp.py >= 3.1.3",
+        "pika >= 0.9.9",
+        "httplib2 >= 0.7.7",
+    ],
 )
