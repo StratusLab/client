@@ -26,6 +26,7 @@ setup(
         'bin/stratus-attach-volume',
         'bin/stratus-build-metadata',
         'bin/stratus-connect-instance',
+        'bin/stratus-copy-config',
         'bin/stratus-create-image',
         'bin/stratus-create-volume',
         'bin/stratus-delete-volume',

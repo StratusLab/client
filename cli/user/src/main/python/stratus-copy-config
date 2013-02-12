@@ -33,8 +33,8 @@ class MainProgram(CommandBaseUser):
     user.
     '''
 
-    existingFileMessage = \
-        'not overwriting existing configuration file (%s); use --force to overwrite'
+    existingFileMsg = \
+        'won\'t overwrite file (%s); use --force to overwrite'
 
     def __init__(self):
         self.args = None
@@ -44,9 +44,9 @@ class MainProgram(CommandBaseUser):
 
         self.parser.usage='''%prog [options]'''
 
-        self.parser.add_option('--force', dest='forceCopy',
-                help='force overwrite of existing file',
-                default=None)
+        self.parser.add_option('--force', action='store_true',
+                dest='force', default=False,
+                help='force overwrite of existing file')
 
         self.options, self.args = self.parser.parse_args()
 
@@ -71,14 +71,15 @@ class MainProgram(CommandBaseUser):
         configHolder = ConfigHolder(self.options.__dict__)
 
         src = os.path.join(Util.modulePath, '..', '..', '..', 'conf', 'stratuslab-user.cfg.ref')
-        dst = Util.defaultConfigFileUser
+        dst = configHolder.configFile
 
-        if os.path.exists(dst) and not self.forceCopy:
+        if os.path.exists(dst) and not configHolder.force:
             Util.printError(self.existingFileMsg % dst)
         else:
             try:
                 self._create_parent_dir(dst)
                 self._copy_config(src, dst)
+                Util.printDetail('wrote configuration file: %s' % dst)
             except Exception as e: 
                 Util.printError(e)
 
