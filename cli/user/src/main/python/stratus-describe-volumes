@@ -39,7 +39,7 @@ class MainProgram(AuthnCommand, StorageCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog  [volume_uid ...] [[--filter name=value] ...]'
+        self.parser.usage = '%prog  [volume_uid ...] [[--filter name:value] ...]'
         self.parser.description = '''List all available disk or only specified 
 for the current user (-u/--username).'''
         
