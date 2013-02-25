@@ -14,7 +14,7 @@ except:
 
 setup(
     name='stratuslab-client',
-    version='13.02.2',
+    version='13.02.3',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
     url='http://stratuslab.eu/',

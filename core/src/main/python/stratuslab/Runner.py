@@ -54,9 +54,13 @@ class Runner(object):
   TARGET=%(vm_disks_prefix)sc,
   TYPE=block ]'''
 
+    # NOTE: The READONLY flag must NOT be set to true.  This will result
+    # in a deployment.0 file that libvirt cannot deploy.  The device type
+    # must also be kept with 'disk' and NOT 'cdrom', otherwise the 
+    # contextualization will not work correctly.  GitHub Issue #50.
     READONLY_DISK = '''DISK=[
   SOURCE="%(readonlyDiskId)s",
-  READONLY=yes,
+  READONLY=no,
   SAVE=no,
   TARGET=%(vm_disks_prefix)sc,
   DRIVER="raw" ]'''
