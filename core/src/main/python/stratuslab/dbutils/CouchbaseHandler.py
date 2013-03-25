@@ -15,45 +15,66 @@
 #
 
 import logging as log
+import ConfigParser
 from couchbase.client import Couchbase
 
 class stratuslab.dbutils.CouchbaseHandler (log.Handler):
-"""
-Provides a logging handler that inserts records into a Couchbase
-database.  The log records are formatted according to the configured
-formatted and appended to the given Couchbase document directly.  This
-document is considered a plain text file and is not formatted as
-JSON.
-"""
-    def __init__(self, 
-                 logid='mylog', 
-                 dbnode="127.0.0.1:8091",
-                 bucket='default',
-                 password=''):
+    """
+    Provides a logging handler that inserts records into a Couchbase
+    database.  The log records are formatted according to the
+    configured formatter and appended to the given Couchbase document
+    directly.
+
+    Exceptions raised while constructing the handler will be passed on
+    to the caller.  Exceptions raised while logging will be treated
+    with the installed error handler, which by default, ignores such
+    errors. 
+    """
+
+    def _create_docid(self):
         """
-        Constructor requires the document ID (logid) for the log.
+        Add the given document to the database.  Exceptions raised
+        while trying to create the document will be ignored; this may
+        happen if the document exists already.
+        """
+        try:
+            self.bucket.add(self.docid, 0, 0, '')
+        except:
+            pass
+
+    def __init__(self, docid, dbhost='127.0.0.1:8091', 
+                 bucket='default', password='', level=log.INFO):
+        """
+        Constructor requires the document ID (docid) for the log.
         This will usually be related to the VM (or other resource)
         being logged.
 
-        The dbnode should be the host:port for contacting the
-        database.  The bucket and password allow access to the
-        appropriate part of the database.
-        """
-        super(CouchbaseHandler, self).__init__(level=log.INFO)
+        The log level (default = logger.INFO) is optional.
 
-        couchbase = Couchbase(dbnode, bucket, password)
+        The following additional keyword arguments are accepted:
+          * dbhost = host:port for server (def. '127.0.0.1:8091')
+          * bucket = name of bucket to use (def. 'default')
+          * password = password for bucket (def. '')
+        """
+        super(CouchbaseHandler, self).__init__(level=level)
+
+        couchbase = Couchbase(dbhost, bucket, password)
         self.bucket = couchbase[bucket]
 
-        self.logid = logid
-        try:
-            bucket.add(self.logid, 0, 0, '')
-        except:
-            pass
+        if not docid:
+            raise Exception('docid cannot be empty or null')
+
+        self.docid = docid
+
+        self._create_docid()
 
     def emit(self, record):
         """
         Simply append the given record to the document within the
         database.
         """
-        msg = self.format(record) + "\n"
-        self.bucket.append(self.logid, msg)
+        try:
+            msg = self.format(record) + "\n"
+            self.bucket.append(self.docid, msg)
+        except:
+            self.handleError(record)
