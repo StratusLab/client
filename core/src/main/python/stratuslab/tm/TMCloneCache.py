@@ -32,7 +32,7 @@ from stratuslab.marketplace.Policy import Policy
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
-import stratuslab.ManifestInfo as ManifestInfo
+from stratuslab.Compressor import Compressor
 
 class TMCloneCache(object):
     ''' Clone or retrieve from cache disk image
@@ -56,11 +56,12 @@ class TMCloneCache(object):
     _CHECKSUM = 'sha1'
     _CHECKSUM_CMD = '%ssum' % _CHECKSUM
     
-    _ACCEPTED_EXTRA_DISK_TYPE = ('DATA_IMAGE_RAW_READONLY', 'DATA_IMAGE_RAW_READ_WRITE')
+    _ACCEPTED_EXTRA_DISK_TYPE = ['DATA_IMAGE_RAW_READONLY', 'DATA_IMAGE_RAW_READ_WRITE']
     _ACCEPTED_ROOT_DISK_TYPE = ('MACHINE_IMAGE_LIVE')
         
     _IDENTIFIER_KEY = 'identifier'
     _COUNT_KEY = 'count'
+    _TYPE_KEY = 'type'
 
     def __init__(self, args, **kwargs):
 
@@ -197,64 +198,29 @@ class TMCloneCache(object):
                         self.downloadedLocalImageLocation, imageMarketplaceLocation], 
                         'Unable to download "%s"' % imageMarketplaceLocation)
     
-    def _uncompressDownloadedImage(self):
-        compression = self._getImageCompressionType()
-        if not compression:
-            if self.downloadedLocalImageLocation.endswith('.gz'):
-                compression = 'gz'
-            elif self.downloadedLocalImageLocation.endswith('.bz2'):
-                compression = 'bz2'
-            else:
-                # Assume image is not compressed.
-                # TODO: use 'file' command to get the downloaded file type
-                return
-        uncompressTool = self._UNCOMPRESS_TOOL[compression]
-        self._sshPDisk([uncompressTool, self.downloadedLocalImageLocation],
-                       'Unable to uncompress image')
-        self.downloadedLocalImageLocation = self._removeExtension(self.downloadedLocalImageLocation)
-        
-    def _getImageCompressionType(self):
-        compression = self.manifestDownloader.getImageElementValue('compression')
-        return compression
-    
-    def _retrieveDowloadedImageSize(self):
-        imageFormat = self._getImageFormat()
-        imageKind = self._getImageKind()
-
-        # TODO: this check should be moved to somewhere more logical.
-        # Only check the image format for machine images; no sense for disk images.
-        if (imageFormat in ManifestInfo.imageFormats) or (imageKind != 'machine'):
-            self.downloadedLocalImageSize = self._bytesToGiga(int(self._getImageSize()))
-        else:
-            raise ValueError('Unknown image format: ' + imageFormat)
-        
     def _checkDownloadedImageChecksum(self):
-        manifestChecksum = self.manifestDownloader.getImageElementValue(self._CHECKSUM)
-        computedChecksum = self._sshPDisk([self._CHECKSUM_CMD, self.downloadedLocalImageLocation], 
-                                        'Unable to get image checksum')
-        computedChecksum = computedChecksum.split(' ')[0]
-        if manifestChecksum != computedChecksum:
-            raise ValueError('Invalid image checksum, is %s got %s' % (manifestChecksum, computedChecksum))
-        
-    def _copyDownloadedImageToPartition(self):
-        copyCmd = []
-        
-        # FIXME: if backend is on a different host need to attach the LUN 
-        # to this host with persistent-disk-backend.py  
-        
-        if self.configHolder.persistentDiskShare.lower() == 'nfs':
-            copyDst = '%s/%s/%s' % (self.configHolder.persistentDiskNfsMountPoint, \
-                                    'pdisks', self.pdiskImageId)
-            copyCmd = ['cp', self.downloadedLocalImageLocation, copyDst]
-        else:
-            imageFormat = self._getImageFormat()
-            copyDst = '%s/%s' % (self.pdiskLVMDevice, self.pdiskImageId)
-            if imageFormat.startswith('qcow'):
-                copyCmd = imageFormat.startswith('qcow') and ['cp', '-f', self.downloadedLocalImageLocation, copyDst] 
-            else:
-                copyCmd = ['dd', 'if=%s' % self.downloadedLocalImageLocation, 'of=%s' % copyDst, 'bs=2048']
+        hash_fun = self._CHECKSUM
+        size_b, checksum = self._getDownloadedImageChecksum(hash_fun)
+        self._validateImageSize(size_b)
+        self._validateImageChecksum(checksum, hash_fun)
 
-        self._sshPDisk(copyCmd, 'Unable to copy image')
+    def _getDownloadedImageChecksum(self, hash_fun):
+        size_b, sums = Compressor.checksum_file(self.downloadedLocalImageLocation, 
+                                              [hash_fun])
+        return size_b, sums[0]
+
+    def _validateImageSize(self, size_b):
+        image_size_b = self._getImageSize()
+        if size_b != image_size_b:
+            raise ValueError("Check-summed image size doesn't match " +\
+                             "defined in Manifest: got %s, defined %s" % 
+                             (size_b, image_size_b))
+
+    def _validateImageChecksum(self, checksum, hash_fun):
+        image_checksum = self._getImageChecksum(hash_fun)
+        if checksum != image_checksum:
+            raise ValueError('Invalid image checksum: got %s, defined %s' % 
+                             (checksum, image_checksum))
 
     def _getImageFormat(self):
         return self.manifestDownloader.getImageElementValue('format')
@@ -264,6 +230,9 @@ class TMCloneCache(object):
         
     def _getImageSize(self):
         return self.manifestDownloader.getImageElementValue('bytes')
+    
+    def _getImageChecksum(self, checksum):
+        return self.manifestDownloader.getImageElementValue(checksum)
 
     def _deleteDownloadedImage(self):
         self._sshPDisk(['rm', '-f', self.downloadedLocalImageLocation], 
@@ -333,11 +302,8 @@ class TMCloneCache(object):
         self._validateMarketplaceImagePolicy()
         try:
             self._downloadImage()
-            self._uncompressDownloadedImage()
             self._checkDownloadedImageChecksum()
-            self._retrieveDowloadedImageSize()
-            self._createPDiskFromDowloadedImage()
-            self._copyDownloadedImageToPartition()
+            self._uploadDownloadedImageToPdisk()
         except:
             self._deletePDiskSnapshot()
             raise
@@ -346,14 +312,15 @@ class TMCloneCache(object):
                 self._deleteDownloadedImage()
             except:
                 pass
-        
-    def _createPDiskFromDowloadedImage(self):
-        self.pdiskImageId = self.pdisk.createVolume(self.downloadedLocalImageSize, '', False)
-        self._setNewPDiskProperties()
+
+    def _uploadDownloadedImageToPdisk(self):
+        volume_url = self.pdisk.uploadVolume(self.downloadedLocalImageLocation)
+        self.pdiskImageId = volume_url.rsplit('/', 1)[1]
+        self._setNewPDiskImageOriginProperties()
     
-    def _setNewPDiskProperties(self):
+    def _setNewPDiskImageOriginProperties(self):
         self._setPDiskInfo(self._IDENTIFIER_KEY, self.marketplaceImageId, self.pdiskImageId)
-        self._setPDiskInfo('type', 'MACHINE_IMAGE_ORIGIN', self.pdiskImageId)
+        self._setPDiskInfo(self._TYPE_KEY, 'MACHINE_IMAGE_ORIGIN', self.pdiskImageId)
         
     def _getPDiskTempStore(self):
         store = self.configHolder.persistentDiskTempStore or '/tmp'
