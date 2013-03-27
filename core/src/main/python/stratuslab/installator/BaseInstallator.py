@@ -25,9 +25,10 @@ from stratuslab.installator.Registration import Registration
 from stratuslab.installator.Sunstone import Sunstone
 from stratuslab.installator.PortTranslation import PortTranslation
 from stratuslab.installator.OpenLDAP import OpenLDAP
+from stratuslab.installator.Couchbase import Couchbase
 
 class BaseInstallator(object):
-    
+
     @staticmethod
     def availableInstallators():
         return (('opennebula', OpenNebula),
@@ -35,11 +36,12 @@ class BaseInstallator(object):
                 ('openldap', OpenLDAP),
                 ('registration', Registration),
                 ('port-translation', PortTranslation),
+                ('couchbase', Couchbase),
                 ('sunstone', Sunstone))
 
     @staticmethod
     def availableInstallatorNames():
-        return tuple(map(lambda x: x[0], 
+        return tuple(map(lambda x: x[0],
                          BaseInstallator.availableInstallators()))
 
     @staticmethod
@@ -66,7 +68,7 @@ class BaseInstallator(object):
 
         componentsToInstall = tuple(componentsToInstall)
 
-        printDetail('Components selected: %s' % ', '.join(componentsToInstall), 
+        printDetail('Components selected: %s' % ', '.join(componentsToInstall),
                     self.verboseLevel, 3)
 
         return componentsToInstall
@@ -89,7 +91,7 @@ class BaseInstallator(object):
         return getattr(self, 'install%s' % name.title())
 
     def _isComponentSelectedInConfig(self, name):
-        selected = self.configHolder.config.get(self.installatorNameToConfParamName(name), 
+        selected = self.configHolder.config.get(self.installatorNameToConfParamName(name),
                                                 False)
         return isTrueConfVal(selected)
 
