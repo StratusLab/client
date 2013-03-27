@@ -25,7 +25,7 @@ from stratuslab.installator.Registration import Registration
 from stratuslab.installator.Sunstone import Sunstone
 from stratuslab.installator.PortTranslation import PortTranslation
 from stratuslab.installator.OpenLDAP import OpenLDAP
-from stratuslab.installator.Couchbase import Couchbase
+from stratuslab.installator.CouchbaseServer import CouchbaseServer
 
 class BaseInstallator(object):
 
@@ -36,7 +36,7 @@ class BaseInstallator(object):
                 ('openldap', OpenLDAP),
                 ('registration', Registration),
                 ('port-translation', PortTranslation),
-                ('couchbase', Couchbase),
+                ('couchbase', CouchbaseServer),
                 ('sunstone', Sunstone))
 
     @staticmethod

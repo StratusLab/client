@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import time
 import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab import Util
@@ -21,7 +22,7 @@ from stratuslab.Util import printError
 
 from couchbase.client import Couchbase
 
-class Couchbase(Installator):
+class CouchbaseServer(Installator):
 
     def __init__(self, configHolder):
         configHolder.assign(self)
@@ -60,15 +61,19 @@ class Couchbase(Installator):
         cmd = 'service %s restart' % self._serviceName
         self._executeExitOnError(cmd)
 
+        time.sleep(5)
+
+        Util.printStep('Set Couchbase data location')
+        cmd = self.couchbase_cli % ('node-init', '--node-init-data-path=/opt/couchbase/var/lib/couchbase/data')
+        self._executeExitOnError(cmd)
+
+        Util.printStep('Create Couchbase bucket')
+        cmd = self.couchbase_cli % ('bucket-create', '--bucket-test_bucket --bucket-type=couchbase --bucket-password=TEST --bucket-ramsize=400 --bucket-replica=1')
+        self._executeExitOnError(cmd)
+
         Util.printStep('Initialize Couchbase admin account')
         self._executeExitOnError(self.couchbase_cli % ('cluster-init', '--cluster-init-username=admin --cluster-init-password=ADMIN4'))
 
-        Util.printStep('Create Couchbase bucket')
-        cb = Couchbase('localhost:8091',
-                       username=self._cb_username,
-                       password=self._cb_password)
-        if not (self._bucket_name in cb.buckets()):
-            cb.create(self._bucketname, ram_quota_mb=400, replica=1)
 
     def _restartService(self):
         Util.printStep("Adding %s to chkconfig and restarting" % self._serviceName)
