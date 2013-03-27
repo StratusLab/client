@@ -1,78 +1,159 @@
-# ***** BEGIN LICENSE BLOCK *****
-#
-# For copyright and licensing please refer to COPYING.
-#
-# ***** END LICENSE BLOCK *****
+"""Handle AMQP Heartbeats"""
+import logging
 
-from pika.frame import Heartbeat
+from pika import frame
 
-MAX_MISSED_HEARTBEATS = 2
+LOGGER = logging.getLogger(__name__)
 
 
 class HeartbeatChecker(object):
+    """Checks to make sure that our heartbeat is received at the expected
+    intervals.
 
-    def __init__(self, connection, interval):
-        """
-        Create a heartbeat on connection sending a heartbeat frame every
+    """
+    MAX_IDLE_COUNT = 2
+    _CONNECTION_FORCED = 320
+    _STALE_CONNECTION = "Too Many Missed Heartbeats, No reply in %i seconds"
+
+    def __init__(self, connection, interval, idle_count=MAX_IDLE_COUNT):
+        """Create a heartbeat on connection sending a heartbeat frame every
         interval seconds.
+
+        :param pika.connection.Connection: Connection object
+        :param int interval: Heartbeat check interval
+        :param int idle_count: Number of heartbeat intervals missed until the
+                               connection is considered idle and disconnects
+
         """
+        self._connection = connection
+        self._interval = interval
+        self._max_idle_count = idle_count
 
-        # We need to reference our connection object to close a connection
-        self.connection = connection
-        self.interval = interval
+        # Initialize counters
+        self._bytes_received = 0
+        self._bytes_sent = 0
+        self._heartbeat_frames_received = 0
+        self._heartbeat_frames_sent = 0
+        self._idle_byte_intervals = 0
 
-        # Initialize our counters
-        self.missed = 0
-        self.received = 0
-        self.sent = 0
+        # Setup the timer to fire in _interval seconds
+        self._setup_timer()
 
-        # Setup our timer to fire every interval seconds
-        self.setup_timer()
+    @property
+    def active(self):
+        """Return True if the connection's heartbeat attribute is set to this
+        instance.
 
-    def setup_timer(self):
+        :rtype True
+
         """
-        Use the connection objects delayed_call function which is implemented
-        by the Adapter for calling the
-        check_heartbeats function every interval seconds
+        return self._connection.heartbeat is self
+
+    @property
+    def bytes_received_on_connection(self):
+        """Return the number of bytes received by the connection bytes object.
+
+        :rtype int
+
         """
-        self.connection.add_timeout(self.interval, self.send_and_check)
+        return self._connection.bytes_received
+
+    @property
+    def connection_is_idle(self):
+        """Returns true if the byte count hasn't changed in enough intervals
+        to trip the max idle threshold.
+
+        """
+        return self._idle_byte_intervals >= self._max_idle_count
+
+    def received(self):
+        """Called when a heartbeat is received"""
+        LOGGER.debug('Received heartbeat frame')
+        self._heartbeat_frames_received += 1
 
     def send_and_check(self):
-        """
-        Invoked by a timer to send a heartbeat when we need to, check to see
+        """Invoked by a timer to send a heartbeat when we need to, check to see
         if we've missed any heartbeats and disconnect our connection if it's
-        been idle too long
+        been idle too long.
+
         """
+        LOGGER.debug('Received %i heartbeat frames, sent %i',
+                     self._heartbeat_frames_received,
+                     self._heartbeat_frames_sent)
 
-        # If our received byte count ==  our connection object's received byte
-        # count, the connection has been
-        # stale since the last heartbeat
-        if self.received == self.connection.bytes_received:
+        if self.connection_is_idle:
+            return self._close_connection()
 
-            self.missed += 1
+        # Connection has not received any data, increment the counter
+        if not self._has_received_data:
+            self._idle_byte_intervals += 1
         else:
-            # The server has said something. Reset our count.
-            self.missed = 0
+            self._idle_byte_intervals = 0
 
-        # If we've missed MAX_MISSED_HEARTBEATS, close the connection
-        if self.missed >= MAX_MISSED_HEARTBEATS:
-            duration = self.missed * self.interval
-            reason = "Too Many Missed Heartbeats, No reply in %i seconds" % \
-                     duration
-            self.connection.close(320, reason)
-            return
+        # Update the counters of bytes sent/received and the frames received
+        self._update_counters()
 
-        # If we've not sent a heartbeat since the last time we ran this
-        # function, send a new heartbeat frame
-        if self.sent == self.connection.bytes_sent:
-            self.connection._send_frame(Heartbeat())
+        # Send a heartbeat frame
+        self._send_heartbeat_frame()
 
-        # Get the current byte counters from the connection, we expect these
-        # to increment on our next call
-        self.sent = self.connection.bytes_sent
-        self.received = self.connection.bytes_received
+        # Update the timer to fire again
+        self._start_timer()
 
-        # If we're still relevant to the connection, add another timeout for
-        # our interval
-        if self.connection.heartbeat is self:
-            self.setup_timer()
+    def _close_connection(self):
+        """Close the connection with the AMQP Connection-Forced value."""
+        LOGGER.info('Connection is idle, %i stale byte intervals',
+                    self._idle_byte_intervals)
+        duration = self._max_idle_count * self._interval
+        text = HeartbeatChecker._STALE_CONNECTION % duration
+        self._connection.close(HeartbeatChecker._CONNECTION_FORCED, text)
+        self._connection._on_disconnect(HeartbeatChecker._CONNECTION_FORCED,
+                                        text)
+
+    @property
+    def _has_received_data(self):
+        """Returns True if the connection has received data on the connection.
+
+        :rtype: bool
+
+        """
+        return not self._bytes_received == self.bytes_received_on_connection
+
+    def _new_heartbeat_frame(self):
+        """Return a new heartbeat frame.
+
+        :rtype pika.frame.Heartbeat
+
+        """
+        return frame.Heartbeat()
+
+    def _send_heartbeat_frame(self):
+        """Send a heartbeat frame on the connection.
+
+        """
+        LOGGER.debug('Sending heartbeat frame')
+        self._connection._send_frame(self._new_heartbeat_frame())
+        self._heartbeat_frames_sent += 1
+
+    def _setup_timer(self):
+        """Use the connection objects delayed_call function which is
+        implemented by the Adapter for calling the check_heartbeats function
+        every interval seconds.
+
+        """
+        self._connection.add_timeout(self._interval, self.send_and_check)
+
+    def _start_timer(self):
+        """If the connection still has this object set for heartbeats, add a
+        new timer.
+
+        """
+        if self.active:
+            self._setup_timer()
+
+    def _update_counters(self):
+        """Update the internal counters for bytes sent and received and the
+        number of frames received
+
+        """
+        self._bytes_sent = self._connection.bytes_sent
+        self._bytes_received = self._connection.bytes_received

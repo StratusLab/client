@@ -1,18 +1,18 @@
 """
-QueueSimple - object oriented interface to a simple directory 
-              based queue.
+QueueSimple - object oriented interface to a simple directory based queue.
 
 A port of Perl module Directory::Queue::Simple
-http://search.cpan.org/~lcons/Directory-Queue-1.3/
+http://search.cpan.org/~lcons/Directory-Queue/
 The documentation from Directory::Queue::Simple module was 
 adapted for Python.
 
-=========================
-=== QueueSimple class ===
+=================
+QueueSimple class
+=================
 
-QueueSimple - simple directory based queue.
+:py:class:`QueueSimple` - simple directory based queue.
 
-USAGE
+Usage::
 
     from dirq.QueueSimple import QueueSimple
 
@@ -20,8 +20,8 @@ USAGE
 
     dirq = QueueSimple('/tmp/test')
     for count in range(1,101):
-        name = dirq.add("element %i\n" % count)
-        print "# added element %i as %s" %(count, name)
+        name = dirq.add("element %i\\n" % count)
+        print("# added element %i as %s" % (count, name))
 
     # sample consumer
 
@@ -29,37 +29,34 @@ USAGE
     for name in dirq:
         if not dirq.lock(name):
             continue
-        print "# reading element %s" % name
+        print("# reading element %s" % name)
         data = dirq.get(name)
         # one could use dirq.unlock(name) to only browse the queue...
         dirq.remove(name)
 
-DESCRIPTION
+
+Description
+-----------
 
     This module is very similar to dirq.queue, but uses a
     different way to store data in the filesystem, using less
     directories. Its API is almost identical.
 
-    Compared to dirq.queue, this module:
+    Compared to :py:mod:`dirq.queue`, this module:
 
     * is simpler
-
     * is faster
-
     * uses less space on disk
-
     * can be given existing files to store
-
     * does not support schemas
-
     * can only store and retrieve byte strings
-
     * is not compatible (at filesystem level) with Queue
 
-    Please refer to dirq.queue for general information about
+    Please refer to :py:mod:`dirq.queue` for general information about
     directory queues.
     
-DIRECTORY STRUCTURE
+Directory Structure
+-------------------
 
     The toplevel directory contains intermediate directories that contain
     the stored elements, each of them in a file.
@@ -87,32 +84,35 @@ DIRECTORY STRUCTURE
     * R is a random digit used to reduce name collisions
 
 
-    A temporary element (being added to the queue) will have a .tmp
+    A temporary element (being added to the queue) will have a *.tmp*
     suffix.
 
     A locked element will have a hard link with the same name and the
-    .lck suffix.
+    *.lck* suffix.
 
-----------------------------
 
-AUTHOR
+Author
+------
 
-Konstantin Skaburskas
+Konstantin Skaburskas \<konstantin.skaburskas@gmail.com\>
 
-LICENSE AND COPYRIGHT
+License and Copyright
+---------------------
 
 ASL 2.0
 
-Copyright (C) 2010-2011
+Copyright (C) 2010-2012
 """
 
 import errno
-import re
 import os
+import re
+import sys
 import time
 
-from dirq.QueueBase import QueueBase, _name, _file_create, _special_mkdir,\
+from dirq.QueueBase import QueueBase, _name, _file_create, _special_mkdir, \
     _file_read, _DirectoryRegexp, _ElementRegexp, _special_rmdir, _warn
+from dirq.utils import is_bytes
 
 # suffix indicating a temporary element
 TEMPORARY_SUFFIX = ".tmp"
@@ -121,12 +121,15 @@ TEMPORARY_SUFFIX = ".tmp"
 LOCKED_SUFFIX = ".lck"
 
 class QueueSimple(QueueBase):
+    """
+    QueueSimple
+    """
     def __init__(self, path, umask=None, granularity=60):
         """
-        path - queue top level directory
-        umask - the umask to use when creating files and directories (default:
+        * path - queue top level directory
+        * umask - the umask to use when creating files and directories (default:
                 use the running process' umask)
-        granularity - the time granularity for intermediate directories
+        * granularity - the time granularity for intermediate directories
                       (default: 60)
         """
         super(QueueSimple, self).__init__(path, umask=umask)
@@ -138,15 +141,18 @@ class QueueSimple(QueueBase):
             self._add_dir = self.__add_dir_timecurrent
 
     def _add_dir(self):
-        t = time.time()
-        t -= t % self.granularity
-        return "%08x" % t
+        """ Return new directory name based on time. """
+        now = time.time()
+        now -= now % self.granularity
+        return "%08x" % now
 
     def __add_dir_timecurrent(self):
+        """ Return new directory name with current time. """
         return "%08x" % time.time()
 
     def _add_data(self, data):
         """Write 'data' to a file.
+        
         Return: (tuple) directory name where the file was written, full path to
         the temporary file.
         """
@@ -154,21 +160,26 @@ class QueueSimple(QueueBase):
         while 1:
             tmp = '%s/%s/%s%s' % (self.path, _dir, _name(), TEMPORARY_SUFFIX)
             try:
-                fh = _file_create(tmp, umask=self.umask)
-            except EnvironmentError, ex:
-                if ex.errno == errno.ENOENT:
+                if is_bytes(data):
+                    new_file = _file_create(tmp, umask=self.umask, utf8=False)
+                else:
+                    new_file = _file_create(tmp, umask=self.umask, utf8=True)
+            except EnvironmentError:
+                error = sys.exc_info()[1]
+                if error.errno == errno.ENOENT:
                     _special_mkdir('%s/%s/' % (self.path, _dir))
                     continue
             else:
-                if fh:
+                if new_file:
                     break
-        fh.write(data)
-        fh.close()
+        new_file.write(data)
+        new_file.close()
         return _dir, tmp
 
     def _add_path(self, tmp, _dir):
         """Given temporary file and directory where it resides: create a hard
         link to that file and remove initial one.
+        
         Return: element name (<directory name>/<file name>).
         """
         while 1:
@@ -176,9 +187,10 @@ class QueueSimple(QueueBase):
             new = '%s/%s/%s' % (self.path, _dir, name)
             try:
                 os.link(tmp, new)
-            except OSError, ex:
-                if ex.errno != errno.EEXIST:
-                    raise ex
+            except OSError:
+                error = sys.exc_info()[1]
+                if error.errno != errno.EEXIST:
+                    raise error
                 else:
                     continue
             os.unlink(tmp)
@@ -188,7 +200,7 @@ class QueueSimple(QueueBase):
         _list = []
         while self.dirs:
             _dir = self.dirs.pop(0)
-            for name in os.listdir('%s/%s' % (self.path,_dir)):
+            for name in os.listdir('%s/%s' % (self.path, _dir)):
                 if _ElementRegexp.match(name):
                     _list.append(name)
             if not _list:
@@ -200,13 +212,14 @@ class QueueSimple(QueueBase):
 
     def add(self, data):
         """Add data to the queue as a file.
+        
         Return: element name (<directory name>/<file name>).
         """
         _dir, path = self._add_data(data)
         return self._add_path(path, _dir)
 
     add_ref = add
-    "Defined to comply with Directory::Queue interface."
+    """ Defined to comply with Directory::Queue interface."""
 
     def add_path(self, path):
         """Add the given file (identified by its path) to the queue and return
@@ -226,51 +239,74 @@ class QueueSimple(QueueBase):
     "Get locked element. Defined to comply with Directory::Queue interface."
 
     def get_path(self, name):
+        """ Return the path given the name. """
         return '%s/%s%s' % (self.path, name, LOCKED_SUFFIX) 
 
     def lock(self, name, permissive=True):
         """Lock an element.
+        
         Arguments:
             name - name of an element
             permissive - work in permissive mode
+            
         Return:
-         - true on success
-         - false in case the element could not be locked (in permissive
-           mode)
+        
+        * true on success
+        * false in case the element could not be locked (in permissive
+          mode)
         """
         path = '%s/%s' % (self.path, name)
         lock = '%s%s' % (path, LOCKED_SUFFIX)
         try:
             os.link(path, lock)
-        except OSError, ex:
-            if permissive and (ex.errno == errno.EEXIST or 
-                                    ex.errno == errno.ENOENT):
+        except OSError:
+            error = sys.exc_info()[1]
+            if permissive and (error.errno == errno.EEXIST or 
+                                    error.errno == errno.ENOENT):
                 return False
-            e = OSError("cannot link(%s, %s): %s" % (path, lock, str(ex)))
-            e.errno = ex.errno
-            raise e
+            new_error = OSError("cannot link(%s, %s): %s" %
+                                (path, lock, error))
+            new_error.errno = error.errno
+            raise new_error
         else:
-            t = time.time()
-            os.utime(path, (t, t))
-            return True
+            try:
+                os.utime(path, None)
+            except OSError:
+                # RACE: the element file does not exist anymore
+                # (this can happen if an other process locked & removed the element
+                #  while our link() was in progress... yes, this can happen!)
+                error = sys.exc_info()[1]
+                if permissive and error.errno == errno.ENOENT:
+                    os.unlink(lock)
+                    return False
+                new_error = OSError("cannot utime(%s, %s): %s" %
+                                    (path, lock, error))
+                new_error.errno = error.errno
+                raise new_error
+            else:
+                return True
 
     def unlock(self, name, permissive=False):
         """Unlock an element.
+        
         Arguments:
             name - name of an element
             permissive - work in permissive mode
+            
         Return:
-         - true on success
-         - false in case the element could not be unlocked (in permissive
-         mode)
+        
+        * true on success
+        * false in case the element could not be unlocked (in permissive
+          mode)
         """
         lock = '%s/%s%s' % (self.path, name, LOCKED_SUFFIX)
         try:
             os.unlink(lock)
-        except OSError, ex:
-            if permissive and ex.errno == errno.ENOENT:
+        except OSError:
+            error = sys.exc_info()[1]
+            if permissive and error.errno == errno.ENOENT:
                 return False
-            raise ex
+            raise error
         else:
             return True
 
@@ -299,8 +335,8 @@ class QueueSimple(QueueBase):
         self.__get_list_of_interm_dirs(dirs)
         # count elements in sub-directories
         for name in dirs:
-            for el in os.listdir('%s/%s' % (self.path, name)):
-                if _ElementRegexp.match(el):
+            for element in os.listdir('%s/%s' % (self.path, name)):
+                if _ElementRegexp.match(element):
                     count += 1
         return count
 
@@ -325,10 +361,13 @@ class QueueSimple(QueueBase):
             for _dir in dirs:
                 path = '%s/%s' % (self.path, _dir)
                 tmp_lock_elems = [x for x in os.listdir(path) 
-                                        if re.search('(%s|%s)$'%(TEMPORARY_SUFFIX,LOCKED_SUFFIX), x)]
+                                        if re.search('(%s|%s)$' % 
+                                                     (TEMPORARY_SUFFIX,
+                                                      LOCKED_SUFFIX), x)]
                 for old in tmp_lock_elems:
                     stat = os.stat('%s/%s' % (path, old))
-                    if old.endswith(TEMPORARY_SUFFIX) and stat.st_mtime >= oldtemp:
+                    if (old.endswith(TEMPORARY_SUFFIX) and 
+                        stat.st_mtime >= oldtemp):
                         continue
                     if old.endswith(LOCKED_SUFFIX) and stat.st_mtime >= oldlock:
                         continue

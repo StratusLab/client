@@ -1,22 +1,28 @@
-# ***** BEGIN LICENSE BLOCK *****
-#
-# For copyright and licensing please refer to COPYING.
-#
-# ***** END LICENSE BLOCK *****
-
+"""AMQP Table Encoding/Decoding"""
 import struct
 import decimal
 import calendar
 from datetime import datetime
-from pika.exceptions import *
+
+from pika import exceptions
 
 
 def encode_table(pieces, table):
+    """Encode a dict as an AMQP table appending the encded table to the
+    pieces list passed in.
+
+    :param list pieces: Already encoded frame pieces
+    :param dict table: The dict to encode
+    :rtype: int
+
+    """
     table = table or dict()
     length_index = len(pieces)
     pieces.append(None)  # placeholder
     tablesize = 0
     for (key, value) in table.iteritems():
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
         pieces.append(struct.pack('B', len(key)))
         pieces.append(key)
         tablesize = tablesize + 1 + len(key)
@@ -27,7 +33,17 @@ def encode_table(pieces, table):
 
 
 def encode_value(pieces, value):
-    if isinstance(value, str):
+    """Encode the value passed in and append it to the pieces list returning
+    the the size of the encoded value.
+
+    :param list pieces: Already encoded values
+    :param any value: The value to encode
+    :rtype: int
+
+    """
+    if isinstance(value, basestring):
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
         pieces.append(struct.pack('>cI', 'S', len(value)))
         pieces.append(value)
         return 5 + len(value)
@@ -65,12 +81,22 @@ def encode_value(pieces, value):
         pieces.append(struct.pack('>cI', 'A', len(piece)))
         pieces.append(piece)
         return 5 + len(piece)
+    elif value is None:
+        pieces.append(struct.pack('>c', 'V'))
+        return 1
     else:
-        raise InvalidTableError("Unsupported field kind during encoding",
-                                pieces, value)
+        raise exceptions.UnspportedAMQPFieldException(pieces, value)
 
 
 def decode_table(encoded, offset):
+    """Decode the AMQP table passed in from the encoded value returning the
+    decoded result and the number of bytes read plus the offset.
+
+    :param str encoded: The binary encoded data to decode
+    :param int offset: The starting byte offset
+    :rtype: tuple
+
+    """
     result = {}
     tablesize = struct.unpack_from('>I', encoded, offset)[0]
     offset += 4
@@ -86,12 +112,34 @@ def decode_table(encoded, offset):
 
 
 def decode_value(encoded, offset):
+    """Decode the value passed in returning the decoded value and the number
+    of bytes read in addition to the starting offset.
+
+    :param str encoded: The binary encoded data to decode
+    :param int offset: The starting byte offset
+    :rtype: tuple
+    :raises: pika.exceptions.InvalidFieldTypeException
+
+    """
     kind = encoded[offset]
     offset += 1
     if kind == 'S':
         length = struct.unpack_from('>I', encoded, offset)[0]
         offset += 4
-        value = encoded[offset: offset + length]
+        value = encoded[offset: offset + length].decode('utf8')
+        try:
+            value = str(value)
+        except UnicodeEncodeError:
+            pass
+        offset += length
+    elif kind == 's':
+        length = struct.unpack_from('B', encoded, offset)[0]
+        offset += 1
+        value = encoded[offset: offset + length].decode('utf8')
+        try:
+            value = str(value)
+        except UnicodeEncodeError:
+            pass
         offset += length
     elif kind == 't':
         value = struct.unpack_from('>B', encoded, offset)[0]
@@ -123,25 +171,8 @@ def decode_value(encoded, offset):
         while offset < offset_end:
             v, offset = decode_value(encoded, offset)
             value.append(v)
+    elif kind == 'V':
+        value = None
     else:
-        raise InvalidTableError("Unsupported field kind %s during decoding" % \
-                                kind)
+        raise exceptions.InvalidFieldTypeException(kind)
     return value, offset
-
-
-def validate_type(field_name, value, data_type):
-    """
-    Validate the data types passed into the RPC Command
-    """
-    if data_type == 'bit' and not isinstance(value, bool):
-        raise InvalidRPCParameterType("%s must be a bool" % field_name)
-
-    if data_type == 'shortstr' and not isinstance(value, str):
-        raise InvalidRPCParameterType("%s must be a str" % field_name)
-
-    if data_type == 'short' and not isinstance(value, int):
-        raise InvalidRPCParameterType("%s must be a int" % field_name)
-
-    if data_type == 'long' and not (isinstance(value, long) or
-                                    isinstance(value, int)):
-        raise InvalidRPCParameterType("%s must be a long" % field_name)

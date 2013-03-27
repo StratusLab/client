@@ -1,63 +1,83 @@
-# ***** BEGIN LICENSE BLOCK *****
-#
-# For copyright and licensing please refer to COPYING.
-#
-# ***** END LICENSE BLOCK *****
-try:
-    import tornado.ioloop
-    IOLoop = tornado.ioloop.IOLoop
-except ImportError:
-    IOLoop = None
+"""Run pika on the Tornado IOLoop"""
+from tornado import ioloop
+import logging
+import socket
+import time
 
-from warnings import warn
+from pika.adapters import base_connection
+from pika import exceptions
 
-from pika.adapters.base_connection import BaseConnection
-
-# Redefine our constants with Tornado's
-if IOLoop:
-    ERROR = tornado.ioloop.IOLoop.ERROR
-    READ = tornado.ioloop.IOLoop.READ
-    WRITE = tornado.ioloop.IOLoop.WRITE
+LOGGER = logging.getLogger(__name__)
 
 
-class TornadoConnection(BaseConnection):
+class TornadoConnection(base_connection.BaseConnection):
+    """The TornadoConnection runs on the Tornado IOLoop. If you're running the
+    connection in a web app, make sure you set stop_ioloop_on_close to False,
+    which is the default behavior for this adapter, otherwise the web app
+    will stop taking requests.
 
-    def __init__(self, parameters=None, on_open_callback=None,
-                 reconnection_strategy=None):
+    """
+    WARN_ABOUT_IOLOOP = True
 
-        # Validate we have Tornado installed
-        if not IOLoop:
-            raise ImportError("Tornado not installed")
+    def __init__(self, parameters=None,
+                 on_open_callback=None,
+                 stop_ioloop_on_close=False,
+                 custom_ioloop=None):
+        self._ioloop = custom_ioloop or ioloop.IOLoop.instance()
+        super(TornadoConnection, self).__init__(parameters, on_open_callback,
+                                                stop_ioloop_on_close)
 
-        BaseConnection.__init__(self, parameters, on_open_callback,
-                                reconnection_strategy)
+    def _adapter_connect(self):
+        """Connect to the RabbitMQ broker"""
+        LOGGER.debug('Connecting the adapter to the remote host')
+        self.ioloop = self._ioloop
+        self._remaining_attempts -= 1
+        try:
+            self._create_and_connect_to_socket()
+            self.ioloop.add_handler(self.socket.fileno(),
+                                    self._handle_events,
+                                    self.event_state)
+            return self._on_connected()
+        except socket.timeout:
+            reason = 'timeout'
+        except socket.error, err:
+            LOGGER.error('socket error: %s', err[-1])
+            reason = err[-1]
+            self.socket.close()
 
-    def _adapter_connect(self, host, port):
-        """
-        Connect to the given host and port
-        """
-        BaseConnection._adapter_connect(self, host, port)
-
-        # Setup our ioloop
-        self.ioloop = IOLoop.instance()
-
-        # Add the ioloop handler for the event state
-        self.ioloop.add_handler(self.socket.fileno(),
-                                self._handle_events,
-                                self.event_state)
-
-        # Let everyone know we're connected
-        self._on_connected()
+        if self._remaining_attempts:
+            LOGGER.warning('Could not connect due to "%s," retrying in %i sec',
+                           reason, self.params.retry_delay)
+            self.add_timeout(self.params.retry_delay, self._adapter_connect)
+        else:
+            LOGGER.error('Could not connect: %s', reason)
+            raise \
+                exceptions.AMQPConnectionError(self.params.connection_attempts)
 
     def _adapter_disconnect(self):
-        """
-        Disconnect from the RabbitMQ Broker
-        """
-        # Remove from the IOLoop
-        self.ioloop.remove_handler(self.socket.fileno())
+        """Disconnect from the RabbitMQ broker"""
+        if self.socket:
+            self.ioloop.remove_handler(self.socket.fileno())
+        super(TornadoConnection, self)._adapter_disconnect()
 
-        # Close our socket since the Connection class told us to do so
-        self.socket.close()
+    def add_timeout(self, deadline, callback_method):
+        """Add the callback_method to the IOLoop timer to fire after deadline
+        seconds. Returns a handle to the timeout. Do not confuse with
+        Tornado's timeout where you pass in the time you want to have your
+        callback called. Only pass in the seconds until it's to be called.
 
-        # Let the developer know to look for this circumstance
-        warn("Tornado IOLoop may be running but Pika has shutdown.")
+        :param int deadline: The number of seconds to wait to call callback
+        :param method callback_method: The callback method
+        :rtype: str
+
+        """
+        return self.ioloop.add_timeout(time.time() + deadline, callback_method)
+
+    def remove_timeout(self, timeout_id):
+        """Remove the timeout from the IOLoop by the ID returned from
+        add_timeout.
+
+        :rtype: str
+
+        """
+        return self.ioloop.remove_timeout(timeout_id)
