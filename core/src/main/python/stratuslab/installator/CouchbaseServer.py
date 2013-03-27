@@ -68,7 +68,7 @@ class CouchbaseServer(Installator):
         self._executeExitOnError(cmd)
 
         Util.printStep('Create Couchbase bucket')
-        cmd = self.couchbase_cli % ('bucket-create', '--bucket-test_bucket --bucket-type=couchbase --bucket-password=TEST --bucket-ramsize=400 --bucket-replica=1')
+        cmd = self.couchbase_cli % ('bucket-create', '--bucket=default --bucket-type=couchbase --bucket-ramsize=400 --bucket-replica=1')
         self._executeExitOnError(cmd)
 
         Util.printStep('Initialize Couchbase admin account')
