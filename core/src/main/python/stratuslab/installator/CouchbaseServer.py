@@ -15,14 +15,28 @@
 #
 
 import time
+import string
+import os.path
+from random import choice
 import stratuslab.system.SystemFactory as SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab import Util
 from stratuslab.Util import printError
 
-from couchbase.client import Couchbase
 
 class CouchbaseServer(Installator):
+
+    @staticmethod
+    def _generate_password():
+        chars = string.letters + string.digits
+        length = 8
+        return ''.join([choice(chars) for _ in range(length)])
+
+    @staticmethod
+    def _cb_cmd(func, host, options):
+        opts = ' '.join(options)
+        cmd = '/opt/couchbase/bin/couchbase-cli %s -c %s:8091 %s' % (func, host, opts)
+        return cmd
 
     def __init__(self, configHolder):
         configHolder.assign(self)
@@ -31,32 +45,33 @@ class CouchbaseServer(Installator):
         self._serviceName = 'couchbase-server'
         self._packages = ['couchbase-server']
 
-        self._cb_username = 'admin'
-        self._cb_password = 'ADMIN4'
+        self._cb_yum_url = 'http://packages.couchbase.com/rpm/couchbase-centos62-x86_64.repo'
 
-        self._bucket_name = 'test_bucket'
-
-        self.couchbase_cli = '/opt/couchbase/bin/couchbase-cli %s -c 127.0.0.1:8091 %s'
-
+        self._cb_cluster_username = 'admin'
+        self._cb_cluster_password = CouchbaseServer._generate_password()
+        self._cb_cluster_password_path = '/opt/couchbase/cluster-password.txt'
 
     def _installFrontend(self):
         self._installPackages()
 
     def _setupFrontend(self):
-        self._configure()
+        if os.path.exists(self._cb_cluster_password_path):
+            Util.printStep('%s exists; skipping Couchbase configuration' % self._cb_cluster_password_path)
+        else:
+            self._configure()
 
     def _startServicesFrontend(self):
         self._restartService()
 
     def _installPackages(self):
         Util.printStep('Configuring machine to use Couchbase yum repository')
-        self._executeExitOnError('wget -O/etc/yum.repos.d/couchbase.repo http://packages.couchbase.com/rpm/couchbase-centos62-x86_64.repo')
+        cmd = 'curl --output /etc/yum.repos.d/couchbase.repo %s' % self._cb_yum_url
+        self._executeExitOnError(cmd)
 
         Util.printStep('Installing packages')
         self.system.installPackages(self._packages)
 
     def _configure(self):
-
         Util.printStep('(Re-)starting Couchbase')
         cmd = 'service %s restart' % self._serviceName
         self._executeExitOnError(cmd)
@@ -64,19 +79,32 @@ class CouchbaseServer(Installator):
         time.sleep(5)
 
         Util.printStep('Set Couchbase data location')
-        cmd = self.couchbase_cli % ('node-init', '--node-init-data-path=/opt/couchbase/var/lib/couchbase/data')
+        options = ['--node-init-data-path=/opt/couchbase/var/lib/couchbase/data']
+        cmd = CouchbaseServer._cb_cmd('node-init', self.frontendIp, options)
         self._executeExitOnError(cmd)
 
-        Util.printStep('Create Couchbase bucket')
-        cmd = self.couchbase_cli % ('bucket-create', '--bucket=default --bucket-type=couchbase --bucket-ramsize=400 --bucket-replica=1')
+        Util.printStep('Create default Couchbase bucket')
+        options = ['--bucket=default',
+                   '--bucket-type=couchbase',
+                   '--bucket-ramsize=400',
+                   '--bucket-replica=1']
+        cmd = CouchbaseServer._cb_cmd('bucket-create', self.frontendIp, options)
         self._executeExitOnError(cmd)
 
         Util.printStep('Initialize Couchbase admin account')
-        self._executeExitOnError(self.couchbase_cli % ('cluster-init', '--cluster-init-username=admin --cluster-init-password=ADMIN4'))
+        options = ['--cluster-init-username=%s' % self._cb_cluster_username,
+                   '--cluster-init-password=%s' % self._cb_cluster_password]
+        cmd = CouchbaseServer._cb_cmd('cluster-init', self.frontendIp, options)
+        self._executeExitOnError(cmd)
 
+        Util.printStep('Saving cluster password in %s' % self._cb_cluster_password_path)
+        with open(self._cb_cluster_password_path, 'w') as f:
+            f.write(self._cb_cluster_password + "\n")
+
+        # TODO: Need to reduce the permissions of cluster password file.
 
     def _restartService(self):
-        Util.printStep("Adding %s to chkconfig and restarting" % self._serviceName)
+        Util.printStep('Adding %s to chkconfig and restarting' % self._serviceName)
         cmd = 'chkconfig --add %s' % self._serviceName
         Util.execute(cmd.split(' '))
         cmd = 'service %s restart' % self._serviceName
