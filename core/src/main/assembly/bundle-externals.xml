@@ -1,0 +1,24 @@
+<assembly>
+  <id>core-externals</id>
+  
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <formats>
+    <format>zip</format>
+    <format>tar.gz</format>
+  </formats>
+  
+  <fileSets>
+    
+    <fileSet>
+      <directory>${project.build.directory}/python</directory>
+      <outputDirectory>python</outputDirectory>
+      <excludes>
+        <exclude>stratuslab/**/*</exclude>
+        <exclude>**/*.pyc</exclude>
+      </excludes>
+    </fileSet>
+    
+  </fileSets>
+  
+</assembly>

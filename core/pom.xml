@@ -57,11 +57,6 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-assembly-plugin</artifactId>
-	<configuration>
-	  <descriptors>
-	    <descriptor>src/main/assembly/bundle.xml</descriptor>
-	  </descriptors>
-	</configuration>
 
 	<executions>
 
@@ -71,7 +66,25 @@
 	      <goal>single</goal>
 	    </goals>
 	    <phase>package</phase>
-	  </execution>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bundle.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+
+	  <execution>
+	    <id>bundle-externals</id>
+	    <goals>
+	      <goal>single</goal>
+	    </goals>
+	    <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bundle-externals.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
 
 	</executions>
 
