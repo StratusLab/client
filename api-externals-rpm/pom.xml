@@ -3,13 +3,13 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>stratuslab-cli-user-rpm</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for End-Users (RPM)</name>
+  <artifactId>stratuslab-api-externals-rpm</artifactId>
+  <name>StratusLab API Externals (RPM)</name>
   <packaging>rpm</packaging>
 
   <parent>
     <groupId>eu.stratuslab.client</groupId>
-    <artifactId>stratuslab-cli-user</artifactId>
+    <artifactId>stratuslab-parent</artifactId>
     <version>2.9-SNAPSHOT</version>
   </parent>
 
@@ -41,8 +41,9 @@
 		  <artifactItems>
 		    <artifactItem>
 		      <groupId>eu.stratuslab.client</groupId>
-		      <artifactId>stratuslab-cli-user-pkg</artifactId>
-		      <!-- <classifier>cli-user-bundle</classifier> -->
+		      <artifactId>stratuslab-core-zip</artifactId>
+		      <version>${project.version}</version>
+		      <classifier>core-externals</classifier>
 		      <type>zip</type>
 		    </artifactItem>
 		  </artifactItems>
@@ -73,11 +74,10 @@
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
-      <artifactId>stratuslab-cli-user-pkg</artifactId>
-      <version>2.9-SNAPSHOT</version>
-      <!-- <classifier>cli-user-bundle</classifier> -->
+      <artifactId>stratuslab-core-zip</artifactId>
+      <version>${project.version}</version>
+      <classifier>core-externals</classifier>
       <type>zip</type>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 
@@ -86,86 +86,32 @@
     <plugins>
 
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-deploy-plugin</artifactId>
-	<version>2.5</version>
-      </plugin>
-
-      <plugin>
 	<groupId>org.codehaus.mojo</groupId>
 	<artifactId>rpm-maven-plugin</artifactId>
 	<configuration>
 	  <release>${RELEASE}</release>
 	  <summary>${project.name}</summary>
-	  <name>stratuslab-cli-user</name>
-	  <vendor>SixSq Sarl</vendor>
+	  <name>stratuslab-api-externals</name>
+	  <vendor>StratusLab</vendor>
 	  <copyright>Apache 2.0</copyright>
 	  <url>http://stratuslab.eu/</url>
-
+	  
 	  <distribution>StratusLab</distribution>
 	  <group>StratusLab</group>
 	  <packager>StratusLab</packager>
-
+	  
 	  <buildarch>noarch</buildarch>
-
-	  <requires>
-	    <require>stratuslab-api</require>
-	    <require>python-ldap</require>
-	  </requires>
 	  
 	  <mappings>
 	    <mapping>
-	      <directory>/usr/bin/</directory>
+	      <directory>/var/lib/stratuslab/python/</directory>
 	      <directoryIncluded>false</directoryIncluded>
 	      <filemode>755</filemode>
 	      <username>root</username>
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/bin</location>
-		  <includes>
-		    <include>stratus-*</include>
-		  </includes>
-		</source>
-	      </sources>
-	    </mapping>
-	    <mapping>
-	      <directory>/var/share/stratuslab/</directory>
-	      <directoryIncluded>false</directoryIncluded>
-	      <username>root</username>
-	      <groupname>root</groupname>
-	      <sources>
-		<source>
-		  <location>${project.build.directory}/zip-sources/share</location>
-		</source>
-	      </sources>
-	    </mapping>
-	    <mapping>
-	      <directory>/etc/stratuslab/</directory>
-	      <directoryIncluded>false</directoryIncluded>
-	      <configuration>noreplace</configuration>
-	      <username>root</username>
-	      <groupname>root</groupname>
-	      <sources>
-		<source>
-		  <location>${project.build.directory}/zip-sources/conf</location>
-		  <includes>
-		    <include>stratuslab-user.cfg.ref</include>
-		  </includes>
-		</source>
-	      </sources>
-	    </mapping>
-	    <mapping>
-	      <directory>/var/lib/stratuslab/java/</directory>
-	      <directoryIncluded>false</directoryIncluded>
-	      <username>root</username>
-	      <groupname>root</groupname>
-	      <sources>
-		<source>
-		  <location>${project.build.directory}/zip-sources/java</location>
-		  <includes>
-		    <include>**/*.jar</include>
-		  </includes>
+		  <location>${project.build.directory}/zip-sources/python</location>
 		</source>
 	      </sources>
 	    </mapping>
@@ -194,7 +140,7 @@ export RPM_BUILD_ROOT=
       <name>Apache 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
-      <comments>Copyright (c) 2013, SixSq Sarl</comments>
+      <comments>Copyright (c) 2013, Centre National de la Recherche Scientifique (CNRS)</comments>
     </license>
   </licenses>
 

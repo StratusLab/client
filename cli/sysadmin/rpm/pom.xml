@@ -109,25 +109,26 @@
 	  <buildarch>noarch</buildarch>
 	  
 	  <requires>
+	    <require>stratuslab-api</require>
 	    <require>one-3.2-StratusLab</require>
 	    <require>mysql</require>
 	    <require>python-ldap</require>
 	  </requires>
 
 	  <mappings>
-		<mapping>
-			<directory>/etc</directory>
-			<filemode>644</filemode>
-			<username>root</username>
-			<groupname>root</groupname>
-			<configuration>false</configuration>
-			<directoryIncluded>false</directoryIncluded>
-			<sources>
-				<source>
-					<location>${project.build.directory}/zip-sources/etc</location>
-				</source>
-			</sources>
-		</mapping>
+	    <mapping>
+	      <directory>/etc</directory>
+	      <filemode>644</filemode>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <configuration>false</configuration>
+	      <directoryIncluded>false</directoryIncluded>
+	      <sources>
+		<source>
+		  <location>${project.build.directory}/zip-sources/etc</location>
+		</source>
+	      </sources>
+	    </mapping>
 	    <mapping>
 	      <directory>/usr/bin/</directory>
 	      <directoryIncluded>false</directoryIncluded>
@@ -147,21 +148,6 @@
 	      </sources>
 	    </mapping>
 	    <mapping>
-	      <directory>/var/lib/stratuslab/python/</directory>
-	      <directoryIncluded>true</directoryIncluded>
-	      <filemode>755</filemode>
-	      <username>root</username>
-	      <groupname>root</groupname>
-	      <sources>
-		<source>
-		  <location>${project.build.directory}/zip-sources/python</location>
-		  <includes>
-		    <include>**/*.py</include>
-		  </includes>
-		</source>
-	      </sources>
-	    </mapping>
-	    <mapping>
 	      <directory>/var/share/stratuslab/</directory>
 	      <directoryIncluded>true</directoryIncluded>
 	      <username>root</username>
@@ -174,34 +160,34 @@
 	    </mapping>
 	    <mapping>
 	      <directory>/etc/stratuslab/</directory>
-        <filemode>640</filemode>
-        <username>root</username>
-        <groupname>cloud</groupname>
-        <directoryIncluded>false</directoryIncluded>
-        <configuration>noreplace</configuration>
+	      <filemode>640</filemode>
+	      <username>root</username>
+	      <groupname>cloud</groupname>
+	      <directoryIncluded>false</directoryIncluded>
+	      <configuration>noreplace</configuration>
 	      <sources>
-	        <source>
-		      <location>${project.build.directory}/zip-sources/conf</location>
-            <includes>
-              <include>stratuslab*</include>
-            </includes>     
-	        </source>
+		<source>
+		  <location>${project.build.directory}/zip-sources/conf</location>
+		  <includes>
+		    <include>stratuslab*</include>
+		  </includes>     
+		</source>
 	      </sources>
 	    </mapping>
 	    <mapping>
-          <directory>/var/lib/stratuslab/java/</directory>
-          <directoryIncluded>false</directoryIncluded>
-          <username>root</username>
-          <groupname>root</groupname>
-          <sources>
-            <source>
-              <location>${project.build.directory}/zip-sources/java</location>
-              <includes>
-                <include>**/*.jar</include>
-              </includes>
-            </source>
-          </sources>
-        </mapping>
+	      <directory>/var/lib/stratuslab/java/</directory>
+	      <directoryIncluded>false</directoryIncluded>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <sources>
+		<source>
+		  <location>${project.build.directory}/zip-sources/java</location>
+		  <includes>
+		    <include>**/*.jar</include>
+		  </includes>
+		</source>
+	      </sources>
+	    </mapping>
 	  </mappings>
 	  <installScriptlet>
 	    <script>
@@ -215,18 +201,18 @@ export RPM_BUILD_ROOT=
 	    </script>
 	  </installScriptlet>
 	  <postinstallScriptlet>
-	  	<script>
+	    <script>
 #!/bin/bash
 
 # Create log dir (e.g. used by quarantine cron job)
 mkdir -p /var/log/stratuslab/
-	  	</script>
+	    </script>
 	  </postinstallScriptlet>
 	</configuration>
       </plugin>
-
+      
     </plugins>
-
+    
   </build>
 
   <licenses>
@@ -234,7 +220,7 @@ mkdir -p /var/log/stratuslab/
       <name>Apache 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
-      <comments>Copyright (c) 2011, SixSq Sarl</comments>
+      <comments>Copyright (c) 2013, SixSq Sarl</comments>
     </license>
   </licenses>
 

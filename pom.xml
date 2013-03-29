@@ -40,6 +40,23 @@ with minimal dependencies for maximum portability.
 
   </properties>
 
+  <profiles>
+
+    <profile>
+      <id>api-externals-rpm</id>
+      <activation>
+        <file>
+          <exists>/usr/bin/rpmbuild</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>api-rpm</module>
+        <module>api-externals-rpm</module>
+      </modules>
+    </profile>
+
+  </profiles>
+
   <issueManagement>
     <system>GitHub Issues</system>
     <url>https://github.com/StratusLab/client/issues</url>
