@@ -35,10 +35,10 @@
 
 		<configuration>
 		  <executable>nosetests</executable>
-		  <workingDirectory>${basedir}/test</workingDirectory>
+		  <workingDirectory>${basedir}/test/</workingDirectory>
 		  <arguments>
-		    <argument>--verbose</argument>
-		    <argument>--with-xunit</argument>
+                    <argument>-c</argument>
+		    <argument>nosetests.ini</argument>
 		  </arguments>
 		  <environmentVariables>
 		    <PYTHONPATH>${basedir}/src/main/python</PYTHONPATH>
