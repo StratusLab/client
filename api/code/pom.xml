@@ -1,0 +1,106 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>stratuslab-core-zip</artifactId>
+  <packaging>pom</packaging>
+  <name>StratusLab API (ZIP)</name>
+
+  <parent>
+    <groupId>eu.stratuslab.client</groupId>
+    <artifactId>stratuslab-api</artifactId>
+    <version>2.9-SNAPSHOT</version>
+  </parent>
+
+  <build>
+
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-deploy-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-resources-plugin</artifactId>
+
+	<configuration>
+	  <encoding>UTF-8</encoding>
+	</configuration>
+
+	<executions>
+	  <execution>
+	    <id>insert-metadata</id>
+	    <phase>process-sources</phase>
+	    <goals>
+	      <goal>copy-resources</goal>
+	    </goals>
+
+	    <configuration>
+	      <delimiters>
+	        <delimiter>${*}</delimiter>
+	      </delimiters>
+	      <outputDirectory>${project.build.directory}/python</outputDirectory>
+	      <resources>
+	        <resource>
+	          <directory>src/main/python</directory>
+	          <filtering>true</filtering>
+	        </resource>
+	      </resources>
+	    </configuration>
+
+	  </execution>
+	</executions>
+
+      </plugin>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-assembly-plugin</artifactId>
+
+	<executions>
+
+	  <execution>
+	    <id>bundle</id>
+	    <goals>
+	      <goal>single</goal>
+	    </goals>
+	    <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bundle.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+
+	  <execution>
+	    <id>bundle-externals</id>
+	    <goals>
+	      <goal>single</goal>
+	    </goals>
+	    <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bundle-externals.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+
+	</executions>
+
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+      <comments>Copyright (c) 2011, SixSq Sarl</comments>
+    </license>
+  </licenses>
+
+</project>

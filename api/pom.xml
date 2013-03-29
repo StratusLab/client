@@ -2,9 +2,9 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>stratuslab-core-zip</artifactId>
+  <artifactId>stratuslab-api</artifactId>
   <packaging>pom</packaging>
-  <name>StratusLab Core (ZIP)</name>
+  <name>StratusLab API (POM)</name>
 
   <parent>
     <groupId>eu.stratuslab.client</groupId>
@@ -12,95 +12,25 @@
     <version>2.9-SNAPSHOT</version>
   </parent>
 
-  <build>
+  <modules>
+    <module>code</module>
+  </modules>
 
-    <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-deploy-plugin</artifactId>
-      </plugin>
+  <profiles>
 
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-resources-plugin</artifactId>
+    <profile>
+      <id>api-externals-rpm</id>
+      <activation>
+        <file>
+          <exists>/usr/bin/rpmbuild</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>api-rpm</module>
+        <module>api-externals-rpm</module>
+      </modules>
+    </profile>
 
-	<configuration>
-	  <encoding>UTF-8</encoding>
-	</configuration>
-
-	<executions>
-	  <execution>
-	    <id>insert-metadata</id>
-	    <phase>process-sources</phase>
-	    <goals>
-	      <goal>copy-resources</goal>
-	    </goals>
-
-	    <configuration>
-	      <delimiters>
-	        <delimiter>${*}</delimiter>
-	      </delimiters>
-	      <outputDirectory>${project.build.directory}/python</outputDirectory>
-	      <resources>
-	        <resource>
-	          <directory>src/main/python</directory>
-	          <filtering>true</filtering>
-	        </resource>
-	      </resources>
-	    </configuration>
-
-	  </execution>
-	</executions>
-
-      </plugin>
-
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-assembly-plugin</artifactId>
-
-	<executions>
-
-	  <execution>
-	    <id>bundle</id>
-	    <goals>
-	      <goal>single</goal>
-	    </goals>
-	    <phase>package</phase>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/bundle.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-
-	  <execution>
-	    <id>bundle-externals</id>
-	    <goals>
-	      <goal>single</goal>
-	    </goals>
-	    <phase>package</phase>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/bundle-externals.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-
-	</executions>
-
-      </plugin>
-
-    </plugins>
-
-  </build>
-
-  <licenses>
-    <license>
-      <name>Apache 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-      <distribution>repo</distribution>
-      <comments>Copyright (c) 2011, SixSq Sarl</comments>
-    </license>
-  </licenses>
+  </profiles>
 
 </project>
