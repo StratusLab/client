@@ -12,6 +12,46 @@
     <version>2.9-SNAPSHOT</version>
   </parent>
 
+  <profiles>
+    <profile>
+      <id>nosetests</id>
+      <activation>
+	<property>
+	  <name>NOSETESTS</name>
+	</property>
+      </activation>
+      <build>
+	<plugins>
+	  <plugin>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <artifactId>exec-maven-plugin</artifactId>
+	    <executions>
+	      <execution>
+		<id>python-test</id>
+		<phase>test</phase>
+		<goals>
+		  <goal>exec</goal>
+		</goals>
+
+		<configuration>
+		  <executable>nosetests</executable>
+		  <workingDirectory>${basedir}/test</workingDirectory>
+		  <arguments>
+		    <argument>--verbose</argument>
+		    <argument>--with-xunit</argument>
+		  </arguments>
+		  <environmentVariables>
+		    <PYTHONPATH>${basedir}/src/main/python</PYTHONPATH>
+		  </environmentVariables>
+		</configuration>
+	      </execution>
+	    </executions>
+	  </plugin>
+	</plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <build>
 
     <plugins>
