@@ -151,7 +151,7 @@ class ManifestInfoTest(unittest.TestCase):
 """
     def setUp(self):
         self.template = os.path.join(os.path.dirname(__file__),
-                                       '../share/template/manifest.xml.tpl')
+                                       '../../main/resources/share/template/manifest.xml.tpl')
 
     def tearDown(self):
         self.template = ''

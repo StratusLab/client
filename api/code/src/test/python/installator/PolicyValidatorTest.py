@@ -11,7 +11,6 @@ class PolicyValidatorTest(unittest.TestCase):
     TEMPLATE_DIR = os.path.join(SHARE_DIR, 'template')
 
     def setUp(self):
-        PolicyValidator.TEMPLATE_CFG = os.path.join(PolicyValidatorTest.TEMPLATE_DIR, os.path.basename(PolicyValidator.TEMPLATE_CFG))
         PolicyValidator.CONFIG = tempfile.mktemp()
         PolicyValidator.CONFIG_SAV = PolicyValidator.CONFIG + '.sav'
 

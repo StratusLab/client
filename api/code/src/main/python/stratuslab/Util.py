@@ -58,22 +58,28 @@ SSH_CONNECTION_RETRY_NUMBER = 2
 SSH_CONNECTION_RETRY_SLEEP_MAX = 5
 
 def getShareDir():
-    if os.path.exists(Defaults.SHARE_DIR):
-        return Defaults.SHARE_DIR
-    else:
-        return os.path.join(os.path.dirname(__file__),'../../../../share')
-
+    dir = Defaults.SHARE_DIR
+    if not os.path.exists(dir):
+        dir = os.path.join(os.path.dirname(__file__),'../../../../share')
+    if not os.path.exists(dir):
+        dir = os.path.join(os.path.dirname(__file__),'../../resources/share')
+    return dir
+    
 def getTemplateDir():
-    if os.path.exists(Defaults.TEMPLATE_DIR):
-        return Defaults.TEMPLATE_DIR
-    else:
-        return os.path.join(os.path.dirname(__file__),'../../../../share/template')
+    dir = Defaults.TEMPLATE_DIR
+    if not os.path.exists(dir):
+        dir = os.path.join(os.path.dirname(__file__),'../../../../share/template')
+    if not os.path.exists(dir):
+        dir = os.path.join(os.path.dirname(__file__),'../../resources/share/template')
+    return dir        
 
 def getResourcesDir():
-    if os.path.exists(Defaults.RESOURCES_DIR):
-        return Defaults.RESOURCES_DIR
-    else:
-        return os.path.join(os.path.dirname(__file__),'../../../../share/resources')
+    dir = Defaults.RESOURCES_DIR
+    if not os.path.exists(dir):
+        dir = os.path.join(os.path.dirname(__file__),'../../../../share/resources')
+    if not os.path.exists(dir):
+        dir = os.path.join(os.path.dirname(__file__),'../../resources/share/resources')
+    return dir
 
 def wget(url, savePath):
     fd = _wget(url)

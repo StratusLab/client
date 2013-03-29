@@ -1,33 +1,33 @@
 <assembly>
-	<id>core-bundle</id>
-
-	<includeBaseDirectory>false</includeBaseDirectory>
-
-	<formats>
-		<format>zip</format>
-		<format>tar.gz</format>
-	</formats>
-
-	<fileSets>
-
-		<fileSet>
-			<directory>conf</directory>
-			<outputDirectory>conf</outputDirectory>
-		</fileSet>
-
-		<fileSet>
-			<directory>share</directory>
-			<outputDirectory>share</outputDirectory>
-		</fileSet>
-
-		<fileSet>
-                        <directory>${project.build.directory}/python</directory>
-			<outputDirectory>python</outputDirectory>
-			<excludes>
-				<exclude>**/*.pyc</exclude>
-			</excludes>
-		</fileSet>
-
-	</fileSets>
-
+  <id>core-bundle</id>
+  
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <formats>
+    <format>zip</format>
+    <format>tar.gz</format>
+  </formats>
+  
+  <fileSets>
+    
+    <fileSet>
+      <directory>src/main/resources/conf</directory>
+      <outputDirectory>conf</outputDirectory>
+    </fileSet>
+    
+    <fileSet>
+      <directory>src/main/resources/share</directory>
+      <outputDirectory>share</outputDirectory>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/python</directory>
+      <outputDirectory>python</outputDirectory>
+      <excludes>
+        <exclude>**/*.pyc</exclude>
+      </excludes>
+    </fileSet>
+    
+  </fileSets>
+  
 </assembly>

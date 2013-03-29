@@ -324,6 +324,8 @@ class Runner(object):
             vmTemplate = os.path.join(Defaults.SHARE_DIR, 'vm/schema.one')
         if not os.path.exists(vmTemplate):
             vmTemplate = '%s/../../../share/vm/schema.one' % Util.modulePath
+        if not os.path.exists(vmTemplate):
+            vmTemplate = '%s/../../../src/main/resources/share/vm/schema.one' % Util.modulePath
         return vmTemplate
 
     @staticmethod
