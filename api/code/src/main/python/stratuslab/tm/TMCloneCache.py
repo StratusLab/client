@@ -211,9 +211,10 @@ class TMCloneCache(object):
 
     def _validateImageSize(self, size_b):
         image_size_b = self._getImageSize()
-        if size_b != image_size_b:
-            raise ValueError("Check-summed image size doesn't match " +\
-                             "defined in Manifest: got %s, defined %s" % 
+        # convert both to strings to avoid inequality because of type mismatch
+        if str(size_b) != str(image_size_b):
+            raise ValueError("Downloaded image size (%s) doesn't match " +\
+                             "size in image manifest (%s)" % 
                              (size_b, image_size_b))
 
     def _validateImageChecksum(self, checksum, hash_fun):
