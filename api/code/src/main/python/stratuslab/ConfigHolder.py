@@ -19,6 +19,7 @@
 #
 import os
 import re
+import copy
 
 from ConfigParser import SafeConfigParser
 import ConfigParser
@@ -142,6 +143,14 @@ class ConfigHolder(object):
     def copy(self):
         copy = ConfigHolder(self.options.copy(), self.config.copy())
         return copy
+
+    def deepcopy(self):
+        return self.__deepcopy__()
+
+    def __deepcopy__(self, memo=dict()):
+        deepCopy = ConfigHolder(copy.deepcopy(self.options), 
+                                copy.deepcopy(self.config))
+        return deepCopy
 
     def set(self, key, value):
         self.options[key] = value
