@@ -36,6 +36,8 @@ class MainProgram(CommandBaseUser):
     existingFileMsg = \
         'won\'t overwrite file (%s); use --force to overwrite'
 
+    refConfigFile = 'stratuslab-user.cfg.ref'
+
     def __init__(self):
         self.args = None
         super(MainProgram, self).__init__()
@@ -52,6 +54,12 @@ class MainProgram(CommandBaseUser):
 
     def checkOptions(self):
         pass
+
+    def _get_config_path(self):
+        src = os.path.join(Util.modulePath, '..', '..', '..', 'conf', self.refConfigFile)
+        if not os.path.exists(src):
+            src = os.path.join(Util.modulePath, '..', '..', '..', '..', 'etc', 'stratuslab', self.refConfigFile)
+        return src
 
     def _create_parent_dir(self, dst):
         dir = os.path.dirname(dst)
@@ -70,7 +78,7 @@ class MainProgram(CommandBaseUser):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
 
-        src = os.path.join(Util.modulePath, '..', '..', '..', 'conf', 'stratuslab-user.cfg.ref')
+        src = self._get_config_path()
         dst = configHolder.configFile
 
         if os.path.exists(dst) and not configHolder.force:

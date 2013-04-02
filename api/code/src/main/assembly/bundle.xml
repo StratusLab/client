@@ -12,16 +12,22 @@
     
     <fileSet>
       <directory>src/main/resources/conf</directory>
+      <directoryMode>755</directoryMode>
+      <fileMode>644</fileMode>
       <outputDirectory>conf</outputDirectory>
     </fileSet>
     
     <fileSet>
       <directory>src/main/resources/share</directory>
+      <directoryMode>755</directoryMode>
+      <fileMode>644</fileMode>
       <outputDirectory>share</outputDirectory>
     </fileSet>
     
     <fileSet>
       <directory>${project.build.directory}/python</directory>
+      <directoryMode>755</directoryMode>
+      <fileMode>644</fileMode>
       <outputDirectory>python</outputDirectory>
       <excludes>
         <exclude>**/*.pyc</exclude>
