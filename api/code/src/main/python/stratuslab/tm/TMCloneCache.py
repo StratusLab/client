@@ -207,7 +207,7 @@ class TMCloneCache(object):
     def _getDownloadedImageChecksum(self, hash_fun):
         size_b, sums = Compressor.checksum_file(self.downloadedLocalImageLocation, 
                                               [hash_fun])
-        return size_b, sums[0]
+        return size_b, sums[self._CHECKSUM]
 
     def _validateImageSize(self, size_b):
         image_size_b = self._getImageSize()
