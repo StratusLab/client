@@ -51,6 +51,7 @@ setup(
 
      packages=[
         'stratuslab',
+        'stratuslab.api',
         'stratuslab.cloud',
         'stratuslab.cloudinit',
         'stratuslab.commandbase',
@@ -61,7 +62,6 @@ setup(
         'stratuslab.pat',
         'stratuslab.system',
         #'stratuslab.tm',
-        #'stratuslab.web',
         ],
 
     data_files=[
@@ -91,5 +91,6 @@ setup(
         "stomp.py >= 3.1.3",
         "pika >= 0.9.9",
         "httplib2 >= 0.7.7",
+        "couchbase >= 0.8.2"
     ],
 )

@@ -15,22 +15,26 @@
 # limitations under the License.
 #
 
-import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBase
-from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.cloudinit import Util
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
 
 '''
 A command-line utility for generating a cloud-init context file.
 The output file is always named cloud-init.txt and written to the
 current directory.
 '''
-class MainProgram(CommandBase):
 
+
+class MainProgram(CommandBase):
     def __init__(self):
         self.image = None
         super(MainProgram, self).__init__()

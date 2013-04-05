@@ -19,19 +19,20 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
 import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Policy import Policy
-from stratuslab.marketplace.Downloader import Downloader
-from stratuslab.marketplace.Util import Util
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
@@ -43,14 +44,14 @@ class MainProgram(CommandBaseSysadmin):
 
     def parse(self):
         usage = '''%prog [options] <image-identifier>
-        
+
 <image-identifier>    Marketplace image identifier (example: GOaxJFdoEXvqAm9ArJgnZ0_ky6F)'''
 
         self.parser.usage = usage
 
         self.parser.add_option('--policy', dest='policyConfigFile',
-                help='Policy configuration file. Default: ' + Policy.POLICY_CFG,
-                metavar='FILE', default=Policy.POLICY_CFG)
+                               help='Policy configuration file. Default: ' + Policy.POLICY_CFG,
+                               metavar='FILE', default=Policy.POLICY_CFG)
 
         Util.addEndpointOption(self.parser);
 
@@ -63,19 +64,20 @@ class MainProgram(CommandBaseSysadmin):
             self.usageExitTooFewArguments()
         if len(self.args) > 2:
             self.usageExitTooManyArguments()
-            
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        
+
         imageId = self.args[0]
-        
+
         policy = Policy(configHolder)
         filtered = policy.check(imageId)
         first = filtered[0]
         rootUrl = policy.marketplaceEndpoint + '/metadata'
-        res = '%s/%s/%s/%s' % (rootUrl,first.identifier, first.endorser, first.created)
+        res = '%s/%s/%s/%s' % (rootUrl, first.identifier, first.endorser, first.created)
         print res
-        
+
+
 if __name__ == '__main__':
     try:
         MainProgram()

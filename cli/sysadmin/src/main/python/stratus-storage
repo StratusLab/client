@@ -19,16 +19,20 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath, printError
+from stratuslab.Util import printError
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.commandbase.StorageCommand import StorageCommand
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(StorageCommand):
     '''A command-line program to create a persistent disk.'''
@@ -42,29 +46,29 @@ class MainProgram(StorageCommand):
     def parse(self):
         self.parser.usage = '%prog [options]'
         self.parser.description = '''Create a new persistent disk'''
-        
+
         self.parser.add_option('-s', '--size', dest='volumeSize',
-                help='Size of the volume in GiBs', metavar='SIZE',
-                default=None, type='int')
-        
+                               help='Size of the volume in GiBs', metavar='SIZE',
+                               default=None, type='int')
+
         self.parser.add_option('-t', '--tag', dest='volumeTag',
-                help='Tag of the volume. Only for the user', metavar='NAME',
-                default="")
-        
+                               help='Tag of the volume. Only for the user', metavar='NAME',
+                               default="")
+
         self.parser.add_option('--cow', dest='originUuid',
-                help='Create a copy on write volume based on this uuid', metavar='UUID',
-                default=None)
-        
+                               help='Create a copy on write volume based on this uuid', metavar='UUID',
+                               default=None)
+
         self.parser.add_option('--rebase', dest='rebaseUuid',
-                help='Rebase the CoW volume', metavar='UUID',
-                default=None)
-        
+                               help='Rebase the CoW volume', metavar='UUID',
+                               default=None)
+
         self.parser.add_option('--private', dest='volumeVisibility',
-                help='''Set the disk as private (default). Only you can see, use 
+                               help='''Set the disk as private (default). Only you can see, use
 and delete the disk.''', action='store_false')
-        
+
         self.parser.add_option('--public', dest='volumeVisibility',
-                help='''Set the disk visibility as public. Any one can see it 
+                               help='''Set the disk visibility as public. Any one can see it
 and use it but can't delete it.''', action='store_true', default=False)
 
         self.addPDiskEndpointOptions(self.parser)
@@ -81,28 +85,27 @@ and use it but can't delete it.''', action='store_true', default=False)
         super(MainProgram, self).checkOptions()
         self._checkVolumeSize()
         self._checkTagLength()
-        
+
     def _checkVolumeSize(self):
         if self.options.originUuid or self.options.rebaseUuid:
             return
-        
+
         if not self.options.volumeSize:
             printError('Missing mandatory -s/--size option')
-            
+
         if self.options.volumeSize < self.VOLUME_SIZE_MIN or self.options.volumeSize > self.VOLUME_SIZE_MAX:
-            printError('Volume size must be a valid integer between %d and %d' % 
+            printError('Volume size must be a valid integer between %d and %d' %
                        (self.VOLUME_SIZE_MIN, self.VOLUME_SIZE_MAX))
-        
+
     def _checkTagLength(self):
         if len(self.options.volumeTag) > self.TAG_LENGTH_MAX:
             printError('Tags must have less than %d characters' % self.TAG_LENGTH_MAX)
-        
+
     def doWork(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
 
         pdisk = PersistentDisk(configHolder)
-
 
         if self.options.originUuid:
             volumeId = pdisk.createCowVolume(self.options.originUuid,
@@ -116,7 +119,8 @@ and use it but can't delete it.''', action='store_true', default=False)
                                           self.options.volumeTag,
                                           self.options.volumeVisibility)
         print 'DISK %s' % volumeId
-#            
+
+    #
 if __name__ == '__main__':
     try:
         MainProgram()

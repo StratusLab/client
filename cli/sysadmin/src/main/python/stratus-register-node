@@ -19,17 +19,18 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
-import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.Registrar import Registrar
 from stratuslab.ConfigHolder import ConfigHolder
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
@@ -44,20 +45,20 @@ class MainProgram(CommandBaseSysadmin):
 
         self.parser.usage = usage
 
-        self.parser.add_option('-r', '--remove', dest='deRegister', 
+        self.parser.add_option('-r', '--remove', dest='deRegister',
                                help='de-register node', action='store_true',
                                default=False)
 
-        self.parser.add_option('-p', '--password', dest='password', 
+        self.parser.add_option('-p', '--password', dest='password',
                                help='Cloud administrator password',
                                default='')
 
         # ONE specific parameters
-        self.parser.add_option('--im', dest='infoDriver', 
+        self.parser.add_option('--im', dest='infoDriver',
                                help='information driver', metavar='IM_NAME')
         self.parser.add_option('--vmm', dest='virtDriver',
                                help='virtualization driver', metavar='VM_NAME')
-        self.parser.add_option('--tm', dest='transfertDriver', 
+        self.parser.add_option('--tm', dest='transfertDriver',
                                help='transfert driver', metavar='VM_NAME')
         self.parser.add_option('--vnm', dest='networkDriver',
                                help='network driver', metavar='VM_NAME')
@@ -75,7 +76,7 @@ class MainProgram(CommandBaseSysadmin):
             self.parser.error('Missing --vnm')
         if not self.options.password:
             self.parser.error('Missing --password')
-            
+
         self.checkArgumentsLength()
 
     def checkArgumentsLength(self):
@@ -83,11 +84,12 @@ class MainProgram(CommandBaseSysadmin):
             raise self.usageExitTooFewArguments()
 
     def doWork(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
         registrar = Registrar(configHolder)
         registrar.register(self.nodes)
-        
+
+
 if __name__ == '__main__':
     try:
         MainProgram()

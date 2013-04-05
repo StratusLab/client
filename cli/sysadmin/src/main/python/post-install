@@ -28,6 +28,12 @@ sys.path.append(os.path.join(os.sep, 'usr', 'lib', 'stratuslab'))
 
 from stratuslab import FileAppender
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+
 class MainProgram:
     '''A command-line program to perform StratusLab RPM/DEB post-installation.'''
 
@@ -36,10 +42,10 @@ class MainProgram:
 
     def doWork(self):
         appender = FileAppender.FileAppender(os.path.join(os.sep, 'etc', 'rc.local'))
-        
+
         oneStartCommand = 'su oneadmin; one start'
         appender.insertAtTheEnd(oneStartCommand)
-        
+
         print '\nSo far so good...\n'
         print 'To complete the installation of StratusLab, please run:'
         print '    stratus-config ... to configure your cloud'

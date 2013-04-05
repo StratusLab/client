@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-import os
 import sys
-import time
-import socket
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Runner import Runner
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Util import printAction
-from stratuslab.Util import printStep
-from stratuslab.Cluster import Cluster
 from stratuslab.Benchmark import Benchmark
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(Runnable):
     '''A command-line program to run Benchmarks.'''
@@ -20,87 +20,86 @@ class MainProgram(Runnable):
 
     def parse(self):
         options = Runner.defaultRunOptions()
-        
-        self.parser.add_option('--openmp', dest='openmp', action='store_true', 
-                help='OpenMP benchmark', 
-                default=False)
 
-        self.parser.add_option('--io', dest='io', action='store_true',         
-                help='IO/Parallel, Large input data but relatively small output data, Large input data but relatively small output data and mall input, but significant output data with high-CPU requirements benchmark',         
-                default=False)
+        self.parser.add_option('--openmp', dest='openmp', action='store_true',
+                               help='OpenMP benchmark',
+                               default=False)
 
-        self.parser.add_option('--mpi', dest='mpi', action='store_true',         
-                help='MPI benchmark',         
-                default=False)
+        self.parser.add_option('--io', dest='io', action='store_true',
+                               help='IO/Parallel, Large input data but relatively small output data, Large input data but relatively small output data and mall input, but significant output data with high-CPU requirements benchmark',
+                               default=False)
 
+        self.parser.add_option('--mpi', dest='mpi', action='store_true',
+                               help='MPI benchmark',
+                               default=False)
 
-        self.parser.add_option('--cpu-intensive', dest='cpu_intensive', action='store_true',         
-                help='High-CPU requirements but little or no input and output data',         
-                default=False)
+        self.parser.add_option('--cpu-intensive', dest='cpu_intensive', action='store_true',
+                               help='High-CPU requirements but little or no input and output data',
+                               default=False)
 
-       
-        self.parser.add_option('--workflows', dest='workflows', action='store_true',         
-                help='Multiple interdependent tasks, Kepler Workflow benchmark',         
-                default=False)
+        self.parser.add_option('--workflows', dest='workflows', action='store_true',
+                               help='Multiple interdependent tasks, Kepler Workflow benchmark',
+                               default=False)
 
         self.parser.add_option('--all', dest='all', action='store_true',
-                help='Run all benchmarks',
-                default=False)
- 
+                               help='Run all benchmarks',
+                               default=False)
+
         self.parser.add_option('--output-folder', dest='output_folder', action='store',
-                help='folder for xml output files',
-                default=None, type='string')
-        
+                               help='folder for xml output files',
+                               default=None, type='string')
+
         self.parser.add_option('--local-ip', dest='isLocalIp', action='store_true',
-                help='By default, worker virtual machines are assigned a public IP address. ' \
-                'With this option, a local address is provided, which means that it ' \
-                'not be reachable from the outside, but will be reachable from other ' \
-                'instances in the same data-center. In this case the frontend node will have' \
-                'both a public and a local ip to access the worker nodes',
-                default=False)
+                               help='By default, worker virtual machines are assigned a public IP address. ' \
+                                    'With this option, a local address is provided, which means that it ' \
+                                    'not be reachable from the outside, but will be reachable from other ' \
+                                    'instances in the same data-center. In this case the frontend node will have' \
+                                    'both a public and a local ip to access the worker nodes',
+                               default=False)
 
         self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
-                help='By default, worker virtual machines are assigned a public IP address. ' \
-                'With this option, a private address is provided, which means that it ' \
-                'not be reachable anywhere. This is useful for instances that initiate '\
-                'the connection to other machinces. In this case the frontend node will have' \
-                'both a private and public ip',
-                default=False)
+                               help='By default, worker virtual machines are assigned a public IP address. ' \
+                                    'With this option, a private address is provided, which means that it ' \
+                                    'not be reachable anywhere. This is useful for instances that initiate ' \
+                                    'the connection to other machinces. In this case the frontend node will have' \
+                                    'both a private and public ip',
+                               default=False)
 
         self.parser.add_option('--save', dest='saveDisk', action='store_true',
-                help='save image after VM shutdown',
-                default=False)
+                               help='save image after VM shutdown',
+                               default=False)
 
         self.parser.add_option('-o', '--output', dest='outVmIdsFile',
-                help='save vm-ids to a file', metavar='FILE',
-                default=None)
+                               help='save vm-ids to a file', metavar='FILE',
+                               default=None)
 
         self.parser.add_option('--extra-disk', dest='extraDiskSize',
-                help='extra data disk size in GB', metavar='INT',
-                action='callback', callback=self.diskSizeOptionCallback,
-                default=0, type='int')
+                               help='extra data disk size in GB', metavar='INT',
+                               action='callback', callback=self.diskSizeOptionCallback,
+                               default=0, type='int')
 
         self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
-                help='launch instances from an image in qcow2 disk format. This option requires ',
-                action='store_true',
-                default=False)
+                               help='launch instances from an image in qcow2 disk format. This option requires ',
+                               action='store_true',
+                               default=False)
 
         self.parser.add_option('--address', dest='specificAddressRequest',
-                help='request a specific ip address for the frontend',
-                metavar='IP', default=None) 
-        
+                               help='request a specific ip address for the frontend',
+                               metavar='IP', default=None)
+
         super(MainProgram, self).parse()
-       
+
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
-        setattr(parser.values, option.dest, 1024*value)
-    
+        setattr(parser.values, option.dest, 1024 * value)
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         runner = Runner(self.image, configHolder)
-        
+
         vmId = runner.runInstance()[0]
-        benchmark = Benchmark(runner,configHolder,vmId)            
+        benchmark = Benchmark(runner, configHolder, vmId)
         benchmark.run()
+
 
 if __name__ == '__main__':
     try:

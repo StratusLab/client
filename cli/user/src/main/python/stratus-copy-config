@@ -17,15 +17,19 @@
 
 import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-import os.path
 import shutil
 import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.ConfigHolder import ConfigHolder
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(CommandBaseUser):
     '''
@@ -44,11 +48,11 @@ class MainProgram(CommandBaseUser):
 
     def parse(self):
 
-        self.parser.usage='''%prog [options]'''
+        self.parser.usage = '''%prog [options]'''
 
         self.parser.add_option('--force', action='store_true',
-                dest='force', default=False,
-                help='force overwrite of existing file')
+                               dest='force', default=False,
+                               help='force overwrite of existing file')
 
         self.options, self.args = self.parser.parse_args()
 
@@ -88,8 +92,9 @@ class MainProgram(CommandBaseUser):
                 self._create_parent_dir(dst)
                 self._copy_config(src, dst)
                 Util.printDetail('wrote configuration file: %s' % dst)
-            except Exception as e: 
+            except Exception as e:
                 Util.printError(e)
+
 
 if __name__ == '__main__':
     try:

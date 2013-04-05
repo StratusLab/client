@@ -21,13 +21,17 @@
 
 import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Signator import Signator
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBase):
@@ -39,7 +43,7 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage='''%prog [options] [manifest-file]'''
+        self.parser.usage = '''%prog [options] [manifest-file]'''
 
         self.options, self.args = self.parser.parse_args()
 
@@ -60,6 +64,7 @@ class MainProgram(CommandBase):
         rc = signator.validate()
         if rc != 0:
             sys.exit(rc)
+
 
 if __name__ == '__main__':
     try:

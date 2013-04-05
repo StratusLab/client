@@ -21,7 +21,6 @@
 
 import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -31,8 +30,13 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
 import stratuslab.Util as Util
-from stratuslab.image.Uploader import Uploader
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(CommandBase):
     '''A command-line program to test StratusLab.'''
@@ -69,17 +73,17 @@ class MainProgram(CommandBase):
         self.parser.add_option('--exclude', dest='testsToExclude',
                                help='list of tests to exclude (comma separated)',
                                default='', metavar='TESTS')
-                               
+
         self.parser.add_option('--image-id-createimage', dest='imageIdCreateImage',
                                help='ID of the image to be used with createImageTest. '
-                               'Default: NhKuXe2vpdjOibeuU-ysvOAYglz',
+                                    'Default: NhKuXe2vpdjOibeuU-ysvOAYglz',
                                default='NhKuXe2vpdjOibeuU-ysvOAYglz', metavar='ID')
 
         self.parser.add_option('--author-email-createimage', dest='authorEmailCreateImage',
                                help='Used with createImageTest. New image author email. '
-                               'Mandatory with createImageTest.', metavar='EMAIL')
+                                    'Mandatory with createImageTest.', metavar='EMAIL')
 
-        self.parser.add_option('--marketplace-endpoint-upload', 
+        self.parser.add_option('--marketplace-endpoint-upload',
                                dest='marketplaceEndpointUpload',
                                help='Used with tests which upload manifests to Marketplace.',
                                default='', metavar='URL')

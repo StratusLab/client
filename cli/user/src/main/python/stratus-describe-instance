@@ -19,19 +19,22 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.Monitor import Monitor, MultisiteMonitor
 from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util
 
 from stratuslab.pat.Command import PortTranslationCommand
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(AuthnCommand, PortTranslationCommand):
     '''A command-line program to monitor the state of virtual machines.'''
@@ -53,11 +56,11 @@ to the user (-u/--username).'''
         AuthnCommand.addCloudEndpointOptions(self.parser)
         Monitor.addOptions(self.parser)
 
-        self.parser.add_option('-m', dest='multi_site', action='store_true', 
-                help='Print state of virtual machines on multiple sites. '
-                '"endpoints" parameter should be set in user configuration '
-                'file.', 
-                default=False)
+        self.parser.add_option('-m', dest='multi_site', action='store_true',
+                               help='Print state of virtual machines on multiple sites. '
+                                    '"endpoints" parameter should be set in user configuration '
+                                    'file.',
+                               default=False)
 
         super(MainProgram, self).parse()
 
@@ -67,7 +70,7 @@ to the user (-u/--username).'''
         AuthnCommand.checkCloudEndpointOptionsOnly(self)
         PortTranslationCommand.checkCommonOptions(self)
         super(MainProgram, self).checkOptions()
-        
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         monitor = Monitor(configHolder)
@@ -79,11 +82,12 @@ to the user (-u/--username).'''
                 monitor.printVmDetails(list)
         else:
             if self.options.multi_site and self.config.get('endpoints'):
-                    MultisiteMonitor(configHolder).printVmList()
+                MultisiteMonitor(configHolder).printVmList()
             else:
                 list = monitor.listVms()
                 monitor.printVmList(list)
-            
+
+
 if __name__ == '__main__':
     try:
         MainProgram()

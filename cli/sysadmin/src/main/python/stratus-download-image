@@ -19,20 +19,21 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-import stratuslab.Util as Util
 from stratuslab.CommandBase import CommandBaseSysadmin
-from stratuslab.Configurator import Configurator
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Downloader import Downloader
-from stratuslab import Defaults
 
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to download machine and disk images from a StratusLab Marketplace.'''
@@ -43,15 +44,15 @@ class MainProgram(CommandBaseSysadmin):
 
     def parse(self):
         usage = "%prog [options] <uri>"
-        
+
         self.parser.description = "<uri>    URI of the metadata entry corresponding to the image to download"
-        
+
         self.parser.usage = usage
 
         MarketplaceUtil.addEndpointOption(self.parser)
 
         self.parser.add_option('-o', '--output', dest='localImageFilename',
-                               help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME, 
+                               help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME,
                                metavar='FILE',
                                default=Downloader.LOCAL_IMAGE_FILENAME)
 
@@ -69,12 +70,13 @@ class MainProgram(CommandBaseSysadmin):
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        
+
         self.uri = self.args[0]
 
         downloader = Downloader(configHolder)
         imageFilename = downloader.download(self.uri)
         self.printDetail('Downloaded image to: %s' % imageFilename)
+
 
 if __name__ == '__main__':
     try:

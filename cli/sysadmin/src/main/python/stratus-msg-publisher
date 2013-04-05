@@ -25,13 +25,19 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.commandbase.MessagingCommand import MessagingCommand
 
-class MainProgram(MessagingCommand):
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
 
+LogUtil.get_console_logger()
+
+
+class MainProgram(MessagingCommand):
     def __init__(self):
         super(MainProgram, self).__init__()
 
     def doWork(self):
         self.sendMessage()
+
 
 if __name__ == '__main__':
     try:

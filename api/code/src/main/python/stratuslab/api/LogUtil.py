@@ -52,6 +52,8 @@ class NoOpHandler(logging.Handler):
     Python 2.7; this class is only useful for supporting Python 2.6.
     """
 
+    lock = None
+
     def __init__(self, level=logging.INFO):
         super(NoOpHandler, self).__init__(level=level)
 
@@ -62,7 +64,7 @@ class NoOpHandler(logging.Handler):
         pass
 
     def createLock(self):
-        return None
+        return self.lock
 
 
 def get_console_logger(name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO, fmt=None):

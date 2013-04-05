@@ -27,6 +27,12 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.CertGenerator import CertGenerator
 from stratuslab.ConfigHolder import ConfigHolder
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to generate p12 certificate.'''
 
@@ -44,6 +50,7 @@ class MainProgram(CommandBaseSysadmin):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         CertGenerator(configHolder).generateP12()
+
 
 if __name__ == '__main__':
     try:

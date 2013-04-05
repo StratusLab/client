@@ -31,6 +31,12 @@ from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import PDiskVolume
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+
 class MainProgram(AuthnCommand):
     '''A command-line program to upload StratusLab appliance.'''
 
@@ -58,16 +64,17 @@ class MainProgram(AuthnCommand):
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        configHolder.set('imageMetadata', 
+        configHolder.set('imageMetadata',
                          PDiskVolume.extractVolumeOptionsAsDict(self.options))
 
         uploader = Uploader(self.image, configHolder)
-    
+
         try:
             uploader.start()
         except InputException, e:
             print e
             sys.exit(1)
+
 
 if __name__ == '__main__':
     try:

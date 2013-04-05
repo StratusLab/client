@@ -21,15 +21,20 @@
 
 import os
 import sys
-from optparse import OptionParser, OptionGroup
+from optparse import OptionGroup
 
 sys.path.append('/var/lib/stratuslab/python')
 
 import stratuslab.Util as Util
-from stratuslab import Defaults
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.installator.BaseInstallator import BaseInstallator
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to install StratusLab.'''
@@ -41,77 +46,77 @@ class MainProgram(CommandBaseSysadmin):
         usage = '%prog [options]'
 
         self.parser.usage = usage
-        
-        self.parser.add_option('-n', '--node', dest='nodeAddr', 
+
+        self.parser.add_option('-n', '--node', dest='nodeAddr',
                                help='IP address or hostname of the node to configure',
                                default=None, metavar='ADDRESS')
-        self.parser.add_option('-k', '--private-key', dest='privateKey', 
+        self.parser.add_option('-k', '--private-key', dest='privateKey',
                                help='private key for ssh node connection', metavar='FILENAME',
                                default=None)
-        
-        componentGroup = OptionGroup(self.parser, 'Available components', 
+
+        componentGroup = OptionGroup(self.parser, 'Available components',
                                      'Unless specify all components will be selected')
         self.parser.add_option_group(componentGroup)
         self._addComponentsOptions(componentGroup)
-        
-        installGroup = OptionGroup(self.parser, 'Installation options', 
+
+        installGroup = OptionGroup(self.parser, 'Installation options',
                                    'Unless specify will perform all the actions')
         self.parser.add_option_group(installGroup)
-        
+
         installGroup.add_option('--install', dest='installStep',
-                               help='Install all or selected components', 
-                               action='store_true', default=False)
+                                help='Install all or selected components',
+                                action='store_true', default=False)
         installGroup.add_option('--setup', dest='setupStep',
-                               help='Setup all or selected components', 
-                               action='store_true', default=False)
+                                help='Setup all or selected components',
+                                action='store_true', default=False)
         installGroup.add_option('--start', dest='startComponent',
-                               help='Start all or selected components', 
-                               action='store_true', default=False)
+                                help='Start all or selected components',
+                                action='store_true', default=False)
 
         oneGroup = OptionGroup(self.parser, 'OpenNebula options')
         self.parser.add_option_group(oneGroup)
-        
-        oneGroup.add_option('-t', '--template', dest='onedTpl', 
-                               help='ONe daemon template', metavar='TEMPLATE',
-                               default=os.path.join(Util.getTemplateDir(), 'oned.conf.tpl'))
-        oneGroup.add_option('--im', dest='infoDriver', 
-                               help='information driver', metavar='IM_NAME', default=None)
+
+        oneGroup.add_option('-t', '--template', dest='onedTpl',
+                            help='ONe daemon template', metavar='TEMPLATE',
+                            default=os.path.join(Util.getTemplateDir(), 'oned.conf.tpl'))
+        oneGroup.add_option('--im', dest='infoDriver',
+                            help='information driver', metavar='IM_NAME', default=None)
         oneGroup.add_option('--vmm', dest='virtDriver',
-                               help='virtualization driver', metavar='VM_NAME', default=None)
-        oneGroup.add_option('--tm', dest='transfertDriver', 
-                               help='transfert driver', metavar='VM_NAME', default=None)
+                            help='virtualization driver', metavar='VM_NAME', default=None)
+        oneGroup.add_option('--tm', dest='transfertDriver',
+                            help='transfert driver', metavar='VM_NAME', default=None)
         oneGroup.add_option('--vnm', dest='networkDriver',
-                               help='network driver', metavar='VM_NAME', default='dummy')
-        
+                            help='network driver', metavar='VM_NAME', default='dummy')
+
         self.options, _ = self.parser.parse_args()
 
     def checkOptions(self):
         if self._noInstallStepSelected():
             self._doAllSteps()
-            
+
     def _doAllSteps(self):
         self.options.installStep = True
         self.options.setupStep = True
         self.options.startComponent = True
 
     def _noInstallStepSelected(self):
-        return (not self.options.installStep 
-            and not self.options.setupStep 
-            and not self.options.startComponent)
-    
+        return (not self.options.installStep
+                and not self.options.setupStep
+                and not self.options.startComponent)
+
     def _addComponentsOptions(self, parser):
         for name in BaseInstallator.availableInstallatorNames():
-            parser.add_option('--%s' % name, dest='install%s' % name.title(), 
-                               help='%s component' % name.title().replace('-', ' '),
-                               action='store_true', default=False)
+            parser.add_option('--%s' % name, dest='install%s' % name.title(),
+                              help='%s component' % name.title().replace('-', ' '),
+                              action='store_true', default=False)
 
     def doWork(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
-        
+
         installator = BaseInstallator()
         installator.runInstallator(configHolder)
-        
+
 
 if __name__ == '__main__':
     try:

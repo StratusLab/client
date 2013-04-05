@@ -19,17 +19,21 @@
 # limitations under the License.
 #
 
-import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
-
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.marketplace.Deprecator import Deprecator
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(AuthnCommand):
     '''A command-line program to deprecate a StratusLab metadata entry.'''
@@ -60,6 +64,7 @@ class MainProgram(AuthnCommand):
         except InputException, e:
             print e
             sys.exit(1)
+
 
 if __name__ == '__main__':
     try:

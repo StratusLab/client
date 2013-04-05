@@ -25,9 +25,15 @@ import os
 import subprocess
 from optparse import OptionParser
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+
 class DeployVm(object):
     '''A command line to automatically deploy a VM'''
-    
+
     def __init__(self):
         usage = '%prog [options] archive'
         parser = OptionParser(usage=usage)
@@ -37,65 +43,65 @@ class DeployVm(object):
         parser.add_option('-r', '--redir', dest='redirections',
                           help='additional redirections (e.g. tcp:5555::80,udp:5556::445)',
                           default='')
-        parser.add_option('-w', '--working-dir', dest='workingDir', 
+        parser.add_option('-w', '--working-dir', dest='workingDir',
                           default='.', metavar='PATH')
         parser.add_option('-o', '--options', dest='qemuOptions', default='',
                           help='qemu options', metavar='OPTIONS')
-        
+
         self.options, self.args = parser.parse_args()
-        
+
         if len(self.args) < 1:
             self.displayErrorAndExit('Stoke image archive not specified')
-        
+
         self.launchVm()
-        
+
     def launchVm(self):
-        print 'Extracting stoke image...'    
+        print 'Extracting stoke image...'
         self.extractVmImg()
         print 'Starting VM...'
         self.startVm()
-    
+
     def execute(self, command, shell=False, wait=True, exitOnError=True):
         process = subprocess.Popen(command, shell=shell)
         if wait:
             process.wait()
             if process.returncode != 0 and exitOnError:
                 self.displayErrorAndExit('Command failled: %s' % ' '.join(command))
-            
-    def displayErrorAndExit(self, * msg):
+
+    def displayErrorAndExit(self, *msg):
         print '\n'.join(msg)
         sys.exit(1)
-        
+
     def extractVmImg(self):
         archive = self.args[0]
         if not os.path.isfile(archive):
             self.displayErrorAndExit('Image archive does not exists')
-            
+
         self.execute(['tar', '-xzf', archive])
-        
+
         # We use splitext twice because of the .tar.gz extension.
         # Can cause problems if archive name is foo.qcow.tgz
         # Also suppose that the image is named as the archive without ext.
         imgName = os.path.splitext(os.path.splitext(os.path.basename(archive))[0])[0]
-        self.image = os.path.abspath('%s/%s' % (os.getcwd(), imgName)) 
-            
+        self.image = os.path.abspath('%s/%s' % (os.getcwd(), imgName))
+
     def startVm(self):
         qemuCmd = ['qemu', '-nographic']
         qemuCmd.append(self.image)
-        
+
         self.options.redirections += ',tcp:%s::22,' % self.options.sshPort
-        
+
         for redir in self.options.redirections.split(','):
             if len(redir) > 8:
                 qemuCmd.extend(['-redir', redir])
-            
+
         qemuCmd.extend(self.options.qemuOptions.split(' '))
         self.execute(qemuCmd, wait=False)
-        
-        
+
+
 if __name__ == '__main__':
     try:
         DeployVm()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
-        
+

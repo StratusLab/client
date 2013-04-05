@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import re
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -11,8 +8,14 @@ from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.image.Image import Image 
+from stratuslab.image.Image import Image
 import stratuslab.Util as Util
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(CommandBaseSysadmin):
     '''A command-line program to extract information from Marketplace manifest.'''
@@ -27,20 +30,20 @@ class MainProgram(CommandBaseSysadmin):
         usage = '''Usage: %prog --get-element <ELEMENT> <marketplace id or URL>
 
 <marketplace id or URL>    can be either a Marketplace identifier (e.g.
-                           MNb7A8XGnNwwJAaZUBj5fwYVoFf) or a URL (e.g. 
+                           MNb7A8XGnNwwJAaZUBj5fwYVoFf) or a URL (e.g.
                            https://marketplace.stratuslab.eu/metadata/MNb7A8XGnNwwJAaZUBj5fwYVoFf)'''
 
         self.parser.usage = usage
 
         self.parser.add_option('-e', '--get-element', dest='element', help='Element to get.',
-            metavar='ELEMENT', default=None)
+                               metavar='ELEMENT', default=None)
 
         MarketplaceUtil.addEndpointOption(self.parser)
 
         self.options, self.args = self.parser.parse_args()
 
         MarketplaceUtil.checkEndpointOption(self.options)
-        
+
         try:
             imageEndpoint = self.args[0]
         except IndexError:
@@ -48,7 +51,7 @@ class MainProgram(CommandBaseSysadmin):
         else:
             if Image.re_imageUrl.match(imageEndpoint):
                 self.parser.error('Invalid Marketplace image URL')
-    
+
         try:
             uri, self.imageId = imageEndpoint.rsplit('/', 1)
             self.marketplaceEndpoint = Util.getProtoHostnamePortFromUri(uri)
@@ -60,16 +63,16 @@ class MainProgram(CommandBaseSysadmin):
             self.parser.error('Missing mandatory -e/--get-element option')
         else:
             self.element = self.options.element
-    
-    
+
+
     def doWork(self):
 
         configHolder = ConfigHolder(self.options.__dict__)
         configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
-        
+
         downloader = ManifestDownloader(configHolder)
         downloader.downloadManifestByImageId(self.imageId)
-        
+
         if self.element == 'locations':
             value = '\n'.join([location for location in downloader.getImageLocations()])
         elif self.element == 'location':
@@ -78,6 +81,7 @@ class MainProgram(CommandBaseSysadmin):
         else:
             value = downloader.getImageElementValue(self.element)
         print value
+
 
 if __name__ == '__main__':
     try:

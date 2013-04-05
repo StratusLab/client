@@ -26,9 +26,15 @@ import os
 import subprocess
 from optparse import OptionParser
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+
 class RemoteShutdown(object):
     '''A command line to remotely shutdown a machine'''
-    
+
     def __init__(self):
         usage = '%prog [options]'
         parser = OptionParser(usage=usage)
@@ -43,30 +49,30 @@ class RemoteShutdown(object):
                           help='ssh key to connect to the frontend',
                           metavar='KEY_PATH',
                           default=os.path.expandvars("$HOME/.ssh/stratuslab-stock.key"))
-        
+
         self.options, self.args = parser.parse_args()
-        
+
         self.doWork()
-        
+
     def doWork(self):
         print 'Shutting down %s...' % self.options.hostname
         shutdownCmd = ['ssh', '-l', 'root', '-i', self.options.sshKey,
-            '-p', str(self.options.sshPort), self.options.hostname,
-            'shutdown -h now']
+                       '-p', str(self.options.sshPort), self.options.hostname,
+                       'shutdown -h now']
         process = subprocess.Popen(shutdownCmd)
         process.wait()
-        
+
         if process.returncode != 0:
             print 'An error occurred while shutting down system'
             sys.exit(1)
-        
+
         sleep(self.options.timeout)
         print 'System halted successfully'
-        
+
 
 if __name__ == '__main__':
     try:
         RemoteShutdown()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
-        
+

@@ -19,16 +19,18 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath, printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
 
 
 class MainProgram(StorageCommand):
@@ -37,7 +39,7 @@ class MainProgram(StorageCommand):
     def parse(self):
         self.parser.usage = '%prog <uuid> <key> <value>'
         self.parser.description = '''Update an existing storage disk'''
-        
+
         StorageCommand.addPDiskEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
@@ -49,17 +51,18 @@ class MainProgram(StorageCommand):
         super(MainProgram, self).checkOptions()
         if len(self.args) != 3:
             self.usageExitWrongNumberOfArguments()
-        
+
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileSysadminOption(self.parser)
 
     def doWork(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile)        
+        config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
         pdisk = PersistentDisk(configHolder)
 
         uuid, key, value = self.args
-        pdisk.updateVolume({key:value}, uuid)
+        pdisk.updateVolume({key: value}, uuid)
+
 
 if __name__ == '__main__':
     try:

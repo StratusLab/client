@@ -19,7 +19,6 @@
 # limitations under the License.
 #
 
-import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
@@ -27,8 +26,12 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
-import stratuslab.Util as Util
-from stratuslab.AuthnCommand import AuthnCommand
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(Runnable):
     '''A command-line program to create StratusLab image.'''
@@ -39,95 +42,95 @@ class MainProgram(Runnable):
     def parse(self):
 
         self.parser.add_option('-n', '--name', dest='newInstalledSoftwareName',
-                help='name of the new image',
-                default='', metavar='FILE')
+                               help='name of the new image',
+                               default='', metavar='FILE')
 
         self.parser.add_option('--name-version', dest='newInstalledSoftwareVersion',
-                help='version of installed software',
-                default='', metavar='VERSION')
+                               help='version of installed software',
+                               default='', metavar='VERSION')
 
         self.parser.add_option('--image-group', dest='newImageGroupName',
-                help='group for the new image (this corresponds to the base image folder - e.g. base, grid). '
-                'In case of structured groups use "." as delimiter. Eg. group.subgroup.etc',
-                default='', metavar='NAME')
+                               help='group for the new image (this corresponds to the base image folder - e.g. base, grid). '
+                                    'In case of structured groups use "." as delimiter. Eg. group.subgroup.etc',
+                               default='', metavar='NAME')
 
         self.parser.add_option('--image-version', dest='newImageGroupVersion',
-                help='version for the new image. By default a minor version of the base image is incremented.',
-                default='', metavar='VERSION')
+                               help='version for the new image. By default a minor version of the base image is incremented.',
+                               default='', metavar='VERSION')
 
         self.parser.add_option('--author', dest='author',
-                help='author of the new image',
-                default='', metavar='NAME')
+                               help='author of the new image',
+                               default='', metavar='NAME')
 
         self.parser.add_option('--author-email', dest='authorEmail',
-                help='Email address of the author of the new image',
-                default='', metavar='EMAIL')
+                               help='Email address of the author of the new image',
+                               default='', metavar='EMAIL')
 
         self.parser.add_option('--marketplace-endpoint-newimage', dest='marketplaceEndpointNewimage',
-                help='Marketplace to register the new image manifest in. '
-                'No default. If not provided, either base image Marketplace or defined '
-                'by cloud site will be used.',
-                default='', metavar='URL')
+                               help='Marketplace to register the new image manifest in. '
+                                    'No default. If not provided, either base image Marketplace or defined '
+                                    'by cloud site will be used.',
+                               default='', metavar='URL')
 
         self.parser.add_option('--title', dest='title',
-                help='title of the new image',
-                default='', metavar='TEXT')
+                               help='title of the new image',
+                               default='', metavar='TEXT')
 
         self.parser.add_option('--comment', dest='comment',
-                help='description of the new image',
-                default='', metavar='TEXT')
+                               help='description of the new image',
+                               default='', metavar='TEXT')
 
         self.parser.add_option('-s', '--scripts', dest='scripts',
-                help='scripts to execute on the VM (comma separated)',
-                default='', metavar='FILE')
+                               help='scripts to execute on the VM (comma separated)',
+                               default='', metavar='FILE')
 
         self.parser.add_option('-a', '--packages', dest='packages',
-                help='packages to install on the machine (comma separated)',
-                default='', metavar='PACKAGE')
+                               help='packages to install on the machine (comma separated)',
+                               default='', metavar='PACKAGE')
 
         self.parser.add_option('--os', dest='os',
-                help='operation system. By default is taken from Manifest.',
-                default='', metavar='OS')
+                               help='operation system. By default is taken from Manifest.',
+                               default='', metavar='OS')
 
         self.parser.add_option('--installer', dest='installer',
-                help='package installer. By default recovered based on OS.',
-                default='', metavar='NAME')
+                               help='package installer. By default recovered based on OS.',
+                               default='', metavar='NAME')
 
         self.parser.add_option('--extra-os-repos', dest='extraOsReposUrls',
-                help='extra repositories to install [--packages] from (comma separated). For apt \
+                               help='extra repositories to install [--packages] from (comma separated). For apt \
 "base_uri distribution [component1] ..."',
-                default='', metavar='URL')
+                               default='', metavar='URL')
 
         self.parser.add_option('--exclude', dest='excludeFromCreatedImage',
-                help='exclude file/dir from new image (comma separated). Removed by default: %s' % \
-                ', '.join(Creator.excludeFromCreatedImageDefault),
-                default='', metavar='FILE')
+                               help='exclude file/dir from new image (comma separated). Removed by default: %s' % \
+                                    ', '.join(Creator.excludeFromCreatedImageDefault),
+                               default='', metavar='FILE')
 
         self.parser.add_option('--no-shutdown', dest='shutdownVm',
-                help='leave the VM running. A public IP will be assigned.',
-                default=True, action='store_false')
+                               help='leave the VM running. A public IP will be assigned.',
+                               default=True, action='store_false')
 
         self.parser.add_option('--no-upload', dest='noUpload',
-                help='do not upload the new image to an appliances repository. \
+                               help='do not upload the new image to an appliances repository. \
                 Requires --no-shutdown (otherwise it makes little sense ;-)',
-                default=False, action='store_true')
+                               default=False, action='store_true')
 
         self.parser.add_option('--persistent-disk', dest='persistentDiskUUID',
-                help='persistent disk UUID',
-                default=None)
+                               help='persistent disk UUID',
+                               default=None)
 
         self.parser.add_option('--vm-start-timeout', dest='vmStartTimeout',
-                help='seconds to wait for VM to become available. Default: %i' % Creator.VM_START_TIMEOUT,
-                default=Creator.VM_START_TIMEOUT, type='int', metavar='TIMEOUT')
+                               help='seconds to wait for VM to become available. Default: %i' % Creator.VM_START_TIMEOUT,
+                               default=Creator.VM_START_TIMEOUT, type='int', metavar='TIMEOUT')
 
         self.parser.add_option('--vm-ping-timeout', dest='vmPingTimeout',
-                help='seconds to wait for VM\'s network to become available. Default: %i' % Creator.VM_PING_TIMEPUT,
-                default=Creator.VM_PING_TIMEPUT, type='int', metavar='TIMEOUT')
+                               help='seconds to wait for VM\'s network to become available. Default: %i' % Creator.VM_PING_TIMEPUT,
+                               default=Creator.VM_PING_TIMEPUT, type='int', metavar='TIMEOUT')
 
         super(MainProgram, self).parse()
 
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
-        setattr(parser.values, option.dest, 1024*value)
+        setattr(parser.values, option.dest, 1024 * value)
 
     def checkOptions(self):
 
@@ -151,7 +154,7 @@ you\'ll never be able to retrieve the new image')
 
     def doWork(self):
 
-        configHolder = ConfigHolder(self.options.__dict__,self.config or {})
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         self.creator = Creator(self.image, configHolder)
 
         self.creator.create()

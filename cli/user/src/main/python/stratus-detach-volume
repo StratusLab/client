@@ -19,14 +19,12 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.Util import modulePath, printError
+from stratuslab.Util import printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.PersistentDisk import PersistentDisk
@@ -34,26 +32,31 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Exceptions import OneException
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
 
 class MainProgram(AuthnCommand, StorageCommand):
     '''A command-line program to detach a persistent disk.'''
 
     def __init__(self):
         super(MainProgram, self).__init__()
-        
+
     def parse(self):
         self.parser.usage = '%prog volume_uuid ... [options]'
         self.parser.description = '''Detach a hot plugged persistent disk on a running VM'''
-        
+
         self.parser.add_option('-i', '--instance', dest='instance',
-                help='The ID of the instance to which the volume attaches', metavar='VM_ID',
-                default=0, type='int')
+                               help='The ID of the instance to which the volume attaches', metavar='VM_ID',
+                               default=0, type='int')
 
         StorageCommand.addPDiskEndpointOptions(self.parser)
         AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
-        
+
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
@@ -64,15 +67,15 @@ class MainProgram(AuthnCommand, StorageCommand):
             printError('Please provide a VM ID on which to detach disk')
         try:
             self._retrieveVmNode()
-        except OneException, e: 
+        except OneException, e:
             printError(e)
-            
+
     def _retrieveVmNode(self):
         credentials = AuthnFactory.getCredentials(self.options)
         self.options.cloud = CloudConnectorFactory.getCloud(credentials)
         self.options.cloud.setEndpoint(self.options.endpoint)
         self.node = self.options.cloud.getVmNode(self.options.instance)
-        
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
@@ -83,6 +86,7 @@ class MainProgram(AuthnCommand, StorageCommand):
                 print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
             except Exception, e:
                 printError('DISK %s: %s' % (uuid, e), exit=False)
+
 
 if __name__ == '__main__':
     try:

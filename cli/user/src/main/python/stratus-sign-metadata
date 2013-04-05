@@ -21,7 +21,6 @@
 
 import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -30,6 +29,11 @@ from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import P12Certificate
 from stratuslab.Signator import Signator
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseUser):
@@ -42,17 +46,17 @@ class MainProgram(CommandBaseUser):
 
     def parse(self):
 
-        self.parser.usage='''%prog [options] <metadata-file>'''
+        self.parser.usage = '''%prog [options] <metadata-file>'''
 
         P12Certificate.addOptions(self.parser)
 
         self.parser.add_option('--output', dest='outputManifestFile',
-                help='signed metadata file (same as input; input moved to *.orig)',
-                default=None)
+                               help='signed metadata file (same as input; input moved to *.orig)',
+                               default=None)
 
         self.parser.add_option('--email', dest='email',
-                help='email address if not in certificate',
-                default='')
+                               help='email address if not in certificate',
+                               default='')
 
         self.options, self.args = self.parser.parse_args()
 
@@ -66,10 +70,10 @@ class MainProgram(CommandBaseUser):
         exists = os.path.exists(self.manifestFile)
         if not (exists and isFile):
             self.parser.error('Metadata file doesn\'t exist or is not a file')
-        
+
         if not P12Certificate.checkOptions(self.options):
             self.parser.error('Missing credentials. Please provide %s' % P12Certificate.optionString)
-            
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         signator = Signator(self.manifestFile, configHolder)
@@ -78,6 +82,7 @@ class MainProgram(CommandBaseUser):
             Util.printError('Error signing metadata file')
         else:
             Util.printDetail('Metadata file successfully signed: %s' % signator.outputManifestFile)
+
 
 if __name__ == '__main__':
     try:

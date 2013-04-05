@@ -30,6 +30,12 @@ from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+
 class MainProgram(AuthnCommand):
     '''A command-line program to upload StratusLab appliance.'''
 
@@ -55,13 +61,14 @@ class MainProgram(AuthnCommand):
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
         uploader = Uploader(configHolder)
-    
+
         try:
             url = uploader.upload(self.manifest)
             print url
         except InputException, e:
             print e
             sys.exit(1)
+
 
 if __name__ == '__main__':
     try:

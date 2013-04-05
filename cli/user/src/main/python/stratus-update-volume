@@ -19,17 +19,20 @@
 # limitations under the License.
 #
 
-import os
 import sys
-from optparse import OptionParser
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Util import modulePath, printError
+from stratuslab.Util import printError
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.ConfigHolder import ConfigHolder
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
@@ -67,9 +70,9 @@ class MainProgram(AuthnCommand, StorageCommand):
 
         keyvalues = self.extractVolumeOptionsAsDict()
 
-
         if len(keyvalues) > 0:
             pdisk.updateVolumeAsUser(keyvalues, self.uuid)
+
 
 if __name__ == '__main__':
     try:
