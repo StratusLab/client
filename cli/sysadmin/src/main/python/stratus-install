@@ -37,7 +37,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to install StratusLab.'''
+    """A command-line program to install StratusLab."""
 
     def __init__(self):
         super(MainProgram, self).__init__()

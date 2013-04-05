@@ -39,7 +39,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
-    '''A command-line program to detach a persistent disk.'''
+    """A command-line program to detach a persistent disk."""
 
     def __init__(self):
         super(MainProgram, self).__init__()
@@ -63,7 +63,7 @@ class MainProgram(AuthnCommand, StorageCommand):
         super(MainProgram, self).checkOptions()
         if not self.uuids:
             printError('Please provide at least one persistent disk UUID to detach')
-        if (self.options.instance < 0):
+        if self.options.instance < 0:
             printError('Please provide a VM ID on which to detach disk')
         try:
             self._retrieveVmNode()

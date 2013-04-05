@@ -36,7 +36,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to deprecate a StratusLab metadata entry.'''
+    """A command-line program to deprecate a StratusLab metadata entry."""
 
     def __init__(self):
         self.imageid = None

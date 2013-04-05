@@ -19,7 +19,6 @@
 # limitations under the License.
 #
 
-import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
@@ -28,8 +27,6 @@ from stratuslab.Runner import Runner
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Util import printAction
-from stratuslab.Util import printStep
 from stratuslab.commandbase.StorageCommand import StorageCommand
 
 # initialize console logging
@@ -39,7 +36,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(Runnable):
-    '''A command-line program to run a virtual machine.'''
+    """A command-line program to run a virtual machine."""
 
     def parse(self):
         options = Runner.defaultRunOptions()
@@ -53,16 +50,16 @@ class MainProgram(Runnable):
                                default=options['instanceNumber'], type='int')
 
         self.parser.add_option('--local-ip', dest='isLocalIp', action='store_true',
-                               help='By default, virtual machines are assigned a public IP address. ' \
-                                    'With this option, a local address is provided, which means that it ' \
-                                    'not be reachable from the outside, but will be reachable from other ' \
+                               help='By default, virtual machines are assigned a public IP address. '
+                                    'With this option, a local address is provided, which means that it '
+                                    'not be reachable from the outside, but will be reachable from other '
                                     'instances in the same data-center.',
                                default=False)
 
         self.parser.add_option('--private-ip', dest='isPrivateIp', action='store_true',
-                               help='By default, virtual machines are assigned a public IP address. ' \
-                                    'With this option, a private address is provided, which means that it ' \
-                                    'not be reachable anywhere. This is useful for instances that initiate ' \
+                               help='By default, virtual machines are assigned a public IP address. '
+                                    'With this option, a private address is provided, which means that it '
+                                    'not be reachable anywhere. This is useful for instances that initiate '
                                     'the connection to other machinces.',
                                default=False)
 
@@ -71,8 +68,8 @@ class MainProgram(Runnable):
                                default=False)
 
         self.parser.add_option('--author-email', dest='authorEmail',
-                               help='Used with --save option. Email address of the author of ' \
-                                    'the new image. After image is saved a notification is sent ' \
+                               help='Used with --save option. Email address of the author of '
+                                    'the new image. After image is saved a notification is sent '
                                     'with further instructions.',
                                default='', metavar='EMAIL')
 
@@ -116,8 +113,8 @@ class MainProgram(Runnable):
                                default=None, metavar='MARKETPLACEID')
 
         self.parser.add_option('--qcow-disk-format', dest='useQcowDiskFormat',
-                               help='launch instance from an image in qcow2 disk format. Only ' \
-                                    'used when image is provided as URL. When image is given by ID, disk ' \
+                               help='launch instance from an image in qcow2 disk format. Only '
+                                    'used when image is provided as URL. When image is given by ID, disk '
                                     'format is inferred from the image metadata.',
                                action='store_true',
                                default=False)
@@ -143,7 +140,6 @@ class MainProgram(Runnable):
 
         super(MainProgram, self).parse()
 
-
     def diskSizeOptionCallback(self, option, opt_str, value, parser):
         setattr(parser.values, option.dest, 1024 * value)
 
@@ -166,6 +162,18 @@ class MainProgram(Runnable):
             if not self.options.comment:
                 self.parser.error(pre_message + 'provide a comment for the image (--comment).')
 
+    def _printShortResults(self, vmInfo):
+        for vmId, networkName, ip in vmInfo:
+            print '%s, %s' % (vmId, ip)
+
+    def _printLongResults(self, vmInfo):
+        vmNb = 0
+        for vmId, networkName, ip in vmInfo:
+            vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
+            msg = 'Machine %s (vm ID: %s)\n%s' % (vmNb + 1, vmId, vmIpPretty)
+            print ' :: %s' % msg
+            vmNb += 1
+
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config)
 
@@ -177,9 +185,13 @@ class MainProgram(Runnable):
             runner = Runner(self.image, configHolder)
 
         if self.options.listType:
-            runner.listInstanceTypes()
+            print runner.listInstanceTypes()
         else:
-            runner.runInstance()
+            vmInfo = runner.runInstance(details=True)
+            if self.options.quiet:
+                self._printShortResults(vmInfo)
+            else:
+                self._printLongResults(vmInfo)
 
 
 if __name__ == '__main__':

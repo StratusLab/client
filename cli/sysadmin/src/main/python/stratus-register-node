@@ -34,7 +34,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to register ONE nodes with the ONE server.'''
+    """A command-line program to register ONE nodes with the ONE server."""
 
     def __init__(self):
         self.nodes = []

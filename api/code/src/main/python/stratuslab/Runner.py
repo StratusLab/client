@@ -34,8 +34,8 @@ from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
 
-class Runner(object):
 
+class Runner(object):
     class HeadRequest(urllib2.Request):
         def get_method(self):
             return "HEAD"
@@ -56,7 +56,7 @@ class Runner(object):
 
     # NOTE: The READONLY flag must NOT be set to true.  This will result
     # in a deployment.0 file that libvirt cannot deploy.  The device type
-    # must also be kept with 'disk' and NOT 'cdrom', otherwise the 
+    # must also be kept with 'disk' and NOT 'cdrom', otherwise the
     # contextualization will not work correctly.  GitHub Issue #50.
     READONLY_DISK = '''DISK=[
   SOURCE="%(readonlyDiskId)s",
@@ -89,9 +89,9 @@ class Runner(object):
 
     DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
     DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
-    DISKS_BUS_PREFIX_MAP = {'ide'    : 'hd',
-                            'scsi'   : 'sd',
-                            'virtio' : 'vd'}
+    DISKS_BUS_PREFIX_MAP = {'ide': 'hd',
+                            'scsi': 'sd',
+                            'virtio': 'vd'}
     vmDisksBus = None
 
     DEFAULT_INSTANCE_TYPE = 'm1.small'
@@ -139,16 +139,16 @@ class Runner(object):
         self._setCloudContext()
 
         self.createImageData = {self.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
-                                self.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage }
+                                self.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
 
         self._initVmAttributes()
-        
+
         self.instancesDetail = []
-    
+
         self.availableInstanceTypes = self._getAvailableInstanceTypes()
-        
+
         self._validateInstanceType()
-        
+
     def _setCloudContext(self):
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
@@ -184,7 +184,7 @@ class Runner(object):
         self._setDisksBusType()
         self._setInboundPorts()
 
-        # should go after all runtime fields are initialized 
+        # should go after all runtime fields are initialized
         self._setExtraDiskOptional()
         self._setPersistentDiskOptional()
         self._setReadonlyDiskOptional()
@@ -204,6 +204,7 @@ class Runner(object):
         self.extra_context = ''
         self.graphics = ''
         self.vmIds = []
+        self.vmIdsAndNetwork = []
         self.diskImageFormat = None
         self.disk_driver = None
         self.inbound_ports = ''
@@ -269,7 +270,8 @@ class Runner(object):
         try:
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
-                Util.printError('disk cannot be attached; it is already mounted (%s/%s)' % (available, self.instanceNumber))
+                Util.printError(
+                    'disk cannot be attached; it is already mounted (%s/%s)' % (available, self.instanceNumber))
         except AttributeError:
             Util.printError('Persistent disk service unavailable', exit=False)
             raise
@@ -295,13 +297,13 @@ class Runner(object):
     def getDefaultInstanceTypes():
         types = {
             # name      :   (cpu, ram, swap)
-            't1.micro'  :   (1,  512,  512),
-            'm1.small'  :   (1, 1536, 1536),
-            'm1.medium' :   (1, 3072, 3072),
-            'm1.large'  :   (2, 6144, 6144),
-            'm1.xlarge' :   (4, 8192, 8192),
-            'c1.medium' :   (2, 1536, 1536),
-            'c1.xlarge' :   (4, 6144, 6144),
+            't1.micro': (1, 512, 512),
+            'm1.small': (1, 1536, 1536),
+            'm1.medium': (1, 3072, 3072),
+            'm1.large': (2, 6144, 6144),
+            'm1.xlarge': (4, 8192, 8192),
+            'c1.medium': (2, 1536, 1536),
+            'c1.xlarge': (4, 6144, 6144),
         }
         return types
 
@@ -317,6 +319,7 @@ class Runner(object):
 
     @staticmethod
     def getTemplatePath(instance=None):
+        # TODO: Does this work on Windows?
         vmTemplate = ''
         if instance and hasattr(instance, 'vmTemplateFile'):
             vmTemplate = instance.vmTemplateFile
@@ -342,46 +345,46 @@ class Runner(object):
         _sshPublicKey = os.getenv('STRATUSLAB_KEY', Defaults.sshPublicKeyLocation)
         _sshPrivateKey = _sshPublicKey.strip('.pub')
         defaultOp = {'userPublicKeyFile': _sshPublicKey,
-                    'userPrivateKeyFile': _sshPrivateKey,
-                    'instanceNumber': 1,
-                    'instanceType': Runner.DEFAULT_INSTANCE_TYPE,
-                    'vmTemplateFile': Runner.getTemplatePath(),
-                    'rawData': '',
-                    'vmKernel': '',
-                    'vmRamdisk': '',
-                    'vmName': '',
-                    'vmCpuAmount': None,
-                    'vmCpu': None,
-                    'vmRam': None,
-                    'vmSwap': None,
-                    'vmDisksBus': Runner.vmDisksBus,
-                    'vmRequirements': '',
-                    'isLocalIp': False,
-                    'isPrivateIp': False,
-                    'extraContextFile': '',
-                    'extraContextData': '',
-                    'cloudInit': '',
-                    # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM. 
-                    #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
-                    'vncPort': '-1',
-                    #'vncPort': None,
-                    
-                    'vncListen': '',
-                    'specificAddressRequest': None,
-                    'diskFormat': 'raw',
-                    'saveDisk': False,
-                    'inVmIdsFile': None,
-                    'outVmIdsFile': None,
-                    'noCheckImageUrl': False,
-                    'msgRecipients' : [],
-                    'marketplaceEndpoint' : Defaults.marketplaceEndpoint,
-                    'authorEmail': ''}
+                     'userPrivateKeyFile': _sshPrivateKey,
+                     'instanceNumber': 1,
+                     'instanceType': Runner.DEFAULT_INSTANCE_TYPE,
+                     'vmTemplateFile': Runner.getTemplatePath(),
+                     'rawData': '',
+                     'vmKernel': '',
+                     'vmRamdisk': '',
+                     'vmName': '',
+                     'vmCpuAmount': None,
+                     'vmCpu': None,
+                     'vmRam': None,
+                     'vmSwap': None,
+                     'vmDisksBus': Runner.vmDisksBus,
+                     'vmRequirements': '',
+                     'isLocalIp': False,
+                     'isPrivateIp': False,
+                     'extraContextFile': '',
+                     'extraContextData': '',
+                     'cloudInit': '',
+                     # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM.
+                     #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
+                     'vncPort': '-1',
+                     #'vncPort': None,
+
+                     'vncListen': '',
+                     'specificAddressRequest': None,
+                     'diskFormat': 'raw',
+                     'saveDisk': False,
+                     'inVmIdsFile': None,
+                     'outVmIdsFile': None,
+                     'noCheckImageUrl': False,
+                     'msgRecipients': [],
+                     'marketplaceEndpoint': Defaults.marketplaceEndpoint,
+                     'authorEmail': ''}
         defaultOp.update(CloudEndpoint.options())
         defaultOp.update(PDiskEndpoint.options())
         return defaultOp
 
     def getInstanceResourceValues(self):
-        
+
         try:
             cpu, ram, swap = self.availableInstanceTypes.get(self.instanceType)
         except AttributeError:
@@ -541,7 +544,7 @@ class Runner(object):
         # fields are: 'host', 'vhost', 'user', 'pass', 'queue'
         # badly formatted inputs are silently ignored
         values = recipient.split(',')
-        return Runner.NOTIFICATION.format(*values) if (len(values)==5) else ''
+        return Runner.NOTIFICATION.format(*values) if (len(values) == 5) else ''
 
     def _manageNotifications(self):
         if self.msgRecipients:
@@ -554,26 +557,26 @@ class Runner(object):
         if not self.saveDisk:
             return
 
-        data = ['%s = "%s"' % (k,v) for k,v in self.createImageData.items()]
+        data = ['%s = "%s"' % (k, v) for k, v in self.createImageData.items()]
         self.create_image = Runner.CREATE_IMAGE % ',\n'.join(data)
 
     def updateCreateImageTemplateData(self, updateDict):
         self.createImageData.update(updateDict)
 
-    def runInstance(self):
+    def runInstance(self, details=False):
         self._printContacting()
 
-        if (Image.isImageId(self.vm_image)):
+        if Image.isImageId(self.vm_image):
             self._checkImageExists(self.vm_image)
             self.vm_image = self._prependMarketplaceUrlIfImageId(self.vm_image)
-        elif (Image.isDiskId(self.vm_image)):
+        elif Image.isDiskId(self.vm_image):
             self.vm_image = self._createDiskUrlIfDiskId(self.vm_image)
-        elif (self._isAliasUrl(self.vm_image)):
+        elif self._isAliasUrl(self.vm_image):
             self.vm_image = self._resolveUrl(self.vm_image)
         else:
             raise Exceptions.ValidationException('Image reference must be an '
-                             'Alias URL, Marketplace Image ID or Disk ID:  %s' %\
-                             self.vm_image)
+                                                 'Alias URL, Marketplace Image ID or Disk ID:  %s' %
+                                                 self.vm_image)
 
         self.printAction('Starting machine(s)')
 
@@ -581,11 +584,9 @@ class Runner(object):
 
         vmTpl = self._buildVmTemplate(self.vmTemplateFile)
 
-        plurial = { True: 'machines',
-                    False: 'machine' }
+        label = (self.instanceNumber > 1) and 'machines' or 'machine'
 
-        self.printStep('Starting %s %s' % (self.instanceNumber,
-                                        plurial.get(self.instanceNumber > 1)))
+        self.printStep('Starting %s %s' % (self.instanceNumber, label))
 
         self.printDetail('on endpoint: %s' % self.endpoint, Util.VERBOSE_LEVEL_DETAILED)
         self.printDetail('with template:\n%s' % vmTpl, Util.VERBOSE_LEVEL_DETAILED)
@@ -594,17 +595,18 @@ class Runner(object):
             vmId = self.cloud.vmStart(vmTpl)
             self.vmIds.append(vmId)
             networkName, ip = self.getNetworkDetail(vmId)
+            self.vmIdsAndNetwork.append((vmId, networkName, ip))
             vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
-            if self.quiet:
-                print '%s, %s' % (vmId, ip)
-            else:
-                self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb+1, vmId, vmIpPretty))
+            self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb + 1, vmId, vmIpPretty))
             self.instancesDetail.append({'id': vmId, 'ip': ip, 'networkName': networkName})
         self._saveVmIds()
 
         self.printStep('Done!')
 
-        return self.vmIds
+        if not details:
+            return self.vmIds
+        else:
+            return self.vmIdsAndNetwork
 
     def save_instance_as_new_image(self, vm_id):
         self._printContacting()
@@ -618,7 +620,7 @@ class Runner(object):
 
     def _saveVmIds(self):
         if self.outVmIdsFile:
-            open(self.outVmIdsFile,'w').write('\n'.join(map(str,self.vmIds)))
+            open(self.outVmIdsFile, 'w').write('\n'.join(map(str, self.vmIds)))
 
     def _loadVmIdsFromFile(self):
         vmIds = []
@@ -642,7 +644,7 @@ class Runner(object):
         operations = ('Shutdown', 'Kill')
         if operation not in operations:
             raise Exceptions.ExecutionException('Unsupported operation on instance: %s' %
-                                     operation)
+                                                operation)
         _ids = ids or self.vmIds
         if self.inVmIdsFile:
             _ids = self._loadVmIdsFromFile()
@@ -654,8 +656,8 @@ class Runner(object):
             self.printDetail('Sending "%s" request for instance %s.' % (operation, id))
             instance_operation(int(id))
         plural = (len(_ids) > 1 and 's') or ''
-        self.printDetail('"%s" %s VM%s: %s' % (operation, len(_ids), plural, 
-                                             ', '.join(map(str,_ids))))
+        self.printDetail('"%s" %s VM%s: %s' % (operation, len(_ids), plural,
+                                               ', '.join(map(str, _ids))))
 
     def printDetail(self, msg, verboseLevel=Util.VERBOSE_LEVEL_NORMAL):
         if self.quiet:
@@ -673,7 +675,7 @@ class Runner(object):
         return Util.printAction(msg)
 
     def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120, failOn=()):
-        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout, 
+        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout,
                                                            failOn=failOn)
         return vmStarted
 
@@ -705,7 +707,7 @@ class Runner(object):
         self.printDetail('Accessing compute service at: %s' % self.endpoint)
 
     def _resolveUrl(self, url):
-        '''Uses a HEAD request to resolve an http(s) URL with a possible redirect.'''
+        """Uses a HEAD request to resolve an http(s) URL with a possible redirect."""
         if (url.startswith("http")):
             response = urllib2.urlopen(Runner.HeadRequest(url))
             return response.geturl()
@@ -717,16 +719,20 @@ class Runner(object):
 
         columnSize = 10
 
-        print ' '.ljust(1),
-        print 'Type'.ljust(columnSize),
-        print 'CPU'.rjust(columnSize),
-        print 'RAM'.rjust(columnSize),
-        print 'SWAP'.rjust(columnSize)
+        output = ''
+        output += ' '.ljust(1)
+        output += 'Type'.ljust(columnSize)
+        output += 'CPU'.rjust(columnSize)
+        output += 'RAM'.rjust(columnSize)
+        output += 'SWAP'.rjust(columnSize)
+        output += "\n"
         for name in sorted(types.iterkeys()):
             flag = (name == self.instanceType and '*') or ' '
             cpu, ram, swap = types[name]
-            print '%s %s %s %s %s' % (flag.ljust(1), 
-                                      name.ljust(columnSize),
-                                      ('%s CPU' % cpu).rjust(columnSize),
-                                      ('%s MB' % ram).rjust(columnSize),
-                                      ('%s MB' % swap).rjust(columnSize))
+            output += "%s %s %s %s %s\n" % (flag.ljust(1),
+                                            name.ljust(columnSize),
+                                            ('%s CPU' % cpu).rjust(columnSize),
+                                            ('%s MB' % ram).rjust(columnSize),
+                                            ('%s MB' % swap).rjust(columnSize))
+
+        return output

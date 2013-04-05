@@ -34,7 +34,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(StorageCommand):
-    '''A command-line program to update storage information.'''
+    """A command-line program to update storage information."""
 
     def parse(self):
         self.parser.usage = '%prog <uuid> <key> <value>'

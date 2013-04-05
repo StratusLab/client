@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import codecs
 import os.path
 import re
@@ -27,12 +28,15 @@ import urllib2
 import random
 import urlparse
 import hashlib
-import io
 from random import sample
 from string import ascii_lowercase
-from stratuslab.Exceptions import ExecutionException, ValidationException
-import Defaults
 import platform
+
+from stratuslab.Exceptions import ExecutionException, ValidationException
+import stratuslab.api.LogUtil as LogUtil
+
+import Defaults
+
 
 # TODO: Move to Defaults
 defaultRepoConfigSection = 'stratuslab_repo'
@@ -57,55 +61,67 @@ SSH_EXIT_STATUS_ERROR = 255
 SSH_CONNECTION_RETRY_NUMBER = 2
 SSH_CONNECTION_RETRY_SLEEP_MAX = 5
 
+
 def getShareDir():
-    dir = Defaults.SHARE_DIR
-    if not os.path.exists(dir):
-        dir = os.path.join(os.path.dirname(__file__),'../../../../share')
-    if not os.path.exists(dir):
-        dir = os.path.join(os.path.dirname(__file__),'../../resources/share')
-    return dir
-    
+    # TODO: Windows compatibility?
+    d = Defaults.SHARE_DIR
+    if not os.path.exists(d):
+        d = os.path.join(os.path.dirname(__file__), '../../../../share')
+    if not os.path.exists(d):
+        d = os.path.join(os.path.dirname(__file__), '../../resources/share')
+    return d
+
+
 def getTemplateDir():
-    dir = Defaults.TEMPLATE_DIR
-    if not os.path.exists(dir):
-        dir = os.path.join(os.path.dirname(__file__),'../../../../share/template')
-    if not os.path.exists(dir):
-        dir = os.path.join(os.path.dirname(__file__),'../../resources/share/template')
-    return dir        
+    # TODO: Windows compatibility?
+    d = Defaults.TEMPLATE_DIR
+    if not os.path.exists(d):
+        d = os.path.join(os.path.dirname(__file__), '../../../../share/template')
+    if not os.path.exists(d):
+        d = os.path.join(os.path.dirname(__file__), '../../resources/share/template')
+    return d
+
 
 def getResourcesDir():
-    dir = Defaults.RESOURCES_DIR
-    if not os.path.exists(dir):
-        dir = os.path.join(os.path.dirname(__file__),'../../../../share/resources')
-    if not os.path.exists(dir):
-        dir = os.path.join(os.path.dirname(__file__),'../../resources/share/resources')
-    return dir
+    # TODO: Windows compatibility?
+    d = Defaults.RESOURCES_DIR
+    if not os.path.exists(d):
+        d = os.path.join(os.path.dirname(__file__), '../../../../share/resources')
+    if not os.path.exists(d):
+        d = os.path.join(os.path.dirname(__file__), '../../resources/share/resources')
+    return d
+
 
 def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())
     fd.close()
 
+
 def wstring(url):
     fd = _wget(url)
     return fd.read()
 
+
 def wread(url):
     return _wget(url)
+
 
 def _wget(url):
     return urllib2.urlopen(url)
 
-def ping(host, timeout=5, number=1, ** kwargs):
+
+def ping(host, timeout=5, number=1, **kwargs):
     if systemName() == 'Darwin':
         timeout_opt = '-t'
     else:
         timeout_opt = '-w'
-    p = subprocess.Popen(['ping', '-q', '-c', str(number), 
-                                timeout_opt, str(timeout), host], ** kwargs)
+    p = subprocess.Popen(['ping', '-q', '-c', str(number),
+                          timeout_opt, str(timeout), host], **kwargs)
     p.wait()
     success = (p.returncode == 0)
     return success
+
 
 def appendOrReplaceInFile(filename, search, replace):
     if not os.path.isfile(filename):
@@ -129,19 +145,22 @@ def appendOrReplaceInFile(filename, search, replace):
 
     filePutContent(filename, '\n'.join(newContent))
 
+
 def appendOrReplaceMultilineBlockInFile(filename, data, start='', until=''):
     content = fileGetContent(filename)
-    newContent = appendOrReplaceMultilineBlockInString(content, data, 
+    newContent = appendOrReplaceMultilineBlockInString(content, data,
                                                        start=start, until=until)
     filePutContent(filename, newContent)
 
+
 def appendOrReplaceMultilineBlockInString(content, data, start='', until=''):
-    """A block in 'content' starts with the first line from 'data' or 'start'. 
+    """
+    A block in 'content' starts with the first line from 'data' or 'start'.
     Block ends right before 'until'.
     """
     if not until:
         until = '([ ]*|[ ]*#.*)$'
-    
+
     if not start:
         data = data.strip()
         beginStr = data.split('\n', 1)[0]
@@ -165,7 +184,7 @@ def appendOrReplaceMultilineBlockInString(content, data, start='', until=''):
     lines = content.split('\n')
 
     lineNums = []
-    for i,line in enumerate(lines):
+    for i, line in enumerate(lines):
         if line.startswith(beginStr):
             lineNums.append(i)
             break
@@ -182,11 +201,12 @@ def appendOrReplaceMultilineBlockInString(content, data, start='', until=''):
     lineNums.reverse()
     for n in lineNums:
         del lines[n]
-    if insertIndex == len(lines)-1:
-        data = data + '\n'
+    if insertIndex == len(lines) - 1:
+        data += '\n'
     lines.insert(insertIndex, data)
 
     return '\n'.join(lines)
+
 
 def fileGetContent(filename):
     fd = open(filename, 'rb')
@@ -194,9 +214,10 @@ def fileGetContent(filename):
     fd.close()
     return content
 
+
 def filePutContent(filename, data, neverShowData=False):
-    _printDetail('Creating file %s with content: \n%s\n' % (filename, 
-                                (neverShowData and '<hidden>' or data)))
+    _printDetail('Creating file %s with content: \n%s\n' % (filename,
+                                                            (neverShowData and '<hidden>' or data)))
     if isinstance(data, unicode):
         fh = codecs.open(filename, 'w', 'utf8')
     else:
@@ -204,10 +225,12 @@ def filePutContent(filename, data, neverShowData=False):
     fh.write(data)
     fh.close()
 
+
 def fileAppendContent(filename, data):
     fd = open(filename, 'a')
     fd.write(data)
     fd.close()
+
 
 def fileGetExtension(filename):
     try:
@@ -218,33 +241,28 @@ def fileGetExtension(filename):
         return ''
     return ending
 
-def fileFind(dir, start='', end=''):
+
+def fileFind(directory, start='', end=''):
     try:
-        for file in os.listdir(dir):
-            if file.startswith(start) and file.endswith(end):
-                return os.path.join(dir, file)
+        for f in os.listdir(directory):
+            if f.startswith(start) and f.endswith(end):
+                return os.path.join(directory, f)
     except OSError:
         pass
 
-    raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, dir))
+    raise ValueError("Can't find file starting with %s and ending with %s in directory %s" % (start, end, directory))
+
 
 def shaHexDigest(string):
-    shaMethod = None
-    try:
-        import hashlib
-        shaMethod = hashlib.sha1
-    except ImportError:
-        import sha
-        shaMethod = sha.new
-
-    h = shaMethod(string)
+    h = hashlib.sha1(string)
     return h.hexdigest()
+
 
 def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
     if not stdout:
-        stdout = open('/dev/null', 'w')
+        stdout = open(os.path.devnull, 'w')
     if not stderr:
-        stderr = open('/dev/null', 'w')
+        stderr = open(os.path.devnull, 'w')
 
     start = time.time()
     hostUp = False
@@ -266,17 +284,20 @@ def waitUntilPingOrTimeout(host, timeout, ticks=True, stdout=None, stderr=None):
         sys.stdout.write('\n')
     return hostUp
 
+
 def sleep(seconds):
     time.sleep(seconds)
+
 
 def setPythonPath(path):
     if not path in sys.path:
         sys.path.append(path)
 
+
 def execute(commandAndArgsList, **kwargs):
     wait = not kwargs.get('noWait', False)
 
-    if kwargs.has_key('noWait'):
+    if 'noWait' in kwargs:
         del kwargs['noWait']
 
     output = kwargs.get('withOutput', False)
@@ -284,7 +305,7 @@ def execute(commandAndArgsList, **kwargs):
         kwargs['stdout'] = subprocess.PIPE
         kwargs['stderr'] = subprocess.STDOUT
         kwargs['close_fds'] = True
-    if kwargs.has_key('withOutput'):
+    if 'withOutput' in kwargs:
         del kwargs['withOutput']
 
     if isinstance(commandAndArgsList, list):
@@ -294,7 +315,7 @@ def execute(commandAndArgsList, **kwargs):
 
     _printDetail('Calling: %s' % _cmd, kwargs)
 
-    if isinstance(commandAndArgsList, list) and kwargs.get('shell', False) == True:
+    if isinstance(commandAndArgsList, list) and kwargs.get('shell', False) is True:
         commandAndArgsList = ' '.join(commandAndArgsList)
 
     process = subprocess.Popen(commandAndArgsList, **kwargs)
@@ -307,71 +328,86 @@ def execute(commandAndArgsList, **kwargs):
     else:
         return process.returncode
 
+
 def executeGetStatusOutput(commandAndArgsList, **kwargs):
     kwargs['withOutput'] = True
     return execute(commandAndArgsList, **kwargs)
+
 
 def executeRaiseOnError(cmd):
     res, output = execute(cmd.split(' '), withOutput=True)
     if res:
         raise ExecutionException('Failed executing %s with detail %s' % (cmd, output))
 
+
 def _printDetail(message, kwargs={}):
     verboseLevel = _extractVerboseLevel(kwargs)
     verboseThreshold = _extractVerboseThreshold(kwargs)
     printDetail(message, verboseLevel, verboseThreshold)
 
+
 def _extractVerboseLevel(kwargs):
     return _extractAndDeleteKey('verboseLevel', VERBOSE_LEVEL_QUIET, kwargs)
+
 
 def _extractVerboseThreshold(kwargs):
     return _extractAndDeleteKey('verboseThreshold', VERBOSE_LEVEL_DETAILED, kwargs)
 
-def _extractAndDeleteKey(key, default, dict):
+
+def _extractAndDeleteKey(key, default, dictionary):
     value = default
-    if key in dict:
-        value = dict[key]
-        del dict[key]
+    if key in dictionary:
+        value = dictionary[key]
+        del dictionary[key]
     return value
 
+
+def _format_action(msg):
+    filler = ':' * (len(msg) + 6)
+    fmt = '\n %s\n :: %s ::\n %s'
+    return fmt % (filler, msg, filler)
+
+
 def printAction(msg):
-    printAndFlush('\n :::%s:::\n' % (':' * len(msg)))
-    printAndFlush(' :: %s ::\n' % msg)
-    printAndFlush(' :::%s:::\n' % (':' * len(msg)))
+    LogUtil.info(_format_action(msg))
+
 
 def printStep(msg):
-    printAndFlush(' :: %s\n' % msg)
+    LogUtil.info(' :: %s' % msg)
+
 
 def printError(msg, exitCode=1, exit=True):
-    err = '  [ERROR] %s\n' % msg
+    # TODO: Revisit this design; having exit in API is not good.
+    err = '  [ERROR] %s' % msg
     if exit:
         raise SystemExit(err)
     else:
-        printAndFlush(msg)
+        LogUtil.error(msg)
+
 
 def printWarning(msg):
-    printAndFlush('  [WARNING] %s\n' % msg)
+    LogUtil.warning('  [WARNING] %s' % msg)
 
-def printAndFlush(msg):
-    sys.stdout.flush()
-    print msg,
-    sys.stdout.flush()
 
 def printDetail(msg, verboseLevel=1, verboseThreshold=1):
-    if verboseLevel >= verboseThreshold:
-        _msg = (msg.endswith('\n') and msg) or msg + '\n'
-        printAndFlush('    %s' % _msg)
+    # TODO: Review this to see if more levels are needed.
+    if verboseThreshold == 0:
+        LogUtil.info(msg)
+    else:
+        LogUtil.debug(msg)
+
 
 def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordPrompts=0, **kwargs):
-    
     def _appendToSshCommandFromKwargs(keyword, append):
         if kwargs.get(keyword, False):
             sshCmd.append(append)
         try:
             del kwargs[keyword]
-        except: pass
+        except:
+            pass
 
-    sshCmd = ['ssh', '-p', str(port),
+    sshCmd = ['ssh',
+              '-p', str(port),
               '-o', 'ConnectTimeout=%s' % timeout,
               '-o', 'StrictHostKeyChecking=no']
     sshCmd.append('-o NumberOfPasswordPrompts=%d' % int(passwordPrompts))
@@ -386,6 +422,7 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordProm
     sshCmd.append('%s@%s' % (user, host))
     sshCmd.append(cmd)
 
+    output = None
     for i in range(0, SSH_CONNECTION_RETRY_NUMBER + 1):
         if i > 0:
             sleepTime = random.randint(0, SSH_CONNECTION_RETRY_SLEEP_MAX)
@@ -400,21 +437,26 @@ def sshCmd(cmd, host, sshKey=None, port=22, user='root', timeout=5, passwordProm
             return output
     return output
 
+
 def sshCmdWithOutput(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
                   user=user, timeout=timeout, withOutput=True, **kwargs)
+
 
 def sshCmdWithOutputVerb(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
                   user=user, timeout=timeout, withOutput=True, sshVerb=True, **kwargs)
 
+
 def sshCmdWithOutputQuiet(cmd, host, sshKey=None, port=22, user='root', timeout=5, **kwargs):
     return sshCmd(cmd, host, sshKey=sshKey, port=port,
                   user=user, timeout=timeout, withOutput=True, sshQuiet=True, **kwargs)
 
+
 def sshInteractive(host, sshKey=None, port=22, user='root', timeout=5, passwordPrompts=3, **kwargs):
     return sshCmd('', host, sshKey=sshKey, port=port, user=user,
-            timeout=timeout, passwordPrompts=passwordPrompts, **kwargs)
+                  timeout=timeout, passwordPrompts=passwordPrompts, **kwargs)
+
 
 def scp(src, dest, sshKey=None, port=22, **kwargs):
     scpCmd = ['scp', '-P', str(port), '-r', '-o', 'StrictHostKeyChecking=no']
@@ -428,19 +470,19 @@ def scp(src, dest, sshKey=None, port=22, **kwargs):
 
     return execute(scpCmd, **kwargs)
 
+
 def importSystem(system):
-    module = None
     try:
-        module = __import__(system)
+        return __import__(system)
     except ImportError, ex:
         msg = 'Error while importing module %s, with detail: ' % system
         printError(msg + str(ex), exit=False)
         raise
-    else:
-        return module
+
 
 def validateIp(ipAddress):
     return isValidIpV4(ipAddress) or isValidIpV6(ipAddress)
+
 
 def isValidIpV4(ip):
     """Validates IPv4 addresses.
@@ -481,6 +523,7 @@ def isValidIpV4(ip):
     """, re.VERBOSE | re.IGNORECASE)
     return pattern.match(ip) is not None
 
+
 def isValidIpV6(ip):
     """Validates IPv6 addresses.
     """
@@ -512,8 +555,9 @@ def isValidIpV6(ip):
     """, re.VERBOSE | re.IGNORECASE | re.DOTALL)
     return pattern.match(ip) is not None
 
+
 def unifyNetsize(netsize):
-    classes = { 'A': 2**24, 'B': 2**16, 'C': 2**8 }
+    classes = {'A': 2 ** 24, 'B': 2 ** 16, 'C': 2 ** 8}
 
     for letter, mask in classes.items():
         if netsize == letter:
@@ -521,56 +565,62 @@ def unifyNetsize(netsize):
 
     return netsize
 
+
 def networkSizeToNetmask(netsize):
     MAX_MASK_POW_TWO = 24
-    MAX_MASK_LENTGH = 32
-    for pow in range(MAX_MASK_POW_TWO):
-        if 2**pow >= netsize:
-            return MAX_MASK_LENTGH - pow
-    return MAX_MASK_LENTGH
+    MAX_MASK_LENGTH = 32
+    for exponent in range(MAX_MASK_POW_TWO):
+        if 2 ** exponent >= netsize:
+            return MAX_MASK_LENGTH - exponent
+    return MAX_MASK_LENGTH
+
 
 def gatewayIpFromNetAddress(network):
     net, start = network.rsplit('.', 1)
     return '%s.%i' % (net, int(start) + 1)
 
+
 def assignAttributes(instance, dictionary):
     for key, value in dictionary.items():
         setattr(instance, key, value)
 
+
 def randomString(length=10):
     return ''.join(sample(list(ascii_lowercase), length))
 
+
 def runMethodByName(obj, methodName, *args, **kw):
     return obj.__class__.__dict__[methodName](obj, *args, **kw)
+
 
 def generateSshKeyPair(keyFilename):
     try:
         os.remove(keyFilename)
         os.remove(keyFilename + '.pub')
-    except(OSError):
+    except OSError:
         pass
     sshCmd = 'ssh-keygen -f %s -N "" -q' % keyFilename
     execute(sshCmd, shell=True)
 
+
 def checkUrlExists(url, timeout=5):
-    fh = None
     try:
-        fh = urllib2.urlopen(url, timeout=timeout)
+        if not urllib2.urlopen(url, timeout=timeout):
+            raise ExecutionException('urllib2.urlopen() did not return url handler.')
     except urllib2.URLError, ex:
         raise ValidationException(str(ex))
-    else:
-        if not fh:
-            raise ExecutionException('urllib2.urlopen() did not return url handler.')
     return True
+
 
 def printEmphasisStart():
     sys.stdout.write('\033[1;31m')
 
+
 def printEmphasisStop():
     sys.stdout.write('\033[0m')
 
-def constructEndPoint(fragment, protocol='https', port=8443, path=''):
 
+def constructEndPoint(fragment, protocol='https', port=8443, path=''):
     _protocol, _hostname, _port, _path = parseUri(fragment)
 
     _protocol = (_protocol and _protocol) or protocol + '://'
@@ -580,11 +630,13 @@ def constructEndPoint(fragment, protocol='https', port=8443, path=''):
 
     return '%s%s:%s/%s' % (_protocol, _hostname, _port, _path)
 
+
 def parseUri(uri):
-    '''Return tuple (protocol, hostname, port, path?query#fragment)'''
+    """Return tuple (protocol, hostname, port, path?query#fragment)"""
     m = re.match('([a-zA-Z0-9_]*://)?([^/:$]*):?(\d+)?/?(.*)', uri)
     protocol, hostname, port, path_and_query = m.group(1), m.group(2), m.group(3), m.group(4)
     return protocol, hostname, port, path_and_query
+
 
 def sanitizeEndpoint(endpoint, protocol=Defaults.marketplaceProtocol, port=Defaults.marketplacePort):
     if not endpoint:
@@ -592,74 +644,62 @@ def sanitizeEndpoint(endpoint, protocol=Defaults.marketplaceProtocol, port=Defau
     sanitized = endpoint
     _protocol, _, _, _ = parseUri(endpoint)
     if not _protocol:
-        sanitized = constructEndPoint(sanitized, protocol, port)[:-1] # trim trailing /
+        sanitized = constructEndPoint(sanitized, protocol, port)[:-1]  # trim trailing /
     return sanitized
+
 
 def getHostnameFromUri(uri):
     return parseUri(uri)[1]
 
+
 def getProtoFromUri(uri):
     return parseUri(uri)[0]
+
 
 def getProtoHostnameFromUri(uri):
     return ''.join(parseUri(uri)[:2])
 
+
 def getProtoHostnamePortFromUri(uri):
     groups = parseUri(uri)
     protoHost = ''.join(groups[:2])
-    port = (groups[2] and ':%s'%groups[2]) or ''
+    port = (groups[2] and ':%s' % groups[2]) or ''
     return protoHost + port
 
+
 def getTimeInIso8601():
-    "Return current time in iso8601 format."
+    """Return current time in iso8601 format."""
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()))
 
+
 def toTimeInIso8601(_time):
-    "Convert int or float to time in iso8601 format."
+    """Convert int or float to time in iso8601 format."""
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_time))
+
 
 def isTrueConfVal(var):
     return (str(var).lower() in ['true', 'yes', 'on', '1']) or False
 
+
 def isFalseConfVal(var):
     return (str(var).lower() in ['false', 'no', 'off', '0', '']) or False
 
+
 def importETree():
     try:
-        from lxml import etree
+        import xml.etree.cElementTree as etree  # c-version first
+        return etree
     except ImportError:
         try:
-            # Python 2.5
-            import xml.etree.cElementTree as etree
+            import xml.etree.ElementTree as etree  # python version
+            return etree
         except ImportError:
-            try:
-                # Python 2.5
-                import xml.etree.ElementTree as etree
-            except ImportError:
-                try:
-                    # normal cElementTree install
-                    import cElementTree as etree
-                except ImportError:
-                    try:
-                        # normal ElementTree install
-                        import elementtree.ElementTree as etree
-                    except ImportError:
-                        raise Exception("Failed to import ElementTree from any known place")
+            raise Exception('failed to import ElementTree')
 
-    if not hasattr(etree, '_fromstring'):
-        etree._fromstring = etree.fromstring
-
-        def fromstring(text):
-            if isinstance(text, unicode):
-                return etree._fromstring(text.encode('utf-8'))
-            return etree._fromstring(text)
-
-        etree.fromstring = fromstring
-    
-    return etree
 
 def escapeDoubleQuotes(string, times=1):
-    return re.sub('"', '%s"' % ('\\'*times), string)
+    return re.sub('"', '%s"' % ('\\' * times), string)
+
 
 def sanitizePath(path):
     subs = [('\ ', ' ')]
@@ -667,34 +707,41 @@ def sanitizePath(path):
         path = path.replace(*s)
     return path
 
+
 def isValidNetLocation(url):
     r = urlparse.urlsplit(url)
     return (r.scheme and r.netloc) and True or False
 
+
 def systemName():
     return platform.system()
+
 
 def incrementMinorVersionNumber(version_string):
     vsplit = version_string.split('.')
     vsplit[1] = str(int(vsplit[1]) + 1)
     return '.'.join(vsplit)
 
+
 def service(name, action):
     printDetail('Trying to %s %s' % (action, name))
     execute(['/etc/init.d/%s' % name, action])
-    
+
+
 def startService(name):
     service(name, 'start')
+
 
 def stopService(name):
     service(name, 'stop')
 
+
 def restartService(name):
     service(name, 'restart')
-    
+
+
 def getValueInKB(value):
-    ''' Assume that if no unit specified, already in KB 
-    '''
+    """Assume that if no unit specified, already in KB"""
     unit = ('KB', 'MB', 'GB')
     try:
         valueKB = int(value)

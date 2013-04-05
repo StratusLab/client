@@ -18,7 +18,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to extract information from Marketplace manifest.'''
+    """A command-line program to extract information from Marketplace manifest."""
 
     def __init__(self):
         super(MainProgram, self).__init__()

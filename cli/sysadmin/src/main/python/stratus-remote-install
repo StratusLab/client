@@ -39,7 +39,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBase):
-    '''A command line to install stratuslab on a remote host'''
+    """A command line to install StratusLab on a remote host."""
 
     def __init__(self):
         self.rootPath = os.path.abspath('%s/../' %
@@ -90,7 +90,6 @@ class MainProgram(CommandBase):
         self.installStratuslabNodes()
 
         printAction('Installation done')
-
 
     def multiInstallWorkaround(self):
         self.sshCmd('su -l oneadmin -c "one stop"')
@@ -143,9 +142,9 @@ class MainProgram(CommandBase):
 
     def installStratuslabSysAdminTools(self):
         yumConfFileName = '/tmp/yum-repo.conf'
-        file = open(yumConfFileName, 'w')
-        file.write(self._getStratusLabYumRepoConf())
-        file.close()
+        f = open(yumConfFileName, 'w')
+        f.write(self._getStratusLabYumRepoConf())
+        f.close()
         self.scp(yumConfFileName, '%s:/etc/yum.repos.d/stratuslab.repo' % self.options.frontend)
         # TODO: make this system dependent (i.e. apt-get for Ubuntu)
         self.sshCmd('yum install stratuslab-cli-sysadmin --nogpgcheck -y', exitOnError=True)

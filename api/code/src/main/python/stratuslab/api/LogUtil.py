@@ -127,9 +127,58 @@ def set_logger_level(logger_name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO)
     logger.setLevel(level)
 
 
+def critical(msg):
+    """
+    Convenience method for logging critical messages to the StratusLab API logger.
+    """
+    logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
+    logger.critical(msg)
+
+
+def error(msg):
+    """
+    Convenience method for logging error messages to the StratusLab API logger.
+    """
+    logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
+    logger.error(msg)
+
+
+def warning(msg):
+    """
+    Convenience method for logging warning messages to the StratusLab API logger.
+    """
+    logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
+    logger.warning(msg)
+
+
+def info(msg):
+    """
+    Convenience method for logging info messages to the StratusLab API logger.
+    """
+    logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
+    logger.info(msg)
+
+
+def debug(msg):
+    """
+    Convenience method for logging debug messages to the StratusLab API logger.
+    """
+    logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
+    logger.debug(msg)
+
+
+def exception(msg):
+    """
+    Convenience method for logging exception messages to the StratusLab API logger.
+    This method should only be called from exception handlers.  The exception
+    information is included in the message.
+    """
+    logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
+    logger.exception(msg)
+
+
 #
 # Initialize the logger with a 'no-op' handler.  Add another handler to actually
 # push the logging messages somewhere.
 #
 initialize_logger()
-

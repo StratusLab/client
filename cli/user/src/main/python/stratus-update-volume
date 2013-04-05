@@ -36,7 +36,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
-    '''A command-line program to update persistent disk metadata.'''
+    """A command-line program to update persistent disk metadata."""
 
     def __init__(self):
         super(MainProgram, self).__init__()

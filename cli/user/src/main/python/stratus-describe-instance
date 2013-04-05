@@ -37,7 +37,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, PortTranslationCommand):
-    '''A command-line program to monitor the state of virtual machines.'''
+    """A command-line program to monitor the state of virtual machines."""
 
     def __init__(self):
         self.vmIds = []
@@ -75,17 +75,17 @@ to the user (-u/--username).'''
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         monitor = Monitor(configHolder)
         if self.vmIds:
-            list = monitor.vmDetail(self.vmIds)
-            if len(list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
-                monitor.printVmAllAttributes(list)
+            vm_info_list = monitor.vmDetail(self.vmIds)
+            if len(vm_info_list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
+                monitor.printVmAllAttributes(vm_info_list)
             else:
-                monitor.printVmDetails(list)
+                monitor.printVmDetails(vm_info_list)
         else:
             if self.options.multi_site and self.config.get('endpoints'):
                 MultisiteMonitor(configHolder).printVmList()
             else:
-                list = monitor.listVms()
-                monitor.printVmList(list)
+                vm_info_list = monitor.listVms()
+                monitor.printVmList(vm_info_list)
 
 
 if __name__ == '__main__':

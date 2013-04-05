@@ -39,7 +39,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBase):
-    '''A command-line program to test StratusLab.'''
+    """A command-line program to test StratusLab."""
 
     def __init__(self):
         super(MainProgram, self).__init__()

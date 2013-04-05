@@ -34,20 +34,20 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(Runnable):
-    '''A command-line program to run a virtual machine.'''
+    """A command-line program to run a virtual machine."""
 
     def parse(self):
         self.parser.usage = '''%prog [options] <vm-id>'''
 
         self.parser.add_option('--author-email', dest='authorEmail',
-                               help='Email address of the author of ' \
-                                    'the new image. After image is saved a notification is sent ' \
+                               help='Email address of the author of '
+                                    'the new image. After image is saved a notification is sent '
                                     'with further instructions.',
                                default='', metavar='EMAIL')
 
         self.parser.add_option('--description', dest='newImageDescription',
-                               help='String containing the description of the new image,\
-                to be inserted in the manifest.',
+                               help='String containing the description of the new image, '
+                                    'to be inserted in the manifest.',
                                metavar='TEXT', default=None)
 
         super(MainProgram, self).parse()

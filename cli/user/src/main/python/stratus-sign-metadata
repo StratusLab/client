@@ -37,7 +37,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseUser):
-    '''A command-line program to sign image metadata.'''
+    """A command-line program to sign image metadata."""
 
     def __init__(self):
         self.manifestFile = None

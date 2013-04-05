@@ -26,8 +26,8 @@ from stratuslab.messaging.MessagePublishers import ImageIdPublisher, SingleMessa
 from stratuslab.image.Image import Image
 from stratuslab.Exceptions import ValidationException
 
-class MessagingCommand(CommandBaseSysadmin):
 
+class MessagingCommand(CommandBaseSysadmin):
     def __init__(self):
         self.msg_message = ''
         super(MessagingCommand, self).__init__()
@@ -36,23 +36,23 @@ class MessagingCommand(CommandBaseSysadmin):
         self.parser.usage = '%prog [options] message'
 
         self.parser.add_option('--msg-type', dest='msg_type',
-                    help='Type of messaging: %s. Mandatory.' % ', '.join(MSG_TYPES), 
-                    metavar='NAME', default="")
+                               help='Type of messaging: %s. Mandatory.' % ', '.join(MSG_TYPES),
+                               metavar='NAME', default="")
         self.parser.add_option('--msg-endpoint', dest='msg_endpoint',
-                    help='Messaging service endpoint. Mandatory.', 
-                    metavar='ENDPOINT', default="")
+                               help='Messaging service endpoint. Mandatory.',
+                               metavar='ENDPOINT', default="")
         self.parser.add_option('--msg-queue', dest='msg_queue',
-                    help='Message queue name. Mandatory.', metavar='NAME',
-                    default="")
+                               help='Message queue name. Mandatory.', metavar='NAME',
+                               default="")
         self.parser.add_option('--msg-smtp-host', dest='smtp_host',
-                    help="SMTP relay hostname to be used with 'email' messaging "
-                    "type. Default: %s" % MSG_SMTP_HOST, 
-                    metavar='HOSTNAME', default=MSG_SMTP_HOST)
+                               help="SMTP relay hostname to be used with 'email' messaging "
+                                    "type. Default: %s" % MSG_SMTP_HOST,
+                               metavar='HOSTNAME', default=MSG_SMTP_HOST)
         self.parser.add_option('--imageid', dest='imageid',
-                    help='Image ID. Assumes message is JSON representation '
-                    'of a dictionary on which the ID will be set. JSON can be '
-                    'base64 encoded.', metavar='ID',
-                    default="")
+                               help='Image ID. Assumes message is JSON representation '
+                                    'of a dictionary on which the ID will be set. JSON can be '
+                                    'base64 encoded.', metavar='ID',
+                               default="")
 
         self.options, self.args = self.parser.parse_args()
 
@@ -73,17 +73,17 @@ class MessagingCommand(CommandBaseSysadmin):
             self.msg_message = self.args[0]
         else:
             self.printError('Message should be set as first argument')
-            
+
         if self.options.imageid:
             if not Image.isImageId(self.options.imageid):
                 raise ValidationException('Marketplace image ID is expected.')
 
     def sendMessage(self):
-        config = ConfigHolder.configFileToDict(self.options.configFile) 
+        config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
 
         if self.options.imageid:
-            ImageIdPublisher(self.msg_message, 
+            ImageIdPublisher(self.msg_message,
                              self.options.imageid, configHolder).publish()
         else:
             SingleMessagePublisher(self.msg_message, configHolder).publish()

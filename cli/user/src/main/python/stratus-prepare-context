@@ -27,14 +27,13 @@ import stratuslab.api.LogUtil as LogUtil
 
 LogUtil.get_console_logger()
 
-'''
-A command-line utility for generating a cloud-init context file.
-The output file is always named cloud-init.txt and written to the
-current directory.
-'''
-
 
 class MainProgram(CommandBase):
+    """
+    A command-line utility for generating a cloud-init context file.
+    The output file is always named cloud-init.txt and written to the
+    current directory.
+    """
     def __init__(self):
         self.image = None
         super(MainProgram, self).__init__()

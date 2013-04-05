@@ -35,7 +35,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to check site policy to authorize a given machine to be instantiated.'''
+    """A command-line program to check site policy to authorize a given machine to be instantiated."""
 
     def __init__(self):
         self.metadataFilename = None
@@ -53,7 +53,7 @@ class MainProgram(CommandBaseSysadmin):
                                help='Policy configuration file. Default: ' + Policy.POLICY_CFG,
                                metavar='FILE', default=Policy.POLICY_CFG)
 
-        Util.addEndpointOption(self.parser);
+        Util.addEndpointOption(self.parser)
 
         self.options, self.args = self.parser.parse_args()
 

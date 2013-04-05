@@ -36,7 +36,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to download machine and disk images from a StratusLab Marketplace.'''
+    """A command-line program to download machine and disk images from a StratusLab Marketplace."""
 
     def __init__(self):
         self.uri = None
@@ -52,7 +52,8 @@ class MainProgram(CommandBaseSysadmin):
         MarketplaceUtil.addEndpointOption(self.parser)
 
         self.parser.add_option('-o', '--output', dest='localImageFilename',
-                               help='Where to save the downloaded image (default: %s)' % Downloader.LOCAL_IMAGE_FILENAME,
+                               help='Where to save the downloaded image (default: %s)' %
+                                    Downloader.LOCAL_IMAGE_FILENAME,
                                metavar='FILE',
                                default=Downloader.LOCAL_IMAGE_FILENAME)
 

@@ -38,7 +38,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, PortTranslationCommand):
-    '''A command-line program to connect to virtual machines.'''
+    """A command-line program to connect to virtual machines."""
 
     def __init__(self):
         self.vmIds = []

@@ -32,6 +32,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(MessagingCommand):
+    """A utility for sending a message."""
     def __init__(self):
         super(MainProgram, self).__init__()
 

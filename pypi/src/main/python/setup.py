@@ -37,7 +37,6 @@ setup(
         'bin/stratus-hash-password',
         'bin/stratus-kill-instance',
         'bin/stratus-prepare-context',
-        'bin/stratus-run-benchmark',
         'bin/stratus-run-cluster',
         'bin/stratus-run-instance',
         'bin/stratus-save-instance',

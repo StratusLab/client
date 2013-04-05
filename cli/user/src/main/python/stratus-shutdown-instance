@@ -32,7 +32,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(InstanceCommand):
-    '''A command-line program to shutdown a virtual machine.'''
+    """A command-line program to shutdown a virtual machine."""
 
     def doWork(self):
         self.shutdownInstances()

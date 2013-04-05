@@ -33,7 +33,7 @@ LogUtil.get_console_logger()
 
 
 class RemoteShutdown(object):
-    '''A command line to remotely shutdown a machine'''
+    """A command line to remotely shutdown a machine"""
 
     def __init__(self):
         usage = '%prog [options]'
@@ -75,4 +75,3 @@ if __name__ == '__main__':
         RemoteShutdown()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
-

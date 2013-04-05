@@ -32,10 +32,10 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseUser):
-    '''
+    """
     Copy the reference configuration file into the correct locaton for
     user.
-    '''
+    """
 
     existingFileMsg = \
         'won\'t overwrite file (%s); use --force to overwrite'
@@ -66,12 +66,12 @@ class MainProgram(CommandBaseUser):
         return src
 
     def _create_parent_dir(self, dst):
-        dir = os.path.dirname(dst)
-        if not os.path.exists(dir):
+        d = os.path.dirname(dst)
+        if not os.path.exists(d):
             try:
-                os.makedirs(dir)
+                os.makedirs(d)
             except:
-                raise Exception('cannot create directory %s' % dir)
+                raise Exception('cannot create directory %s' % d)
 
     def _copy_config(self, src, dst):
         try:

@@ -52,11 +52,11 @@ class CommandBase(object):
         self.checkOptions()
         self._callAndHandleErrors(self, self.doWork.__name__)
 
-    def _convertVerboseLevelToLoggingLevel(self, verboseLevel):
+    def _convertVerboseLevelToLoggingLevel(self, quiet, verboseLevel):
         # TODO: Review this mapping to see if it is sufficient.
         if verboseLevel < 0:
             return logging.CRITICAL
-        elif verboseLevel == 0:
+        elif verboseLevel == 0 or quiet:
             return logging.WARNING
         elif verboseLevel == 1:
             return logging.INFO
@@ -74,7 +74,12 @@ class CommandBase(object):
         self.parse()
         self.verboseLevel = self.options.verboseLevel
 
-        LogUtil.set_logger_level(level=self._convertVerboseLevelToLoggingLevel(self.verboseLevel))
+        try:
+            quiet = self.options.quiet
+        except AttributeError:
+            quiet = False
+
+        LogUtil.set_logger_level(level=self._convertVerboseLevelToLoggingLevel(quiet, self.verboseLevel))
 
     def _addConfigFileOption(self):
         pass
@@ -179,7 +184,8 @@ class CommandBaseUser(CommandBase):
             raise ConfigurationException('Error parsing user configuration file %s' % configFile + '. Details: %s' % ex)
 
     def _updateOptionsFromConfigFile(self):
-        """Order of precedence:
+        """
+        Order of precedence:
         * command line option
         * environment variable
         * configuration file

@@ -34,7 +34,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBaseSysadmin):
-    '''A command-line program to generate p12 certificate.'''
+    """A command-line program to generate p12 certificate."""
 
     def __init__(self):
         self.image = None

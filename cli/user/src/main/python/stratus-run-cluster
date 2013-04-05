@@ -38,8 +38,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(Runnable):
-    '''A command-line program to run a virtual machine.'''
-
+    """A command-line program to run a virtual machine."""
 
     def parse(self):
         options = Runner.defaultRunOptions()
@@ -61,12 +60,13 @@ class MainProgram(Runnable):
                                default=None, type='string')
 
         self.parser.add_option('--mpi-machine-file', dest='mpi_machine_file', action='store_true',
-                               help='Defines that a machinefile should be prepared for MPI, listing all available ' \
+                               help='Defines that a machinefile should be prepared for MPI, listing all available '
                                     'workers and their respective number of cores (slot value). (Default=False)',
                                default=False)
 
         self.parser.add_option('--include-master', dest='include_master', action='store_true',
-                               help='Defines that the master node should be considered as part of the worker nodes. (Default=False)',
+                               help='Defines that the master node should be considered '
+                                    'as part of the worker nodes. (Default=False)',
                                default=False)
 
         self.parser.add_option('--add-packages', dest='add_packages', action='store',
@@ -78,7 +78,8 @@ class MainProgram(Runnable):
                                default=None, type='int')
 
         self.parser.add_option('--tolerate-failures', dest='tolerate_failures', action='store_true',
-                               help='If set true the program will try to configure the cluster with as many nodes as it can  ' \
+                               help='If set true the program will try to configure the '
+                                    'cluster with as many nodes as it can  '
                                     'in case some of them fail during instantiation',
                                default=False)
 

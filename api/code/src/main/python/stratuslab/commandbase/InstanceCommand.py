@@ -22,8 +22,9 @@ from stratuslab.Runner import Runner
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
 
+
 class InstanceCommand(AuthnCommand):
-    '''A command-line program to kill a virtual machine.'''
+    """A command-line program to kill a virtual machine."""
 
     def __init__(self):
         self.vmIds = []
@@ -32,11 +33,11 @@ class InstanceCommand(AuthnCommand):
     def parse(self):
         usage = '''%prog [options] vm-id ...'''
 
-        self.parser.usage=usage
+        self.parser.usage = usage
 
         self.parser.add_option('-i', '--input', dest='inVmIdsFile',
-                help='file containing line separated vm-ids', metavar='FILE',
-                default=None)
+                               help='file containing line separated vm-ids', metavar='FILE',
+                               default=None)
 
         AuthnCommand.addCloudEndpointOptions(self.parser)
 
@@ -55,7 +56,7 @@ class InstanceCommand(AuthnCommand):
     def _getRunner(self):
         configHolder = ConfigHolder(self.options.__dict__)
         return Runner(None, configHolder)
-    
+
     def shutdownInstances(self):
         self._getRunner().shutdownInstances(self.vmIds)
 

@@ -37,7 +37,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand):
-    '''A command-line program to upload StratusLab appliance.'''
+    """A command-line program to upload StratusLab appliance."""
 
     def __init__(self):
         self.manifest = None

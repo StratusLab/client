@@ -35,7 +35,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram:
-    '''A command-line program to perform StratusLab RPM/DEB post-installation.'''
+    """A command-line program to perform StratusLab RPM/DEB post-installation."""
 
     def __init__(self):
         self.doWork()
@@ -60,4 +60,3 @@ if __name__ == '__main__':
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
-

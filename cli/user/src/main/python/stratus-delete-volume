@@ -36,7 +36,7 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
-    '''A command-line program to create a persistent disk.'''
+    """A command-line program to create a persistent disk."""
 
     def __init__(self):
         super(MainProgram, self).__init__()
