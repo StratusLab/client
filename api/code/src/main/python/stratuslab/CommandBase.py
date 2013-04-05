@@ -23,6 +23,9 @@ import os
 from optparse import OptionParser
 import xmlrpclib
 import json
+import logging
+
+import stratuslab.api.LogUtil as LogUtil
 
 import stratuslab.Util as Util
 from stratuslab.VersionChecker import VersionChecker
@@ -30,11 +33,11 @@ import stratuslab.Exceptions as Exceptions
 from stratuslab.ConfigHolder import ConfigHolder, UserConfigurator
 from stratuslab.Exceptions import ConfigurationException
 
+
 class CommandBase(object):
-    
     def __init__(self):
         self.options = None
-        self.config  = {}
+        self.config = {}
         self._configKeysClassAttrsTwoWayMap = {}
 
         self.verboseLevel = 0
@@ -49,17 +52,30 @@ class CommandBase(object):
         self.checkOptions()
         self._callAndHandleErrors(self, self.doWork.__name__)
 
+    def _convertVerboseLevelToLoggingLevel(self, verboseLevel):
+        # TODO: Review this mapping to see if it is sufficient.
+        if verboseLevel < 0:
+            return logging.CRITICAL
+        elif verboseLevel == 0:
+            return logging.WARNING
+        elif verboseLevel == 1:
+            return logging.INFO
+        else:
+            return logging.DEBUG
+
     def _setParserAndParse(self):
         self.parser = OptionParser(version="${project.version}")
         self.parser.add_option('-v', '--verbose', dest='verboseLevel',
-                help='verbose level. Add more to get more details',
-                action='count', default=self.verboseLevel)
+                               help='verbose level. Add more to get more details',
+                               action='count', default=self.verboseLevel)
 
         self._addConfigFileOption()
 
         self.parse()
         self.verboseLevel = self.options.verboseLevel
-        
+
+        LogUtil.set_logger_level(level=self._convertVerboseLevelToLoggingLevel(self.verboseLevel))
+
     def _addConfigFileOption(self):
         pass
 
@@ -67,7 +83,7 @@ class CommandBase(object):
         pass
 
     def _callAndHandleErrors(self, methodName, *args, **kw):
-        
+
         try:
             Util.runMethodByName(methodName, *args, **kw)
         except ValueError, ex:
@@ -78,8 +94,6 @@ class CommandBase(object):
             self._checkPythonVersionAndRaise()
             self.raiseOrDisplayError('Network error: %s' % ex)
         except socket.error, ex:
-            self.raiseOrDisplayError('Network error: %s' % ex)
-        except socket.gaierror, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exceptions.ClientException, ex:
             msg = 'Error: ' + ex.reason
@@ -97,7 +111,7 @@ class CommandBase(object):
             VersionChecker().check()
         except Exceptions.ValidationException, ex:
             self.raiseOrDisplayError(ex)
-        
+
     def parse(self):
         pass
 
@@ -115,7 +129,7 @@ class CommandBase(object):
 
     def usageExitWrongNumberOfArguments(self):
         return self.parser.error('Wrong number of arguments')
-    
+
     def raiseOrDisplayError(self, errorMsg):
         if self.verboseLevel > 2:
             raise
@@ -128,12 +142,12 @@ class CommandBase(object):
 
     def printError(self, message):
         Util.printError(message, self)
-        
+
     def printMandatoryOptionError(self, option):
         self.printError('Missing mandatory %s option' % option)
 
-class CommandBaseUser(CommandBase):
 
+class CommandBaseUser(CommandBase):
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileUserOption(self.parser)
 
@@ -149,8 +163,8 @@ class CommandBaseUser(CommandBase):
 
         if configFile == Util.defaultConfigFileUser:
             if not os.path.exists(configFile):
-                Util.printDetail('[WARNING] Default user configuration file does not exist: %s' % 
-                                  configFile, verboseLevel=self.verboseLevel)
+                Util.printDetail('[WARNING] Default user configuration file does not exist: %s' %
+                                 configFile, verboseLevel=self.verboseLevel)
                 return
 
         selected_section = None
@@ -159,7 +173,8 @@ class CommandBaseUser(CommandBase):
 
         try:
             self.config, self._configKeysClassAttrsTwoWayMap = \
-                UserConfigurator.configFileToDictWithFormattedKeys(configFile, withMap=True, selected_section=selected_section)
+                UserConfigurator.configFileToDictWithFormattedKeys(configFile, withMap=True,
+                                                                   selected_section=selected_section)
         except ConfigurationException, ex:
             raise ConfigurationException('Error parsing user configuration file %s' % configFile + '. Details: %s' % ex)
 
@@ -170,7 +185,7 @@ class CommandBaseUser(CommandBase):
         * configuration file
         * default value
 
-        Update of the corresponding options object key/value pairs can only be 
+        Update of the corresponding options object key/value pairs can only be
         done if neither corresponding command line option nor environment
         variable was given/set.
 
@@ -187,20 +202,20 @@ class CommandBaseUser(CommandBase):
         for k in self.config:
             if k in self.options.__dict__:
                 valueFromOptions = getattr(self.options, k)
-                # Set the value from configuration file: 
+                # Set the value from configuration file:
                 # * if attribute is empty
                 if not valueFromOptions:
                     setattr(self.options, k, self.config[k])
-                # * if default is equal to "provided" value, we may assume that 
-                #   the option wasn't given on command line; but we are going 
-                #   to double check this in each Option object of the parser as 
+                # * if default is equal to "provided" value, we may assume that
+                #   the option wasn't given on command line; but we are going
+                #   to double check this in each Option object of the parser as
                 #   the same value might have been provided via environment var.
                 elif valueFromOptions == self.parser.defaults[k]:
                     for optionObj in self.parser.option_list:
-                        # work only with Option object for the particular key 
+                        # work only with Option object for the particular key
                         if optionObj.dest != k:
                             continue
-                        # Update if
+                            # Update if
                         # * the long option is NOT in the list of the CLI arguments
                         if not (optionObj._long_opts[0] in sys.argv):
                             # * and not set via corresponding environment variable
@@ -210,7 +225,7 @@ class CommandBaseUser(CommandBase):
                 else:
                     pass
 
-class CommandBaseSysadmin(CommandBase):
 
+class CommandBaseSysadmin(CommandBase):
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileSysadminOption(self.parser)
