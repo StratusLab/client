@@ -44,18 +44,20 @@ from logging.handlers import SysLogHandler
 STRATUSLAB_API_LOGGER_NAME = 'stratuslab.api'
 
 
-class NoOpHandler(logging.Handler):
+class NullHandler(logging.Handler):
     """
     This handler acts as a 'no-op'.  It is a placeholder for the API
     to avoid having logging complain that there is no handler defined.
-    This class is equivalent to the NullHandler that was introduced in
-    Python 2.7; this class is only useful for supporting Python 2.6.
+    This class is used only for Python 2.6 because in Python 2.7 such
+    a class was defined in the standard distribution.
     """
 
     lock = None
 
     def __init__(self, level=logging.INFO):
-        super(NoOpHandler, self).__init__(level=level)
+        # NOTE: super cannot be used here because it will fail on
+        # python 2.6, which uses old style classes for logging.
+        logging.Handler.__init__(self, level=level)
 
     def emit(self, record):
         pass
@@ -71,10 +73,10 @@ def get_console_logger(name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO, fmt=
     """
     Provides a logger that sends messages to the standard output (i.e.
     console) with the given name.  If the name is not supplied, the
-    STRATUSLAB_API_LOGGER_NAME is used.  If the given logger already exists,
-    then the configured console logger will be added to it.  The logging
-    level is set to INFO if not supplied.  The default logging format
-    will just emit the message.
+    STRATUSLAB_API_LOGGER_NAME is used.  If the given logger already
+    exists, then the configured console logger will be added to it.
+    The logging level is set to INFO if not supplied.  The default
+    logging format will just emit the message.
     """
 
     logger = logging.getLogger(name)
@@ -91,10 +93,11 @@ def get_console_logger(name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO, fmt=
 
 def get_syslog_logger(name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO):
     """
-    Provides a syslog-configured logger with the given name.  If the name
-    is not supplied then STRATUSLAB_API_LOGGER_NAME is used.  If the given
-    logger already exists, then the syslog handler will be added to it.
-    The logging level will be set to INFO if not supplied.
+    Provides a syslog-configured logger with the given name.  If the
+    name is not supplied then STRATUSLAB_API_LOGGER_NAME is used.  If
+    the given logger already exists, then the syslog handler will be
+    added to it.  The logging level will be set to INFO if not
+    supplied.
     """
 
     logger = logging.getLogger(name)
@@ -108,20 +111,27 @@ def get_syslog_logger(name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO):
 def initialize_logger(logger_name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO):
     """
     Initializes the logger associated with the given name with a
-    handler that will print nothing (NoOpHandler).  It removes any
-    existing handlers and resets the logging level to INFO or to
-    the level given.
+    handler that will print nothing (NullHandler).  It removes any
+    existing handlers and resets the logging level to INFO or to the
+    level given.
     """
     logger = logging.getLogger(logger_name)
     for h in list(logger.handlers):
         logger.removeHandler(h)
-    logger.addHandler(NoOpHandler(level=level))
+
+    try:
+        h = logging.NullHandler(level=level)  # for python 2.7.x
+    except AttributeError:
+        h = NullHandler(level=level)  # for python 2.6.x
+
+    logger.addHandler(h)
 
 
 def set_logger_level(logger_name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO):
     """
-    Sets or resets the logging level for the named logger.  If the name
-    is not supplied, then STRATUSLAB_API_LOGGER_NAME will be used.
+    Sets or resets the logging level for the named logger.  If the
+    name is not supplied, then STRATUSLAB_API_LOGGER_NAME will be
+    used.
     """
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
@@ -129,7 +139,8 @@ def set_logger_level(logger_name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO)
 
 def critical(msg):
     """
-    Convenience method for logging critical messages to the StratusLab API logger.
+    Convenience method for logging critical messages to the StratusLab
+    API logger.
     """
     logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
     logger.critical(msg)
@@ -137,7 +148,8 @@ def critical(msg):
 
 def error(msg):
     """
-    Convenience method for logging error messages to the StratusLab API logger.
+    Convenience method for logging error messages to the StratusLab
+    API logger.
     """
     logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
     logger.error(msg)
@@ -145,7 +157,8 @@ def error(msg):
 
 def warning(msg):
     """
-    Convenience method for logging warning messages to the StratusLab API logger.
+    Convenience method for logging warning messages to the StratusLab
+    API logger.
     """
     logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
     logger.warning(msg)
@@ -153,7 +166,8 @@ def warning(msg):
 
 def info(msg):
     """
-    Convenience method for logging info messages to the StratusLab API logger.
+    Convenience method for logging info messages to the StratusLab API
+    logger.
     """
     logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
     logger.info(msg)
@@ -161,7 +175,8 @@ def info(msg):
 
 def debug(msg):
     """
-    Convenience method for logging debug messages to the StratusLab API logger.
+    Convenience method for logging debug messages to the StratusLab
+    API logger.
     """
     logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
     logger.debug(msg)
@@ -169,16 +184,17 @@ def debug(msg):
 
 def exception(msg):
     """
-    Convenience method for logging exception messages to the StratusLab API logger.
-    This method should only be called from exception handlers.  The exception
-    information is included in the message.
+    Convenience method for logging exception messages to the
+    StratusLab API logger.  This method should only be called from
+    exception handlers.  The exception information is included in the
+    message.
     """
     logger = logging.getLogger(STRATUSLAB_API_LOGGER_NAME)
     logger.exception(msg)
 
 
 #
-# Initialize the logger with a 'no-op' handler.  Add another handler to actually
-# push the logging messages somewhere.
+# Initialize the logger with a 'no-op' handler.  Add another handler
+# to actually push the logging messages somewhere.
 #
 initialize_logger()
