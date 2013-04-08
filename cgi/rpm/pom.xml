@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>stratuslab-web-monitor-rpm</artifactId>
+  <packaging>rpm</packaging>
+  <name>StratusLab Web Monitor (RPM)</name>
+
+  <parent>
+    <groupId>eu.stratuslab.client</groupId>
+    <artifactId>stratuslab-web-monitor</artifactId>
+    <version>2.9-SNAPSHOT</version>
+  </parent>
+
+  <profiles>
+    <profile>
+      <id>rpm</id>
+      <activation>
+	<file>
+	  <exists>/bin/rpm</exists>
+	</file>
+      </activation>
+      <build>
+
+	<plugins>
+
+	  <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-dependency-plugin</artifactId>
+
+	    <executions>
+	      <execution>
+		<id>unpack-sources</id>
+		<phase>generate-sources</phase>
+		<goals>
+		  <goal>unpack</goal>
+		</goals>
+		<configuration>
+		  <outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
+		  <artifactItems>
+		    <artifactItem>
+		      <groupId>eu.stratuslab.client</groupId>
+		      <artifactId>stratuslab-web-monitor-zip</artifactId>
+		      <classifier>cgi-bundle</classifier>
+		      <type>zip</type>
+		    </artifactItem>
+		  </artifactItems>
+		</configuration>
+	      </execution>
+	    </executions>
+
+	  </plugin>
+
+	  <plugin>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <artifactId>rpm-maven-plugin</artifactId>
+	    <extensions>true</extensions>
+	    <executions>
+	      <execution>
+		<goals>
+		  <goal>rpm</goal>
+		</goals>
+	      </execution>
+	    </executions>
+	  </plugin>
+	</plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>eu.stratuslab.client</groupId>
+      <artifactId>stratuslab-web-monitor-zip</artifactId>
+      <version>2.9-SNAPSHOT</version>
+      <classifier>cgi-bundle</classifier>
+      <type>zip</type>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+
+    <plugins>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-deploy-plugin</artifactId>
+	<version>2.5</version>
+      </plugin>
+
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>rpm-maven-plugin</artifactId>
+	<configuration>
+	  <release>${RELEASE}</release>
+	  <summary>StratusLab Web Monitor</summary>
+	  <name>stratuslab-web-monitor</name>
+	  <vendor>SixSq Sarl</vendor>
+	  <copyright>Apache 2.0</copyright>
+	  <url>http://stratuslab.eu/</url>
+
+	  <requires>
+	    <require>httpd</require>
+	  </requires>
+
+	  <distribution>StratusLab</distribution>
+	  <group>StratusLab</group>
+	  <packager>StratusLab</packager>
+
+	  <buildarch>noarch</buildarch>
+
+	  <mappings>
+	    <mapping>
+	      <directory>/var/www/cgi-bin</directory>
+	      <directoryIncluded>false</directoryIncluded>
+	      <filemode>755</filemode>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <sources>
+		<source>
+		  <location>${project.build.directory}/zip-sources/cgi-bin</location>
+		  <includes>
+		    <include>**/*.py</include>
+		  </includes>
+		</source>
+	      </sources>
+	    </mapping>
+	    <mapping>
+	      <directory>/var/www/cgi-bin</directory>
+	      <directoryIncluded>false</directoryIncluded>
+	      <filemode>644</filemode>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <sources>
+		<source>
+		  <location>${project.build.directory}/zip-sources/cgi-bin</location>
+		  <excludes>
+		    <exclude>**/*.py</exclude>
+		  </excludes>
+		</source>
+	      </sources>
+	    </mapping>
+	    <mapping>
+	      <directory>/var/www/html/css</directory>
+	      <directoryIncluded>false</directoryIncluded>
+	      <filemode>644</filemode>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <sources>
+		<source>
+		  <location>${project.build.directory}/zip-sources/css</location>
+		</source>
+	      </sources>
+	    </mapping>
+	  </mappings>
+	  <installScriptlet>
+	    <script>
+#
+# This is a nasty hack to turn off the /usr/lib/rpm/brp-python-bytecompile
+# script. This script tries to precompile the python code, but causes the
+# rpm packaging to fail because the *.pyc and *.pyo files are not listed in
+# the list of files created by maven.
+#
+
+export RPM_BUILD_ROOT=
+	    </script>
+	  </installScriptlet>
+	</configuration>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+      <comments>Copyright (c) 2011, SixSq Sarl</comments>
+    </license>
+  </licenses>
+
+</project>
