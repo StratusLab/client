@@ -104,7 +104,6 @@ class Runner(object):
         self.persistentDiskUUID = None
         self.readonlyDiskId = None
         self.extraDiskSize = None
-        self.quiet = False
         self.instanceNumber = 1
         self.authorEmail = ''
         self.marketplaceEndpointNewimage = ''
@@ -660,18 +659,12 @@ class Runner(object):
                                                ', '.join(map(str, _ids))))
 
     def printDetail(self, msg, verboseLevel=Util.VERBOSE_LEVEL_NORMAL):
-        if self.quiet:
-            return
         return Util.printDetail(msg, self.verboseLevel, verboseLevel)
 
     def printStep(self, msg):
-        if self.quiet:
-            return
         return Util.printStep(msg)
 
     def printAction(self, msg):
-        if self.quiet:
-            return
         return Util.printAction(msg)
 
     def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120, failOn=()):

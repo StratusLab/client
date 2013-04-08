@@ -41,10 +41,6 @@ class MainProgram(Runnable):
     def parse(self):
         options = Runner.defaultRunOptions()
 
-        self.parser.add_option('--quiet', dest='quiet',
-                               help='quiet output. Only returns <VM-ID>, <IP>',
-                               action='store_true', default=False)
-
         self.parser.add_option('-n', '--number', dest='instanceNumber',
                                help='number of machines to start (default 1)', metavar='INT',
                                default=options['instanceNumber'], type='int')
@@ -188,10 +184,14 @@ class MainProgram(Runnable):
             print runner.listInstanceTypes()
         else:
             vmInfo = runner.runInstance(details=True)
-            if self.options.quiet:
+
+            # TODO: This is anti-intuitive and should be reviewed.
+            #
+            # To keep compatibility with the previous output, this will
+            # only print something when quiet is set.  The 'normal' output
+            # will be printed via INFO logging statements in the code.
+            if self.options.quiet > 0:
                 self._printShortResults(vmInfo)
-            else:
-                self._printLongResults(vmInfo)
 
 
 if __name__ == '__main__':
