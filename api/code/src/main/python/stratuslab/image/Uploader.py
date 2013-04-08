@@ -129,7 +129,7 @@ class Uploader(object):
 
     def _execute(self, command):
         if self.verboseLevel <= Util.VERBOSE_LEVEL_NORMAL:
-            devNull = open('/dev/null', 'w')
+            devNull = open(os.path.devnull, 'w')
             ret = Util.execute(command, stdout=devNull, stderr=devNull)
             devNull.close()
         else:

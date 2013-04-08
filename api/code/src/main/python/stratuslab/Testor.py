@@ -288,7 +288,7 @@ class Testor(unittest.TestCase):
                 raise Exception('Attribute %s is not set. Missing an option argument?' % attr)
 
     def _generateDummyImage(self, filename, size=2):
-        devNull = open('/dev/null', 'w')
+        devNull = open(os.path.devnull, 'w')
         Util.execute(['dd', 'if=/dev/zero', 'of=%s' % filename, 'bs=1000000', 'count=%s' % size],
                      stdout=devNull, stderr=devNull)
         devNull.close()

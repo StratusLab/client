@@ -50,11 +50,11 @@ class BaseSystem(object):
         self.repoFileNamePattern = '/etc/%s'
         self.certificateAuthorityPackages = ''
         self.certificateAuthorityRepo = ''
-        
+
         self.workOnFrontend()
         self.oneDbUsername = None
         self.oneDbPassword = None
-        
+
         self.qemuConf = '/etc/libvirt/qemu.conf'
 
         self.shareType = Defaults.SHARE_TYPE
@@ -106,10 +106,10 @@ class BaseSystem(object):
                                     self.packages[package].packageVersion)
             else:
                 return self.packages[package].packageName
-    
+
     def _getPackageAndVersionSeparator(self):
         return Systems.getPackageAndVersionSeparatorBasedOnOs(self.os)
-         
+
 
     def installNodePackages(self, packages):
         if len(packages) > 0:
@@ -216,7 +216,7 @@ class BaseSystem(object):
                         self.oneGroup, '-u', self.oneUid, self.oneUsername,
                         '-s', '/bin/bash', '-p', self.onePassword, '--create-home',
                         '--expiredate ""', '--inactive -1'])
-    
+
     # -------------------------------------------
     #     ONE admin env config and related
     # -------------------------------------------
@@ -272,7 +272,7 @@ class BaseSystem(object):
         self.setOwnerCmd('%s/.ssh/' % self.oneHome)
 
         # FIXME: why ssh key-pair from the Frontend is pushed to the Node?
-        #        ssh-keygen on the Node should be used to generate the user 
+        #        ssh-keygen on the Node should be used to generate the user
         #        specific ssh key-pair on that machine.
         oneKey = fileGetContent('%s/.ssh/id_rsa' % self.oneHome)
         self._filePutContentAsOneAdmin('%s/.ssh/id_rsa' % self.oneHome, oneKey)
@@ -357,7 +357,7 @@ class BaseSystem(object):
 
     def configureNewNfsServer(self, mountPoint, networkAddr, networkMask):
         self.createDirsCmd(mountPoint)
-        self.appendOrReplaceInFileCmd('/etc/exports', '%s .*' % mountPoint, 
+        self.appendOrReplaceInFileCmd('/etc/exports', '%s .*' % mountPoint,
                                       '%s %s/%s(rw,async,no_subtree_check,no_root_squash)' %
                                       (mountPoint, networkAddr, networkMask))
         self.executeCmd(['exportfs', '-a'])
@@ -389,22 +389,22 @@ class BaseSystem(object):
     def _configureKvm(self):
         self.executeCmd(['modprobe', 'kvm_intel'])
         self.executeCmd(['modprobe', 'kvm_amd'])
-        
+
         # seen a case when permission of /dev/kvm were 0600
         self.executeCmd(['chmod', '0666', '/dev/kvm'])
-        
+
         if self.shareType == 'nfs':
                 self._configureQemuUserOnFrontend()
 
     def _configureQemuUserOnFrontend(self):
         """Add qemu user on Fronted with the same UID and GID as on the node
-        being configured. Add qemu user to 'cloud' group both on Frontend 
+        being configured. Add qemu user to 'cloud' group both on Frontend
         and the node.
         """
         if self.shareType != 'nfs':
                 return
-        
-        
+
+
         user = group = 'qemu'
         getUidGidCmd = "getent passwd %s"
 
@@ -414,40 +414,40 @@ class BaseSystem(object):
             rc, output = self._nodeShell(getUidGidCmd % user,
                                          withOutput=True)
             if rc != 0:
-                Util.printError("Error getting '%s' user UID/GID from Node.\n%s" % 
+                Util.printError("Error getting '%s' user UID/GID from Node.\n%s" %
                                     (user,output))
-    
+
             return _extractUidGidFromGetentPasswdOutput(output)
         def _extractUidGidFromGetentPasswdOutput(output):
             uid, gid = output.split(':')[2:4] # uid, gid
             if not all([uid, gid]):
-                Util.printError("Error extracting '%s' user UID/GID from output.\n%s" % 
+                Util.printError("Error extracting '%s' user UID/GID from output.\n%s" %
                                     (user,output))
             return uid, gid
 
         uidNode, gidNode = getUidGidFromNode(user)
-        
+
         rc, output = self._executeWithOutput((getUidGidCmd % uidNode).split())
         if rc == 0:
             uidLocal, gidLocal = _extractUidGidFromGetentPasswdOutput(output)
-            Util.printDetail("User with UID:%s/GID:%s already configured on Frontend." % 
+            Util.printDetail("User with UID:%s/GID:%s already configured on Frontend." %
                              (uidLocal, gidLocal), verboseLevel=self.verboseLevel)
-            
+
             if gidNode != gidLocal:
-                Util.printError("Frontend user '%s' GID:%s doesn't match GID:%s on Node %s." % 
+                Util.printError("Frontend user '%s' GID:%s doesn't match GID:%s on Node %s." %
                                  (gidLocal, user, gidNode, self.nodeAddr))
         else:
             self._execute(['groupadd', '-g', gidNode, '-r', group])
-            self._execute(['useradd', '-r', '-u', uidNode, '-g', group, 
+            self._execute(['useradd', '-r', '-u', uidNode, '-g', group,
                              '-d', '/', '-s', '/sbin/nologin',
                              '-c', '"%s user"'%user, user])
 
         # Instruct libvirt to run VMs with GID of ONE group.
         self.appendOrReplaceInFileCmd(self.qemuConf, '^group.*$',
                                       'group = "%s"' % self.oneGroup)
-        
+
         # TODO: check why this didn't work
-#        # Add the user to ONE admin group. Directory with the images on 
+#        # Add the user to ONE admin group. Directory with the images on
 #        # shared Frontend is restricted to ONE admin user.
 #        cmd = ['usermod', '-aG', self.oneGroup, user]
 #        self._execute(cmd)
@@ -464,21 +464,21 @@ class BaseSystem(object):
     def configureLibvirt(self):
         libvirtConf = '/etc/libvirt/libvirtd.conf'
 
-        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_group.*$', 
+        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_group.*$',
                                       'unix_sock_group = "cloud"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_ro_perms.*$', 
+        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_ro_perms.*$',
                                       'unix_sock_ro_perms = "0777"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_rw_perms.*$', 
+        self.appendOrReplaceInFileCmd(libvirtConf, '^unix_sock_rw_perms.*$',
                                       'unix_sock_rw_perms = "0770"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_ro.*$', 
+        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_ro.*$',
                                       'auth_unix_ro = "none"')
-        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_rw.*$', 
+        self.appendOrReplaceInFileCmd(libvirtConf, '^auth_unix_rw.*$',
                                       'auth_unix_rw = "none"')
-        self.appendOrReplaceInFileCmd(self.qemuConf, '^vnc_listen.*$', 
+        self.appendOrReplaceInFileCmd(self.qemuConf, '^vnc_listen.*$',
                                       'vnc_listen = "0.0.0.0"')
 
     def startLibvirt(self):
-        rc, output = self.executeCmd('service libvirtd restart'.split(), 
+        rc, output = self.executeCmd('service libvirtd restart'.split(),
                                      withOutput=True)
         if rc != 0:
             Util.printError('Could not start libvirt.\n%s' % output)
@@ -585,7 +585,7 @@ class BaseSystem(object):
         replace = Util.escapeDoubleQuotes(replace)
 
         if self._patternExists(res):
-            rc, output = self._nodeShell('"sed -i \'s|%s|%s|\' %s"' % (search, replace, filename), 
+            rc, output = self._nodeShell('"sed -i \'s|%s|%s|\' %s"' % (search, replace, filename),
                                          withOutput=True, shell=True)
             if rc != 0:
                 Util.printError("Failed to modify %s.\n%s" % (filename, output))
@@ -612,7 +612,7 @@ class BaseSystem(object):
     def _remoteFileAppendContents(self, filename, data):
         data = Util.escapeDoubleQuotes(data, times=4)
 
-        rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename), 
+        rc, output = self._nodeShell('"echo \\"%s\\" >> %s"' % (data, filename),
                                      withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Failed to append to %s\n%s" % (filename, output))
@@ -623,7 +623,7 @@ class BaseSystem(object):
 
     def _remoteChmod(self, path, mode):
         return self._nodeShell('chmod %o %s' % (mode, path))
-    
+
     def _remoteFileExists(self, path):
         return self._nodeShell('ls %s' % path, sshQuiet=True) == 0
 
@@ -666,7 +666,7 @@ class BaseSystem(object):
         filename = os.path.join(Defaults.ETC_DIR, 'quarantine.cfg')
         search = '^PERIOD.*$'
         replace = 'PERIOD=%(quarantinePeriod)s' % self.__dict__
-        Util.appendOrReplaceInFile(filename, search, replace)        
+        Util.appendOrReplaceInFile(filename, search, replace)
 
     def configureCloudProxyService(self):
         self.installPackages(['stratuslab-one-proxy'])
@@ -753,7 +753,7 @@ class BaseSystem(object):
         appendOrReplaceInFile(FILE_IPFORWARD_PERSIST,
                               'net.ipv4.ip_forward',
                               'net.ipv4.ip_forward = 1')
-        
+
     def _enableIpForwarding(self):
         return BaseSystem.enableIpForwarding()
 
@@ -772,7 +772,7 @@ class BaseSystem(object):
 
     def _loadNetfilterModules(self):
         # just in case if kernel modules were not yet loaded
-        devNull = open('/dev/null', 'w')
+        devNull = open(os.path.devnull, 'w')
         for table in self.IP_TABLES_LIST:
             cmd = 'iptables -nL -t %s' % table
             self.executeCmd(cmd.split(), stdout=devNull)
@@ -873,14 +873,14 @@ class BaseSystem(object):
         packages = []
 
         if self.certificateAuthorityPackages and self.certificateAuthorityRepo:
-            caPackages = map(lambda x: x.strip(), 
+            caPackages = map(lambda x: x.strip(),
                              self.certificateAuthorityPackages.split(','))
             packages.extend(caPackages)
             repoConf = '\n'.join([line.strip() for line in self.certificateAuthorityRepo.strip().split('\n')])
             repoName = self.caRepoName
             for package in packages:
                 self._updatePackageAndRepoInfo(package, repoName, repoConf)
-        else: 
+        else:
             packages.append(self.getPackageName('CA'))
 
         self.installPackages(packages)
@@ -1108,7 +1108,7 @@ group {
             self._configureDbUser(self.oneDbUsername, self.oneDbPassword)
         else:
             Util.printDetail('Skipping MySQL installation/configuration. It is assumed to be configured on %s' % self.oneDbHost)
-            
+
     def _configureRootDbUser(self, password):
         rc, output = self._execute(["/usr/bin/mysqladmin", "-uroot", "password", "%s" % password], withOutput=True)
         if rc != 0:
@@ -1119,12 +1119,12 @@ group {
         userCreate = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s'" % (username, password)
         userGrant =  "GRANT CREATE, DROP, SELECT, INSERT, DELETE, UPDATE, INDEX ON opennebula.* TO '%s'@'localhost'" % username
 
-        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate), 
+        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userCreate),
                                    withOutput=True, shell=True)
         if rc != 0:
             Util.printWarning("Couldn't create user '%s'. Already exists?\n%s" % (username, output))
 
-        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userGrant), 
+        rc, output = self._execute("%s -e \"%s\"" % (mysqlCommand, userGrant),
                                    withOutput=True, shell=True)
         if rc != 0:
             Util.printError("Error granting permission for user '%s'.\n%s" % (username, output))
@@ -1180,7 +1180,7 @@ group {
 
     def _persistRemoteBridgeConfig(self):
         pass
-    
+
     def _writeToFilesRemote(self, listOfFileNameContentTuples):
         tmpFilename = tempfile.mktemp()
         for remoteFilename, content in listOfFileNameContentTuples:

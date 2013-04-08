@@ -132,7 +132,7 @@ olcLastMod: TRUE
         wrongPort = '33'
         input = 'true', 'localhost', '', wrongPort, 'noname'
 
-        devNull = file('/dev/null','w')
+        devNull = file(os.path.devnull,'w')
         assert Util.SSH_EXIT_STATUS_ERROR == Util.sshCmd(*input, stderr=devNull)
         devNull.close()
 
