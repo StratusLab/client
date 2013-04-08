@@ -108,7 +108,7 @@ class MainProgram(CommandBase):
             self._runTests(testor)
 
     def _listTests(self, testor):
-        testor.listAvalableTests()
+        sys.stdout.write(testor.formatAvailableTests())
 
     def _runTests(self, testor):
         wasSuccessful = testor.runTests()

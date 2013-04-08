@@ -23,7 +23,7 @@ from os.path import dirname
 from getpass import getuser
 from urlparse import urlparse
 
-from stratuslab.Util import sshCmdWithOutput, defaultConfigFile
+from stratuslab.Util import sshCmdWithOutput, defaultConfigFile, printStep
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.ConfigHolder import ConfigHolder
@@ -34,13 +34,13 @@ from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.Compressor import Compressor
 
+
 class TMCloneCache(object):
-    ''' Clone or retrieve from cache disk image
-    '''
+    """Clone or retrieve from cache disk image"""
 
     # Debug option
     PRINT_TRACE_ON_ERROR = True
-    DEFAULT_VERBOSELEVEL = 0
+    DEFAULT_VERBOSE_LEVEL = 0
 
     _ARGS_LEN = 3
 
@@ -49,16 +49,16 @@ class TMCloneCache(object):
     _ARG_DST_POS = 2
 
     _PDISK_PORT = 8445
-    
+
     _UNCOMPRESS_TOOL = {'gz': '/bin/gunzip',
-                       'bz2': '/bin/bunzip2'}
-    
+                        'bz2': '/bin/bunzip2'}
+
     _CHECKSUM = 'sha1'
     _CHECKSUM_CMD = '%ssum' % _CHECKSUM
-    
+
     _ACCEPTED_EXTRA_DISK_TYPE = ['DATA_IMAGE_RAW_READONLY', 'DATA_IMAGE_RAW_READ_WRITE']
-    _ACCEPTED_ROOT_DISK_TYPE = ('MACHINE_IMAGE_LIVE')
-        
+    _ACCEPTED_ROOT_DISK_TYPE = 'MACHINE_IMAGE_LIVE'
+
     _IDENTIFIER_KEY = 'identifier'
     _COUNT_KEY = 'count'
     _TYPE_KEY = 'type'
@@ -90,7 +90,7 @@ class TMCloneCache(object):
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
         self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
-        self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSELEVEL)
+        self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
     def _initPdiskClient(self):
@@ -98,7 +98,7 @@ class TMCloneCache(object):
         self.pdiskLVMDevice = self.configHolder.persistentDiskLvmDevice
         self.configHolder.set('pdiskEndpoint', self.pdiskEndpoint)
         self.pdisk = PersistentDisk(self.configHolder)
-    
+
     def _initMarketplaceRelated(self):
         self._retrieveMarketplaceInfos()
         self._initManifestDownloader()
@@ -108,11 +108,11 @@ class TMCloneCache(object):
 
     def run(self):
         self._retrieveDisk()
-    
+
     def _checkArgs(self, args):
         if len(args) != self._ARGS_LEN:
             raise ValueError('Invalid number of arguments')
-    
+
     def _parseArgs(self, args):
         self._checkArgs(args)
 
@@ -126,18 +126,18 @@ class TMCloneCache(object):
             self._startFromPersisted()
         else:
             self._startFromCowSnapshot()
-    
+
     def _startFromPersisted(self):
         diskId = self._getStringPart(self.diskSrc, -1, 4)
         diskType = self.pdisk.getValue('type', diskId)
-        
+
         is_root_disk = self._getDiskIndex(self.diskDstPath) is 0
         if is_root_disk:
             self._checkBootDisk(diskId, diskType)
         elif diskType not in self._ACCEPTED_EXTRA_DISK_TYPE:
             raise ValueError('Only %s type disks can be attached as extra disks'
                              % self._ACCEPTED_EXTRA_DISK_TYPE.join(', '))
-        
+
         self._createDestinationDir()
         self._attachPDisk(self.diskSrc)
         self._incrementVolumeUserCount(diskId)
@@ -155,10 +155,10 @@ class TMCloneCache(object):
         if user_count != 0:
             raise Exception('User count must be zero on the live disk to boot from.')
 
-    def _startFromCowSnapshot(self):        
+    def _startFromCowSnapshot(self):
         if self._cacheMiss():
             self._retrieveAndCachePDiskImage()
-            
+
         try:
             self._checkAuthirization()
             self._createPDiskSnapshot()
@@ -168,23 +168,23 @@ class TMCloneCache(object):
         except:
             self._deletePDiskSnapshot()
             raise
-    
+
     # -------------------------------------------
     # Cache management and related
     # -------------------------------------------
-    
+
     def _cacheMiss(self):
         foundIds = self._getPDiskImageIdsFromMarketplaceImageId()
         if len(foundIds) > 0:
             self.pdiskImageId = foundIds[0]
             return False
         return True
-    
+
     def _createDestinationDir(self):
         dstDir = dirname(self.diskDstPath)
         self._sshDst(['mkdir', '-p', dstDir],
-                      'Unable to create directory %s' % dstDir)
-    
+                     'Unable to create directory %s' % dstDir)
+
     def _downloadImage(self):
         imageLocations = self.manifestDownloader.getImageLocations()
         self._assertLength(imageLocations, 1, atLeast=True)
@@ -194,10 +194,10 @@ class TMCloneCache(object):
         self.downloadedLocalImageLocation = '%s/%s.%s' % (pdiskTmpStore,
                                                           int(time()),
                                                           imageName)
-        self._sshPDisk(['curl', '-H', 'accept:application/x-gzip', '-L', '-o', 
-                        self.downloadedLocalImageLocation, imageMarketplaceLocation], 
-                        'Unable to download "%s"' % imageMarketplaceLocation)
-    
+        self._sshPDisk(['curl', '-H', 'accept:application/x-gzip', '-L', '-o',
+                        self.downloadedLocalImageLocation, imageMarketplaceLocation],
+                       'Unable to download "%s"' % imageMarketplaceLocation)
+
     def _checkDownloadedImageChecksum(self):
         hash_fun = self._CHECKSUM
         size_b, checksum = self._getDownloadedImageChecksum(hash_fun)
@@ -205,62 +205,61 @@ class TMCloneCache(object):
         self._validateImageChecksum(checksum, hash_fun)
 
     def _getDownloadedImageChecksum(self, hash_fun):
-        size_b, sums = Compressor.checksum_file(self.downloadedLocalImageLocation, 
-                                              [hash_fun])
+        size_b, sums = Compressor.checksum_file(self.downloadedLocalImageLocation,
+                                                [hash_fun])
         return size_b, sums[self._CHECKSUM]
 
     def _validateImageSize(self, size_b):
         image_size_b = self._getImageSize()
         # convert both to strings to avoid inequality because of type mismatch
         if str(size_b) != str(image_size_b):
-            raise ValueError("Downloaded image size (%s) doesn't match " +\
-                             "size in image manifest (%s)" % 
+            raise ValueError("Downloaded image size (%s) doesn't match size in image manifest (%s)" %
                              (size_b, image_size_b))
 
     def _validateImageChecksum(self, checksum, hash_fun):
         image_checksum = self._getImageChecksum(hash_fun)
         if checksum != image_checksum:
-            raise ValueError('Invalid image checksum: got %s, defined %s' % 
+            raise ValueError('Invalid image checksum: got %s, defined %s' %
                              (checksum, image_checksum))
 
     def _getImageFormat(self):
         return self.manifestDownloader.getImageElementValue('format')
-        
+
     def _getImageKind(self):
         return self.manifestDownloader.getImageElementValue('kind')
-        
+
     def _getImageSize(self):
         return self.manifestDownloader.getImageElementValue('bytes')
-    
+
     def _getImageChecksum(self, checksum):
         return self.manifestDownloader.getImageElementValue(checksum)
 
     def _deleteDownloadedImage(self):
-        self._sshPDisk(['rm', '-f', self.downloadedLocalImageLocation], 
-                     'Unable to remove temporary image', True)
-    
+        self._sshPDisk(['rm', '-f', self.downloadedLocalImageLocation],
+                       'Unable to remove temporary image', True)
+
     # -------------------------------------------
     # Marketplace and related
     # -------------------------------------------
-    
+
     def _retrieveMarketplaceInfos(self):
         # Marketplace URLs can start with either http OR https!
         if self.diskSrc.startswith(('http://', 'https://')):
             self.marketplaceEndpoint = self._getMarketplaceEndpointFromURI(self.diskSrc)
             self.marketplaceImageId = self._getImageIdFromURI(self.diskSrc)
-        elif self.diskSrc.startswith(('pdisk:')): # Ignore Marketplace if pdisk is used
+        elif self.diskSrc.startswith('pdisk:'):  # Ignore Marketplace if pdisk is used
             self.marketplaceEndpoint = None
             self.marketplaceImageId = None
-        else: # Local marketplace
+        else:  # Local marketplace
             self.marketplaceEndpoint = 'http://localhost'
             try:
                 self.marketplaceEndpoint = self.configHolder.marketplaceEndpointLocal
             except:
                 pass
-            # SunStone adds '<hostname>:' to the image ID
+                # SunStone adds '<hostname>:' to the image ID
             self.marketplaceImageId = self._getStringPart(self.diskSrc, 1)
 
-        if self.marketplaceEndpoint: 
+        if self.marketplaceEndpoint:
             self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
 
     def _getMarketplaceEndpointFromURI(self, uri):
@@ -278,26 +277,26 @@ class TMCloneCache(object):
             policy.check(self.marketplaceImageId)
         except:
             raise Exception('Policy validation failed')
-    
+
     def _buildFullyQualifiedMarketplaceImage(self, policyCheckResult, imagePos):
         selectedImage = policyCheckResult[imagePos]
-        uri = '%s/metadata/%s/%s/%s' % (self.marketplaceEndpoint, 
-                                        selectedImage.identifier, 
-                                        selectedImage.endorser, 
+        uri = '%s/metadata/%s/%s/%s' % (self.marketplaceEndpoint,
+                                        selectedImage.identifier,
+                                        selectedImage.endorser,
                                         selectedImage.created)
         return uri
-    
+
     def _getPDiskImageIdsFromMarketplaceImageId(self):
         return self.pdisk.search(self._IDENTIFIER_KEY, self.marketplaceImageId)
-    
+
     # -------------------------------------------
     # Persistent disk and related
     # -------------------------------------------
-    
+
     def _attachPDisk(self, diskSrc):
         self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath],
                      'Unable to attach persistent disk to %s' % self.diskDstPath)
-    
+
     def _retrieveAndCachePDiskImage(self):
         self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
         self._validateMarketplaceImagePolicy()
@@ -318,16 +317,16 @@ class TMCloneCache(object):
         volume_url = self.pdisk.uploadVolume(self.downloadedLocalImageLocation)
         self.pdiskImageId = volume_url.rsplit('/', 1)[1]
         self._setNewPDiskImageOriginProperties()
-    
+
     def _setNewPDiskImageOriginProperties(self):
         self._setPDiskInfo(self._IDENTIFIER_KEY, self.marketplaceImageId, self.pdiskImageId)
         self._setPDiskInfo(self._TYPE_KEY, 'MACHINE_IMAGE_ORIGIN', self.pdiskImageId)
-        
+
     def _getPDiskTempStore(self):
         store = self.configHolder.persistentDiskTempStore or '/tmp'
         self._sshDst(['mkdir', '-p', store], 'Unable to create temporary store')
         return store
-    
+
     def _createPDiskSnapshot(self):
         snapshotIdentifier = 'snapshot:%s' % self.pdiskImageId
         self.pdiskSnapshotId = self.pdisk.createCowVolume(self.pdiskImageId, None)
@@ -335,7 +334,7 @@ class TMCloneCache(object):
 
     def _checkAuthirization(self):
         pass
-    
+
     def _setSnapshotOwner(self):
         instanceId = self._retrieveInstanceId()
         owner = self._getVMOwner(instanceId)
@@ -343,15 +342,15 @@ class TMCloneCache(object):
 
     def _setPDiskInfo(self, key, value, pdiskId):
         self.pdisk.updateVolume({key: value}, pdiskId)
-        
+
     def _setPDiskIdentifier(self, value, pdiskId):
         self.pdisk.updateVolume({self._IDENTIFIER_KEY: value}, pdiskId)
-    
+
     def _getPDiskSnapshotURL(self):
-        return 'pdisk:%s:%s:%s' % (self.pdiskEndpoint, 
+        return 'pdisk:%s:%s:%s' % (self.pdiskEndpoint,
                                    self._PDISK_PORT,
                                    self.pdiskSnapshotId)
-        
+
     def _deletePDiskSnapshot(self, *args, **kwargs):
         if self.pdiskSnapshotId is None:
             return
@@ -361,14 +360,14 @@ class TMCloneCache(object):
             self.pdisk.deleteVolume(self.pdiskSnapshotId)
         except:
             pass
-    
+
     # -------------------------------------------
     # Utility
     # -------------------------------------------
-    
+
     def _removeExtension(self, filename):
         return '.'.join(filename.split('.')[:-1])
-    
+
     def _getVirtualSizeBytesFromQemu(self, qemuOutput):
         for line in qemuOutput.split('\n'):
             if line.lstrip().startswith('virtual'):
@@ -378,13 +377,13 @@ class TMCloneCache(object):
                 self._assertLength(bytesAndUnit)
                 return int(bytesAndUnit[0])
         raise ValueError('Unable to find image bytes size')
-            
+
     def _getDiskPath(self, arg):
         return self._getStringPart(arg, 1)
-        
+
     def _getDiskHost(self, arg):
         return self._getStringPart(arg, 0)
-        
+
     def _getStringPart(self, arg, part, nbPart=2, delimiter=':'):
         path = arg.split(delimiter)
         self._assertLength(path, nbPart)
@@ -398,52 +397,52 @@ class TMCloneCache(object):
             except Exception:
                 pass
         return findedNb
-    
+
     def _getDiskIndex(self, diskPath):
         try:
             return int(diskPath.split('.')[-1])
         except:
             raise ValueError('Unable to determine disk index')
-                
+
     def _assertLength(self, elements, length=2, errorMsg=None, atLeast=False):
         nbElem = len(elements)
         if not errorMsg:
-            errorMsg = 'Object should have a length of %s%s , got %s' % (length, 
-                                                                          atLeast and ' at least' or '', 
-                                                                          nbElem)
+            errorMsg = 'Object should have a length of %s%s , got %s' % (length,
+                                                                         atLeast and ' at least' or '',
+                                                                         nbElem)
         if not atLeast and nbElem != length or nbElem < length:
             raise ValueError(errorMsg)
-    
+
     def _bytesToGiga(self, bytesAmout):
-        return (bytesAmout / 1024**3) + 1
-    
+        return (bytesAmout / 1024 ** 3) + 1
+
     def _sshDst(self, cmd, errorMsg, dontRaiseOnError=False):
         retCode, output = sshCmdWithOutput(' '.join(cmd), self.diskDstHost, user=getuser(),
                                            sshKey=sshPublicKeyLocation.replace('.pub', ''))
         if not dontRaiseOnError and retCode != 0:
             raise Exception('%s\n: Error: %s' % (errorMsg, output))
         return output
-        
+
     def _sshPDisk(self, cmd, errorMsg, dontRaiseOnError=False):
         cmd_str = ' '.join(cmd)
-        print "Executing: %s" % cmd_str
+        printStep("Executing: %s" % cmd_str)
         retCode, output = sshCmdWithOutput(cmd_str, self.pdisk.persistentDiskIp, user=getuser(),
                                            sshKey=self.pdisk.persistentDiskPrivateKey.replace('.pub', ''))
         if not dontRaiseOnError and retCode != 0:
             raise Exception('%s\n: Error: %s' % (errorMsg, output))
         return output
-        
+
     def _getVMOwner(self, instanceId):
         credentials = LocalhostCredentialsConnector(self.configHolder)
         cloud = CloudConnectorFactory.getCloud(credentials)
         cloud.setEndpointFromParts('localhost', self.configHolder.onePort)
         return cloud.getVmOwner(instanceId)
-             
+
     def _retrieveInstanceId(self):
         pathElems = self.diskDstPath.split('/')
         instanceId = self._findNumbers(pathElems)
         errorMsg = '%s instance ID in path. ' + 'Path is "%s"' % self.diskDstPath
         if len(instanceId) != 1:
-            raise ValueError(errorMsg % ((len(instanceId) == 0) and 'Unable to find' 
+            raise ValueError(errorMsg % ((len(instanceId) == 0) and 'Unable to find'
                                          or 'Too many candidates'))
         return instanceId.pop()

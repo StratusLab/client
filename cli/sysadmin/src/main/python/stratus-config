@@ -63,7 +63,7 @@ If the [value] is not provided, the command returns the current value of the key
         if self.options.revert:
             configurator.revertConfig()
         elif self.options.showDefaultKeys:
-            configurator.displayDefaultKeys()
+            print configurator.formatDefaultKeys()
         elif len(self.args) == 0:
             configurator.writeUserConfig()
         elif len(self.args) == 1:

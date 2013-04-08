@@ -21,10 +21,10 @@ from stratuslab.installator.Installator import Installator
 from stratuslab.installator.PolicyValidator import PolicyValidator
 from stratuslab.installator.OpenNebulaNode import OpenNebulaNode
 from stratuslab.installator.OpenNebulaFrontend import OpenNebulaFrontend
-from stratuslab.Util import printStep
+from stratuslab.Util import printInfo, printStep
 
 class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
-    
+
     def __init__(self, configHolder):
         super(OpenNebula, self).__init__(configHolder)
 
@@ -32,7 +32,7 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Installing node dependencies')
         self._installNodeDependencies()
         self._warmXenNeedReboot()
-        
+
     def _setupNode(self):
         printStep('Checking node connectivity')
         self._checkNodeConnectivity()
@@ -55,16 +55,16 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Adding node to cloud')
         self._assignDrivers()
         self._addCloudNode()
-    
+
     def _installFrontend(self):
         printStep('Installing CAs')
         self._installCAs()
-        
+
         printStep('Installing sendmail')
         self._installSendmail()
-        
-        self._printInstalCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
-        
+
+        self._printInstallCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
+
     def _setupFrontend(self):
         printStep('Configuring file sharing')
         self._setupFileSharingServer()
@@ -77,7 +77,7 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
 
         printStep('Configuring firewall')
         self._configureFirewall()
-        
+
         printStep('Configuring DHCP server')
         self._configureDhcpServer()
 
@@ -93,8 +93,8 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Applying local policies')
         self._configurePolicies()
 
-        self._setupMarketPlacePolicyValidator()
-        
+        self._setupMarketplacePolicyValidator()
+
         printStep('Starting cloud')
         self._startServicesFrontend()
 
@@ -104,9 +104,9 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Adding default ACLs')
         self._addDefaultAcls()
 
-        self._printInstalCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
-        
-    def _setupMarketPlacePolicyValidator(self):
+        self._printInstallCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
+
+    def _setupMarketplacePolicyValidator(self):
         mpPolicyValidatorInstaller = PolicyValidator(self.configHolder)
         mpPolicyValidatorInstaller.setup()
 
@@ -114,6 +114,6 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Starting virtualization services')
         self._startVrtualization()
 
-    def _printInstalCompleted(self, stdoutFilename, stderrFilename):
+    def _printInstallCompleted(self, stdoutFilename, stderrFilename):
         printStep('Installation completed')
-        print '\n\tInstallation details can be found at: \n\t%s, %s' % (stdoutFilename, stderrFilename)
+        printInfo('\tInstallation details: %s, %s' % (stdoutFilename, stderrFilename))

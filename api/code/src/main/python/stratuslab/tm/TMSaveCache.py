@@ -27,7 +27,7 @@ from getpass import getuser
 from tempfile import mkstemp, mkdtemp
 
 from stratuslab.Signator import Signator
-from stratuslab.Util import defaultConfigFile, sshCmdWithOutput
+from stratuslab.Util import defaultConfigFile, sshCmdWithOutput, printInfo, printError
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.ConfigHolder import ConfigHolder
@@ -41,17 +41,16 @@ from stratuslab.messaging.EmailClient import EmailClient
 from stratuslab.installator.PersistentDisk import PersistentDisk as PDiskInstaller
 import stratuslab.Util as Util
 from stratuslab.Exceptions import ConfigurationException
-from stratuslab.Runner import Runner 
+from stratuslab.Runner import Runner
 from stratuslab.messaging.MessagePublishers import ImageIdPublisher
 
 
 class TMSaveCache(object):
-    ''' Save a running VM image in PDisk
-    '''
+    """Save a running VM image in PDisk"""
 
     # Debug option
     PRINT_TRACE_ON_ERROR = True
-    DEFAULT_VERBOSELEVEL = 0
+    DEFAULT_VERBOSE_LEVEL = 0
 
     # Position of the provided args
     _ARG_SRC_POS = 1
@@ -64,7 +63,7 @@ class TMSaveCache(object):
 
     _CHECKSUM = 'sha1'
     _CHECKSUM_CMD = '%ssum' % _CHECKSUM
-    
+
     _IDENTIFIER_KEY = 'identifier'
     _OWNER_KEY = 'owner'
     _TAG_KEY = 'tag'
@@ -110,9 +109,9 @@ class TMSaveCache(object):
             self._cleanup()
 
     def _run(self):
-        
+
         # TODO: support instance migration
-        
+
         self._checkArgs()
         self._parseArgs()
         self._retrieveInstanceId()
@@ -138,7 +137,7 @@ class TMSaveCache(object):
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
         self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
-        self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSELEVEL)
+        self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
     def _initCloudConnector(self):
@@ -154,7 +153,7 @@ class TMSaveCache(object):
         src = self.args[self._ARG_SRC_POS]
         self.diskSrcPath = self._getDiskPath(src)
         self.diskSrcHost = self._getDiskHost(src)
-        
+
     #--------------------------------------------
     # Persistent disk and related
     #--------------------------------------------
@@ -166,7 +165,7 @@ class TMSaveCache(object):
         self.pdiskHostPort = self._getPDiskHostPortFromURI(self.pdiskPath)
 
     def _getPDiskServerInfo(self):
-        return self._sshDst(['source', '/etc/stratuslab/pdisk-host.cfg;', 
+        return self._sshDst(['source', '/etc/stratuslab/pdisk-host.cfg;',
                              'head', '-1', '%s/$REGISTER_FILENAME' % self.vmDir],
                             'Unable to get pdisk server info')
 
@@ -241,15 +240,15 @@ class TMSaveCache(object):
 
         manifest_info.sha1 = self.imageSha1
         manifest_info.creator = self.createImageInfo[Runner.CREATE_IMAGE_KEY_CREATOR_NAME]
-        manifest_info.version = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or\
-                                     Util.incrementMinorVersionNumber(manifest_info.version)
+        manifest_info.version = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or \
+                                Util.incrementMinorVersionNumber(manifest_info.version)
         manifest_info.title = self._getTitle()
         manifest_info.comment = self.createImageInfo[Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT]
         manifest_info.locations = [self.pdiskPathNew]
         manifest_info.IMAGE_VALIDITY = self._IMAGE_VALIDITY
 
         manifest_info.buildAndSave(self.manifestNotSignedPath)
-        
+
         self.snapshotMarketplaceId = manifest_info.identifier
 
     def _signManifest(self):
@@ -261,13 +260,13 @@ class TMSaveCache(object):
         signator = Signator(self.manifestNotSignedPath, self.configHolder)
         rc = signator.sign()
         if rc != 0:
-            Util.printError("Error signing metadata.")
+            printError("Error signing metadata.")
 
     def _uploadManifest(self):
         uploader = Uploader(self.configHolder)
         uploader.marketplaceEndpoint = self.targetMarketplace
         uploader.upload(self.manifestPath)
-    
+
     def _retrieveSnapshotId(self):
         self.imageSha1 = self._getSnaptshotSha1()
 
@@ -282,9 +281,9 @@ class TMSaveCache(object):
             self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
         else:
             self.targetMarketplace = getattr(self.configHolder,
-                                             'marketplaceEndpointLocal', 
+                                             'marketplaceEndpointLocal',
                                              self.originMarketPlace)
-    
+
         if not self.targetMarketplace:
             raise Exception('Marketplace endpoint was not provided.')
 
@@ -293,7 +292,7 @@ class TMSaveCache(object):
     #--------------------------------------------
 
     def _buildPDiskPath(self, imageId):
-        return ':'.join(self.pdiskPath.split(':')[:-1] + [imageId,])
+        return ':'.join(self.pdiskPath.split(':')[:-1] + [imageId, ])
 
     def _assertLength(self, elem, size):
         if len(elem) != size:
@@ -302,13 +301,12 @@ class TMSaveCache(object):
     def _randomString(self, size=6):
         chars = ascii_uppercase + digits
         return ''.join(choice(chars) for _ in range(size))
-    
+
     def _getDiskPath(self, arg):
         return self._getStringPart(arg, 1)
 
     def _getDiskHost(self, arg):
         return self._getStringPart(arg, 0)
-
 
     def _findNumbers(self, elems):
         findedNb = []
@@ -332,10 +330,10 @@ class TMSaveCache(object):
             raise ValueError(errorMsg % ((len(instanceId) == 0) and 'Unable to find'
                                          or 'Too many candidates'))
         self.instanceId = instanceId.pop()
-        
+
     def _retrieveVmDir(self):
         self.vmDir = dirname(dirname(self.diskSrcPath))
-    
+
     def _getSnapshotPath(self):
         conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
         key = 'volume_name'
@@ -343,16 +341,16 @@ class TMSaveCache(object):
             volume_path = conf[key]
         except:
             raise ConfigurationException("Failed to get "
-                                         "'%s' from configuration file: %s" % 
+                                         "'%s' from configuration file: %s" %
                                          (key, PDiskInstaller.pdiskConfigBackendFile))
-        return os.path.join(volume_path, self.diskName) 
+        return os.path.join(volume_path, self.diskName)
 
     def _removeCarriageReturn(self, string):
         return string.replace('\r', '').replace('\n', '')
 
     def _sshDst(self, cmd, errorMsg, dontRaiseOnError=False):
         return self._ssh(self.diskSrcHost, cmd, errorMsg, dontRaiseOnError)
-    
+
     def _ssh(self, host, cmd, errorMsg, dontRaiseOnError=False):
         retCode, output = sshCmdWithOutput(' '.join(cmd), host, user=getuser(),
                                            sshKey=sshPublicKeyLocation.replace('.pub', ''))
@@ -412,8 +410,8 @@ class TMSaveCache(object):
 
         message = self.createImageInfo.get(Runner.CREATE_IMAGE_KEY_MSG_MESSAGE, '{}')
 
-        ImageIdPublisher(message, 
-                         self.snapshotMarketplaceId, 
+        ImageIdPublisher(message,
+                         self.snapshotMarketplaceId,
                          configHolder).publish()
 
     def _emailText(self):
@@ -437,11 +435,10 @@ Cheers.
                'snapshotMarketplaceId': self.snapshotMarketplaceId,
                'marketplace': self.targetMarketplace,
                'p12Validity': self._P12_VALIDITY,
-               'imageValidity': self._P12_VALIDITY * 24 }
+               'imageValidity': self._P12_VALIDITY * 24}
 
     def _emitNewImageInfo(self):
-        """To be able to recover image ID from log file by 
-        image creation test."""
-        print "INFO: %s: MARKETPLACE_AND_IMAGEID %s %s" % (os.path.basename(self.args[0]),
-                                                           self.targetMarketplace,
-                                                           self.snapshotMarketplaceId)
+        """To be able to recover image ID from log file by image creation test."""
+        printInfo("INFO: %s: MARKETPLACE_AND_IMAGEID %s %s" % (os.path.basename(self.args[0]),
+                                                               self.targetMarketplace,
+                                                               self.snapshotMarketplaceId))

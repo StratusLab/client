@@ -73,19 +73,22 @@ to the user (-u/--username).'''
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
-        monitor = Monitor(configHolder)
-        if self.vmIds:
-            vm_info_list = monitor.vmDetail(self.vmIds)
-            if len(vm_info_list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
-                monitor.printVmAllAttributes(vm_info_list)
-            else:
-                monitor.printVmDetails(vm_info_list)
+
+        if not self.vmIds and (self.options.multi_site and self.config.get('endpoints')):
+            result = MultisiteMonitor(configHolder).formatVmList()
         else:
-            if self.options.multi_site and self.config.get('endpoints'):
-                MultisiteMonitor(configHolder).printVmList()
+            monitor = Monitor(configHolder)
+            if self.vmIds:
+                vm_info_list = monitor.vmDetail(self.vmIds)
+                if len(vm_info_list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
+                    result = monitor.formatVmAllAttributes(vm_info_list)
+                else:
+                    result = monitor.formatVmDetails(vm_info_list)
             else:
                 vm_info_list = monitor.listVms()
-                monitor.printVmList(vm_info_list)
+                result = monitor.formatVmList(vm_info_list)
+
+        sys.stdout.write(result)
 
 
 if __name__ == '__main__':

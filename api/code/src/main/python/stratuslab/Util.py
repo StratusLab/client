@@ -53,6 +53,9 @@ VERBOSE_LEVEL_QUIET = 0
 VERBOSE_LEVEL_NORMAL = 1
 VERBOSE_LEVEL_DETAILED = 2
 
+EMPHASIS_START = '\033[1;31m'
+EMPHASIS_STOP = '\033[0m'
+
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
 userConfigFileSelectedSection = 'STRATUSLAB_USER_CONFIG_SECTION'
@@ -376,6 +379,14 @@ def printStep(msg):
     LogUtil.info(' :: %s' % msg)
 
 
+def printInfo(msg):
+    LogUtil.info(msg)
+
+
+def printDebug(msg):
+    LogUtil.debug(msg)
+
+
 def printError(msg, exitCode=1, exit=True):
     # TODO: Revisit this design; having exit in API is not good.
     err = '  [ERROR] %s' % msg
@@ -610,14 +621,6 @@ def checkUrlExists(url, timeout=5):
     except urllib2.URLError, ex:
         raise ValidationException(str(ex))
     return True
-
-
-def printEmphasisStart():
-    sys.stdout.write('\033[1;31m')
-
-
-def printEmphasisStop():
-    sys.stdout.write('\033[0m')
 
 
 def constructEndPoint(fragment, protocol='https', port=8443, path=''):

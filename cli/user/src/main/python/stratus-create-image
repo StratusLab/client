@@ -126,8 +126,8 @@ class MainProgram(Runnable):
 
         self.parser.add_option('--vm-ping-timeout', dest='vmPingTimeout',
                                help='seconds to wait for VM\'s network to become available. Default: %i' %
-                                    Creator.VM_PING_TIMEPUT,
-                               default=Creator.VM_PING_TIMEPUT, type='int', metavar='TIMEOUT')
+                                    Creator.VM_PING_TIMEOUT,
+                               default=Creator.VM_PING_TIMEOUT, type='int', metavar='TIMEOUT')
 
         super(MainProgram, self).parse()
 

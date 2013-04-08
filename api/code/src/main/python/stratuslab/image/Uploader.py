@@ -30,21 +30,19 @@ from stratuslab.marketplace.Uploader import Uploader as MarketplaceUploader
 from stratuslab.PersistentDisk import PersistentDisk
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint, PDiskVolume
 
-etree = Util.importETree()
 
 class Uploader(object):
-
     @staticmethod
     def buildUploadParser(parser):
         parser.usage = '''usage: %prog [options] <image-file>'''
 
         parser.add_option('-C', '--compress', dest='compressionFormat',
-                help='Compression format.  One of: %s, none' % ', '.join(Compressor.compressionFormats),
-                default='gz', metavar='FORMAT')
+                          help='Compression format.  One of: %s, none' % ', '.join(Compressor.compressionFormats),
+                          default='gz', metavar='FORMAT')
 
         parser.add_option('--image-only', dest='imageOnly',
-                help='Do not upload metadata file to Marketplace',
-                action='store_true', default=False)
+                          help='Do not upload metadata file to Marketplace',
+                          action='store_true', default=False)
 
         MarketplaceUtil.addEndpointOption(parser)
 
@@ -64,7 +62,7 @@ class Uploader(object):
 
         if options.compressionFormat not in allowedFormats:
             parser.error('Unknown compression format')
-        
+
         PDiskEndpoint.checkOptions(options)
         PDiskVolume.checkOptions(options)
 
@@ -92,7 +90,7 @@ class Uploader(object):
 
         if not self.imageOnly:
             Util.printAction('Starting manifest upload')
-        
+
             Util.printStep('Parsing manifest')
             self._parseManifest()
 
@@ -101,13 +99,13 @@ class Uploader(object):
 
             Util.printStep('Signing manifest')
             self._signManifest()
-        
+
             Util.printStep('Uploading manifest')
-            self._uploadMarketPlaceManifest()
+            self._uploadMarketplaceManifest()
 
     def _uploadImage(self):
         self.imageUrl = self.pdisk.uploadVolume(self.imageFile)
-        print "Image uploaded: %s" % self.imageUrl
+        Util.printInfo('Image uploaded: %s' % self.imageUrl)
 
         self._updateImageMetadataInPDisk()
 
@@ -115,7 +113,7 @@ class Uploader(object):
         if self.imageMetadata:
             uuid = self.imageUrl.rsplit('/', 1)[-1]
             self.pdisk.updateVolumeAsUser(self.imageMetadata, uuid)
-            print "Image metadata updated:", self.imageMetadata
+            Util.printInfo('Image metadata updated: %s' % self.imageMetadata)
 
     def _updateManifest(self):
         self._addLocationToManifest()
@@ -145,18 +143,18 @@ class Uploader(object):
     def _buildManifestName(self, repoFilename):
         return repoFilename.split('.img')[0] + '.xml'
 
-    def _compressFile(self, filename, format):
+    def _compressFile(self, filename, fmt):
 
-        if (format.lower() == 'none'):
+        if fmt.lower() == 'none':
             return filename
 
-        if (Compressor.getCompressionFormat(filename) != ''):
+        if Compressor.getCompressionFormat(filename) != '':
             Util.printWarning('skipping compression; file appears to already be compressed')
             return filename
 
-        compressionCmd = Compressor._getCompressionCommandByFormat(format)
+        compressionCmd = Compressor._getCompressionCommandByFormat(fmt)
 
-        compressedFilename = '%s.%s' % (filename, format)
+        compressedFilename = '%s.%s' % (filename, fmt)
         if os.path.isfile(compressedFilename):
             Util.printWarning('Compressed file %s already exists, skipping' % compressedFilename)
             return compressedFilename
@@ -166,7 +164,7 @@ class Uploader(object):
 
         ret = self._execute([compressionCmd, filename])
         if ret != 0:
-            Util.printError('Error compressing file: ' % compressedFilename, exit=True)
+            Util.printError('Error compressing file: %s' % compressedFilename, exit=True)
 
         return compressedFilename
 
@@ -174,18 +172,17 @@ class Uploader(object):
         self.imageFile = self._compressFile(self.imageFile, self.compressionFormat)
 
     def _addCompressionFormatToManifest(self):
-        if (self.compressionFormat.lower() != 'none'):
-            ManifestInfo.addElementToManifestFile(self.manifestFile, 
+        if self.compressionFormat.lower() != 'none':
+            ManifestInfo.addElementToManifestFile(self.manifestFile,
                                                   'compression', self.compressionFormat)
         else:
             Util.printWarning("'none' specified for compression; manifest compression element NOT updated")
 
     def _addLocationToManifest(self):
-        ManifestInfo.addElementToManifestFile(self.manifestFile, 
+        ManifestInfo.addElementToManifestFile(self.manifestFile,
                                               'location', self.imageUrl)
 
-    def _uploadMarketPlaceManifest(self):
+    def _uploadMarketplaceManifest(self):
         uploader = MarketplaceUploader(self.configHolder)
         url = uploader.upload(self.manifestFile)
-        print "Manifest uploaded: %s" % url
-
+        Util.printInfo('Manifest uploaded: %s' % url)

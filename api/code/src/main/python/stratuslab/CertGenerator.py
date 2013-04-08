@@ -24,13 +24,13 @@ import tempfile
 import shutil
 
 from stratuslab.Exceptions import ExecutionException
-import stratuslab.Util as Util 
+import stratuslab.Util as Util
 from stratuslab.ConfigHolder import ConfigHolder
 
+
 class CertGenerator(object):
-    
-    descrtiptionP12 = 'generate p12 self-signed certificate.'
-    
+    descriptionP12 = 'generate p12 self-signed certificate.'
+
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
         self.tmp_dir = ''
@@ -47,51 +47,51 @@ class CertGenerator(object):
     def addCertGeneratorOptions(parser):
         defaults = CertGenerator.defaultRunOptionsP12()
 
-        parser.add_option('-n','--common-name', dest='commonName',
-           help='Common Name for the certificate. (Default: %s)' %
-               defaults['commonName'],
-           default=defaults['commonName'], metavar='NAME')
+        parser.add_option('-n', '--common-name', dest='commonName',
+                          help='Common Name for the certificate. (Default: %s)' %
+                               defaults['commonName'],
+                          default=defaults['commonName'], metavar='NAME')
 
-        parser.add_option('-o','--output', dest='outputFile',
-           help='file to store the generated certificate (Default: %s)' %
-               defaults['outputFile'],
-           default=defaults['outputFile'], metavar='FILE')
+        parser.add_option('-o', '--output', dest='outputFile',
+                          help='file to store the generated certificate (Default: %s)' %
+                               defaults['outputFile'],
+                          default=defaults['outputFile'], metavar='FILE')
 
-        parser.add_option('-p','--password', dest='certPassword',
-           help='password for the certificate. (Default: %s)' %
-               defaults['certPassword'],
-           default=defaults['certPassword'], metavar='PASS')
+        parser.add_option('-p', '--password', dest='certPassword',
+                          help='password for the certificate. (Default: %s)' %
+                               defaults['certPassword'],
+                          default=defaults['certPassword'], metavar='PASS')
 
         parser.add_option('--validity', dest='certValidity',
-           help='validity of the certificate. (Default: %s)' %
-               defaults['certValidity'],
-           default=defaults['certValidity'], metavar='DAYS')
+                          help='validity of the certificate. (Default: %s)' %
+                               defaults['certValidity'],
+                          default=defaults['certValidity'], metavar='DAYS')
 
-        parser.add_option('-e','--email', dest='subjectEmail',
-           help='subject email. (Default: %s)' % 
-               defaults['subjectEmail'],
-           default=defaults['subjectEmail'], metavar='EMAIL')
+        parser.add_option('-e', '--email', dest='subjectEmail',
+                          help='subject email. (Default: %s)' %
+                               defaults['subjectEmail'],
+                          default=defaults['subjectEmail'], metavar='EMAIL')
 
         parser.add_option('--no-cleanup', dest='noCleanup',
-           help='do not do cleanup.',
-           default=False, action='store_true')
-    
+                          help='do not do cleanup.',
+                          default=False, action='store_true')
+
     @staticmethod
     def buildCertGeneratorP12Parser(parser):
-        parser.description = CertGenerator.descrtiptionP12
+        parser.description = CertGenerator.descriptionP12
         CertGenerator.addCertGeneratorOptions(parser)
 
     def generateP12(self):
         self.tmp_dir = tempfile.mkdtemp()
-        Util.printDetail("Temporary directory for certificate generation: %s" %
-                         self.tmp_dir, self.configHolder.verboseLevel, 
+        Util.printDetail('Temporary directory for certificate generation: %s' %
+                         self.tmp_dir, self.configHolder.verboseLevel,
                          Util.VERBOSE_LEVEL_DETAILED)
         try:
             self._generateOpensslConfig()
             self._runCommandsP12()
         finally:
             if self.configHolder.noCleanup:
-                print "Intermediate files are in", self.tmp_dir
+                Util.printInfo('Intermediate files are in %s' % self.tmp_dir)
             else:
                 try:
                     shutil.rmtree(self.tmp_dir, ignore_errors=True)
@@ -127,7 +127,7 @@ subjectAltName=email:%(subjectEmail)s
         conf_filename = os.path.join(self.tmp_dir, 'openssl.cfg')
         open(conf_filename, 'w').write(config)
 
-        Util.printDetail("Generated openssl configuration in: %s" % conf_filename, 
+        Util.printDetail("Generated openssl configuration in: %s" % conf_filename,
                          self.configHolder.verboseLevel)
         Util.printDetail("Openssl configuration: %s" % open(conf_filename).read(),
                          self.configHolder.verboseLevel,
@@ -163,7 +163,7 @@ subjectAltName=email:%(subjectEmail)s
             self._runCommand(cmd)
 
     def _runCommand(self, cmd):
-        Util.printDetail("Running: %s" % cmd, self.configHolder.verboseLevel)
+        Util.printDetail('Running: %s' % cmd, self.configHolder.verboseLevel)
         rc, output = commands.getstatusoutput(cmd)
         if rc != 0:
             raise ExecutionException('Failed running %s:\n%s' % (cmd, output))

@@ -22,6 +22,7 @@ import re
 import urllib2
 
 import stratuslab.Util as Util
+from stratuslab.Util import printStep, printAction, printWarning, printError
 import stratuslab.Exceptions as Exceptions
 import stratuslab.cloudinit.Util as CloudInitUtil
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
@@ -269,13 +270,13 @@ class Runner(object):
         try:
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
-                Util.printError(
+                printError(
                     'disk cannot be attached; it is already mounted (%s/%s)' % (available, self.instanceNumber))
         except AttributeError:
-            Util.printError('Persistent disk service unavailable', exit=False)
+            printError('Persistent disk service unavailable', exit=False)
             raise
         except Exception as e:
-            Util.printError(e, exit=False)
+            printError(e, exit=False)
             raise
 
     def _setReadonlyDiskOptional(self):
@@ -459,7 +460,6 @@ class Runner(object):
 
         self.os_options = 'OS = [ %s ]' % self.os_options
 
-
     def _manageNetwork(self):
         networkName = self._getNetworkName()
         networkPrefix = 'NIC = [ network_uname=oneadmin,network = "%s" ' % networkName
@@ -513,8 +513,8 @@ class Runner(object):
             contextLine = line.split('=')
 
             if len(contextLine) < 2:
-                Util.printError('Error while parsing contextualization file.\n'
-                                'Syntax error in line `%s`' % line)
+                printError('Error while parsing contextualization file.\n'
+                           'Syntax error in line `%s`' % line)
 
             extraContext[contextLine[0]] = '='.join(contextLine[1:])
 
@@ -577,7 +577,7 @@ class Runner(object):
                                                  'Alias URL, Marketplace Image ID or Disk ID:  %s' %
                                                  self.vm_image)
 
-        self.printAction('Starting machine(s)')
+        printAction('Starting machine(s)')
 
         self.printDetail('Using VM template file: %s' % self.vmTemplateFile)
 
@@ -585,7 +585,7 @@ class Runner(object):
 
         label = (self.instanceNumber > 1) and 'machines' or 'machine'
 
-        self.printStep('Starting %s %s' % (self.instanceNumber, label))
+        printStep('Starting %s %s' % (self.instanceNumber, label))
 
         self.printDetail('on endpoint: %s' % self.endpoint, Util.VERBOSE_LEVEL_DETAILED)
         self.printDetail('with template:\n%s' % vmTpl, Util.VERBOSE_LEVEL_DETAILED)
@@ -596,11 +596,11 @@ class Runner(object):
             networkName, ip = self.getNetworkDetail(vmId)
             self.vmIdsAndNetwork.append((vmId, networkName, ip))
             vmIpPretty = '\t%s ip: %s' % (networkName.title(), ip)
-            self.printStep('Machine %s (vm ID: %s)\n%s' % (vmNb + 1, vmId, vmIpPretty))
+            printStep('Machine %s (vm ID: %s)\n%s' % (vmNb + 1, vmId, vmIpPretty))
             self.instancesDetail.append({'id': vmId, 'ip': ip, 'networkName': networkName})
         self._saveVmIds()
 
-        self.printStep('Done!')
+        printStep('Done!')
 
         if not details:
             return self.vmIds
@@ -611,7 +611,7 @@ class Runner(object):
         self._printContacting()
         self._checkInstanceExists(vm_id)
 
-        self.printStep('Instructing cloud to save instance as new image on shutdown')
+        printStep('Instructing cloud to save instance as new image on shutdown')
 
     def getNetworkDetail(self, vmId):
         networkName, ip = self.cloud.getVmIp(vmId)
@@ -644,33 +644,25 @@ class Runner(object):
         if operation not in operations:
             raise Exceptions.ExecutionException('Unsupported operation on instance: %s' %
                                                 operation)
-        _ids = ids or self.vmIds
+        vmIds = ids or self.vmIds
         if self.inVmIdsFile:
-            _ids = self._loadVmIdsFromFile()
+            vmIds = self._loadVmIdsFromFile()
         if operation == 'Shutdown':
             instance_operation = self.cloud.vmStop
         if operation == 'Kill':
             instance_operation = self.cloud.vmKill
-        for id in _ids:
-            self.printDetail('Sending "%s" request for instance %s.' % (operation, id))
-            instance_operation(int(id))
-        plural = (len(_ids) > 1 and 's') or ''
-        self.printDetail('"%s" %s VM%s: %s' % (operation, len(_ids), plural,
-                                               ', '.join(map(str, _ids))))
+        for vmId in vmIds:
+            self.printDetail('Sending "%s" request for instance %s.' % (operation, vmId))
+            instance_operation(int(vmId))
+        plural = (len(vmIds) > 1 and 's') or ''
+        self.printDetail('"%s" %s VM%s: %s' % (operation, len(vmIds), plural,
+                                               ', '.join(map(str, vmIds))))
 
     def printDetail(self, msg, verboseLevel=Util.VERBOSE_LEVEL_NORMAL):
         return Util.printDetail(msg, self.verboseLevel, verboseLevel)
 
-    def printStep(self, msg):
-        return Util.printStep(msg)
-
-    def printAction(self, msg):
-        return Util.printAction(msg)
-
     def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120, failOn=()):
-        vmStarted = self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout,
-                                                           failOn=failOn)
-        return vmStarted
+        return self.cloud.waitUntilVmRunningOrTimeout(vmId, vmStartTimeout, failOn=failOn)
 
     def getVmState(self, vmId):
         return self.cloud.getVmState(vmId)
@@ -678,7 +670,7 @@ class Runner(object):
     def _checkImageExists(self, imageId):
         self.printDetail('Checking image availability.')
         if self.noCheckImageUrl:
-            Util.printWarning('Image availability check is disabled.')
+            printWarning('Image availability check is disabled.')
             return
         imageObject = Image(self.configHolder)
         imageObject.checkImageExists(imageId)
@@ -701,7 +693,7 @@ class Runner(object):
 
     def _resolveUrl(self, url):
         """Uses a HEAD request to resolve an http(s) URL with a possible redirect."""
-        if (url.startswith("http")):
+        if url.startswith("http"):
             response = urllib2.urlopen(Runner.HeadRequest(url))
             return response.geturl()
         else:
