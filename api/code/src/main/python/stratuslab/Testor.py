@@ -520,7 +520,7 @@ class Testor(unittest.TestCase):
             self.fail("No error message set.")
         else:
             self.failUnless(errorMessage, "Empty error message.")
-            printError('VM %s failed with error message:\n%s' % (vmId, errorMessage))
+            printInfo('VM %s failed with error message:\n%s' % (vmId, errorMessage))
 
     def _startStopVmAndGetVmInfo(self):
         """Return VM monitoring info and VM id."""
