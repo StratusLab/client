@@ -1,18 +1,14 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
-
-  <artifactId>stratuslab-web-monitor-zip</artifactId>
+  <artifactId>stratuslab-pat-zip</artifactId>
   <packaging>pom</packaging>
-  <name>StratusLab Web Monitor (ZIP)</name>
-
+  <name>StratusLab Port Address Translation (ZIP)</name>
   <parent>
     <groupId>eu.stratuslab.client</groupId>
-    <artifactId>stratuslab-web-monitor</artifactId>
+    <artifactId>stratuslab-pat</artifactId>
     <version>2.9-SNAPSHOT</version>
   </parent>
-
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
@@ -23,104 +19,84 @@
       <scope>compile</scope>
     </dependency>
   </dependencies>
-
   <build>
-
     <plugins>
-
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-deploy-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
       </plugin>
-
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-resources-plugin</artifactId>
-
-	<configuration>
-	  <encoding>UTF-8</encoding>
-	</configuration>
-
-	<executions>
-	  <execution>
-	    <id>insert-metadata</id>
-	    <phase>process-sources</phase>
-	    <goals>
-	      <goal>copy-resources</goal>
-	    </goals>
-
-	    <configuration>
-	      <delimiters>
-		<delimiter>${*}</delimiter>
-	      </delimiters>
-	      <outputDirectory>${project.build.directory}/python</outputDirectory>
-	      <resources>
-		<resource>
-		  <directory>main/python</directory>
-		  <filtering>true</filtering>
-		</resource>
-	      </resources>
-	    </configuration>
-
-	  </execution>
-	</executions>
-
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+        <executions>
+          <execution>
+            <id>insert-metadata</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <delimiters>
+                <delimiter>${*}</delimiter>
+              </delimiters>
+              <outputDirectory>${project.build.directory}/python</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>main/python</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
-
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-assembly-plugin</artifactId>
-	<configuration>
-	  <descriptors>
-	    <descriptor>main/assembly/cgi-bundle.xml</descriptor>
-	  </descriptors>
-	</configuration>
-
-	<executions>
-
-	  <execution>
-	    <id>bundle</id>
-	    <goals>
-	      <goal>single</goal>
-	    </goals>
-	    <phase>package</phase>
-	  </execution>
-
-	</executions>
-
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>main/assembly/cgi-bundle.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>bundle</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
       </plugin>
-
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-dependency-plugin</artifactId>
-
-	<executions>
-	  <execution>
-	    <id>unpack-sources</id>
-	    <phase>generate-sources</phase>
-	    <goals>
-	      <goal>unpack</goal>
-	    </goals>
-	    <configuration>
-	      <outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
-	      <artifactItems>
-		<artifactItem>
-		  <groupId>eu.stratuslab.client</groupId>
-		  <artifactId>stratuslab-core-zip</artifactId>
-		  <classifier>core-bundle</classifier>
-		  <type>zip</type>
-		</artifactItem>
-	      </artifactItems>
-	    </configuration>
-	  </execution>
-	</executions>
-
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>eu.stratuslab.client</groupId>
+                  <artifactId>stratuslab-core-zip</artifactId>
+                  <classifier>core-bundle</classifier>
+                  <type>zip</type>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
-
     </plugins>
-
   </build>
-
   <licenses>
     <license>
       <name>Apache 2.0</name>
@@ -129,5 +105,4 @@
       <comments>Copyright (c) 2011, SixSq Sarl</comments>
     </license>
   </licenses>
-
 </project>

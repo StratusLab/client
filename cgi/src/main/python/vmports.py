@@ -24,6 +24,8 @@
 import cgi
 import sys
 
+sys.path.append('/var/lib/stratuslab/python')
+
 from stratuslab.pat.Service import PortTranslationService
 
 # Debug CGI
@@ -32,7 +34,7 @@ import cgitb
 cgitb.enable()
 
 if __name__ == '__main__':
-    configFile = ''
+    configFile = '/etc/stratuslab/stratuslab.cfg'
     if (len(sys.argv) > 1):
         configFile = sys.argv[1]
     service = PortTranslationService(configFile)
