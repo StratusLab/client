@@ -179,14 +179,14 @@ class Monitor(Configurable):
         self._adjustVmAttributeFields(items)
         result = self._formatVmInfoHeader(self.vmInfoListAttributes)
         for item in items:
-            result = self._formatVmInfo(item, self.vmInfoListAttributes)
+            result += self._formatVmInfo(item, self.vmInfoListAttributes)
         return result
 
     def formatVmDetails(self, items):
         self._adjustVmAttributeFields(items)
         result = self._formatVmInfoHeader(self.vmInfoDetailAttributes)
         for item in items:
-            result = self._formatVmInfo(item, self.vmInfoDetailAttributes)
+            result += self._formatVmInfo(item, self.vmInfoDetailAttributes)
         return result
 
     def formatVmAllAttributes(self, vmInfoList):
