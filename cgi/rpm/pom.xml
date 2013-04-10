@@ -82,11 +82,16 @@
         <configuration>
           <release>${RELEASE}</release>
           <summary>StratusLab Port Address Translation</summary>
+          <description>
+This package provides a CGI script to retrieve PAT information in a StratusLab
+cloud.
+          </description>
           <name>stratuslab-pat</name>
           <vendor>IDB</vendor>
           <copyright>Apache 2.0</copyright>
           <url>http://stratuslab.eu/</url>
           <requires>
+            <require>stratuslab-cli-sysadmin</require>
             <require>httpd</require>
           </requires>
           <distribution>StratusLab</distribution>
