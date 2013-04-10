@@ -749,10 +749,10 @@ class Testor(unittest.TestCase):
         try:
             Util.printAction('Downloading volume...')
             # compressed disk comes in HTTP response - don't print it from HTTP client!
-            verb_save = pdisk.configHolder.verboseLevel
-            pdisk.configHolder.verboseLevel = 0
+            verb_save = pdisk.client.verboseLevel
+            pdisk.client.verboseLevel = 0
             pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
-            pdisk.configHolder.verboseLevel = verb_save
+            pdisk.client.verboseLevel = verb_save
             volume = self._gunzip(downloadedCompressedDisk)
         finally:
             try:
