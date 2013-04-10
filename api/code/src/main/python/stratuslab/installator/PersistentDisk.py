@@ -23,7 +23,9 @@ import re
 import socket
 import stratuslab.Util as Util
 import string
+import stat
 from random import choice
+
 from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
@@ -199,7 +201,8 @@ class PersistentDisk(Installator):
         self._overrideHostConfigFile2('pdisk_passwd', self.pdiskPassword)
 
         self.system._remoteCreateDirs(self.persistentDiskHostVolumeMgmtDir)
-        self.system._remoteChmod(self.persistentDiskHostVolumeMgmtDir, '1757')
+        perm_1757 = stat.S_ISVTX | stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IRWXO
+        self.system._remoteChmod(self.persistentDiskHostVolumeMgmtDir, perm_1757)
         self._overrideHostConfigFile2('volume_mgmt_dir', self.persistentDiskHostVolumeMgmtDir)
 
     def _installPackages(self, section):
