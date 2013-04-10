@@ -4,11 +4,13 @@
   <artifactId>stratuslab-pat-zip</artifactId>
   <packaging>pom</packaging>
   <name>StratusLab Port Address Translation (ZIP)</name>
+
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-pat</artifactId>
     <version>2.9-SNAPSHOT</version>
   </parent>
+
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
