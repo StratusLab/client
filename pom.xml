@@ -6,7 +6,7 @@
   <groupId>eu.stratuslab.client</groupId>
   <artifactId>stratuslab-parent</artifactId>
   <version>2.9-SNAPSHOT</version>
-  <name>StratusLab Parent POM</name>
+  <name>StratusLab Parent (POM)</name>
 
   <url>http://github.com/StratusLab/client</url>
 
@@ -28,7 +28,6 @@ with minimal dependencies for maximum portability.
     <module>cgi</module>
     <module>cli</module>
     <module>vmm</module>
-    <module>pypi</module>
   </modules>
 
   <properties>

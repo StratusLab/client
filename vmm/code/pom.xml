@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-vmm-pkg</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for End-Users (PKG)</name>
+  <name>StratusLab Virtual Machine Management (PKG)</name>
   <packaging>pom</packaging>
 
   <parent>

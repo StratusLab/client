@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-cli-sysadmin-rpm</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for System Administrators (RPM)</name>
+  <name>StratusLab Admin CLI (RPM)</name>
   <packaging>rpm</packaging>
 
   <parent>

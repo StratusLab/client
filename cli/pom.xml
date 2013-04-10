@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-cli</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) parent POM</name>
+  <name>StratusLab CLI (POM)</name>
   <packaging>pom</packaging>
 
   <parent>

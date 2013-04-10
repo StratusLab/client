@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-cli-user-rpm</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for End-Users (RPM)</name>
+  <name>StratusLab User CLI (RPM)</name>
   <packaging>rpm</packaging>
 
   <parent>

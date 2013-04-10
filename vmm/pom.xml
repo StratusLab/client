@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-vmm</artifactId>
-  <name>StratusLab Virtual Machine Management (VMM) Utilities</name>
+  <name>StratusLab Virtual Machine Management (POM)</name>
   <packaging>pom</packaging>
 
   <parent>
