@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for System Administrators (ZIP)</name>
+  <name>StratusLab Admin CLI (ZIP)</name>
   <packaging>pom</packaging>
 
   <parent>

@@ -2,8 +2,8 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>stratuslab-cli</artifactId>
-  <name>StratusLab CLI (POM)</name>
+  <artifactId>stratuslab-vmm</artifactId>
+  <name>StratusLab Virtual Machine Management (POM)</name>
   <packaging>pom</packaging>
 
   <parent>
@@ -13,17 +13,23 @@
   </parent>
 
   <modules>
-    <module>user</module>
-    <module>sysadmin</module>
+    <module>code</module>
   </modules>
 
-  <licenses>
-    <license>
-      <name>Apache 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-      <distribution>repo</distribution>
-      <comments>Copyright (c) 2011, SixSq Sarl</comments>
-    </license>
-  </licenses>
+  <profiles>
+
+    <profile>
+      <id>build-rpm</id>
+      <activation>
+        <file>
+          <exists>/usr/bin/rpmbuild</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>rpm</module>
+      </modules>
+    </profile>
+
+  </profiles>
 
 </project>

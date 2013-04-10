@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-cli-user</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for End-Users parent POM</name>
+  <name>StratusLab User CLI (POM)</name>
   <packaging>pom</packaging>
 
   <parent>
@@ -13,7 +13,8 @@
   </parent>
 
   <modules>
-    <module>src</module>
+    <module>code</module>
+    <module>pypi</module>
   </modules>
 
   <profiles>

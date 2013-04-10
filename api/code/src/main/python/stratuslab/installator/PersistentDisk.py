@@ -189,14 +189,18 @@ class PersistentDisk(Installator):
         self._updateConfigHostPDiskClient()
 
     def _updateConfigHostAttachDetachScripts(self):
-        self._overrideValueInFile('SHARE_TYPE', self.persistentDiskShare, self.pdiskHostConfigFile)
-        self._overrideValueInFile('NFS_LOCATION', self.persistentDiskNfsMountPoint, self.pdiskHostConfigFile)
-        self._overrideValueInFile('PDISK_USER', self.pdiskUsername, self.pdiskHostConfigFile)
-        self._overrideValueInFile('PDISK_PSWD', self.pdiskPassword, self.pdiskHostConfigFile)
+        self._overrideHostConfigFile('SHARE_TYPE', self.persistentDiskShare)
+        self._overrideHostConfigFile('NFS_LOCATION', self.persistentDiskNfsMountPoint)
+        self._overrideHostConfigFile('PDISK_USER', self.pdiskUsername)
+        self._overrideHostConfigFile('PDISK_PSWD', self.pdiskPassword)
 
     def _updateConfigHostPDiskClient(self):
-        self._overrideValueInFile('pdisk_user', self.pdiskUsername, self.pdiskHostConfigFile2)
-        self._overrideValueInFile('pdisk_passwd', self.pdiskPassword, self.pdiskHostConfigFile2)
+        self._overrideHostConfigFile2('pdisk_user', self.pdiskUsername)
+        self._overrideHostConfigFile2('pdisk_passwd', self.pdiskPassword)
+
+        self.system._remoteCreateDirs(self.persistentDiskHostVolumeMgmtDir)
+        self.system._remoteChmod(self.persistentDiskHostVolumeMgmtDir, '1757')
+        self._overrideHostConfigFile2('volume_mgmt_dir', self.persistentDiskHostVolumeMgmtDir)
 
     def _installPackages(self, section):
         if self.packages:
@@ -223,6 +227,12 @@ class PersistentDisk(Installator):
         
     def _overrideConfig(self, key, value):
         self._overrideValueInFile(key, value, self.pdiskConfigFile)    
+        
+    def _overrideHostConfigFile(self, key, value):
+        self._overrideValueInFile(key, value, self.pdiskHostConfigFile)   
+        
+    def _overrideHostConfigFile2(self, key, value):
+        self._overrideValueInFile(key, value, self.pdiskHostConfigFile2)   
         
     def _overrideValueInFile(self, key, value, fileName):
         search = key + '=.*'

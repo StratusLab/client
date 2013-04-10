@@ -239,7 +239,7 @@ class Monitor(Configurable):
         result = ''
         if self.verboseLevel >= Util.VERBOSE_LEVEL_NORMAL:
             if getattr(info, 'template_error_message', None):
-                result = ' ' * headerAttributes[0][1] + info.template_error_message
+                result = ' ' * headerAttributes[0][1] + info.template_error_message.strip() + '\n'
 
         return result
 

@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2013, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import sys
+
+sys.path.append('/var/lib/stratuslab/python')
+
+import time
+import libvirt
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+LIBVIRT_URI = 'qemu:///system'
+
+TIMEOUT = 300  # seconds
+POLL_INTERVAL = 5  # seconds
+
+
+class MainProgram(object):
+    """
+    Shutdown a virtual machine (domain).  The domain ID must be supplied.
+    """
+
+    def execute(self, domain_id):
+        conn = libvirt.open(LIBVIRT_URI)
+        domain = conn.lookupByID(domain_id)
+
+        domain.shutdown()
+        LogUtil.info('shutdown domain %d, %s' % (domain.ID(), domain.UUIDString()))
+
+        self.verify_shutdown(conn, domain_id)
+
+    def verify_shutdown(self, conn, domain_id):
+        try:
+            wait = 0
+            while conn.lookupByID(domain_id):
+                LogUtil.info('waiting for domain %s to shutdown' % domain_id)
+                time.sleep(POLL_INTERVAL)
+                wait += POLL_INTERVAL
+                if wait >= TIMEOUT:
+                    msg = 'domain %d did not shutdown within timeout period' % domain_id
+                    raise Exception(msg)
+            LogUtil.info('verified shutdown of domain %d' % domain_id)
+        except Exception as e:
+            LogUtil.error(str(e))
+
+
+if __name__ == '__main__':
+
+    domain_id = -1
+    try:
+        if len(sys.argv) > 1:
+            domain_id = int(sys.argv[1])
+        else:
+            msg = 'missing domain ID'
+            LogUtil.error(msg)
+            raise Exception(msg)
+
+        MainProgram().execute(domain_id)
+    except:
+        msg = 'could not shutdown domain %d' % domain_id
+        LogUtil.error(msg)
+        LogUtil.exception(msg)
+        raise

@@ -1,4 +1,5 @@
 *.pyc
+.cache
 .idea
 .project
 .settings

@@ -520,7 +520,7 @@ class Testor(unittest.TestCase):
             self.fail("No error message set.")
         else:
             self.failUnless(errorMessage, "Empty error message.")
-            printError('VM %s failed with error message:\n%s' % (vmId, errorMessage))
+            printInfo('VM %s failed with error message:\n%s' % (vmId, errorMessage))
 
     def _startStopVmAndGetVmInfo(self):
         """Return VM monitoring info and VM id."""
@@ -749,10 +749,10 @@ class Testor(unittest.TestCase):
         try:
             Util.printAction('Downloading volume...')
             # compressed disk comes in HTTP response - don't print it from HTTP client!
-            verb_save = pdisk.configHolder.verboseLevel
-            pdisk.configHolder.verboseLevel = 0
+            verb_save = pdisk.client.verboseLevel
+            pdisk.client.verboseLevel = 0
             pdisk.downloadVolume(diskUUID, downloadedCompressedDisk)
-            pdisk.configHolder.verboseLevel = verb_save
+            pdisk.client.verboseLevel = verb_save
             volume = self._gunzip(downloadedCompressedDisk)
         finally:
             try:

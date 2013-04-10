@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2013, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import sys
+
+sys.path.append('/var/lib/stratuslab/python')
+
+import os
+import shutil
+import StringIO
+import libvirt
+
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+LIBVIRT_URI = 'qemu:///system'
+
+
+class MainProgram(object):
+    """
+    Deploy a virtual machine.  When running the command, the complete
+    path of the deployment descriptor file must be given.  The contents
+    of this file must be provided on the standard input for the command.
+    """
+
+    def execute(self, deploy_desc_path):
+        self.deploy_desc_path = deploy_desc_path
+
+        self.read_deployment_descriptor()
+        self.save_deployment_descriptor()
+        self.create_domain()
+
+    def read_deployment_descriptor(self):
+        with StringIO.StringIO() as f:
+            shutil.copyfileobj(sys.stdin, f)
+            self.xml_deploy_desc = f.getvalue()
+
+        LogUtil.info('read XML deployment descriptor')
+
+    def save_deployment_descriptor(self):
+        """
+        Saves the XML deployment descriptor to a file on disk.  If the argument is
+        None, then the descriptor is not saved.  The file on disk is only used for
+        debugging and is not used to launch the virtual machine itself.
+        """
+
+        if self.deploy_desc_path:
+            deploy_desc_dir = os.path.dirname(self.deploy_desc_path)
+
+            os.makedirs(deploy_desc_dir)
+            with open(self.deploy_desc_path, 'w') as f:
+                f.write(self.xml_deploy_desc)
+
+            LogUtil.info('wrote XML deployment descriptor to %s' % self.deploy_desc_dir)
+        else:
+            LogUtil.info('XML deployment descriptor has not been written to disk')
+
+    def create_domain(self):
+        conn = libvirt.open(LIBVIRT_URI)
+        domain = conn.createXML(xmldesc=self.xml_deploy_desc)
+
+        LogUtil.info('created domain %d, %s' % (domain.ID(), domain.UUIDString()))
+
+
+if __name__ == '__main__':
+    try:
+        deploy_desc_path = len(sys.argv) > 1 and sys.argv[1] or None
+        MainProgram().execute(deploy_desc_path)
+    except:
+        msg = 'could not create domain from %s' % deploy_desc_path
+        LogUtil.error(msg)
+        LogUtil.exception(msg)
+        raise

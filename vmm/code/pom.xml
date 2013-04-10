@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>stratuslab-vmm-pkg</artifactId>
+  <name>StratusLab Virtual Machine Management (PKG)</name>
+  <packaging>pom</packaging>
+
+  <parent>
+    <groupId>eu.stratuslab.client</groupId>
+    <artifactId>stratuslab-vmm</artifactId>
+    <version>2.9-SNAPSHOT</version>
+  </parent>
+
+  <build>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>insert-python-scripts</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+
+            <configuration>
+              <delimiters>
+                <delimiter>${*}</delimiter>
+              </delimiters>
+              <outputDirectory>${project.build.directory}/scripts</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>main/python</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+
+          </execution>
+        </executions>
+
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+
+        <executions>
+
+          <execution>
+            <id>cli-user-bundle</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>src/main/assembly/bundle.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+
+        </executions>
+
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>
