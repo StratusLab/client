@@ -46,7 +46,12 @@ class MainProgram(CommandBaseUser):
 
     def parse(self):
 
-        self.parser.usage = '''%prog [options] <metadata-file>'''
+        self.parser.usage = '''%prog [options] metadata-file'''
+
+        self.parser.description = '''
+Sign the given metadata description of a machine or disk image.  The
+metadata-file argument is the file containing the metadata to sign.
+'''
 
         P12Certificate.addOptions(self.parser)
 

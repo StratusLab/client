@@ -46,6 +46,13 @@ class MainProgram(AuthnCommand):
     def parse(self):
         Uploader.buildUploadParser(self.parser)
 
+        self.parser.usage = '''%prog [options] metadata-file'''
+
+        self.parser.description = '''
+Uploads metadata about a machine or disk image to the Marketplace.
+The metadata-file argument is the signed metadata file to upload.
+'''
+
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):

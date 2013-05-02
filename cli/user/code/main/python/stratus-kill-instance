@@ -34,6 +34,15 @@ LogUtil.get_console_logger()
 class MainProgram(InstanceCommand):
     """A command-line program to kill a virtual machine."""
 
+    def parse(self):
+        self.parser_usage = '''%prog [options] vm-id ...'''
+        self.parser_description = '''
+Stop one or more virtual machines and release their associated
+resources.  The vm-id arguments are the identifiers of the VM
+instances to stop.
+'''
+        super(MainProgram, self).parse()
+
     def doWork(self):
         self.killInstances()
 

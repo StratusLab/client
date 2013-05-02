@@ -46,11 +46,14 @@ class MainProgram(AuthnCommand, PortTranslationCommand):
 
     def parse(self):
 
-        self.parser.usage = '%prog [options] [vm-id]'
+        self.parser.usage = '%prog [options] [vm-id ...]'
 
-        self.parser.description = '''[vm-id] - space separated list of VM IDs.
-Without the parameter [vm-id] the command lists the available VMs belonging
-to the user (-u/--username).'''
+        self.parser.description = '''
+Provides information about the virtual machine with the given
+identifiers or all virtual machine if no identifier is given.  The
+vm-id arguments are the identifiers of the machines to list. All
+virtual machines will be listed if no argument is given.
+'''
 
         PortTranslationCommand.addCommonOptions(self.parser)
         AuthnCommand.addCloudEndpointOptions(self.parser)

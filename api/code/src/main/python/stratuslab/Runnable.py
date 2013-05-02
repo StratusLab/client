@@ -27,7 +27,7 @@ from marketplace.Util import Util as MarketplaceUtil
 
 class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
-    parser_usage = '''%prog [defaultOptions] image'''
+    parser_usage = '''%prog [options] image'''
     parser_description = 'image - Marketplace image ID or PDISK volume UUID'
 
     def __init__(self):

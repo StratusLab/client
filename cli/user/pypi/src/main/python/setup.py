@@ -39,7 +39,6 @@ setup(
         'bin/stratus-prepare-context',
         'bin/stratus-run-cluster',
         'bin/stratus-run-instance',
-        'bin/stratus-save-instance',
         'bin/stratus-shutdown-instance',
         'bin/stratus-sign-metadata',
         'bin/stratus-update-volume',
@@ -90,6 +89,6 @@ setup(
         "stomp.py >= 3.1.3",
         "pika >= 0.9.9",
         "httplib2 >= 0.7.7",
-        "couchbase >= 0.8.2"
+        "couchbase == 0.8.2"
     ],
 )

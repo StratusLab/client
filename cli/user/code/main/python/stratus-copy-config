@@ -50,6 +50,12 @@ class MainProgram(CommandBaseUser):
 
         self.parser.usage = '''%prog [options]'''
 
+        self.parser.description = '''
+Copies the reference StratusLab client configuration file into the
+correct location for the user.  Will not overwrite existing file
+unless forced.
+'''
+
         self.parser.add_option('--force', action='store_true',
                                dest='force', default=False,
                                help='force overwrite of existing file')

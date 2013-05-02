@@ -48,7 +48,10 @@ class MainProgram(CommandBase):
     def parse(self):
         self.parser.usage = '%prog [options] image'
 
-        self.parser.description = 'image - image to build the metadata for'
+        self.parser.description = '''
+Construct a new metadata description of a machine or disk image.  The
+image argument is the machine or disk image file to describe.
+'''
 
         self.parser.add_option('--author', dest='creator',
                                help='Author of the new image',

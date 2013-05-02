@@ -46,6 +46,14 @@ class MainProgram(AuthnCommand):
 
     def parse(self):
         Uploader.buildUploadParser(self.parser)
+
+        self.parser.usage = '''%prog [options] image-file'''
+
+        self.parser.description = '''
+Uploads the given machine or disk image file to the persistent
+disk service.  The image-file argument is the file to upload.
+'''
+
         self.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
 
         self.options, self.args = self.parser.parse_args()

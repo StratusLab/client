@@ -42,8 +42,11 @@ class MainProgram(AuthnCommand, StorageCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog volume_uid ... [options]'
-        self.parser.description = '''Delete a persistent disk'''
+        self.parser.usage = '%prog [options] volume-uuid ...'
+        self.parser.description = '''
+Delete a persistent volume (disk) or volumes. The volume-uuid
+arguments are the unique identifiers of volumes to remove.
+'''
 
         StorageCommand.addPDiskEndpointOptions(self.parser)
 

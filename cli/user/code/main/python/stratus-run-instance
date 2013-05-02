@@ -38,6 +38,11 @@ LogUtil.get_console_logger()
 class MainProgram(Runnable):
     """A command-line program to run a virtual machine."""
 
+    parser_description = '''
+Defines and starts a virtual machine instance.  The image argument is
+the Marketplace ID or persistent volume UUID to start.
+'''
+
     def parse(self):
         options = Runner.defaultRunOptions()
 

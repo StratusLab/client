@@ -39,9 +39,14 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog files'
+        self.parser.usage = '%prog file-desc ...'
 
-        self.parser.description = 'files - list of mime types and files'
+        self.parser.description = '''
+Creates a context file for use with the CloudInit virtual machine
+contextualization.  Each argument is a mime-type and file name pair,
+separated by a comma.  The pseudo-mime-type 'ssh' is used for ssh
+keys.  The output is in the file 'cloud-init.txt'.
+'''
 
         self.options, self.args = self.parser.parse_args()
 

@@ -47,8 +47,12 @@ class MainProgram(AuthnCommand, PortTranslationCommand):
     def parse(self):
         defaultOptions = self._setDefaultOptions()
 
-        self.parser.usage = '%prog [options] [vm-id]'
-        self.parser.description = '''[vm-id] - virtual machine identifier'''
+        self.parser.usage = '%prog [options] vm-id'
+        self.parser.description = '''
+Connects to the given virtual machine via SSH.  Automatically retries
+the connection on failures. The vm-id argument is the virtual machine
+identifier.
+'''
 
         self.parser.add_option('-k', '--key', dest='userPrivateKeyFile',
                                help='SSH private key file to log on the machine. Default %s.' % defaultOptions[

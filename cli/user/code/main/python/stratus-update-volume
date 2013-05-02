@@ -42,8 +42,11 @@ class MainProgram(AuthnCommand, StorageCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog [options]'
-        self.parser.description = '''Update persistent disk metadata'''
+        self.parser.usage = '%prog [options] volume-uuid'
+        self.parser.description = '''
+Update the metadata for a given persistent volume (disk).  The
+volume-uuid is the unique identifier for the volume to update.
+'''
 
         StorageCommand.addOptions(self.parser)
 

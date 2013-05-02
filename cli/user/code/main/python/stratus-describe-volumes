@@ -41,9 +41,14 @@ class MainProgram(AuthnCommand, StorageCommand):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog  [volume_uid ...] [[--filter name:value] ...]'
-        self.parser.description = '''List all available disk or only specified
-for the current user (-u/--username).'''
+        self.parser.usage = '%prog [options] [volume-uuid ...]'
+
+        self.parser.description = '''
+Provides information about the volumes (disks) associated with the
+given identifiers.  Provides information about all volumes if no
+identifiers are given.  The volume-uuid arguments are the volume
+identifiers.
+'''
 
         self.parser.add_option('-f', '--filter', dest='filters',
                                help='''Filter available disk with specified properties.
