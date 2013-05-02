@@ -23,7 +23,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-import stratuslab.Util as Util
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Policy import Policy
@@ -53,7 +53,7 @@ class MainProgram(CommandBaseSysadmin):
                                help='Policy configuration file. Default: ' + Policy.POLICY_CFG,
                                metavar='FILE', default=Policy.POLICY_CFG)
 
-        Util.addEndpointOption(self.parser)
+        MarketplaceUtil.addEndpointOption(self.parser)
 
         self.options, self.args = self.parser.parse_args()
 
