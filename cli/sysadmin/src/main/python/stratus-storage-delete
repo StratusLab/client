@@ -38,7 +38,10 @@ class MainProgram(StorageCommand):
 
     def parse(self):
         self.parser.usage = '%prog <uuid>'
-        self.parser.description = '''Delete an existing persistent disk'''
+
+        self.parser.description = '''
+Delete an existing persistent volume (disk).
+'''
 
         StorageCommand.addPDiskEndpointOptions(self.parser)
 

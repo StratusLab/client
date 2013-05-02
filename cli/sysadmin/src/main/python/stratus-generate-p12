@@ -43,6 +43,10 @@ class MainProgram(CommandBaseSysadmin):
     def parse(self):
         self.parser.usage = '%prog [options]'
 
+        self.parser.description = '''
+Generates a PKCS12 (P12) certificate.
+'''
+
         CertGenerator.buildCertGeneratorP12Parser(self.parser)
 
         self.options, self.args = self.parser.parse_args()

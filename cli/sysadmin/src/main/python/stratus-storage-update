@@ -37,8 +37,12 @@ class MainProgram(StorageCommand):
     """A command-line program to update storage information."""
 
     def parse(self):
-        self.parser.usage = '%prog <uuid> <key> <value>'
-        self.parser.description = '''Update an existing storage disk'''
+        self.parser.usage = '%prog uuid key value'
+
+        self.parser.description = '''
+Update the metadata (key/value) associated for the persistent volume
+identified by the UUID.
+'''
 
         StorageCommand.addPDiskEndpointOptions(self.parser)
 

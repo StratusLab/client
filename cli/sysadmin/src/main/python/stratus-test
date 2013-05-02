@@ -45,9 +45,13 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '%prog [options] [test] ...'
+        usage = '%prog [options] [tests]'
 
-        self.parser.description = '[test] - comma separated list of tests, according to the name provided by -l/--list.'
+        self.parser.description = '''
+Run the identified tests.  The argument is a comma-separated list of
+tests to run.  The available tests can be found with the -l/--list
+option.
+'''
 
         self.parser.usage = usage
         self.parser.add_option('-c', '--config', dest='configFile',

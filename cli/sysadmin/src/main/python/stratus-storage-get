@@ -37,8 +37,12 @@ class MainProgram(StorageCommand):
     """A command-line program toget storage information."""
 
     def parse(self):
-        self.parser.usage = '%prog <uuid> <key>'
-        self.parser.description = '''Get storage disk value for given key'''
+        self.parser.usage = '%prog uuid key'
+
+        self.parser.description = '''
+Get storage volume (disk) metadata value for given volume (uuid) and
+key.
+'''
 
         StorageCommand.addPDiskEndpointOptions(self.parser)
 

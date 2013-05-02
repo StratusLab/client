@@ -43,11 +43,13 @@ class MainProgram(CommandBaseSysadmin):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = "%prog [options] <uri>"
 
-        self.parser.description = "<uri>    URI of the metadata entry corresponding to the image to download"
+        self.parser.usage = '%prog [options] uri'
 
-        self.parser.usage = usage
+        self.parser.description = '''
+Download the image corresponding to the image described in the
+metadata entry identified by the given URI.
+'''
 
         MarketplaceUtil.addEndpointOption(self.parser)
 

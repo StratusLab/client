@@ -45,7 +45,10 @@ class MainProgram(StorageCommand):
 
     def parse(self):
         self.parser.usage = '%prog [options]'
-        self.parser.description = '''Create a new persistent disk'''
+
+        self.parser.description = '''
+Create a new persistent volume (disk).
+'''
 
         self.parser.add_option('-s', '--size', dest='volumeSize',
                                help='Size of the volume in GiBs', metavar='SIZE',

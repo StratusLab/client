@@ -41,9 +41,11 @@ class MainProgram(CommandBaseSysadmin):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] node-ip ...'''
+        self.parser.usage = '%prog [options] node-ip ...'
 
-        self.parser.usage = usage
+        self.parser.description = '''
+Registers OpenNebula nodes with the OpenNebula frontend/server.
+'''
 
         self.parser.add_option('-r', '--remove', dest='deRegister',
                                help='de-register node', action='store_true',

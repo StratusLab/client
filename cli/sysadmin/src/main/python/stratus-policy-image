@@ -43,11 +43,12 @@ class MainProgram(CommandBaseSysadmin):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] <image-identifier>
+        self.parser.usage = '%prog [options] image-identifier'
 
-<image-identifier>    Marketplace image identifier (example: GOaxJFdoEXvqAm9ArJgnZ0_ky6F)'''
-
-        self.parser.usage = usage
+        self.parser.description = '''
+Evaluate the machine image policy for the given Marketplace
+identifier.
+'''
 
         self.parser.add_option('--policy', dest='policyConfigFile',
                                help='Policy configuration file. Default: ' + Policy.POLICY_CFG,

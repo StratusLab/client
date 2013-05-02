@@ -47,8 +47,11 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        usage = '%prog [options]'
-        self.parser.usage = usage
+        self.parser.usage = '%prog [options]'
+
+        self.parser.description = '''
+Installs the StratusLab software on a remote host.
+'''
 
         self.parser.add_option('-n', '--nodes', dest='nodes',
                                help='node list, separate by space', default='localhost')

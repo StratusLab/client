@@ -27,13 +27,15 @@ class MainProgram(CommandBaseSysadmin):
         self.element
 
     def parse(self):
-        usage = '''Usage: %prog --get-element <ELEMENT> <marketplace id or URL>
-
-<marketplace id or URL>    can be either a Marketplace identifier (e.g.
-                           MNb7A8XGnNwwJAaZUBj5fwYVoFf) or a URL (e.g.
-                           https://marketplace.stratuslab.eu/metadata/MNb7A8XGnNwwJAaZUBj5fwYVoFf)'''
+        usage = '''%prog [options] marketplace-id-or-url'''
 
         self.parser.usage = usage
+
+        self.parser.description = '''
+Recover the value of the selected element from the identified metadata
+entry in the Marketplace.  The metadata entry can be identified by the
+Marketplace ID or a URL.
+'''
 
         self.parser.add_option('-e', '--get-element', dest='element', help='Element to get.',
                                metavar='ELEMENT', default=None)
