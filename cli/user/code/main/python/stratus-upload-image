@@ -71,7 +71,7 @@ disk service.  The image-file argument is the file to upload.
             self.parser.error('Image file does not exist: ' + self.image)
 
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.set('imageMetadata',
                          PDiskVolume.extractVolumeOptionsAsDict(self.options))
 

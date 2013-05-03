@@ -55,7 +55,8 @@ class Uploader(object):
         if options.marketplaceEndpoint:
             options.withMarketPlace = True
 
-        MarketplaceUtil.checkEndpointOption(options)
+        if not options.imageOnly:
+            MarketplaceUtil.checkEndpointOption(options)
 
         allowedFormats = list(Compressor.compressionFormats)
         allowedFormats.append('none')
@@ -63,7 +64,11 @@ class Uploader(object):
         if options.compressionFormat not in allowedFormats:
             parser.error('Unknown compression format')
 
-        PDiskEndpoint.checkOptions(options)
+        # Do NOT check the validity of the pdisk options, so that the
+        # values can be taken from non-pdisk options when necessary.
+        # PDiskEndpoint.checkOptions(options)
+
+        # This essentially just checks that the volume tag is acceptable.
         PDiskVolume.checkOptions(options)
 
     def __init__(self, imageFile, configHolder=ConfigHolder()):
