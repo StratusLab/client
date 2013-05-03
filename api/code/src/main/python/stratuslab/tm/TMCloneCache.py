@@ -298,7 +298,7 @@ class TMCloneCache(object):
         turl = self.pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
                      'Unable to attach persistent disk from %s to %s with TURL %s' % 
-                     (diskSrc, self.diskDstPath, turl)
+                     (diskSrc, self.diskDstPath, turl))
 
     def _retrieveAndCachePDiskImage(self):
         self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
