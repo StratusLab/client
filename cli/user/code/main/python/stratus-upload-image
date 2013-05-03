@@ -64,7 +64,8 @@ disk service.  The image-file argument is the file to upload.
         self.image = self.args[0]
 
         Uploader.checkUploadOptions(self.options, self.parser)
-        self.checkP12CertOptionsOnly()
+        if not self.options.imageOnly:
+            self.checkP12CertOptionsOnly()
 
         if not os.path.isfile(self.image):
             self.parser.error('Image file does not exist: ' + self.image)
