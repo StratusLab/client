@@ -218,6 +218,14 @@ class PersistentDisk(object):
         self._raiseOnErrors(headers, content)
         return int(json.loads(content)['count'])
 
+    def getTurl(self, uuid):
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s/turl/' % (self.endpoint, uuid)
+        headers, content = self._getJson(url)
+        self._raiseOnErrors(headers, content)
+        return json.loads(content)['turl']
+
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
         self._printContacting()

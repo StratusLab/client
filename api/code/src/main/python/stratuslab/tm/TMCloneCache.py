@@ -294,7 +294,9 @@ class TMCloneCache(object):
     # -------------------------------------------
 
     def _attachPDisk(self, diskSrc):
-        self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath],
+        uuid = self._getStringPart(self.diskSrc, -1, 4)
+        turl = self.pdisk.getTurl(uuid)
+        self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
                      'Unable to attach persistent disk to %s' % self.diskDstPath)
 
     def _retrieveAndCachePDiskImage(self):
