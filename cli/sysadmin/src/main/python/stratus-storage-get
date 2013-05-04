@@ -65,7 +65,12 @@ key.
         pdisk = PersistentDisk(configHolder)
 
         uuid, key = self.args
-        value = pdisk.getValue(key, uuid)
+
+        if key != 'turl':
+            value = pdisk.getValue(key, uuid)
+        else:
+            value = pdisk.getTurl(uuid)
+
         print value
 
 
