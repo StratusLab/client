@@ -219,6 +219,7 @@ class PersistentDisk(object):
         return int(json.loads(content)['count'])
 
     def getTurl(self, uuid):
+        self._setPDiskUserCredentials()
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/%s/turl/' % (self.endpoint, uuid)
