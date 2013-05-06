@@ -218,7 +218,7 @@ def fileGetContent(filename):
     return content
 
 
-def filePutContent(filename, data, neverShowData=False):
+def filePutContent(filename, data, neverShowData=True):
     _printDetail('Creating file %s with content: \n%s\n' % (filename,
                                                             (neverShowData and '<hidden>' or data)))
     if isinstance(data, unicode):
