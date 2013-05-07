@@ -101,6 +101,10 @@ image argument is the machine or disk image file to describe.
                                help='Title to append to the manifest file',
                                default='', metavar='TEXT')
 
+        self.parser.add_option('--tag', dest='tag',
+                               help='Alternative name for the image',
+                               default='', metavar='TEXT')
+
         self.parser.add_option('--comment', dest='comment',
                                help='Comment to append to the manifest file',
                                default='', metavar='TEXT')

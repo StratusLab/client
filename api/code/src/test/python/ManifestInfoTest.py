@@ -66,6 +66,7 @@ class ManifestInfoTest(unittest.TestCase):
         <dcterms:valid>2011-07-23T10:59:42+0200</dcterms:valid>
         <dcterms:publisher>%(publisher)s</dcterms:publisher>
         <dcterms:title>ttylinux-9.7-i486-base-1.1</dcterms:title>
+        <dcterms:alternative>ttylinux</dcterms:alternative>
         <dcterms:description>A 32-bit ttylinux image that follows the standard
             StratusLab contextualization strategy.</dcterms:description>
         <slterms:version>1.0</slterms:version>

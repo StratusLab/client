@@ -48,6 +48,7 @@
         <dcterms:valid>%(valid)s</dcterms:valid>
 
         <dcterms:title>%(title)s</dcterms:title>
+        <dcterms:alternative>%(tag)s</dcterms:alternative>
         <dcterms:description>%(comment)s</dcterms:description>
 
         <slterms:hypervisor>%(hypervisor)s</slterms:hypervisor>
