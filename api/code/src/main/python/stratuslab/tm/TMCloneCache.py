@@ -157,7 +157,8 @@ class TMCloneCache(object):
 
     def _startFromCowSnapshot(self):
         if self._cacheMiss():
-            self._retrieveAndCachePDiskImage()
+            #self._retrieveAndCachePDiskImage()
+            self._remotelyCachePDiskImage()
 
         try:
             self._checkAuthorization()
@@ -315,6 +316,33 @@ class TMCloneCache(object):
                 self._deleteDownloadedImage()
             except:
                 pass
+
+    def _remotelyCachePDiskImage(self):
+        """
+        This function initializes a new persistent volume from a URL.  The image
+        contents are downloaded directly from the URL by the persistent disk
+        service.  The size (in bytes) and SHA-1 checksum are also validated.
+        """
+
+        self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
+        self._validateMarketplaceImagePolicy()
+
+        imageLocations = self.manifestDownloader.getImageLocations()
+        self._assertLength(imageLocations, 1, atLeast=True)
+        url = imageLocations[0]
+
+        sizeInBytes = self._getImageSize()
+        sha1 = self._getImageChecksum(self._CHECKSUM)
+
+        gbBytes = 10**9
+        sizeInGB = sizeInBytes/gbBytes
+        if sizeInBytes % gbBytes > 0:
+            sizeInGB += 1
+
+        self.pdiskImageId = self.pdisk.createVolumeFromUrl(sizeInGB, '', 'private',
+                                                    url, str(sizeInBytes), sha1)
+
+        self._setNewPDiskImageOriginProperties()
 
     def _uploadDownloadedImageToPdisk(self):
         volume_url = self.pdisk.uploadVolume(self.downloadedLocalImageLocation)
