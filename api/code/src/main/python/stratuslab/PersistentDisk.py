@@ -163,14 +163,14 @@ class PersistentDisk(object):
             return self._getUuidFromJson(uuid)
         self._raiseOnErrors(headers, uuid)
 
-    def createVolumeFromUrl(self, size, tag, visibility, url, bytes, sha1):
+    def createVolumeFromUrl(self, size, tag, visibility, imageUrl, bytes, sha1):
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/' % self.endpoint
         body = {'size': size,
                 'tag': tag,
                 'visibility': self._getVisibilityFromBool(visibility),
-                'url': url,
+                'url': imageUrl,
                 'bytes': bytes,
                 'sha1': sha1}
         headers, uuid = self._postJson(url, urlencode(body))
