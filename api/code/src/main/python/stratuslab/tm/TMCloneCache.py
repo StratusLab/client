@@ -160,7 +160,7 @@ class TMCloneCache(object):
             self._retrieveAndCachePDiskImage()
 
         try:
-            self._checkAuthirization()
+            self._checkAuthorization()
             self._createPDiskSnapshot()
             self._setSnapshotOwner()
             self._createDestinationDir()
@@ -297,7 +297,7 @@ class TMCloneCache(object):
         uuid = self._getStringPart(diskSrc, -1, 4)
         turl = self.pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
-                     'Unable to attach persistent disk from %s to %s with TURL %s' % 
+                     'Unable to attach persistent disk from %s to %s with TURL %s' %
                      (diskSrc, self.diskDstPath, turl))
 
     def _retrieveAndCachePDiskImage(self):
@@ -335,7 +335,7 @@ class TMCloneCache(object):
         self.pdiskSnapshotId = self.pdisk.createCowVolume(self.pdiskImageId, None)
         self._setPDiskIdentifier(snapshotIdentifier, self.pdiskSnapshotId)
 
-    def _checkAuthirization(self):
+    def _checkAuthorization(self):
         pass
 
     def _setSnapshotOwner(self):
