@@ -335,8 +335,8 @@ class TMCloneCache(object):
         sha1 = self._getImageChecksum(self._CHECKSUM)
 
         gbBytes = 10**9
-        sizeInGB = sizeInBytes/gbBytes
-        if sizeInBytes % gbBytes > 0:
+        sizeInGB = long(sizeInBytes)/gbBytes
+        if long(sizeInBytes) % gbBytes > 0:
             sizeInGB += 1
 
         self.pdiskImageId = self.pdisk.createVolumeFromUrl(sizeInGB, '', 'private',
