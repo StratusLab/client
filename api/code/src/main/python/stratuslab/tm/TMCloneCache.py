@@ -157,10 +157,11 @@ class TMCloneCache(object):
 
     def _startFromCowSnapshot(self):
         if self._cacheMiss():
-            self._retrieveAndCachePDiskImage()
+            #self._retrieveAndCachePDiskImage()
+            self._remotelyCachePDiskImage()
 
         try:
-            self._checkAuthirization()
+            self._checkAuthorization()
             self._createPDiskSnapshot()
             self._setSnapshotOwner()
             self._createDestinationDir()
@@ -297,7 +298,7 @@ class TMCloneCache(object):
         uuid = self._getStringPart(diskSrc, -1, 4)
         turl = self.pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
-                     'Unable to attach persistent disk from %s to %s with TURL %s' % 
+                     'Unable to attach persistent disk from %s to %s with TURL %s' %
                      (diskSrc, self.diskDstPath, turl))
 
     def _retrieveAndCachePDiskImage(self):
@@ -315,6 +316,33 @@ class TMCloneCache(object):
                 self._deleteDownloadedImage()
             except:
                 pass
+
+    def _remotelyCachePDiskImage(self):
+        """
+        This function initializes a new persistent volume from a URL.  The image
+        contents are downloaded directly from the URL by the persistent disk
+        service.  The size (in bytes) and SHA-1 checksum are also validated.
+        """
+
+        self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
+        self._validateMarketplaceImagePolicy()
+
+        imageLocations = self.manifestDownloader.getImageLocations()
+        self._assertLength(imageLocations, 1, atLeast=True)
+        url = imageLocations[0]
+
+        sizeInBytes = self._getImageSize()
+        sha1 = self._getImageChecksum(self._CHECKSUM)
+
+        gbBytes = 10 ** 9
+        sizeInGB = long(sizeInBytes) / gbBytes
+        if long(sizeInBytes) % gbBytes > 0:
+            sizeInGB += 1
+
+        self.pdiskImageId = self.pdisk.createVolumeFromUrl(sizeInGB, '', False,
+                                                           url, str(sizeInBytes), sha1)
+
+        self._setNewPDiskImageOriginProperties()
 
     def _uploadDownloadedImageToPdisk(self):
         volume_url = self.pdisk.uploadVolume(self.downloadedLocalImageLocation)
@@ -335,7 +363,7 @@ class TMCloneCache(object):
         self.pdiskSnapshotId = self.pdisk.createCowVolume(self.pdiskImageId, None)
         self._setPDiskIdentifier(snapshotIdentifier, self.pdiskSnapshotId)
 
-    def _checkAuthirization(self):
+    def _checkAuthorization(self):
         pass
 
     def _setSnapshotOwner(self):

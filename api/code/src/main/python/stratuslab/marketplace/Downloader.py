@@ -57,6 +57,8 @@ class Downloader(object):
         ManifestDownloader(self.configHolder).getManifestAsFile(uri, tempMetadataFilename)
         manifestInfo = ManifestInfo(self.configHolder)
 
+        manifestInfo.parseManifestFromFile(tempMetadataFilename)
+
         tempImageFilename = self._downloadFromLocations(manifestInfo)
         self._verifySignature(tempImageFilename, tempMetadataFilename)
 
