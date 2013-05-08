@@ -31,6 +31,7 @@
 
 		<dcterms:publisher>StratusLab</dcterms:publisher>
 		<dcterms:title>linux-with-my-apps</dcterms:title>
+                <dcterms:alternative>ttylinux</dcterms:alternative>
 		<dcterms:description>A 32-bit ttylinux...</dcterms:description>
     <dcterms:compression>gz</dcterms:compression>
 
