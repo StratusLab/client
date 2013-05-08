@@ -157,8 +157,8 @@ class TMCloneCache(object):
 
     def _startFromCowSnapshot(self):
         if self._cacheMiss():
-            #self._retrieveAndCachePDiskImage()
-            self._remotelyCachePDiskImage()
+            self._retrieveAndCachePDiskImage()
+            #self._remotelyCachePDiskImage()
 
         try:
             self._checkAuthorization()
