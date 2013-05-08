@@ -111,7 +111,7 @@ class ManifestInfo(object):
                  ('created',    'created',    NS_DCTERMS, None),
                  ('valid',      'valid',      NS_DCTERMS, None),
                  ('title',      'title',      NS_DCTERMS, ''),
-                 ('tag',        'alternative',NS_DCTERMS, None),
+                 ('tag',        'alternative',NS_DCTERMS, ''),
                  ('comment',    'description',NS_DCTERMS, None),
                  ('compression','compression',NS_DCTERMS, None),
                  ('creator',    'creator',    NS_DCTERMS, self.creator),
