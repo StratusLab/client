@@ -361,6 +361,10 @@ class Creator(object):
 
         self._setUpExtraRepositories()
 
+        self.printDetail('Updating installer')
+
+        ret = self._doInstallerUpdate()
+
         self.printDetail('Installing packages: %s' % self.packages)
 
         ret = self._doInstallPackagesRemotly(self.packages)
@@ -404,6 +408,10 @@ EOF
     def _doInstallPackagesRemotly(self, packages):
         cmd = self._buildInstallerCommand() + ' '
         cmd += ' '.join(packages.split(','))
+        return self._sshCmd(cmd, stderr=self.stderr, stdout=self.stdout)
+
+    def _doInstallerUpdate(self):
+        cmd = self._buildUpdaterCommand()
         return self._sshCmd(cmd, stderr=self.stderr, stdout=self.stdout)
 
     def _buildInstallerCommand(self):
