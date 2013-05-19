@@ -609,6 +609,9 @@ class Testor(unittest.TestCase):
         self._writeToFile(runner, testFile, testString)
         self._umountPDiskAndStopVm(runner, pdiskDevice)
 
+        # Allow a few seconds for the disk to be dismounted.
+        time.sleep(10)
+
         availableUserAfterStop, _ = pdisk.getVolumeUsers(diskUUID)
 
         if availableUserAfterStop != availableUserBeforeStart:
