@@ -178,8 +178,15 @@ class TMSaveCache(object):
         return ':'.join(splittedUri[1:3])
 
     def _detachPDisk(self):
-        self._sshDst(['/usr/sbin/detach-persistent-disk.sh', self.vmDir],
-                     'Unable to detach pdisk at "%s"' % self.vmDir)
+        pdisk = PersistentDisk(self.configHolder)
+        uuid = self.diskName
+        turl = pdisk.getTurl(uuid)
+        self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
+                      self.pdiskPath, self.instanceId,
+                      '--turl', turl,
+                      '--register', '--attach', '--op', 'down'],
+                     'Unable to detach pdisk "%s with TURL %s on VM %s"' % 
+                     (self.pdiskPath, turl, self.instanceId))
 
     def _retrieveOriginImageInfo(self):
         vmSource = self.cloud.getVmDiskSource(self.instanceId, 0)

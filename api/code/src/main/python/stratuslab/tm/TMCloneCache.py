@@ -20,6 +20,7 @@
 #
 from time import time
 from os.path import dirname
+from os.path import basename
 from getpass import getuser
 from urlparse import urlparse
 
@@ -297,10 +298,24 @@ class TMCloneCache(object):
     def _attachPDisk(self, diskSrc):
         uuid = self._getStringPart(diskSrc, -1, 4)
         turl = self.pdisk.getTurl(uuid)
-        self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
-                     'Unable to attach persistent disk from %s to %s with TURL %s' %
-                     (diskSrc, self.diskDstPath, turl))
+        disk_name = basename(self.diskDstPath)
+        vm_id = self._retrieveInstanceId()
+        vm_dir = dirname(dirname(dirname(self.diskDstPath)))
 
+        self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
+                      '--pdisk-id', diskSrc,
+                      '--vm-dir', vm_dir,
+                      '--vm-id', vm_id,
+                      '--vm-disk-name', disk_name,
+                      '--turl', turl,
+                      '--register', '--attach', '--link', '--op', 'up'],
+                     'Unable to attach persistent disk: %s, %s, %s, %s, %s' %
+                     (diskSrc, vm_dir, vm_id, disk_name, turl))
+
+        #self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
+        #             'Unable to attach persistent disk from %s to %s with TURL %s' %
+        #             (diskSrc, self.diskDstPath, turl))
+        
     def _retrieveAndCachePDiskImage(self):
         self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
         self._validateMarketplaceImagePolicy()
