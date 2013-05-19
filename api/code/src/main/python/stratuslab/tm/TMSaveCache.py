@@ -165,8 +165,8 @@ class TMSaveCache(object):
         self.pdiskHostPort = self._getPDiskHostPortFromURI(self.pdiskPath)
 
     def _getPDiskServerInfo(self):
-        return self._sshDst(['source', '/etc/stratuslab/pdisk-host.cfg;',
-                             'head', '-1', '%s/$REGISTER_FILENAME' % self.vmDir],
+        # FIXME: The register file name should be read from the config file.
+        return self._sshDst(['head', '-1', '%s/pdisk' % self.vmDir],
                             'Unable to get pdisk server info')
 
     def _getDiskNameFormURI(self, uri):

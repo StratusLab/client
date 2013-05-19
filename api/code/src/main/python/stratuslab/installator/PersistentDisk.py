@@ -69,7 +69,6 @@ class PersistentDisk(Installator):
                                                   self.PDISK_BACKEND_CONF_NAME + '.tpl')
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
-        self.pdiskHostConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk-host.cfg')
         self.pdiskHostConfigFile2 = os.path.join(Defaults.ETC_DIR, 'pdisk-host.conf')
         self.pdiskHomeDir = '/opt/stratuslab/storage/pdisk'
         self.cloudNodeKey = os.path.join(self.pdiskHomeDir, 'cloud_node.key')
@@ -187,14 +186,7 @@ class PersistentDisk(Installator):
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
 
-        self._updateConfigHostAttachDetachScripts()
         self._updateConfigHostPDiskClient()
-
-    def _updateConfigHostAttachDetachScripts(self):
-        self._overrideHostConfigFile('SHARE_TYPE', self.persistentDiskShare)
-        self._overrideHostConfigFile('NFS_LOCATION', self.persistentDiskNfsMountPoint)
-        self._overrideHostConfigFile('PDISK_USER', self.pdiskUsername)
-        self._overrideHostConfigFile('PDISK_PSWD', self.pdiskPassword)
 
     def _updateConfigHostPDiskClient(self):
         self._overrideHostConfigFile2('pdisk_user', self.pdiskUsername)
@@ -230,10 +222,7 @@ class PersistentDisk(Installator):
         
     def _overrideConfig(self, key, value):
         self._overrideValueInFile(key, value, self.pdiskConfigFile)    
-        
-    def _overrideHostConfigFile(self, key, value):
-        self._overrideValueInFile(key, value, self.pdiskHostConfigFile)   
-        
+
     def _overrideHostConfigFile2(self, key, value):
         self._overrideValueInFile(key, value, self.pdiskHostConfigFile2)   
         
