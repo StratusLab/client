@@ -166,6 +166,10 @@ class TMSaveCache(object):
                         self._getPDiskHostPortFromURI(self.pdiskPath)]
             self.attachedVolumes.append(namePort)
 
+        # copy out the information for the first disk in the list
+        # this will be the one used when saving a new image
+        self.pdiskPath, self.diskName = uris[0]
+
     def _getAttachedVolumeURIs(self):
         register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
                                                     '--vm-id',  str(self.instanceId)],
