@@ -116,7 +116,7 @@ one_port = 2633
         tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo:/bar/1'},
                          conf_filename=self.conf_filename)
         tm._parseArgs()
-        tm._retrievePDiskInfo()
+        tm._retrieveAttachedVolumeInfo()
         tm.createImageInfo = {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL:'jrandom@tester.org',
                               Runner.CREATE_IMAGE_KEY_CREATOR_NAME:'Jay Random',
                               Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT:'test',
