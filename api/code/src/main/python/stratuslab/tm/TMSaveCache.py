@@ -162,13 +162,14 @@ class TMSaveCache(object):
         uris = self._getAttachedVolumeURIs()
         self.attachedVolumes = []
         for uri in uris:
-            namePort = [self._getDiskNameFromURI(self.pdiskPath),
-                        self._getPDiskHostPortFromURI(self.pdiskPath)]
+            namePort = [self._getDiskNameFromURI(uri),
+                        self._getPDiskHostPortFromURI(uri)]
             self.attachedVolumes.append(namePort)
 
         # copy out the information for the first disk in the list
         # this will be the one used when saving a new image
-        self.pdiskPath, self.diskName = uris[0]
+        self.pdiskPath = uris[0]
+        self.diskName, _ = self.attachedVolumes[0]
 
     def _getAttachedVolumeURIs(self):
         register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
@@ -176,7 +177,7 @@ class TMSaveCache(object):
                                                    'Unable to get registered volumes')
         return register_filename_contents.splitlines()
 
-    def _getDiskNameFormURI(self, uri):
+    def _getDiskNameFromURI(self, uri):
         return uri.split(':')[-1]
 
     def _getPDiskHostPortFromURI(self, uri):

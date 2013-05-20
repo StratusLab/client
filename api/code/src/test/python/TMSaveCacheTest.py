@@ -111,7 +111,7 @@ one_port = 2633
 
         PDISK_ENDPOINT = 'pdisk:0.0.0.0:8445'
 
-        TMSaveCache._retrieveAttachedVolumeInfo = Mock(return_value = [PDISK_ENDPOINT+':48ac4190-9a11-4a06-8bef-03fd97080eba'])
+        TMSaveCache._getAttachedVolumeURIs = Mock(return_value = [PDISK_ENDPOINT+':48ac4190-9a11-4a06-8bef-03fd97080eba'])
 
         tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo:/bar/1'},
                          conf_filename=self.conf_filename)
