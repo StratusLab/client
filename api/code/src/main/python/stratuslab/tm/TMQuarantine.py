@@ -1,0 +1,207 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2013, SixSq Sarl
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+import os
+import shutil
+from os.path import dirname
+from getpass import getuser
+
+from stratuslab.Util import defaultConfigFile, sshCmdWithOutput
+from stratuslab.Authn import LocalhostCredentialsConnector
+from stratuslab.Defaults import sshPublicKeyLocation
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.CloudConnectorFactory import CloudConnectorFactory
+from stratuslab.commandbase.StorageCommand import PDiskEndpoint
+
+
+class TMQuarantine(object):
+    """Quarantine the files for a terminated virtual machine"""
+
+    # Debug option
+    PRINT_TRACE_ON_ERROR = True
+    DEFAULT_VERBOSE_LEVEL = 0
+
+    # Position of the provided args
+    _ARG_SRC_POS = 1
+
+    _PDISK_PORT = 8445
+
+    def __init__(self, args, **kwargs):
+        self.args = args
+
+        self.diskSrcPath = None
+        self.diskSrcHost = None
+        self.vmDir = None
+        self.diskName = None
+        self.pdiskHostPort = None
+        self.snapshotMarketplaceId = None
+        self.targetMarketplace = None
+        self.createdPDiskId = None
+        self.p12cert = ''
+        self.p12pswd = None
+        self.pdiskEndpoint = None
+        self.pdiskPath = None
+        self.pdiskPathNew = None
+        self.originImageIdUrl = None
+        self.originImageId = None
+        self.originMarketPlace = None
+        self.instanceId = None
+        self.cloud = None
+
+        self.persistentDiskIp = None
+        self.persistentDiskLvmDevice = None
+
+        self._initFromConfig(kwargs.get('conf_filename', ''))
+
+        self._initCloudConnector()
+
+    def run(self):
+        try:
+            self._run()
+        finally:
+            self._cleanup()
+
+    def _run(self):
+        self._checkArgs()
+        self._parseArgs()
+        self._retrieveInstanceId()
+        self._retrieveVmDir()
+        self._retrieveAttachedVolumeInfo()
+        self._detachAllVolumes()
+        self._moveFilesToQuarantine()
+
+    def _initFromConfig(self, conf_filename=''):
+        config = ConfigHolder.configFileToDictWithFormattedKeys(conf_filename or
+                                                                defaultConfigFile)
+        options = PDiskEndpoint.options()
+        self.configHolder = ConfigHolder(options, config)
+        self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
+        self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
+        self.configHolder.assign(self)
+
+    def _initCloudConnector(self):
+        credentials = LocalhostCredentialsConnector(self.configHolder)
+        self.cloud = CloudConnectorFactory.getCloud(credentials)
+        self.cloud.setEndpointFromParts('localhost', self.configHolder.onePort)
+
+    def _checkArgs(self):
+        if len(self.args) != 2:
+            raise ValueError('Invalid number of arguments')
+
+    def _parseArgs(self):
+        src = self.args[self._ARG_SRC_POS]
+        self.diskSrcPath = self._getDiskPath(src)
+        self.diskSrcHost = self._getDiskHost(src)
+
+    def _moveFilesToQuarantine(self):
+        quarantine_dir = os.path.join(self.vmDir, 'quarantine')
+        shutil.move(self.vmDir, quarantine_dir)
+        pass
+
+    #--------------------------------------------
+    # Persistent disk and related
+    #--------------------------------------------
+
+    def _retrieveAttachedVolumeInfo(self):
+        uris = self._getAttachedVolumeURIs()
+        self.attachedVolumes = []
+        for uri in uris:
+            namePort = [self._getDiskNameFromURI(self.pdiskPath),
+                        self._getPDiskHostPortFromURI(self.pdiskPath)]
+            self.attachedVolumes.append(namePort)
+
+    def _getAttachedVolumeURIs(self):
+        # FIXME: The register file name should be read from the config file.
+        register_filename_contents = self._sshDst(['cat', '%s/pdisk' % self.vmDir],
+                                                  'Unable to get pdisk server info')
+        return register_filename_contents.splitlines()
+
+    def _getDiskNameFromURI(self, uri):
+        return uri.split(':')[-1]
+
+    def _getPDiskHostPortFromURI(self, uri):
+        splittedUri = uri.split(':')
+        self._assertLength(splittedUri, 4)
+        return ':'.join(splittedUri[1:3])
+
+    def _detachAllVolumes(self):
+        pdisk = PersistentDisk(self.configHolder)
+        for volume in self.attachedVolumes:
+            uuid, host_port = volume
+            self._detachSingleVolume(pdisk, uuid, host_port)
+
+    def _detachSingleVolume(self, pdisk, uuid, host_port):
+        turl = pdisk.getTurl(uuid)
+        self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
+                      host_port, str(self.instanceId),
+                      '--turl', turl,
+                      '--register', '--attach', '--op', 'down'],
+                     'Unable to detach pdisk "%s with TURL %s on VM %s"' %
+                     (self.pdiskPath, turl, str(self.instanceId)))
+
+    #--------------------------------------------
+    # Utility
+    #--------------------------------------------
+
+    def _assertLength(self, elem, size):
+        if len(elem) != size:
+            raise ValueError('List should have %s element(s), got %s' % (size, len(elem)))
+
+    def _getDiskPath(self, arg):
+        return self._getStringPart(arg, 1)
+
+    def _getDiskHost(self, arg):
+        return self._getStringPart(arg, 0)
+
+    def _findNumbers(self, elems):
+        findedNb = []
+        for nb in elems:
+            try:
+                findedNb.append(int(nb))
+            except Exception:
+                pass
+        return findedNb
+
+    def _getStringPart(self, arg, part, nbPart=2, delimiter=':'):
+        path = arg.split(delimiter)
+        self._assertLength(path, nbPart)
+        return path[part]
+
+    def _retrieveInstanceId(self):
+        pathElems = self.diskSrcPath.split('/')
+        instanceId = self._findNumbers(pathElems)
+        errorMsg = '%s instance ID in path. ' + 'Path is "%s"' % self.diskSrcPath
+        if len(instanceId) != 1:
+            raise ValueError(errorMsg % ((len(instanceId) == 0) and 'Unable to find'
+                                         or 'Too many candidates'))
+        self.instanceId = instanceId.pop()
+
+    def _retrieveVmDir(self):
+        self.vmDir = dirname(dirname(self.diskSrcPath))
+
+    def _sshDst(self, cmd, errorMsg, dontRaiseOnError=False):
+        return self._ssh(self.diskSrcHost, cmd, errorMsg, dontRaiseOnError)
+
+    def _ssh(self, host, cmd, errorMsg, dontRaiseOnError=False):
+        retCode, output = sshCmdWithOutput(' '.join(cmd), host, user=getuser(),
+                                           sshKey=sshPublicKeyLocation.replace('.pub', ''))
+        if not dontRaiseOnError and retCode != 0:
+            raise Exception('%s\n: Error: %s' % (errorMsg, output))
+        return output
+
+    def _cleanup(self):
+        pass
