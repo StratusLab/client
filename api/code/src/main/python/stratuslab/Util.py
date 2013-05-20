@@ -100,6 +100,9 @@ def wget(url, savePath):
     filePutContent(savePath, fd.read())
     fd.close()
 
+def wstring_as_xml(url):
+    request = urllib2.Request(url, None, {'accept': 'application/xml'})
+    return wstring(request)
 
 def wstring(url):
     fd = _wget(url)

@@ -44,7 +44,7 @@ class ManifestDownloader(object):
     def getManifestList(self, identifier):
         url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, identifier)
         try:
-            metadataEntries = Util.wstring(url)
+            metadataEntries = Util.wstring_as_xml(url)
             return self._extractManifestInfos(self._parseXml(metadataEntries))
         except urllib2.HTTPError:
             raise InputException('Failed to find metadata entries: %s' % url)
@@ -99,7 +99,7 @@ class ManifestDownloader(object):
 
     def _download(self, url):
         try:
-            xml = Util.wstring(url)
+            xml = Util.wstring_as_xml(url)
             return self._parseXml(xml)
         except urllib2.URLError, ex:
             raise InputException('Failed to download: %s, with detail: %s' % (url, str(ex)))
