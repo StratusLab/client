@@ -14,7 +14,7 @@ except:
 
 setup(
     name='stratuslab-client',
-    version='13.02.3',
+    version='13.05.0-SNAPSHOT',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
     url='http://stratuslab.eu/',
@@ -63,7 +63,7 @@ setup(
         ],
 
     data_files=[
-        ('java', ['java/metadata-3.3-jar-with-dependencies.jar']),
+        ('java', ['java/metadata-13.05.0-SNAPSHOT-jar-with-dependencies.jar']),
         ('share/vm', ['share/vm/schema.one']),
         ('share/template', ['share/template/manifest.xml.tpl']),
         ('conf', ['conf/stratuslab-user.cfg.ref']),
