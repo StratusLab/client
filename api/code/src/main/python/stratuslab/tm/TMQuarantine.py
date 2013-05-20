@@ -108,9 +108,9 @@ class TMQuarantine(object):
         self.diskSrcHost = self._getDiskHost(src)
 
     def _moveFilesToQuarantine(self):
+        instance_dir = os.path.join(self.vmDir, str(self.instanceId))
         quarantine_dir = os.path.join(self.vmDir, 'quarantine')
-        shutil.move(self.vmDir, quarantine_dir)
-        pass
+        shutil.move(instance_dir, quarantine_dir)
 
     #--------------------------------------------
     # Persistent disk and related
@@ -120,8 +120,8 @@ class TMQuarantine(object):
         uris = self._getAttachedVolumeURIs()
         self.attachedVolumes = []
         for uri in uris:
-            namePort = [self._getDiskNameFromURI(self.pdiskPath),
-                        self._getPDiskHostPortFromURI(self.pdiskPath)]
+            namePort = [self._getDiskNameFromURI(uri),
+                        self._getPDiskHostPortFromURI(uri)]
             self.attachedVolumes.append(namePort)
 
     def _getAttachedVolumeURIs(self):
@@ -141,18 +141,19 @@ class TMQuarantine(object):
     def _detachAllVolumes(self):
         pdisk = PersistentDisk(self.configHolder)
         for volume in self.attachedVolumes:
-            uuid, host_port = volume
-            self._detachSingleVolume(pdisk, uuid, host_port)
+            pdisk_uri, host_port = volume
+            self._detachSingleVolume(pdisk, pdisk_uri, host_port)
 
-    def _detachSingleVolume(self, pdisk, uuid, host_port):
-        turl = pdisk.getTurl(uuid)
+    def _detachSingleVolume(self, pdisk, pdisk_uri, host_port):
+        uuid = self._getDiskNameFromURI(pdisk_uri)
+        turl = pdisk.getTurl(uuid) 
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
-                      '--pdisk-id', self.pdiskPath, 
+                      '--pdisk-id', pdisk_uri, 
                       '--vm-id', str(self.instanceId),
                       '--turl', turl,
                       '--register', '--attach', '--op', 'down'],
                      'Unable to detach pdisk "%s with TURL %s on VM %s"' %
-                     (self.pdiskPath, turl, str(self.instanceId)))
+                     (pdisk_uri, turl, str(self.instanceId)))
 
     #--------------------------------------------
     # Utility
