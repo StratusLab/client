@@ -305,12 +305,12 @@ class TMCloneCache(object):
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
                       '--pdisk-id', diskSrc,
                       '--vm-dir', vm_dir,
-                      '--vm-id', vm_id,
+                      '--vm-id', str(vm_id),
                       '--vm-disk-name', disk_name,
                       '--turl', turl,
                       '--register', '--attach', '--link', '--op', 'up'],
                      'Unable to attach persistent disk: %s, %s, %s, %s, %s' %
-                     (diskSrc, vm_dir, vm_id, disk_name, turl))
+                     (diskSrc, vm_dir, str(vm_id), disk_name, turl))
 
         #self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
         #             'Unable to attach persistent disk from %s to %s with TURL %s' %

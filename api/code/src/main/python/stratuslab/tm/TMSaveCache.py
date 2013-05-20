@@ -182,11 +182,11 @@ class TMSaveCache(object):
         uuid = self.diskName
         turl = pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
-                      self.pdiskPath, self.instanceId,
+                      self.pdiskPath, str(self.instanceId),
                       '--turl', turl,
                       '--register', '--attach', '--op', 'down'],
                      'Unable to detach pdisk "%s with TURL %s on VM %s"' % 
-                     (self.pdiskPath, turl, self.instanceId))
+                     (self.pdiskPath, turl, str(self.instanceId)))
 
     def _retrieveOriginImageInfo(self):
         vmSource = self.cloud.getVmDiskSource(self.instanceId, 0)
