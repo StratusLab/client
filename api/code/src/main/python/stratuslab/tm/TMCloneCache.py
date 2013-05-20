@@ -302,6 +302,12 @@ class TMCloneCache(object):
         vm_id = self._retrieveInstanceId()
         vm_dir = dirname(dirname(dirname(self.diskDstPath)))
 
+        self._sshDst(['/usr/sbin/stratus-register-volume-uri', 
+                      '--vm-id', str(vm_id),
+                      '--uri', diskSrc],
+                     'Unable to register volume URI %s for VM %s' %
+                     (diskSrc, str(vm_id)))
+
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
                       '--pdisk-id', diskSrc,
                       '--vm-dir', vm_dir,

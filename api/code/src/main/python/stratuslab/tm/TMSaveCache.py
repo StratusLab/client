@@ -116,8 +116,8 @@ class TMSaveCache(object):
         self._parseArgs()
         self._retrieveInstanceId()
         self._retrieveVmDir()
-        self._retrievePDiskInfo()
-        self._detachPDisk()
+        self._retrieveAttachedVolumeInfo()
+        self._detachAllVolumes()
         self._retrieveSnapshotId()
         self._retrieveOriginImageInfo()
         self._rebaseSnapshot()
@@ -158,16 +158,19 @@ class TMSaveCache(object):
     # Persistent disk and related
     #--------------------------------------------
 
-    def _retrievePDiskInfo(self):
-        pdiskInfos = self._getPDiskServerInfo()
-        self.pdiskPath = self._removeCarriageReturn(pdiskInfos)
-        self.diskName = self._getDiskNameFormURI(self.pdiskPath)
-        self.pdiskHostPort = self._getPDiskHostPortFromURI(self.pdiskPath)
+    def _retrieveAttachedVolumeInfo(self):
+        uris = self._getAttachedVolumeURIs()
+        self.attachedVolumes = []
+        for uri in uris:
+            namePort = [self._getDiskNameFromURI(self.pdiskPath),
+                        self._getPDiskHostPortFromURI(self.pdiskPath)]
+            self.attachedVolumes.append(namePort)
 
-    def _getPDiskServerInfo(self):
-        # FIXME: The register file name should be read from the config file.
-        return self._sshDst(['head', '-1', '%s/pdisk' % self.vmDir],
-                            'Unable to get pdisk server info')
+    def _getAttachedVolumeURIs(self):
+        register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
+                                                    '--vm-id',  str(self.instanceId)],
+                                                   'Unable to get registered volumes')
+        return register_filename_contents.splitlines()
 
     def _getDiskNameFormURI(self, uri):
         return uri.split(':')[-1]
@@ -177,15 +180,20 @@ class TMSaveCache(object):
         self._assertLength(splittedUri, 4)
         return ':'.join(splittedUri[1:3])
 
-    def _detachPDisk(self):
+    def _detachAllVolumes(self):
         pdisk = PersistentDisk(self.configHolder)
-        uuid = self.diskName
+        for volume in self.attachedVolumes:
+            uuid, host_port = volume
+            self._detachSingleVolume(pdisk, uuid, host_port)
+
+    def _detachSingleVolume(self, pdisk, uuid, host_port):
         turl = pdisk.getTurl(uuid)
-        self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
-                      self.pdiskPath, str(self.instanceId),
+        self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
+                      '--pdisk-id', self.pdiskPath, 
+                      '--vm-id', str(self.instanceId),
                       '--turl', turl,
                       '--register', '--attach', '--op', 'down'],
-                     'Unable to detach pdisk "%s with TURL %s on VM %s"' % 
+                     'Unable to detach pdisk "%s with TURL %s on VM %s"' %
                      (self.pdiskPath, turl, str(self.instanceId)))
 
     def _retrieveOriginImageInfo(self):

@@ -125,9 +125,9 @@ class TMQuarantine(object):
             self.attachedVolumes.append(namePort)
 
     def _getAttachedVolumeURIs(self):
-        # FIXME: The register file name should be read from the config file.
-        register_filename_contents = self._sshDst(['cat', '%s/pdisk' % self.vmDir],
-                                                  'Unable to get pdisk server info')
+        register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
+                                                    '--vm-id',  str(self.instanceId)],
+                                                   'Unable to get registered volumes')
         return register_filename_contents.splitlines()
 
     def _getDiskNameFromURI(self, uri):
@@ -147,7 +147,8 @@ class TMQuarantine(object):
     def _detachSingleVolume(self, pdisk, uuid, host_port):
         turl = pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
-                      host_port, str(self.instanceId),
+                      '--pdisk-id', self.pdiskPath, 
+                      '--vm-id', str(self.instanceId),
                       '--turl', turl,
                       '--register', '--attach', '--op', 'down'],
                      'Unable to detach pdisk "%s with TURL %s on VM %s"' %
