@@ -147,12 +147,12 @@ class TMQuarantine(object):
 
     def _detachSingleVolume(self, pdisk, pdisk_uri):
         uuid = self._getDiskNameFromURI(pdisk_uri)
-        turl = pdisk.getTurl(uuid) 
+        turl = pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
-                      '--pdisk-id', pdisk_uri, 
+                      '--pdisk-id', pdisk_uri,
                       '--vm-id', str(self.instanceId),
                       '--turl', turl,
-                      '--register', '--attach', '--op', 'down'],
+                      '--register', '--mark', '--attach', '--op', 'down'],
                      'Unable to detach pdisk "%s with TURL %s on VM %s"' %
                      (pdisk_uri, turl, str(self.instanceId)))
 
