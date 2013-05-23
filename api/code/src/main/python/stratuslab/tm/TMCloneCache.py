@@ -302,12 +302,6 @@ class TMCloneCache(object):
         vm_id = self._retrieveInstanceId()
         vm_dir = dirname(dirname(dirname(self.diskDstPath)))
 
-        self._sshDst(['/usr/sbin/stratus-register-volume-uri.py', 
-                      '--vm-id', str(vm_id),
-                      '--uri', diskSrc],
-                     'Unable to register volume URI %s for VM %s' %
-                     (diskSrc, str(vm_id)))
-
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py', 
                       '--pdisk-id', diskSrc,
                       '--vm-dir', vm_dir,
@@ -318,10 +312,6 @@ class TMCloneCache(object):
                      'Unable to attach persistent disk: %s, %s, %s, %s, %s' %
                      (diskSrc, vm_dir, str(vm_id), disk_name, turl))
 
-        #self._sshDst(['/usr/sbin/attach-persistent-disk.sh', diskSrc, self.diskDstPath, turl],
-        #             'Unable to attach persistent disk from %s to %s with TURL %s' %
-        #             (diskSrc, self.diskDstPath, turl))
-        
     def _retrieveAndCachePDiskImage(self):
         self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
         self._validateMarketplaceImagePolicy()

@@ -118,11 +118,7 @@ class TMQuarantine(object):
 
     def _retrieveAttachedVolumeInfo(self):
         uris = self._getAttachedVolumeURIs()
-        self.attachedVolumes = []
-        for uri in uris:
-            namePort = [self._getDiskNameFromURI(uri),
-                        self._getPDiskHostPortFromURI(uri)]
-            self.attachedVolumes.append(namePort)
+        self.attachedVolumeURIs = uris
 
     def _getAttachedVolumeURIs(self):
         register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
@@ -140,11 +136,16 @@ class TMQuarantine(object):
 
     def _detachAllVolumes(self):
         pdisk = PersistentDisk(self.configHolder)
-        for volume in self.attachedVolumes:
-            pdisk_uri, host_port = volume
-            self._detachSingleVolume(pdisk, pdisk_uri, host_port)
+        msg = ''
+        for pdisk_uri in self.attachedVolumeURIs:
+            try:
+                self._detachSingleVolume(pdisk, pdisk_uri)
+            except Exception as e:
+                msg += str(e) + "\n"
+        if msg:
+            raise Exception(msg)
 
-    def _detachSingleVolume(self, pdisk, pdisk_uri, host_port):
+    def _detachSingleVolume(self, pdisk, pdisk_uri):
         uuid = self._getDiskNameFromURI(pdisk_uri)
         turl = pdisk.getTurl(uuid) 
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py',

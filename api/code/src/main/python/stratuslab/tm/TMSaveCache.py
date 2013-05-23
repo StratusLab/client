@@ -160,16 +160,12 @@ class TMSaveCache(object):
 
     def _retrieveAttachedVolumeInfo(self):
         uris = self._getAttachedVolumeURIs()
-        self.attachedVolumes = []
-        for uri in uris:
-            namePort = [self._getDiskNameFromURI(uri),
-                        self._getPDiskHostPortFromURI(uri)]
-            self.attachedVolumes.append(namePort)
+        self.attachedVolumeURIs = uris
 
         # copy out the information for the first disk in the list
         # this will be the one used when saving a new image
         self.pdiskPath = uris[0]
-        self.diskName, _ = self.attachedVolumes[0]
+        self.diskName = self._getDiskNameFromURI(uris[0])
 
     def _getAttachedVolumeURIs(self):
         register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
@@ -187,19 +183,25 @@ class TMSaveCache(object):
 
     def _detachAllVolumes(self):
         pdisk = PersistentDisk(self.configHolder)
-        for volume in self.attachedVolumes:
-            uuid, host_port = volume
-            self._detachSingleVolume(pdisk, uuid, host_port)
+        msg = ''
+        for pdisk_uri in self.attachedVolumeURIs:
+            try:
+                self._detachSingleVolume(pdisk, pdisk_uri)
+            except Exception as e:
+                msg += str(e) + "\n"
+        if msg:
+            raise Exception(msg)
 
-    def _detachSingleVolume(self, pdisk, uuid, host_port):
+    def _detachSingleVolume(self, pdisk, pdisk_uri):
+        uuid = self._getDiskNameFromURI(pdisk_uri)
         turl = pdisk.getTurl(uuid)
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
-                      '--pdisk-id', self.pdiskPath, 
+                      '--pdisk-id', pdisk_uri, 
                       '--vm-id', str(self.instanceId),
                       '--turl', turl,
                       '--register', '--attach', '--op', 'down'],
                      'Unable to detach pdisk "%s with TURL %s on VM %s"' %
-                     (self.pdiskPath, turl, str(self.instanceId)))
+                     (pdisk_uri, turl, str(self.instanceId)))
 
     def _retrieveOriginImageInfo(self):
         vmSource = self.cloud.getVmDiskSource(self.instanceId, 0)
