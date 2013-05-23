@@ -95,6 +95,12 @@ def getResourcesDir():
     return d
 
 
+def wget_as_xml(url, savePath):
+    request = urllib2.Request(url, None, {'accept': 'application/xml'})
+    fd = _wget(request)
+    filePutContent(savePath, fd.read())
+    fd.close()
+
 def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())

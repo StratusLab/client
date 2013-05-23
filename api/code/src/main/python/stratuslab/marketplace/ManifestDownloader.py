@@ -106,7 +106,7 @@ class ManifestDownloader(object):
 
     def _downloadAsFile(self, url, filename):
         try:
-            return Util.wget(url, filename)
+            return Util.wget_as_xml(url, filename)
         except urllib2.URLError, ex:
             raise InputException('Failed to download: %s, with detail: %s' % (url, str(ex)))
 
