@@ -125,7 +125,8 @@ the Marketplace ID or persistent volume UUID to start.
                                metavar='IP', default=None)
 
         self.parser.add_option('--no-check-image-url', dest='noCheckImageUrl',
-                               help='Do not check image availability. Image availability is ',
+                               help='Turn off image availability check. '
+                               'Do not check if the location URLs in the image metadata exist.',
                                action='store_true',
                                default=False)
 
