@@ -16,6 +16,7 @@
 #
 import os
 import shutil
+import re
 from os.path import dirname
 from getpass import getuser
 
@@ -62,6 +63,8 @@ class TMQuarantine(object):
         self.instanceId = None
         self.cloud = None
 
+        self.rootVolumeUuid = None
+
         self.persistentDiskIp = None
         self.persistentDiskLvmDevice = None
 
@@ -82,6 +85,7 @@ class TMQuarantine(object):
         self._retrieveVmDir()
         self._retrieveAttachedVolumeInfo()
         self._detachAllVolumes()
+        self._changeOwnerOfSnapshotVolume()
         self._moveFilesToQuarantine()
 
     def _initFromConfig(self, conf_filename=''):
@@ -106,6 +110,17 @@ class TMQuarantine(object):
         src = self.args[self._ARG_SRC_POS]
         self.diskSrcPath = self._getDiskPath(src)
         self.diskSrcHost = self._getDiskHost(src)
+
+    def _changeOwnerOfSnapshotVolume(self):
+        pdisk = PersistentDisk(self.configHolder)
+
+        # set when detaching all disks
+        uuid = self.rootVolumeUuid
+
+        # only change ownership of snapshot volumes
+        disk_identifier = pdisk.getValue(uuid, 'identifier')
+        if re.match('.*snapshot.*', disk_identifier):
+            pdisk.quarantineVolume(uuid)
 
     def _moveFilesToQuarantine(self):
         instance_dir = os.path.join(self.vmDir, str(self.instanceId))
@@ -135,9 +150,16 @@ class TMQuarantine(object):
         return ':'.join(splittedUri[1:3])
 
     def _detachAllVolumes(self):
+
         pdisk = PersistentDisk(self.configHolder)
         msg = ''
+        self.rootVolumeUuid = None
         for pdisk_uri in self.attachedVolumeURIs:
+
+            # saves the root volume uuid so that the ownership can be changed later
+            if not self.rootVolumeUuid:
+                self.rootVolumeUuid = self._getDiskNameFromURI(pdisk_uri)
+
             try:
                 self._detachSingleVolume(pdisk, pdisk_uri)
             except Exception as e:
