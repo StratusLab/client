@@ -118,7 +118,7 @@ class TMQuarantine(object):
         uuid = self.rootVolumeUuid
 
         # only change ownership of snapshot volumes
-        disk_identifier = pdisk.getValue(uuid, 'identifier')
+        disk_identifier = pdisk.getValue('identifier', uuid)
         if re.match('.*snapshot.*', disk_identifier):
             pdisk.quarantineVolume(uuid)
 
