@@ -35,6 +35,10 @@ class MessagingCommand(CommandBaseSysadmin):
     def parse(self):
         self.parser.usage = '%prog [options] message'
 
+        self.parser.description = '''
+Send the given message to the given messaging server.
+'''
+
         self.parser.add_option('--msg-type', dest='msg_type',
                                help='Type of messaging: %s. Mandatory.' % ', '.join(MSG_TYPES),
                                metavar='NAME', default="")

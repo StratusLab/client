@@ -27,6 +27,7 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.pat.Client import PortTranslationDbClient
 
+# FIXME: Is this class actually used anywhere?
 class PortTranslationService(object):
     def __init__(self, configFile=''):
         self.configFile = configFile

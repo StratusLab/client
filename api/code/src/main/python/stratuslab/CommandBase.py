@@ -41,6 +41,7 @@ class CommandBase(object):
         self._configKeysClassAttrsTwoWayMap = {}
 
         self.verboseLevel = 0
+        self.quiet = 0
         self.parser = None
         self._setParserAndParse()
 
@@ -52,34 +53,36 @@ class CommandBase(object):
         self.checkOptions()
         self._callAndHandleErrors(self, self.doWork.__name__)
 
-    def _convertVerboseLevelToLoggingLevel(self, quiet, verboseLevel):
-        # TODO: Review this mapping to see if it is sufficient.
-        if verboseLevel < 0:
+    def _getLoggingLevel(self):
+        if self.quiet >= 3:
             return logging.CRITICAL
-        elif verboseLevel == 0 or quiet:
+        elif self.quiet == 2:
+            return logging.ERROR
+        elif self.quiet == 1:
             return logging.WARNING
-        elif verboseLevel == 1:
+        elif self.verboseLevel == 0:
             return logging.INFO
         else:
             return logging.DEBUG
 
     def _setParserAndParse(self):
         self.parser = OptionParser(version="${project.version}")
+
         self.parser.add_option('-v', '--verbose', dest='verboseLevel',
-                               help='verbose level. Add more to get more details',
+                               help='verbose level (use multiple times for more detail)',
                                action='count', default=self.verboseLevel)
+
+        self.parser.add_option('-q', '--quiet', dest='quiet',
+                               help='quiet output (use multiple times for less detail)',
+                               action='count', default=self.quiet)
 
         self._addConfigFileOption()
 
         self.parse()
         self.verboseLevel = self.options.verboseLevel
+        self.quiet = self.options.quiet
 
-        try:
-            quiet = self.options.quiet
-        except AttributeError:
-            quiet = False
-
-        LogUtil.set_logger_level(level=self._convertVerboseLevelToLoggingLevel(quiet, self.verboseLevel))
+        LogUtil.set_logger_level(level=self._getLoggingLevel())
 
     def _addConfigFileOption(self):
         pass

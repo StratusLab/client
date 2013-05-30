@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<assembly>
+  <id>cgi-bundle</id>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/python</directory>
+      <outputDirectory>cgi-bin</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>

@@ -47,6 +47,10 @@ class MainProgram(CommandBaseSysadmin):
 
         self.parser.usage = usage
 
+        self.parser.description = '''
+Install selected services of the StratusLab cloud distribution.
+'''
+
         self.parser.add_option('-n', '--node', dest='nodeAddr',
                                help='IP address or hostname of the node to configure',
                                default=None, metavar='ADDRESS')

@@ -26,14 +26,15 @@ from stratuslab.AuthnCommand import AuthnCommand
 class InstanceCommand(AuthnCommand):
     """A command-line program to kill a virtual machine."""
 
+
     def __init__(self):
         self.vmIds = []
         super(InstanceCommand, self).__init__()
 
     def parse(self):
-        usage = '''%prog [options] vm-id ...'''
 
-        self.parser.usage = usage
+        self.parser.usage = self.parser_usage
+        self.parser.description = self.parser_description
 
         self.parser.add_option('-i', '--input', dest='inVmIdsFile',
                                help='file containing line separated vm-ids', metavar='FILE',

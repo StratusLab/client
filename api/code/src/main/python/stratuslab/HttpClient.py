@@ -112,12 +112,15 @@ class HttpClient(object):
     def _httpCall(self, url, method, body=None, contentType='application/xml', accept='application/xml', retry=True):
         
         def _convertContent(content):
+
+            size = len(content)
+            if size > 2048:
+                return '<content too large; %d bytes>' % size
+
             try:
-                content = unicode(content, 'utf-8')
+                return unicode(content, 'utf-8')
             except:
-                # If it fails (e.g. it's not a string-like media-type) ignore it
-                pass
-            return content
+                return '<non-text content>'
 
         def _getErrorMessageFromJsonContent(content):
             try:

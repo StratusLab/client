@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-cli-sysadmin-rpm</artifactId>
-  <name>StratusLab Command-Line Interface (CLI) for System Administrators (RPM)</name>
+  <name>StratusLab Admin CLI (RPM)</name>
   <packaging>rpm</packaging>
 
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli-sysadmin</artifactId>
-    <version>2.9-SNAPSHOT</version>
+    <version>13.05.0-SNAPSHOT</version>
   </parent>
 
   <profiles>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
-      <version>2.9-SNAPSHOT</version>
+      <version>13.05.0-SNAPSHOT</version>
       <!-- <classifier>cli-sysadmin-bundle</classifier> -->
       <type>zip</type>
       <scope>compile</scope>

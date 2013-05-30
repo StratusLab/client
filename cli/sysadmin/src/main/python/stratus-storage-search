@@ -37,8 +37,12 @@ class MainProgram(StorageCommand):
     """A command-line program to search persistent disks by key/value."""
 
     def parse(self):
-        self.parser.usage = '%prog <key> <value>'
-        self.parser.description = '''Search persistent disks by key/value'''
+        self.parser.usage = '%prog key value'
+
+        self.parser.description = '''
+Search for persistent volumes (disks) that have metadata that matches
+the given key and value.
+'''
 
         self.addPDiskEndpointOptions(self.parser)
 

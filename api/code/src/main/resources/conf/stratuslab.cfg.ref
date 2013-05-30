@@ -238,6 +238,9 @@ persistent_disk_backend_sections =
 # Active backends in pdisk-backend.cfg
 persistent_disk_backend_sections_names = %(persistent_disk_ip)s,
 
+# Location for helper files in managing attached volumes on hosts
+persistent_disk_host_volume_mgmt_dir = /var/run/stratuslab
+
 [quarantine]
 # Time to keep VMs in quarantine. m - minutes, h - hours, d - days.
 quarantine_period = 15m

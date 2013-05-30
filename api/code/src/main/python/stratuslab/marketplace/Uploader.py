@@ -38,8 +38,6 @@ class Uploader(object):
 
     @staticmethod
     def buildUploadParser(parser):
-        parser.usage = '''usage: %prog [options] <metadata-file>'''
-
         MarketplaceUtil.addEndpointOption(parser)
 
 

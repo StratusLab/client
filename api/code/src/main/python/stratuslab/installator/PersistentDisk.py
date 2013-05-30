@@ -23,7 +23,9 @@ import re
 import socket
 import stratuslab.Util as Util
 import string
+import stat
 from random import choice
+
 from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
@@ -67,7 +69,6 @@ class PersistentDisk(Installator):
                                                   self.PDISK_BACKEND_CONF_NAME + '.tpl')
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
-        self.pdiskHostConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk-host.cfg')
         self.pdiskHostConfigFile2 = os.path.join(Defaults.ETC_DIR, 'pdisk-host.conf')
         self.pdiskHomeDir = '/opt/stratuslab/storage/pdisk'
         self.cloudNodeKey = os.path.join(self.pdiskHomeDir, 'cloud_node.key')
@@ -185,18 +186,16 @@ class PersistentDisk(Installator):
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
 
-        self._updateConfigHostAttachDetachScripts()
         self._updateConfigHostPDiskClient()
 
-    def _updateConfigHostAttachDetachScripts(self):
-        self._overrideValueInFile('SHARE_TYPE', self.persistentDiskShare, self.pdiskHostConfigFile)
-        self._overrideValueInFile('NFS_LOCATION', self.persistentDiskNfsMountPoint, self.pdiskHostConfigFile)
-        self._overrideValueInFile('PDISK_USER', self.pdiskUsername, self.pdiskHostConfigFile)
-        self._overrideValueInFile('PDISK_PSWD', self.pdiskPassword, self.pdiskHostConfigFile)
-
     def _updateConfigHostPDiskClient(self):
-        self._overrideValueInFile('pdisk_user', self.pdiskUsername, self.pdiskHostConfigFile2)
-        self._overrideValueInFile('pdisk_passwd', self.pdiskPassword, self.pdiskHostConfigFile2)
+        self._overrideHostConfigFile2('pdisk_user', self.pdiskUsername)
+        self._overrideHostConfigFile2('pdisk_passwd', self.pdiskPassword)
+
+        self.system._remoteCreateDirs(self.persistentDiskHostVolumeMgmtDir)
+        perm_1757 = stat.S_ISVTX | stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IRWXO
+        self.system._remoteChmod(self.persistentDiskHostVolumeMgmtDir, perm_1757)
+        self._overrideHostConfigFile2('volume_mgmt_dir', self.persistentDiskHostVolumeMgmtDir)
 
     def _installPackages(self, section):
         if self.packages:
@@ -223,6 +222,9 @@ class PersistentDisk(Installator):
         
     def _overrideConfig(self, key, value):
         self._overrideValueInFile(key, value, self.pdiskConfigFile)    
+
+    def _overrideHostConfigFile2(self, key, value):
+        self._overrideValueInFile(key, value, self.pdiskHostConfigFile2)   
         
     def _overrideValueInFile(self, key, value, fileName):
         search = key + '=.*'

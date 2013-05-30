@@ -23,20 +23,21 @@ from datetime import datetime
 from datetime import timedelta
 import json
 import re
-from stratuslab.HttpClient import HttpClient
 from urllib import urlencode
+from socket import getfqdn
+
+from stratuslab.HttpClient import HttpClient
 from uuid import UUID
 from stratuslab.Util import printError
-from socket import getfqdn
 import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
-from stratuslab.Exceptions import ValidationException, ClientException,\
+from stratuslab.Exceptions import ValidationException, ClientException, \
     ServerException, ConfigurationException
 from stratuslab.ConfigHolder import ConfigHolder
 
+
 class PersistentDisk(object):
-    
     def __init__(self, configHolder=ConfigHolder()):
         self.pdiskUsername = None
         self.pdiskPassword = None
@@ -52,7 +53,7 @@ class PersistentDisk(object):
         self.configHolder = configHolder
         self.configHolder.assign(self)
 
-        # This will eventually contain the sanitized endpoint 
+        # This will eventually contain the sanitized endpoint
         # with the proper suffix attached for the authentication
         # method being used.
         self.endpoint = None
@@ -62,7 +63,7 @@ class PersistentDisk(object):
                 self.pdiskEndpoint = configHolder.endpoint
             except AttributeError:
                 raise ConfigurationException('Missing persistent disk endpoint.')
-        
+
     def _initPDiskConnection(self, configHolder=None):
         self.client = HttpClient(configHolder or self.configHolder)
         self._addCredentials()
@@ -70,17 +71,17 @@ class PersistentDisk(object):
 
     def _getJson(self, url):
         return self.client.get(url, accept='application/json')
-    
+
     def _getGzip(self, url):
         return self.client.get(url, accept='application/x-gzip')
-        
+
     def _postJson(self, url, body=None, contentType='application/x-www-form-urlencoded'):
         headers, content = self.client.post(url,
-                                body,
-                                contentType,
-                                accept='application/json')
+                                            body,
+                                            contentType,
+                                            accept='application/json')
         return headers, content.replace('\\', '')
-        
+
     def _putJson(self, url, body, contentType='application/x-www-form-urlencoded'):
         self.client.put(url,
                         body,
@@ -88,12 +89,12 @@ class PersistentDisk(object):
                         accept='application/json')
 
     def _postMultipart(self, url, files, params=[]):
-        headers, content = self.client.post_multipart(url, 
+        headers, content = self.client.post_multipart(url,
                                                       files,
-                                                      params, 
+                                                      params,
                                                       accept='application/json')
         return headers, content.replace('\\', '')
-    
+
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
         self._printContacting()
@@ -113,7 +114,7 @@ class PersistentDisk(object):
         keyvalues = {'owner': self.pdiskUsername,
                      'quarantine': datetime.now()}
         self.updateVolume(keyvalues, uuid)
-        
+
     def updateVolume(self, keyvalues, uuid):
         # Need to set the user as pdisk since we need to be super
         # to update pdisk metadata
@@ -142,7 +143,7 @@ class PersistentDisk(object):
         return disk[key]
 
     def _setPDiskUserCredentials(self):
-        '''Assign the super pdisk username/password'''
+        """Assign the super pdisk username/password"""
         if self.pdiskUsername and self.pdiskPassword:
             return
         loader = UsernamePasswordCredentialsLoader()
@@ -162,6 +163,21 @@ class PersistentDisk(object):
             return self._getUuidFromJson(uuid)
         self._raiseOnErrors(headers, uuid)
 
+    def createVolumeFromUrl(self, size, tag, visibility, imageUrl, bytes, sha1):
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/' % self.endpoint
+        body = {'size': size,
+                'tag': tag,
+                'visibility': self._getVisibilityFromBool(visibility),
+                'url': imageUrl,
+                'bytes': bytes,
+                'sha1': sha1}
+        headers, uuid = self._postJson(url, urlencode(body))
+        if headers.status == 201:
+            return self._getUuidFromJson(uuid)
+        self._raiseOnErrors(headers, uuid)
+
     def createCowVolume(self, uuid, tag):
         # TODO: add iscow check
         self._setPDiskUserCredentials()
@@ -169,19 +185,19 @@ class PersistentDisk(object):
         self._printContacting()
         url = '%s/disks/%s' % (self.endpoint, uuid)
         body = None
-        # FIXME: We can't set body and use redirect "See Other" RPC pattern, as 
+        # FIXME: We can't set body and use redirect "See Other" RPC pattern, as
         #        there seems to be a bug in httplib2, which incorrectly approximates
         #        the accepted MIME type when doing GET on redirected resource.
         #        See: http://jira.stratuslab.eu:8080/browse/STRATUSLAB-941
-#        if tag:
-#            body = urlencode({'tag': tag})
+        #        if tag:
+        #            body = urlencode({'tag': tag})
         try:
             _, content = self._postJson(url, body)
         except Exception, ex:
             ex.mediaType = 'json'
             raise
         return self._getUuidFromJson(content)
-    
+
     def rebaseVolume(self, uuid):
         self._setPDiskUserCredentials()
         self._initPDiskConnection()
@@ -189,7 +205,7 @@ class PersistentDisk(object):
         url = '%s/disks/%s' % (self.endpoint, uuid)
         _, content = self._postJson(url)
         return self._getUuidFromJson(content)
-    
+
     def deleteVolume(self, uuid):
         self._initPDiskConnection()
         self._printContacting()
@@ -197,18 +213,18 @@ class PersistentDisk(object):
         headers, uuid = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
-    
+
     def volumeExists(self, uuid):
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/%s/' % (self.endpoint, uuid)
         headers, _ = self.client.head(url)
         return headers.status == 200
-    
+
     def getVolumeUsers(self, uuid):
         count = self.getVolumeUserCount(uuid)
-        return self.maxMounts-count, self.maxMounts
-    
+        return self.maxMounts - count, self.maxMounts
+
     def getVolumeUserCount(self, uuid):
         self._initPDiskConnection()
         self._printContacting()
@@ -216,17 +232,26 @@ class PersistentDisk(object):
         headers, content = self._getJson(volumeUrl)
         self._raiseOnErrors(headers, content)
         return int(json.loads(content)['count'])
-    
+
+    def getTurl(self, uuid):
+        self._setPDiskUserCredentials()
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s/turl/' % (self.endpoint, uuid)
+        headers, content = self._getJson(url)
+        self._raiseOnErrors(headers, content)
+        return json.loads(content)['turl']
+
     def hotAttach(self, node, vmId, uuid):
         self._initPDiskConnection()
         self._printContacting()
         url = '%s/disks/%s/mounts/' % (self.endpoint, uuid)
         body = {'node': node,
-                'vm_id': vmId }
+                'vm_id': vmId}
         headers, content = self._postJson(url, urlencode(body))
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
-    
+
     def hotDetach(self, vmId, uuid):
         self._initPDiskConnection()
         self._printContacting()
@@ -234,7 +259,7 @@ class PersistentDisk(object):
         headers, content = self.client.delete(url, accept="application/json")
         self._raiseOnErrors(headers, content)
         return json.loads(content)['target']
-    
+
     def downloadVolume(self, uuid, filename):
         # Don't cache http response as it will contain the image in the body.
         configHolder = self.configHolder.copy()
@@ -247,7 +272,7 @@ class PersistentDisk(object):
         Util.filePutContent(filename, content, True)
 
     def uploadVolume(self, filename):
-        "Upload compressed image and return resource URL."
+        """Upload compressed image and return resource URL."""
         self._initPDiskConnection()
         self._printContacting()
         base_url = '%s/disks/' % self.endpoint
@@ -269,16 +294,16 @@ class PersistentDisk(object):
             return False
         except Exception:
             return False
-        
+
     def _raiseOnErrors(self, headers, content):
         if headers.status in (400, 411):
             raise Exception(json.loads(content)['message'])
         if headers.status != 200:
             raise Exception(headers.reason)
-    
+
     def _getUuidFromJson(self, jsonUuid):
         return json.loads(jsonUuid)['uuid']
-                
+
     def _getVisibilityFromBool(self, visibility):
         return visibility and 'public' or 'private'
 
@@ -307,10 +332,10 @@ class PersistentDisk(object):
 
         # Must test username/password first because there will
         # always be default values set for the certificate.
-        if (user and password):
+        if user and password:
             self.endpointSuffix = '/pswd'
             self.client.addCredentials(user, password)
-        elif (cert and key):
+        elif cert and key:
             self.endpointSuffix = '/cert'
             self.client.addCertificate(key, cert)
         else:
@@ -321,7 +346,7 @@ class PersistentDisk(object):
                                               Defaults.pdiskProtocol,
                                               Defaults.pdiskPort)
         self.endpoint += self.endpointSuffix
-    
+
     @staticmethod
     def getFQNHostname(hostname):
         try:
@@ -329,7 +354,7 @@ class PersistentDisk(object):
         except Exception:
             printError('Unable to translate endpoint "%s" to an IP address' % hostname,
                        exit=False)
-        
+
     @staticmethod
     def isValidUuid(uuid):
         try:
@@ -337,10 +362,10 @@ class PersistentDisk(object):
         except ValueError:
             return False
         return True
-        
+
     def _printContacting(self):
         self._printDetail('Accessing storage service at: %s' % self.endpoint)
-        
+
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, 1)
 
@@ -348,22 +373,22 @@ class PersistentDisk(object):
         self._setPDiskUserCredentials()
 
         disks = self.describeVolumes({'quarantine': ['.*']})
-        threashold = self._getQuarantineThreasholdDate()
+        threshold = self._getQuarantineThresholdDate()
 
         disksToCleanUp = []
 
         for disk in disks:
             quarantineDate = self._parseQuarantineDate(disk['quarantine'])
-            if quarantineDate < threashold:
+            if quarantineDate < threshold:
                 disksToCleanUp.append(disk)
         for disk in disksToCleanUp:
             self._printDetail('Removing disk: %s' % disk['uuid'])
             try:
                 self.deleteVolume(disk['uuid'])
             except (ClientException, ServerException), ex:
-                print datetime.now(), ex
+                Util.printError(str(datetime.now()) + ' ' + str(ex))
 
-    def _getQuarantineThreasholdDate(self):
+    def _getQuarantineThresholdDate(self):
         now = datetime.now()
         quarantineTime = self._getQuarantinePeriod()
         return now - timedelta(minutes=quarantineTime)
@@ -371,26 +396,26 @@ class PersistentDisk(object):
     def _getQuarantinePeriod(self):
         period, factor = self._parseQuarantinePeriod()
         return period * factor
-        
+
     def _parseQuarantinePeriod(self):
         if not self.quarantinePeriod:
             raise ValidationException('Invalid quarantine_period parameter. Cannot be empty.')
 
         factor = 1
-        
+
         if self.quarantinePeriod.isdigit():
             return int(self.quarantinePeriod), factor
-        
+
         factors = {'m': 1, 'h': 60, 'd': 60 * 24}
         unit = self.quarantinePeriod[-1].lower()
         if unit not in factors.keys():
-            raise ValidationException('Invalid quarantine_period parameter unit. Should be one of: %s.' % ', '.join(factors.keys()))
+            raise ValidationException(
+                'Invalid quarantine_period parameter unit. Should be one of: %s.' % ', '.join(factors.keys()))
 
         if not self.quarantinePeriod[:-1].isdigit():
             raise ValidationException('Invalid quarantine_period parameter value. Should be integer [+ unit].')
-        
+
         return int(self.quarantinePeriod[:-1]), factors[unit]
 
     def _parseQuarantineDate(self, dateString):
         return datetime.strptime(dateString, '%Y-%m-%d %H:%M:%S.%f')
-    

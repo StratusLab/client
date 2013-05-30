@@ -38,7 +38,13 @@ class Deprecator(object):
 
     @staticmethod
     def buildDeprecatorParser(parser):
-        parser.usage = '''usage: %prog [options] <image id>'''
+        parser.usage = '''usage: %prog [options] image-id'''
+
+        parser.description = '''
+Create a new metadata entry for the given image that deprecates the
+image.  The reason for the deprecation must be given. The image-id
+argument is the identifier of the image to deprecate.
+'''
 
         MarketplaceUtil.addEndpointOption(parser)
         P12Certificate.addOptions(parser)

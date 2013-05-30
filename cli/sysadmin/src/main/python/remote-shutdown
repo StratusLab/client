@@ -37,7 +37,13 @@ class RemoteShutdown(object):
 
     def __init__(self):
         usage = '%prog [options]'
+
         parser = OptionParser(usage=usage)
+
+        parser.description = '''
+Utility to do a remote shutdown of the machine identified by the
+options.
+'''
 
         parser.add_option('-p', '--port', dest='sshPort', type='int',
                           help='ssh port to connect on', default=22, metavar='PORT')

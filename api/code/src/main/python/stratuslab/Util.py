@@ -53,13 +53,16 @@ VERBOSE_LEVEL_QUIET = 0
 VERBOSE_LEVEL_NORMAL = 1
 VERBOSE_LEVEL_DETAILED = 2
 
+EMPHASIS_START = '\033[1;31m'
+EMPHASIS_STOP = '\033[0m'
+
 # Environment variable names
 envEndpoint = 'STRATUSLAB_ENDPOINT'
 userConfigFileSelectedSection = 'STRATUSLAB_USER_CONFIG_SECTION'
 
 SSH_EXIT_STATUS_ERROR = 255
 SSH_CONNECTION_RETRY_NUMBER = 2
-SSH_CONNECTION_RETRY_SLEEP_MAX = 5
+SSH_CONNECTION_RETRY_SLEEP_MAX = 60
 
 
 def getShareDir():
@@ -92,11 +95,20 @@ def getResourcesDir():
     return d
 
 
+def wget_as_xml(url, savePath):
+    request = urllib2.Request(url, None, {'accept': 'application/xml'})
+    fd = _wget(request)
+    filePutContent(savePath, fd.read())
+    fd.close()
+
 def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())
     fd.close()
 
+def wstring_as_xml(url):
+    request = urllib2.Request(url, None, {'accept': 'application/xml'})
+    return wstring(request)
 
 def wstring(url):
     fd = _wget(url)
@@ -215,7 +227,7 @@ def fileGetContent(filename):
     return content
 
 
-def filePutContent(filename, data, neverShowData=False):
+def filePutContent(filename, data, neverShowData=True):
     _printDetail('Creating file %s with content: \n%s\n' % (filename,
                                                             (neverShowData and '<hidden>' or data)))
     if isinstance(data, unicode):
@@ -374,6 +386,14 @@ def printAction(msg):
 
 def printStep(msg):
     LogUtil.info(' :: %s' % msg)
+
+
+def printInfo(msg):
+    LogUtil.info(msg)
+
+
+def printDebug(msg):
+    LogUtil.debug(msg)
 
 
 def printError(msg, exitCode=1, exit=True):
@@ -610,14 +630,6 @@ def checkUrlExists(url, timeout=5):
     except urllib2.URLError, ex:
         raise ValidationException(str(ex))
     return True
-
-
-def printEmphasisStart():
-    sys.stdout.write('\033[1;31m')
-
-
-def printEmphasisStop():
-    sys.stdout.write('\033[0m')
 
 
 def constructEndPoint(fragment, protocol='https', port=8443, path=''):

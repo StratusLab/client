@@ -38,6 +38,10 @@ class DeployVm(object):
         usage = '%prog [options] archive'
         parser = OptionParser(usage=usage)
 
+        parser.description = '''
+Utility to automatically deploy a virtual machine in the given archive.
+'''
+
         parser.add_option('-p', '--port', dest='sshPort', type='int',
                           help='ssh port redirection', default=2222)
         parser.add_option('-r', '--redir', dest='redirections',
@@ -51,12 +55,12 @@ class DeployVm(object):
         self.options, self.args = parser.parse_args()
 
         if len(self.args) < 1:
-            self.displayErrorAndExit('Stoke image archive not specified')
+            self.displayErrorAndExit('Stock image archive not specified')
 
         self.launchVm()
 
     def launchVm(self):
-        print 'Extracting stoke image...'
+        print 'Extracting stock image...'
         self.extractVmImg()
         print 'Starting VM...'
         self.startVm()

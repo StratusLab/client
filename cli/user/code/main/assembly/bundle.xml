@@ -1,0 +1,76 @@
+<assembly>
+  <id>cli-user-bundle</id>
+  
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <formats>
+    <format>tar.gz</format>
+    <format>zip</format>
+  </formats>
+  
+  <fileSets>
+    
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources</directory>
+      <outputDirectory/>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
+      <includes>
+        <include>README</include>
+      </includes>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/scripts</directory>
+      <outputDirectory>bin</outputDirectory>
+      <fileMode>0755</fileMode>
+      <directoryMode>0755</directoryMode>
+      <includes>
+        <include>stratus-*</include>
+      </includes>
+      <excludes>
+        <exclude>stratus-save-instance</exclude>
+      </excludes>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/windows</directory>
+      <outputDirectory>windows</outputDirectory>
+      <includes>
+        <include>stratus-*.bat</include>
+      </includes>
+      <excludes>
+        <exclude>stratus-save-instance.bat</exclude>
+      </excludes>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/zip-sources/python</directory>
+      <outputDirectory>lib/stratuslab/python</outputDirectory>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/zip-sources/share</directory>
+      <outputDirectory>share</outputDirectory>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/jar/</directory>
+      <outputDirectory>java</outputDirectory>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${project.build.directory}/zip-sources/conf/</directory>
+      <outputDirectory>conf</outputDirectory>
+      <includes>
+        <include>stratuslab-user.cfg.ref</include>
+      </includes>
+    </fileSet>
+    
+  </fileSets>
+  
+</assembly>

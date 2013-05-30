@@ -20,8 +20,6 @@
 import os
 import shutil
 import tempfile
-import urllib2
-import hashlib
 
 from stratuslab import Util
 from stratuslab import Defaults
@@ -36,8 +34,8 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 
 etree = Util.importETree()
 
-class Downloader(object):
 
+class Downloader(object):
     ENDPOINT = Defaults.marketplaceEndpoint
     LOCAL_IMAGE_FILENAME = '/tmp/image.img'
 
@@ -49,16 +47,17 @@ class Downloader(object):
         self.marketplaceEndpoint = Downloader.ENDPOINT
 
         configHolder.assign(self)
-        
+
         self.localImageFilename = os.path.abspath(self.localImageFilename)
         self.manifestObject = None
 
     def download(self, uri):
-        '''uri is the full resource uri uniquely identifying
-           a single manifest entry'''
+        """uri is the full resource uri uniquely identifying a single manifest entry"""
         tempMetadataFilename = tempfile.mktemp()
         ManifestDownloader(self.configHolder).getManifestAsFile(uri, tempMetadataFilename)
         manifestInfo = ManifestInfo(self.configHolder)
+
+        manifestInfo.parseManifestFromFile(tempMetadataFilename)
 
         tempImageFilename = self._downloadFromLocations(manifestInfo)
         self._verifySignature(tempImageFilename, tempMetadataFilename)
@@ -125,5 +124,4 @@ class Downloader(object):
         ImageValidator().verifyHash(imageFilename, hashFromManifest)
 
     def _printDetail(self, message):
-        Util.printDetail(message, self.verboseLevel, 1)
-
+        Util.printDetail(message, self.verboseLevel, Util.VERBOSE_LEVEL_NORMAL)

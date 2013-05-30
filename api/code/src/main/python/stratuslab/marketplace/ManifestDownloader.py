@@ -29,8 +29,8 @@ from stratuslab.ManifestInfo import _normalizeForInstanceAttribute as normalizeM
 
 etree = Util.importETree()
 
-class ManifestDownloader(object):
 
+class ManifestDownloader(object):
     ENDPOINT = Defaults.marketplaceEndpoint
 
     def __init__(self, configHolder=ConfigHolder()):
@@ -38,19 +38,17 @@ class ManifestDownloader(object):
         self.manifestObject = None
         self.marketplaceEndpoint = ManifestDownloader.ENDPOINT
         self.verboseLevel = 1
-        
+
         configHolder.assign(self)
 
     def getManifestList(self, identifier):
         url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, identifier)
-        metadataEntries = ''
         try:
-            metadataEntries = Util.wstring(url)
+            metadataEntries = Util.wstring_as_xml(url)
+            return self._extractManifestInfos(self._parseXml(metadataEntries))
         except urllib2.HTTPError:
-            raise InputException('Failed to find metadata entries: %s' % url)                
+            raise InputException('Failed to find metadata entries: %s' % url)
 
-        return self._extractManifestInfos(self._parseXml(metadataEntries))
-    
     @staticmethod
     def _parseXml(xmlAsString):
         return etree.fromstring(xmlAsString)
@@ -62,12 +60,12 @@ class ManifestDownloader(object):
             manifest = ManifestInfo()
             manifest.parseManifestFromXmlTree(e)
             manifests.append(manifest)
-        return manifests        
+        return manifests
 
     def getManifestInfo(self, resourceUri):
-        '''Return manifest as ManifestInfo object.'''
+        """Return manifest as ManifestInfo object."""
         return self._getManifest(resourceUri)
-            
+
     def getManifestAsFile(self, uri, filename):
         url = MarketplaceUtil.metadataUrl(self.marketplaceEndpoint, uri)
         self._downloadAsFile(url, filename)
@@ -78,7 +76,7 @@ class ManifestDownloader(object):
         try:
             return self.__getManifest(url)
         except:
-            print "Failed to get manifest for resource uri: %s" % resourceUri
+            Util.printError('Failed to get manifest for resource uri: %s' % resourceUri)
             raise
 
     def __getManifest(self, url):
@@ -92,7 +90,7 @@ class ManifestDownloader(object):
             manifestInfo = ManifestInfo(self.configHolder)
         else:
             raise InputException(errorMessage)
-        
+
         try:
             manifestInfo.parseManifestFromXmlTree(manifest)
         except ExecutionException, ex:
@@ -100,16 +98,15 @@ class ManifestDownloader(object):
         return manifestInfo
 
     def _download(self, url):
-        xml = None
         try:
-            xml = Util.wstring(url)
+            xml = Util.wstring_as_xml(url)
+            return self._parseXml(xml)
         except urllib2.URLError, ex:
             raise InputException('Failed to download: %s, with detail: %s' % (url, str(ex)))
-        return self._parseXml(xml)
 
     def _downloadAsFile(self, url, filename):
         try:
-            return Util.wget(url, filename)
+            return Util.wget_as_xml(url, filename)
         except urllib2.URLError, ex:
             raise InputException('Failed to download: %s, with detail: %s' % (url, str(ex)))
 
@@ -126,15 +123,15 @@ class ManifestDownloader(object):
         try:
             return getattr(self.manifestObject, elementNorm)
         except AttributeError, ex:
-            raise ExecutionException("Couldn't get '%s' element (normalized to '%s') from manifest. %s" % 
+            raise ExecutionException("Couldn't get '%s' element (normalized to '%s') from manifest. %s" %
                                      (element, elementNorm, str(ex)))
 
     def _checkManifestAndImageId(self, imageId):
         if not self.manifestObject:
             self.downloadManifestByImageId(imageId)
         if imageId.split('/')[0] != self.manifestObject.identifier:
-            raise InputException('Given image ID [%s] does not match to downloaded [%s]' % 
-                                    (imageId, self.manifestObject.identifier))
+            raise InputException('Given image ID [%s] does not match to downloaded [%s]' %
+                                 (imageId, self.manifestObject.identifier))
 
     def downloadManifestByImageId(self, imageId):
         self.manifestObject = self._getManifest(imageId)

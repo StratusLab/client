@@ -21,6 +21,7 @@
 import json
 import commands
 
+from stratuslab.Util import printWarning
 from stratuslab.messaging.MsgBase import MsgBase
 from stratuslab.HttpClient import HttpClient
 
@@ -38,7 +39,7 @@ class _RestPublisherHttpClient(MsgBase):
         try:
             creds = endpts_creds[self.msg_endpoint]
         except KeyError:
-            print 'WARNING: no matching credentials for ' + self.msg_endpoint
+            printWarning('WARNING: no matching credentials for ' + self.msg_endpoint)
         else:
             self.httpClient.addCredentials(creds['username'], creds['password'])
 
@@ -58,7 +59,7 @@ class _RestPublisherCurl(MsgBase):
         try:
             creds = endpts_creds[self.msg_endpoint]
         except KeyError:
-            print 'WARNING: no matching credentials for ' + self.msg_endpoint
+            printWarning('WARNING: no matching credentials for ' + self.msg_endpoint)
         else:
             self.username = creds['username']
             self.password = creds['password']

@@ -35,11 +35,16 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(StorageCommand):
-    """A command-line program to quarantine a storage disk."""
+    """A command-line program to quarantine a storage volume."""
 
     def parse(self):
-        self.parser.usage = '%prog [uuid]'
-        self.parser.description = '''Perform quarantine actions'''
+        self.parser.usage = '%prog [options] [uuid]'
+
+        self.parser.description = '''
+Quarantine a given storage volume (disk) if the disk UUID is given.
+Will clean the quarantine store if the --clean option is given without
+a UUID.
+'''
 
         StorageCommand.addPDiskEndpointOptions(self.parser)
 

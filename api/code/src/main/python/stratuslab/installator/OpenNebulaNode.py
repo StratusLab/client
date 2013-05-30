@@ -19,10 +19,10 @@
 #
 from stratuslab.installator.OpenNebulaCommon import OpenNebulaCommon
 from stratuslab.system import SystemFactory
-from stratuslab.Util import printError
+from stratuslab.Util import printWarning, printError
 
 class OpenNebulaNode(OpenNebulaCommon):
-    
+
     def __init__(self, configHolder):
         self.node = None
 
@@ -34,23 +34,23 @@ class OpenNebulaNode(OpenNebulaCommon):
         if self.nodeAddr:
             self.node = SystemFactory.getSystem(self.nodeSystem, self.configHolder)
             self.node.workOnNode()
-        
+
     def _warmXenNeedReboot(self):
         if self.hypervisor == 'xen':
-            print '\n\tPlease reboot the node on the Xen kernel to complete the installation'
-            
+            printWarning('\tPlease reboot the node on the Xen kernel to complete the installation')
+
     def _nodeAlive(self):
         return self.node._nodeShell('exit 42') == 42
-    
+
     def _checkNodeConnectivity(self):
         if not self._nodeAlive():
             printError('Unable to connect the node %s' % self.nodeAddr)
-    
+
     def _configureCloudAdminNode(self):
         self.node.configureCloudAdminSshKeysNode()
         self.node.configureCloudAdminSudoNode()
         self.node.configureCloudAdminPdiskNode()
-    
+
     def _installNodeDependencies(self):
         self.node.installNodeDependencies()
         self.node.installHypervisor()
@@ -61,10 +61,10 @@ class OpenNebulaNode(OpenNebulaCommon):
 
     def _startVrtualization(self):
         self.node.startLibvirt()
-        
+
     def _configureBridgeOnNode(self):
         self.node.configureBridgeRemotely()
-        
+
     def _setupFileSharingClient(self):
         self.node.installNodePackages(self.node.fileSharingNodeDeps.get(self.shareType, []))
         self._configureFileSharingClient()
@@ -76,7 +76,7 @@ class OpenNebulaNode(OpenNebulaCommon):
             self.node.configureSshClient(self.cloudVarLibDir)
         else:
             printError('Unable to determine node share type. Got %s' % self.shareType)
-         
+
     def _configureNfsClient(self):
         mountPoint = self.cloudVarLibDir
         if self._nfsShareAlreadyExists():
@@ -84,4 +84,3 @@ class OpenNebulaNode(OpenNebulaCommon):
         else:
             host = '%s:%s' % (self.config['frontend_ip'], self.cloudVarLibDir)
         self.node.configureExistingNfsShare(host, mountPoint)
-        

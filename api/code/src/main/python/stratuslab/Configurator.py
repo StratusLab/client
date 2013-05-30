@@ -22,12 +22,12 @@ import shutil
 from Configurable import Configurable
 from Exceptions import ConfigurationException
 
-class Configurator(Configurable):
 
+class Configurator(Configurable):
     def __init__(self, configHolder):
         self.section = None
         super(Configurator, self).__init__(configHolder)
-        
+
         self.baseConfigFile = self.configFile + '.ref'
         self.config = None
         self.baseConfig = None
@@ -36,7 +36,7 @@ class Configurator(Configurable):
     def _load(self):
         self.printDetail('Loading configuration file %s' % self.baseConfigFile)
         self.baseConfig = self.parseConfig(self.baseConfigFile)
-        self._createConfigIfRequired()        
+        self._createConfigIfRequired()
         self.printDetail('Loading configuration file %s' % self.configFile)
         self.config = self.parseConfig(self.configFile)
 
@@ -47,9 +47,9 @@ class Configurator(Configurable):
 
     def getValue(self, key):
         section, _ = self._findSectionAndValue(key, self.config)
-        return self.config.get(section, key) 
+        return self.config.get(section, key)
 
-    def displayDefaultKeys(self):
+    def formatDefaultKeys(self):
         columnSize = 25
         defaultConfig = self.convertToSectionDict(self.parseConfig(self.baseConfigFile))
 
@@ -58,48 +58,60 @@ class Configurator(Configurable):
         doubleLine = '=' * width
         startEmphasis = '\033[1;31m'
         stopEmphasis = '\033[0m'
-        print '\n', doubleLine
-        print ' %(startEmphasis)s%(section)s%(stopEmphasis)s' % (
-                                 {'section': 'Section'.center(width),
-                                  'startEmphasis': startEmphasis, 'stopEmphasis': stopEmphasis})
-        print line
-        print ' %(startEmphasis)s%(first)s%(stopEmphasis)s|  %(startEmphasis)s%(second)s%(stopEmphasis)s|  %(startEmphasis)s%(third)s%(stopEmphasis)s' % (
-                                 {'first': 'Config key'.ljust(columnSize),
-                                  'second': 'Current value'.ljust(columnSize),
-                                  'third': 'Default value', 
-                                  'startEmphasis': startEmphasis, 'stopEmphasis': stopEmphasis})
-        first = True
+
+        fields = {'line': line,
+                  'doubleLine': doubleLine,
+                  'startEmphasis': startEmphasis,
+                  'stopEmphasis': stopEmphasis,
+                  'section': 'Section'.center(width),
+                  'first': 'Config key'.ljust(columnSize),
+                  'second': 'Current value'.ljust(columnSize),
+                  'third': 'Default value'}
+
+        header = """
+%(doubleLine)s
+%(startEmphasis)s%(section)s%(stopEmphasis)s
+%(line)
+
+ %(startEmphasis)s%(first)s%(stopEmphasis)s|  %(startEmphasis)s%(second)s%(stopEmphasis)s|  %(startEmphasis)s%(third)s%(stopEmphasis)s
+
+"""
+
+        result = header % fields
 
         sections = defaultConfig.keys()
         if self.section:
             sections = [self.section]
 
+        first = True
         for section in sections:
             if first:
-                print doubleLine
+                result += "%(doubleLine)s\n" % fields
+                first = False
             else:
-                print line
-            first = False
-            print '\033[1;31m%s\033[0m'.center(width) % section
-            print line
+                result += "%(line)s\n" % fields
+
+            result += '%s%s%s'.center(width) % (startEmphasis, section, stopEmphasis)
+            result += "\n%(line)s\n" % fields
+
             keys = defaultConfig[section].keys()
-            keys.sort()
-            for key in keys:
-                print ' %s|  %s|  %s' % (
-                                         key.ljust(columnSize),
-                                         self.getValue(key).ljust(columnSize),
-                                         defaultConfig[section].get(key))
+            for key in keys.sort():
+                result += ' %s|  %s|  %s' % (key.ljust(columnSize),
+                                             self.getValue(key).ljust(columnSize),
+                                             defaultConfig[section].get(key))
+
+        return result
 
     def _convertToDict(self, config):
         dict = {}
         for section in config.sections():
-            for k,v in config.items(section):
+            for k, v in config.items(section):
                 dict[k] = v
         return dict
 
     def setOption(self, key, value):
         section, _ = self._findSectionAndValue(key, self.config)
-        self.config.set(section, key, value) 
+        self.config.set(section, key, value)
         self.writeUserConfig()
 
     def _findSectionAndValue(self, key, config):
@@ -109,7 +121,7 @@ class Configurator(Configurable):
             for k, v in config.items(s):
                 if k == key:
                     section = s
-                    value = v 
+                    value = v
                     break
             if section:
                 break
@@ -128,14 +140,13 @@ class Configurator(Configurable):
 
 
 class SimpleConfigParser(object):
-
     FILENAME = 'Unknown'
-     
+
     def __init__(self):
         self.items = {}
 
     def load(self, file=None):
-        
+
         if not file:
             file = open(SimpleConfigParser.FILENAME)
 
@@ -148,9 +159,9 @@ class SimpleConfigParser(object):
                 raise ValueError('Invalid configuration file format')
             username = parts[0]
             self.items[username] = self.parse_value(parts[1])
-            
+
     def parse_value(self, value):
         return value
-    
+
     def get(self, username):
         return self.items[username]
