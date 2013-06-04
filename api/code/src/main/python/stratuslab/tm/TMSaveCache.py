@@ -290,9 +290,9 @@ class TMSaveCache(object):
         uploader.upload(self.manifestPath)
 
     def _retrieveSnapshotId(self):
-        self.imageSha1 = self._getSnaptshotSha1()
+        self.imageSha1 = self._getSnapshotSha1()
 
-    def _getSnaptshotSha1(self):
+    def _getSnapshotSha1(self):
         snapshotPath = self._getSnapshotPath()
         checksumOutput = self._ssh(self.persistentDiskIp, [self._CHECKSUM_CMD, snapshotPath],
                                    'Unable to compute checksum of "%s"' % snapshotPath)
