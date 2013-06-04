@@ -30,6 +30,7 @@ from stratuslab.Signator import Signator
 from stratuslab.Util import defaultConfigFile, sshCmdWithOutput, printInfo, printError
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
+from stratuslab.Defaults import marketplaceEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CertGenerator import CertGenerator
 from stratuslab.PersistentDisk import PersistentDisk
@@ -307,7 +308,7 @@ class TMSaveCache(object):
                                              self.originMarketPlace)
 
         if not self.targetMarketplace:
-            raise Exception('Marketplace endpoint was not provided.')
+            self.targetMarketplace = marketplaceEndpoint
 
     #--------------------------------------------
     # Utility
