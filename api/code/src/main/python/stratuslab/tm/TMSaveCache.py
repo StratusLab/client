@@ -124,7 +124,7 @@ class TMSaveCache(object):
         self._retrieveCreateImageInfo()
         self._generateManifest()
         self._updateVolumeIdentifier()
-        self._retreiveTargetMarketplace()
+        self._retrieveTargetMarketplace()
         self._uploadManifest()
         self._notify()
 
@@ -298,7 +298,7 @@ class TMSaveCache(object):
                                    'Unable to compute checksum of "%s"' % snapshotPath)
         return checksumOutput.split(' ')[0]
 
-    def _retreiveTargetMarketplace(self):
+    def _retrieveTargetMarketplace(self):
         if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):
             self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
         else:
