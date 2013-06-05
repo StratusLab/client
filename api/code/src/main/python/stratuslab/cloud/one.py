@@ -19,33 +19,35 @@
 #
 import sys
 import time
+import ssl
 
 from stratuslab.Exceptions import OneException
 from stratuslab import Util
 
 etree = Util.importETree()
 
+
 class OneConnector(object):
 
     ACL_USERS = {
-        "UID"           : 0x100000000,
-        "GID"           : 0x200000000,
-        "ALL"           : 0x400000000
+        "UID": 0x100000000,
+        "GID": 0x200000000,
+        "ALL": 0x400000000
     }
     ACL_RESOURCES = {
-        "VM"            : 0x1000000000,
-        "HOST"          : 0x2000000000,
-        "NET"           : 0x4000000000,
-        "IMAGE"         : 0x8000000000,
-        "USER"          : 0x10000000000,
-        "TEMPLATE"      : 0x20000000000,
-        "GROUP"         : 0x40000000000
+        "VM": 0x1000000000,
+        "HOST": 0x2000000000,
+        "NET": 0x4000000000,
+        "IMAGE": 0x8000000000,
+        "USER": 0x10000000000,
+        "TEMPLATE": 0x20000000000,
+        "GROUP": 0x40000000000
     }
     ACL_RIGHTS = {
-        "USE"           : 0x1,  # Auth. to use an object
-        "MANAGE"        : 0x2,  # Auth. to perform management actions
-        "ADMIN"         : 0x4,  # Auth. to perform administrative actions
-        "CREATE"        : 0x8   # Auth. to create an object
+        "USE": 0x1,  # Auth. to use an object
+        "MANAGE": 0x2,  # Auth. to perform management actions
+        "ADMIN": 0x4,  # Auth. to perform administrative actions
+        "CREATE": 0x8   # Auth. to create an object
     }
 
     def __init__(self, credentials):
@@ -76,7 +78,17 @@ class OneConnector(object):
         self._sessionString = self._credentials.createSessionString()
 
     def vmStart(self, vmTpl):
-        isSuccess, detail, _ = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                isSuccess, detail, _ = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         self._raiseIfError(isSuccess, detail)
 
@@ -92,7 +104,16 @@ class OneConnector(object):
 
     def _vmAction(self, vmId, action):
 
-        res = self._rpc.one.vm.action(self._sessionString, action, vmId)
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                res = self._rpc.one.vm.action(self._sessionString, action, vmId)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         isSuccess = res[0]
         detail = ''
@@ -116,7 +137,16 @@ class OneConnector(object):
         else:
             visibilitySwitch = currentUserOnly
 
-        ret, info, _ = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch, -1, -1, -1)
+        # Hack to retry on SSL errors.
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch, -1, -1, -1)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(info)
@@ -144,7 +174,18 @@ class OneConnector(object):
         xml.append(labelElement)
 
     def _vmInfo(self, vmId):
-        isSuccess, info, _ = self._rpc.one.vm.info(self._sessionString, vmId)
+
+        # Hack to retry on SSL errors.
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                isSuccess, info, _ = self._rpc.one.vm.info(self._sessionString, vmId)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
+
         self._raiseIfError(isSuccess, info)
         return info
 
@@ -153,24 +194,24 @@ class OneConnector(object):
         xml = etree.fromstring(info)
         self._addStateSummary(xml)
         return etree.tostring(xml)
-    
+
     def getVmNode(self, vmId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
         return xml.find('HISTORY_RECORDS/HISTORY/HOSTNAME').text
-    
+
     def getVmOwner(self, vmId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
         return xml.find('UNAME').text
-    
+
     def getVmDiskSource(self, vmId, diskId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
-        sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK') 
+        sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK')
                    if x.find('DISK_ID').text == str(diskId)]
         return sources[0]
-    
+
     def getCreateImageInfo(self, vmId):
         info = self._vmInfo(vmId)
         dom = etree.fromstring(info)
@@ -180,18 +221,18 @@ class OneConnector(object):
             value = elem.text or ''
             infos[elem.tag] = value.strip().strip('"')
         return infos
-    
+
     def _findXmlText(self, xml, query):
         return xml.find(query).text.strip('"')
-    
+
     def getVmSource(self, vmId):
         info = self._vmInfo(vmId)
         xml = etree.fromstring(info)
         return xml.find('TEMPLATE/DISK/DISK_ID=0/../SOURCE').text
-    
+
     def isVmRunning(self, vmId):
         return str(self._getVmStateSummary(vmId)) == 'Running'
-    
+
     def _getOneVmStateFromXml(self, xml):
         stateElement = self._getStateElement(xml)
         state = int(stateElement.text)
@@ -235,9 +276,9 @@ class OneConnector(object):
         start = time.time()
         state = ''
 
-        noWaitStates = ('Running','Failed')
+        noWaitStates = ('Running', 'Failed')
 
-        while (str(state) not in noWaitStates):
+        while str(state) not in noWaitStates:
 
             state = self._getVmStateSummary(vmId)
 
@@ -270,16 +311,36 @@ class OneConnector(object):
     # -------------------------------------------
 
     def networkCreate(self, vnetTpl):
-        ret, id, _ = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
+
+        # Hack to retry on SSL errors.
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, vnetId, _ = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
-            error = id
+            error = vnetId
             raise OneException('Error creating ONE network:\n%s' % error)
 
-        return id
+        return vnetId
 
     def getNetworkPoolInfo(self, filter=-2):
-        ret, info, _ = self._rpc.one.vnpool.info(self._sessionString, filter)
+
+        # Hack to retry on SSL errors.
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.vnpool.info(self._sessionString, filter)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(info)
@@ -287,7 +348,17 @@ class OneConnector(object):
         return info
 
     def getNetworkInfo(self, vnetId):
-        ret, info, _ = self._rpc.one.vn.info(self._sessionString, vnetId)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.vn.info(self._sessionString, vnetId)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(info)
@@ -299,7 +370,17 @@ class OneConnector(object):
     # -------------------------------------------
 
     def hostCreate(self, hostname, im, vmm, tm, vnm='dummy', inDomain=True):
-        ret, id, _ = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, vnm, tm, inDomain)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, id, _ = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, vnm, tm, inDomain)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(id)
@@ -307,7 +388,17 @@ class OneConnector(object):
         return id
 
     def hostRemove(self, id):
-        ret = self._rpc.one.host.delete(self._sessionString, id)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret = self._rpc.one.host.delete(self._sessionString, id)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(id)
@@ -315,7 +406,17 @@ class OneConnector(object):
         return id
 
     def getHostInfo(self, id):
-        ret, info, _ = self._rpc.one.host.info(self._sessionString, id)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.host.info(self._sessionString, id)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(info)
@@ -323,7 +424,17 @@ class OneConnector(object):
         return info
 
     def listHosts(self):
-        ret, info, _ = self._rpc.one.hostpool.info(self._sessionString)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.hostpool.info(self._sessionString)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(info)
@@ -343,11 +454,20 @@ class OneConnector(object):
         # "magic" number
         _magic = self.ACL_USERS['UID']
         net_resource = hex(self.ACL_RESOURCES['NET'] + _magic + net_id_int)
- 
-        ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
-                                                          users,
-                                                          net_resource,
-                                                          rights)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
+                                                         users,
+                                                         net_resource,
+                                                         rights)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
 
         if not ret:
             raise OneException(info)
@@ -355,18 +475,30 @@ class OneConnector(object):
         return info
 
     def addUserAcl(self, users, resources, rights):
-        ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
-                                                          users,
-                                                          resources,
-                                                          rights)
+
+        # Hack to retry on SSL errors
+        maxRetries = 3
+        retries = 0
+        while retries < maxRetries:
+            try:
+                ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
+                                                         users,
+                                                         resources,
+                                                         rights)
+            except ssl.SSLError as e:
+                retries += 1
+                if retries >= maxRetries:
+                    raise e
+
         if not ret:
             raise OneException(info)
 
         return info
 
+
 class OneVmState(object):
 
-    def __init__(self, state, lcmState = None):
+    def __init__(self, state, lcmState=None):
         self. state = int(state)
 
         self.lcmState = lcmState
@@ -402,10 +534,10 @@ class OneVmState(object):
 
     def __str__(self):
         if self._useLcmState():
-            str = self._lcmStateToString()
+            s = self._lcmStateToString()
         else:
-            str = self._stateToString()
-        return str.title()
+            s = self._stateToString()
+        return s.title()
 
     def _useLcmState(self):
         stateForLcmStateLookup = 3
@@ -418,7 +550,7 @@ class OneVmState(object):
 
     def _lcmStateToString(self):
         lcm = self._lcmStateAsInt()
-        if (lcm != None) and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
+        if (lcm is not None) and (lcm >= 0) and (lcm < len(self.lcmStateDefintion)):
             return self.lcmStateDefintion[lcm]
         else:
             Util.printError('Invalid state: %s' % lcm, exit=False)
@@ -443,4 +575,4 @@ class OneHostState(object):
                                 '4': 'DISABLED'}
 
     def __str__(self):
-        return self.stateDefinition.get(self.state,self.invalidState).title()
+        return self.stateDefinition.get(self.state, self.invalidState).title()
