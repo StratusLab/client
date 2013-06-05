@@ -26,6 +26,7 @@ import mimetools
 import mimetypes
 import httplib2
 from httplib2 import httplib
+from time import gmtime, strftime
 from stratuslab import Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ServerException
@@ -41,14 +42,14 @@ class HttpClient(object):
         self.certificates = {}
         self.handleResponse = True
         self.useHttpCache = True
-        configHolder.assign(self)        
+        configHolder.assign(self)
 
     def get(self, url, accept='application/xml'):
         return self._httpCall(url, 'GET', accept=accept)
-        
+
     def post(self, url, body=None, contentType='application/xml', accept='application/xml'):
         return self._httpCall(url, 'POST', body, contentType, accept, retry=False)
-    
+
     def post_multipart(self, url, files=[], params=[], accept='application/xml'):
         boundary, body = self._multipart_encode(files, params)
         contentType = 'multipart/form-data; boundary=%s' % boundary
@@ -79,22 +80,22 @@ class HttpClient(object):
 
     def put(self, url, body=None, contentType='application/xml', accept='application/xml'):
         return self._httpCall(url, 'PUT', body, contentType, accept)
-    
+
     def delete(self, url, body=None, contentType='application/x-www-form-urlencoded', accept='application/xml'):
         return self._httpCall(url, 'DELETE', body, contentType, accept)
-    
+
     def head(self, url):
         return self._httpCall(url, 'HEAD')
-    
+
     def addCredentials(self, username, password):
         self.crendentials[username] = password
-        
+
     def addCertificate(self, key, cert):
         self.certificates[key] = cert
-        
+
     def setHandleResponse(self, handle):
         self.handleResponse = handle
-        
+
     def _addCredentials(self, http):
         for u, p in self.crendentials.items():
             http.add_credentials(u, p)
@@ -104,13 +105,36 @@ class HttpClient(object):
             u, p = self.crendentials.items()[0]
             headers['authorization'] = 'Basic ' + base64.b64encode('%s:%s' % (u, p))
             return headers
-            
+
     def _addCertificate(self, http):
         for u, p in self.certificates.items():
             http.add_certificate(u, p, '')
-    
+
+    def _printDetail(self, message):
+        Util.printDetail(message, self.verboseLevel, Util.VERBOSE_LEVEL_DETAILED)
+
+    # This is a bandaid for problems associated with dropped SSL handshakes.  The
+    # root cause of these problems needs to be found and fixed.
+    def _retryHttpRequestOnSSLError(self, httpObject, url, method, body, headers):
+        maxRetries = 3
+        retries = 0
+        lastException = None
+        while retries < maxRetries:
+            try:
+                if len(headers):
+                    return httpObject.request(url, method, body, headers=headers)
+                else:
+                    return httpObject.request(url, method, body)
+            except httplib2.ssl_SSLError as e:
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                self._printDetail('SSL ERROR ENCOUNTERED (%s): %s', (t, str(e)))
+                lastException = e
+                retries += 1
+
+        raise lastException
+
     def _httpCall(self, url, method, body=None, contentType='application/xml', accept='application/xml', retry=True):
-        
+
         def _convertContent(content):
 
             size = len(content)
@@ -146,8 +170,8 @@ class HttpClient(object):
         def _handle5xx():
             if retry:
                 return self._httpCall(url, method, body, contentType, accept, False)
-            raise ServerException('Failed calling method %s on url %s, with reason: %s' % 
-                                         (method, url, str(resp.status) + ": " + resp.reason), 
+            raise ServerException('Failed calling method %s on url %s, with reason: %s' %
+                                         (method, url, str(resp.status) + ": " + resp.reason),
                                          status=str(resp.status))
 
         def _handleResponse(resp, content):
@@ -157,10 +181,10 @@ class HttpClient(object):
 
             if str(resp.status).startswith('2'):
                 return resp, content
-            
+
             if str(resp.status).startswith('3'):
                 resp, content = _handle3xx()
-            
+
             if str(resp.status).startswith('4'):
                 resp, content = _handle4xx()
 
@@ -185,15 +209,12 @@ class HttpClient(object):
         self._addCredentials(h)
         self._addCertificate(h)
         try:
-            if len(headers):
-                resp, content = h.request(url, method, body, headers=headers)
-            else:
-                resp, content = h.request(url, method, body)
+            resp, content = self._retryHttpRequestOnSSLError(h, url, method, body, headers)
         except httplib.BadStatusLine:
             raise NetworkException('BadStatusLine when contacting ' + url)
         except AttributeError:
             raise NetworkException('Cannot contact ' + url)
-        
+
         if self.handleResponse:
             try:
                 _handleResponse(resp, content)
@@ -203,5 +224,3 @@ class HttpClient(object):
 
         return resp, content
 
-    def _printDetail(self, message):
-        Util.printDetail(message, self.verboseLevel, Util.VERBOSE_LEVEL_DETAILED)

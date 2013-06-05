@@ -30,6 +30,7 @@ from stratuslab.Signator import Signator
 from stratuslab.Util import defaultConfigFile, sshCmdWithOutput, printInfo, printError
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
+from stratuslab.Defaults import marketplaceEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CertGenerator import CertGenerator
 from stratuslab.PersistentDisk import PersistentDisk
@@ -124,7 +125,7 @@ class TMSaveCache(object):
         self._retrieveCreateImageInfo()
         self._generateManifest()
         self._updateVolumeIdentifier()
-        self._retreiveTargetMarketplace()
+        self._retrieveTargetMarketplace()
         self._uploadManifest()
         self._notify()
 
@@ -290,15 +291,15 @@ class TMSaveCache(object):
         uploader.upload(self.manifestPath)
 
     def _retrieveSnapshotId(self):
-        self.imageSha1 = self._getSnaptshotSha1()
+        self.imageSha1 = self._getSnapshotSha1()
 
-    def _getSnaptshotSha1(self):
+    def _getSnapshotSha1(self):
         snapshotPath = self._getSnapshotPath()
         checksumOutput = self._ssh(self.persistentDiskIp, [self._CHECKSUM_CMD, snapshotPath],
                                    'Unable to compute checksum of "%s"' % snapshotPath)
         return checksumOutput.split(' ')[0]
 
-    def _retreiveTargetMarketplace(self):
+    def _retrieveTargetMarketplace(self):
         if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):
             self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
         else:
@@ -307,7 +308,7 @@ class TMSaveCache(object):
                                              self.originMarketPlace)
 
         if not self.targetMarketplace:
-            raise Exception('Marketplace endpoint was not provided.')
+            self.targetMarketplace = marketplaceEndpoint
 
     #--------------------------------------------
     # Utility

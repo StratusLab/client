@@ -139,7 +139,13 @@ class TMQuarantine(object):
         register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
                                                     '--vm-id',  str(self.instanceId)],
                                                    'Unable to get registered volumes')
-        return register_filename_contents.splitlines()
+        uris = []
+        for line in register_filename_contents.splitlines():
+            uri = line.strip()
+            if uri:
+                uris.append(uri)
+
+        return uris
 
     def _getDiskNameFromURI(self, uri):
         return uri.split(':')[-1]
