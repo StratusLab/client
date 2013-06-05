@@ -20,6 +20,7 @@
 #
 
 import sys
+import traceback
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -77,21 +78,25 @@ virtual machines will be listed if no argument is given.
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
 
-        if not self.vmIds and (self.options.multi_site and self.config.get('endpoints')):
-            result = MultisiteMonitor(configHolder).formatVmList()
-        else:
-            monitor = Monitor(configHolder)
-            if self.vmIds:
-                vm_info_list = monitor.vmDetail(self.vmIds)
-                if len(vm_info_list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
-                    result = monitor.formatVmAllAttributes(vm_info_list)
-                else:
-                    result = monitor.formatVmDetails(vm_info_list)
+        try:
+            if not self.vmIds and (self.options.multi_site and self.config.get('endpoints')):
+                result = MultisiteMonitor(configHolder).formatVmList()
             else:
-                vm_info_list = monitor.listVms()
-                result = monitor.formatVmList(vm_info_list)
+                monitor = Monitor(configHolder)
+                if self.vmIds:
+                    vm_info_list = monitor.vmDetail(self.vmIds)
+                    if len(vm_info_list) == 1 and self.verboseLevel > Util.VERBOSE_LEVEL_DETAILED:
+                        result = monitor.formatVmAllAttributes(vm_info_list)
+                    else:
+                        result = monitor.formatVmDetails(vm_info_list)
+                else:
+                    vm_info_list = monitor.listVms()
+                    result = monitor.formatVmList(vm_info_list)
 
-        sys.stdout.write(result)
+            sys.stdout.write(result)
+
+        except Exception as e:
+            traceback.print_stack(e)
 
 
 if __name__ == '__main__':
