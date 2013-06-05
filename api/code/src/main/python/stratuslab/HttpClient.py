@@ -127,7 +127,7 @@ class HttpClient(object):
                     return httpObject.request(url, method, body)
             except httplib2.ssl_SSLError as e:
                 t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                self._printDetail('SSL ERROR ENCOUNTERED (%s): %s', (t, str(e)))
+                self._printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 lastException = e
                 retries += 1
 

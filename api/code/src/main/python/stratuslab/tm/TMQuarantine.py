@@ -114,13 +114,16 @@ class TMQuarantine(object):
     def _changeOwnerOfSnapshotVolume(self):
         pdisk = PersistentDisk(self.configHolder)
 
-        # set when detaching all disks
-        uuid = self.rootVolumeUuid
+        # root volume must exist
+        if not self.rootVolumeUuid:
+            uris = "\n".join(self.attachedVolumeURIs)
+            msg = "Missing root volume uuid.\nAttached URIs are: %s\n" % uris
+            raise Exception(msg)
 
         # only change ownership of snapshot volumes
-        disk_identifier = pdisk.getValue('identifier', uuid)
+        disk_identifier = pdisk.getValue('identifier', self.rootVolumeUuid)
         if re.match('.*snapshot.*', disk_identifier):
-            pdisk.quarantineVolume(uuid)
+            pdisk.quarantineVolume(self.rootVolumeUuid)
 
     def _moveFilesToQuarantine(self):
         instance_dir = os.path.join(self.vmDir, str(self.instanceId))
@@ -139,13 +142,7 @@ class TMQuarantine(object):
         register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
                                                     '--vm-id',  str(self.instanceId)],
                                                    'Unable to get registered volumes')
-        uris = []
-        for line in register_filename_contents.splitlines():
-            uri = line.strip()
-            if uri:
-                uris.append(uri)
-
-        return uris
+        return register_filename_contents.splitlines()
 
     def _getDiskNameFromURI(self, uri):
         return uri.split(':')[-1]
