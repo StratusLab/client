@@ -20,7 +20,7 @@
 import sys
 import time
 import ssl
-
+from time import gmtime, strftime
 from stratuslab.Exceptions import OneException
 from stratuslab import Util
 
@@ -82,11 +82,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 isSuccess, detail, _ = self._rpc.one.vm.allocate(self._sessionString, vmTpl)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -107,11 +110,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 res = self._rpc.one.vm.action(self._sessionString, action, vmId)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -140,11 +146,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors.
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.vmpool.info(self._sessionString, visibilitySwitch, -1, -1, -1)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -178,11 +187,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors.
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 isSuccess, info, _ = self._rpc.one.vm.info(self._sessionString, vmId)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -315,11 +327,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors.
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, vnetId, _ = self._rpc.one.vn.allocate(self._sessionString, vnetTpl)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -334,11 +349,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors.
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.vnpool.info(self._sessionString, filter)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -352,11 +370,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.vn.info(self._sessionString, vnetId)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -374,11 +395,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, id, _ = self._rpc.one.host.allocate(self._sessionString, hostname, im, vmm, vnm, tm, inDomain)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -392,11 +416,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret = self._rpc.one.host.delete(self._sessionString, id)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -410,11 +437,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.host.info(self._sessionString, id)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -428,11 +458,14 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.hostpool.info(self._sessionString)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -458,14 +491,17 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
                                                          users,
                                                          net_resource,
                                                          rights)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
@@ -479,14 +515,17 @@ class OneConnector(object):
         # Hack to retry on SSL errors
         maxRetries = 3
         retries = 0
-        while retries < maxRetries:
+        while True:
             try:
                 ret, info, _ = self._rpc.one.acl.addrule(self._sessionString,
                                                          users,
                                                          resources,
                                                          rights)
+                break
             except ssl.SSLError as e:
                 retries += 1
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                Util.printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
                 if retries >= maxRetries:
                     raise e
 
