@@ -198,11 +198,12 @@ class PersistentDisk(Installator):
         self._overrideHostConfigFile2('volume_mgmt_dir', self.persistentDiskHostVolumeMgmtDir)
 
     def _installPackages(self, section):
-        if self.packages:
+        packages = self.packages[self.profile][section]
+        if packages:
             printStep('Installing packages on %s for section "%s": %s' 
                       % (self.profile, section,
-                         ', '.join(self.packages[self.profile][section])))
-            self.system.installNodePackages(self.packages[self.profile][section])
+                         ', '.join(packages)))
+            self.system.installNodePackages(packages)
 
     def _randomPassword(self, length=12, chars=string.letters+string.digits):
         return ''.join([choice(chars) for _ in range(length)])
