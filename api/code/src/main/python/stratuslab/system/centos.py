@@ -60,9 +60,9 @@ class CentOS(BaseSystem):
 #            ('sqlite-amalgamation', '3.6.17', 'http://www.sqlite.org', 'tar.gz'),
 #        ]
         self.frontendDeps = [
-            'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'mkisofs', 'curl'
+            'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'genisoimage', 'curl'
         ]
-        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'mkisofs', 'openssh', 'bridge-utils',
+        self.nodeDeps = ['ruby', 'curl', 'libvirt', 'genisoimage', 'openssh', 'bridge-utils',
                          'stratuslab-libvirt-monitor']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
