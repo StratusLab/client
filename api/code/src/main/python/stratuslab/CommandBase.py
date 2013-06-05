@@ -100,7 +100,8 @@ class CommandBase(object):
             self.raiseOrDisplayError('Error: %s' % ex.errmsg)
         except socket.sslerror, ex:
             self._checkPythonVersionAndRaise()
-            self.raiseOrDisplayError('Network error: %s' % ex)
+            raise ex
+            #self.raiseOrDisplayError('Network error: %s' % ex)
         except socket.error, ex:
             self.raiseOrDisplayError('Network error: %s' % ex)
         except Exceptions.ClientException, ex:
