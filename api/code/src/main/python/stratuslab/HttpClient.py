@@ -26,6 +26,7 @@ import mimetools
 import mimetypes
 import httplib2
 from httplib2 import httplib
+from time import gmtime, strftime
 from stratuslab import Util
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Exceptions import ServerException
@@ -112,6 +113,26 @@ class HttpClient(object):
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, Util.VERBOSE_LEVEL_DETAILED)
 
+    # This is a bandaid for problems associated with dropped SSL handshakes.  The
+    # root cause of these problems needs to be found and fixed.
+    def _retryHttpRequestOnSSLError(self, httpObject, url, method, body, headers):
+        maxRetries = 3
+        retries = 0
+        lastException = None
+        while retries < maxRetries:
+            try:
+                if len(headers):
+                    return httpObject.request(url, method, body, headers=headers)
+                else:
+                    return httpObject.request(url, method, body)
+            except httplib2.ssl_SSLError as e:
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                self._printDetail('SSL ERROR ENCOUNTERED (%s): %s', (t, str(e)))
+                lastException = e
+                retries += 1
+
+        raise lastException
+
     def _httpCall(self, url, method, body=None, contentType='application/xml', accept='application/xml', retry=True):
 
         def _convertContent(content):
@@ -188,10 +209,7 @@ class HttpClient(object):
         self._addCredentials(h)
         self._addCertificate(h)
         try:
-            if len(headers):
-                resp, content = h.request(url, method, body, headers=headers)
-            else:
-                resp, content = h.request(url, method, body)
+            resp, content = self._retryHttpRequestOnSSLError(h, url, method, body, headers)
         except httplib.BadStatusLine:
             raise NetworkException('BadStatusLine when contacting ' + url)
         except AttributeError:
