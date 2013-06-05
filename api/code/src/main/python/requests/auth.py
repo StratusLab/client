@@ -8,6 +8,7 @@ This module contains the authentication handlers for Requests.
 """
 
 import os
+import re
 import time
 import hashlib
 import logging
@@ -36,6 +37,7 @@ class AuthBase(object):
     def __call__(self, r):
         raise NotImplementedError('Auth hooks must be callable.')
 
+
 class HTTPBasicAuth(AuthBase):
     """Attaches HTTP Basic Authentication to the given Request object."""
     def __init__(self, username, password):
@@ -48,7 +50,7 @@ class HTTPBasicAuth(AuthBase):
 
 
 class HTTPProxyAuth(HTTPBasicAuth):
-    """Attaches HTTP Proxy Authenetication to a given Request object."""
+    """Attaches HTTP Proxy Authentication to a given Request object."""
     def __call__(self, r):
         r.headers['Proxy-Authorization'] = _basic_auth_str(self.username, self.password)
         return r
@@ -68,18 +70,21 @@ class HTTPDigestAuth(AuthBase):
         realm = self.chal['realm']
         nonce = self.chal['nonce']
         qop = self.chal.get('qop')
-        algorithm = self.chal.get('algorithm', 'MD5')
-        opaque = self.chal.get('opaque', None)
+        algorithm = self.chal.get('algorithm')
+        opaque = self.chal.get('opaque')
 
-        algorithm = algorithm.upper()
+        if algorithm is None:
+            _algorithm = 'MD5'
+        else:
+            _algorithm = algorithm.upper()
         # lambdas assume digest modules are imported at the top level
-        if algorithm == 'MD5':
+        if _algorithm == 'MD5':
             def md5_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
                 return hashlib.md5(x).hexdigest()
             hash_utf8 = md5_utf8
-        elif algorithm == 'SHA':
+        elif _algorithm == 'SHA':
             def sha_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
@@ -126,26 +131,29 @@ class HTTPDigestAuth(AuthBase):
 
         # XXX should the partial digests be encoded too?
         base = 'username="%s", realm="%s", nonce="%s", uri="%s", ' \
-           'response="%s"' % (self.username, realm, nonce, path, respdig)
+               'response="%s"' % (self.username, realm, nonce, path, respdig)
         if opaque:
             base += ', opaque="%s"' % opaque
+        if algorithm:
+            base += ', algorithm="%s"' % algorithm
         if entdig:
             base += ', digest="%s"' % entdig
-            base += ', algorithm="%s"' % algorithm
         if qop:
             base += ', qop=auth, nc=%s, cnonce="%s"' % (ncvalue, cnonce)
 
         return 'Digest %s' % (base)
 
-    def handle_401(self, r):
+    def handle_401(self, r, **kwargs):
         """Takes the given response and tries digest-auth, if needed."""
 
-        num_401_calls = r.request.hooks['response'].count(self.handle_401)
+        num_401_calls = getattr(self, 'num_401_calls', 1)
         s_auth = r.headers.get('www-authenticate', '')
 
         if 'digest' in s_auth.lower() and num_401_calls < 2:
 
-            self.chal = parse_dict_header(s_auth.replace('Digest ', ''))
+            setattr(self, 'num_401_calls', num_401_calls + 1)
+            pat = re.compile(r'digest ', flags=re.IGNORECASE)
+            self.chal = parse_dict_header(pat.sub('', s_auth, count=1))
 
             # Consume content and release the original connection
             # to allow our new request to reuse the same one.
@@ -153,11 +161,12 @@ class HTTPDigestAuth(AuthBase):
             r.raw.release_conn()
 
             r.request.headers['Authorization'] = self.build_digest_header(r.request.method, r.request.url)
-            _r = r.connection.send(r.request)
+            _r = r.connection.send(r.request, **kwargs)
             _r.history.append(r)
 
             return _r
 
+        setattr(self, 'num_401_calls', 1)
         return r
 
     def __call__(self, r):

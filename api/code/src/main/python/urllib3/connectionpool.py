@@ -446,14 +446,12 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
 
         except Empty as e:
             # Timed out by queue
-            raise TimeoutError(self, url,
-                               "Request timed out. (pool_timeout=%s)" %
+            raise TimeoutError(self, "Request timed out. (pool_timeout=%s)" %
                                pool_timeout)
 
         except SocketTimeout as e:
             # Timed out by socket
-            raise TimeoutError(self, url,
-                               "Request timed out. (timeout=%s)" %
+            raise TimeoutError(self, "Request timed out. (timeout=%s)" %
                                timeout)
 
         except BaseSSLError as e:

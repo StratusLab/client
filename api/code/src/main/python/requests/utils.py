@@ -11,11 +11,11 @@ that are also useful for external consumption.
 
 import cgi
 import codecs
+import collections
 import os
 import platform
 import re
 import sys
-import zlib
 from netrc import netrc, NetrcParseError
 
 from . import __version__
@@ -23,14 +23,14 @@ from . import certs
 from .compat import parse_http_list as _parse_list_header
 from .compat import quote, urlparse, bytes, str, OrderedDict, urlunparse
 from .cookies import RequestsCookieJar, cookiejar_from_dict
+from .structures import CaseInsensitiveDict
 
 _hush_pyflakes = (RequestsCookieJar,)
 
 NETRC_FILES = ('.netrc', '_netrc')
 
-# if certifi is installed, use its CA bundle;
-# otherwise, try and use the OS bundle
 DEFAULT_CA_BUNDLE_PATH = certs.where()
+
 
 def dict_to_sequence(d):
     """Returns an internal sequence dictionary update."""
@@ -40,6 +40,7 @@ def dict_to_sequence(d):
 
     return d
 
+
 def super_len(o):
     if hasattr(o, '__len__'):
         return len(o)
@@ -47,6 +48,7 @@ def super_len(o):
         return o.len
     if hasattr(o, 'fileno'):
         return os.fstat(o.fileno()).st_size
+
 
 def get_netrc_auth(url):
     """Returns the Requests tuple auth for a given url from netrc."""
@@ -88,7 +90,7 @@ def guess_filename(obj):
     """Tries to guess the filename of the given object."""
     name = getattr(obj, 'name', None)
     if name and name[0] != '<' and name[-1] != '>':
-        return name
+        return os.path.basename(name)
 
 
 def from_key_val_list(value):
@@ -133,7 +135,7 @@ def to_key_val_list(value):
     if isinstance(value, (str, bytes, bool, int)):
         raise ValueError('cannot encode objects that are not 2-tuples')
 
-    if isinstance(value, dict):
+    if isinstance(value, collections.Mapping):
         value = value.items()
 
     return list(value)
@@ -251,8 +253,7 @@ def add_dict_to_cookiejar(cj, cookie_dict):
     """
 
     cj2 = cookiejar_from_dict(cookie_dict)
-    for cookie in cj2:
-        cj.set_cookie(cookie)
+    cj.update(cj2)
     return cj
 
 
@@ -346,48 +347,6 @@ def get_unicode_from_response(r):
         return r.content
 
 
-def stream_decompress(iterator, mode='gzip'):
-    """Stream decodes an iterator over compressed data
-
-    :param iterator: An iterator over compressed data
-    :param mode: 'gzip' or 'deflate'
-    :return: An iterator over decompressed data
-    """
-
-    if mode not in ['gzip', 'deflate']:
-        raise ValueError('stream_decompress mode must be gzip or deflate')
-
-    zlib_mode = 16 + zlib.MAX_WBITS if mode == 'gzip' else -zlib.MAX_WBITS
-    dec = zlib.decompressobj(zlib_mode)
-    try:
-        for chunk in iterator:
-            rv = dec.decompress(chunk)
-            if rv:
-                yield rv
-    except zlib.error:
-        # If there was an error decompressing, just return the raw chunk
-        yield chunk
-        # Continue to return the rest of the raw data
-        for chunk in iterator:
-            yield chunk
-    else:
-        # Make sure everything has been returned from the decompression object
-        buf = dec.decompress(bytes())
-        rv = buf + dec.flush()
-        if rv:
-            yield rv
-
-
-def stream_untransfer(gen, resp):
-    ce = resp.headers.get('content-encoding', '').lower()
-    if 'gzip' in ce:
-        gen = stream_decompress(gen, mode='gzip')
-    elif 'deflate' in ce:
-        gen = stream_decompress(gen, mode='deflate')
-
-    return gen
-
-
 # The unreserved URI characters (RFC 3986)
 UNRESERVED_SET = frozenset(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -466,11 +425,9 @@ def default_user_agent():
     if _implementation == 'CPython':
         _implementation_version = platform.python_version()
     elif _implementation == 'PyPy':
-        _implementation_version = '%s.%s.%s' % (
-                                                sys.pypy_version_info.major,
+        _implementation_version = '%s.%s.%s' % (sys.pypy_version_info.major,
                                                 sys.pypy_version_info.minor,
-                                                sys.pypy_version_info.micro
-                                            )
+                                                sys.pypy_version_info.micro)
         if sys.pypy_version_info.releaselevel != 'final':
             _implementation_version = ''.join([_implementation_version, sys.pypy_version_info.releaselevel])
     elif _implementation == 'Jython':
@@ -487,18 +444,17 @@ def default_user_agent():
         p_system = 'Unknown'
         p_release = 'Unknown'
 
-    return " ".join([
-            'python-requests/%s' % __version__,
-            '%s/%s' % (_implementation, _implementation_version),
-            '%s/%s' % (p_system, p_release),
-        ])
+    return " ".join(['python-requests/%s' % __version__,
+                     '%s/%s' % (_implementation, _implementation_version),
+                     '%s/%s' % (p_system, p_release)])
+
 
 def default_headers():
-    return {
+    return CaseInsensitiveDict({
         'User-Agent': default_user_agent(),
         'Accept-Encoding': ', '.join(('gzip', 'deflate', 'compress')),
         'Accept': '*/*'
-    }
+    })
 
 
 def parse_header_links(value):
@@ -524,7 +480,7 @@ def parse_header_links(value):
 
         for param in params.split(";"):
             try:
-                key,value = param.split("=")
+                key, value = param.split("=")
             except ValueError:
                 break
 
@@ -582,3 +538,13 @@ def prepend_scheme_if_needed(url, new_scheme):
         netloc, path = path, netloc
 
     return urlunparse((scheme, netloc, path, params, query, fragment))
+
+
+def get_auth_from_url(url):
+    """Given a url with authentication components, extract them into a tuple of
+    username,password."""
+    if url:
+        parsed = urlparse(url)
+        return (parsed.username, parsed.password)
+    else:
+        return ('', '')
