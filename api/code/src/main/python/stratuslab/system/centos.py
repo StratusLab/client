@@ -66,7 +66,7 @@ class CentOS(BaseSystem):
                          'stratuslab-libvirt-monitor']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
-            'kvm': ['kvm'],
+            'kvm': ['qemu-kvm'],
         }
         self.fileSharingFrontendDeps = {
             'nfs': [],
