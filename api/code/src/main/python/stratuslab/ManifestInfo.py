@@ -288,13 +288,16 @@ class ManifestIdentifier(object):
     divisor = long(2) ** fieldBits
 
     def sha1ToIdentifier(self, sha1):
-        sha1 = int(sha1, 16)
-        sb = ''
-        for _ in range(self.identifierChars):
-            values = divmod(sha1, self.divisor)
-            sha1 = values[0]
-            sb += self.encoding[int(values[1])]
-        return sb[::-1]
+        try:
+            sha1 = long(sha1, 16)
+            sb = ''
+            for _ in range(self.identifierChars):
+                values = divmod(sha1, self.divisor)
+                sha1 = values[0]
+                sb += self.encoding[int(values[1])]
+            return sb[::-1]
+        except ValueError as e:
+            raise ValueError('invalid SHA-1 checksum: %s' % sha1)
 
     def identifierToSha1(self, identifier):
         sha1 = long(0)
