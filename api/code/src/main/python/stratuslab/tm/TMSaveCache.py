@@ -297,6 +297,9 @@ class TMSaveCache(object):
         snapshotPath = self._getSnapshotPath()
         checksumOutput = self._ssh(self.persistentDiskIp, [self._CHECKSUM_CMD, snapshotPath],
                                    'Unable to compute checksum of "%s"' % snapshotPath)
+        printInfo('persistent disk IP: "%s"' % persistentDiskIp)
+        printInfo('snapshot path: "%s"' % snapshotPath)
+        printInfo('checksum output is: "%s"' % checksumOutput)
         return checksumOutput.split(' ')[0]
 
     def _retrieveTargetMarketplace(self):
