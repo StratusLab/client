@@ -155,14 +155,18 @@ class TMQuarantine(object):
         self.rootVolumeUuid = None
         for pdisk_uri in self.attachedVolumeURIs:
 
-            # saves the root volume uuid so that the ownership can be changed later
-            if not self.rootVolumeUuid:
-                self.rootVolumeUuid = self._getDiskNameFromURI(pdisk_uri)
+            pdisk_uri = pdisk_uri.strip()
 
-            try:
-                self._detachSingleVolume(pdisk, pdisk_uri)
-            except Exception as e:
-                msg += str(e) + "\n"
+            if pdisk_uri:
+                # saves the root volume uuid so that the ownership can be changed later
+                if not self.rootVolumeUuid:
+                    self.rootVolumeUuid = self._getDiskNameFromURI(pdisk_uri)
+
+                try:
+                    self._detachSingleVolume(pdisk, pdisk_uri)
+                except Exception as e:
+                    msg += str(e) + "\n"
+
         if msg:
             raise Exception(msg)
 
