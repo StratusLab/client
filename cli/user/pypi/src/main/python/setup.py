@@ -13,13 +13,13 @@ except:
     pass
 
 setup(
-    name='stratuslab-client',
-    version='13.05.0-SNAPSHOT',
+    name='${project.artifactId}',
+    version='${project.version}',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
     url='http://stratuslab.eu/',
     license='Apache Software License 2.0',
-    description='StratusLab client',
+    description='${project.description}',
     long_description=open('README.txt').read(),
 
     scripts=[
