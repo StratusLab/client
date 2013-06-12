@@ -13,7 +13,7 @@ except:
     pass
 
 setup(
-    name='${project.artifactId}',
+    name='stratuslab-client',
     version='${project.version}',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
@@ -63,7 +63,7 @@ setup(
         ],
 
     data_files=[
-        ('java', ['java/metadata-13.05.0-SNAPSHOT-jar-with-dependencies.jar']),
+        ('java', ['java/metadata-${project.version}-jar-with-dependencies.jar']),
         ('share/vm', ['share/vm/schema.one']),
         ('share/template', ['share/template/manifest.xml.tpl']),
         ('conf', ['conf/stratuslab-user.cfg.ref']),
