@@ -71,7 +71,7 @@ class Configurator(Configurable):
         header = """
 %(doubleLine)s
 %(startEmphasis)s%(section)s%(stopEmphasis)s
-%(line)
+%(line)s
 
  %(startEmphasis)s%(first)s%(stopEmphasis)s|  %(startEmphasis)s%(second)s%(stopEmphasis)s|  %(startEmphasis)s%(third)s%(stopEmphasis)s
 
