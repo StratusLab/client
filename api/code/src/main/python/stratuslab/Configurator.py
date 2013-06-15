@@ -95,10 +95,11 @@ class Configurator(Configurable):
             result += "\n%(line)s\n" % fields
 
             keys = defaultConfig[section].keys()
-            for key in keys.sort():
-                result += ' %s|  %s|  %s' % (key.ljust(columnSize),
-                                             self.getValue(key).ljust(columnSize),
-                                             defaultConfig[section].get(key))
+            if keys:
+                for key in sorted(keys):
+                    result += ' %s|  %s|  %s\n' % (key.ljust(columnSize),
+                                                   self.getValue(key).ljust(columnSize),
+                                                   defaultConfig[section].get(key))
 
         return result
 
