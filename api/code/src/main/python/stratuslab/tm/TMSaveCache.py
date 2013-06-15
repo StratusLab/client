@@ -377,9 +377,10 @@ class TMSaveCache(object):
     def _sshDst(self, cmd, errorMsg, dontRaiseOnError=False):
         return self._ssh(self.diskSrcHost, cmd, errorMsg, dontRaiseOnError)
 
-    def _ssh(self, host, cmd, errorMsg, dontRaiseOnError=False):
+    def _ssh(self, host, cmd, errorMsg, dontRaiseOnError=False, sshQuiet=True):
         retCode, output = sshCmdWithOutput(' '.join(cmd), host, user=getuser(),
-                                           sshKey=sshPublicKeyLocation.replace('.pub', ''))
+                                           sshKey=sshPublicKeyLocation.replace('.pub', ''),
+                                           sshQuiet=sshQuiet)
         if not dontRaiseOnError and retCode != 0:
             raise Exception('%s\n: Error: %s' % (errorMsg, output))
         return output
