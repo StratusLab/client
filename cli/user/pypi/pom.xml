@@ -118,7 +118,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${basedir}/target/pypi-pkg/dist/${project.artifactId}-${project.version}.tar.gz</file>
+                  <file>${basedir}/target/pypi-pkg/dist/stratuslab-client-${project.version}.tar.gz</file>
                   <type>tar.gz</type>
                 </artifact>
               </artifacts>
