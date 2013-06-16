@@ -443,25 +443,28 @@ class TMSaveCache(object):
 
     def _emailText(self):
         return """
-Image creation was successful.
-New image was stored in local PDISK service
-https://%(pdiskHostPort)s/cert/disks/%(pdiskId)s
-https://%(pdiskHostPort)s/pswd/disks/%(pdiskId)s
-Image manifest with ID %(snapshotMarketplaceId)s was signed with dummy certificate and uploaded to %(marketplace)s.
-Alternatively, you can sign attached manifest and upload to Marketplace with:
-stratus-sign-metadata <manifest file>
-stratus-upload-metadata <manifest file>
+The image creation was SUCCESSFUL.  The image has an ID of
+%(snapshotMarketplaceId)s.
 
-NB! The validity of the manifest is %(imageValidity)s hours. Please change it!
+It is stored in the persistent service with UUID
+%(pdiskId)s.
 
-The validity of the signing certificate is %(p12Validity)s days.
+A draft image manifest entry has been generated and is attached to
+this message.  It has also been uploaded to %(marketplace)s.  The
+validity of this entry is only %(imageValidity)s hours!
+
+To provide a longer validity period you must:
+1) edit the attached manifest, updating the validity period,
+2) sign the manifest with the stratus-sign-metadata command, and
+3) upload the manifest to the Marketplace.  
+
+The manifest can be uploaded either via the Marketplace's web
+interface or via the command stratus-upload-metadata.
 
 Cheers.
-        """ % {'pdiskHostPort': self.pdiskHostPort,
-               'pdiskId': self.createdPDiskId,
+        """ % {'pdiskId': self.createdPDiskId,
                'snapshotMarketplaceId': self.snapshotMarketplaceId,
                'marketplace': self.targetMarketplace,
-               'p12Validity': self._P12_VALIDITY,
                'imageValidity': self._P12_VALIDITY * 24}
 
     def _emitNewImageInfo(self):
