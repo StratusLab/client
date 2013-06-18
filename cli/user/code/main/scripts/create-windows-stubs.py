@@ -8,7 +8,7 @@ import StringIO
 input_path='main/python/'
 output_path='target/windows/'
 
-stub='@echo off\r\npython "%~dp0..\\bin\\%~n0" %*\r\n'
+stub='@echo off\r\npython "%~dp0\\%~n0" %*\r\n'
 
 def process_file(file):
     output_basename = os.path.basename(file)
