@@ -39,10 +39,11 @@ import Defaults
 
 
 # TODO: Move to Defaults
+utilPath = os.path.abspath(os.path.dirname(__file__))
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
-modulePath = os.path.abspath('%s/../' % os.path.abspath(os.path.dirname(__file__)))
-systemsDir = '%s/stratuslab/system' % modulePath
+modulePath = os.path.abspath(os.path.join(utilPath, '..'))
+systemsDir = os.path.join(modulePath, 'stratuslab', 'system')
 varLibDir = '/var/lib/stratuslab/python'
 defaultConfigFile = os.path.join(Defaults.ETC_DIR, 'stratuslab.cfg')
 defaultConfigFileUser = os.path.join(Defaults.userHome, '.stratuslab', 'stratuslab-user.cfg')
@@ -66,34 +67,40 @@ SSH_CONNECTION_RETRY_SLEEP_MAX = 60
 
 
 def getShareDir():
-    # TODO: Windows compatibility?
-    d = Defaults.SHARE_DIR
-    if not os.path.exists(d):
-        d = os.path.join(os.path.dirname(__file__), '../../../../share')
-    if not os.path.exists(d):
-        d = os.path.join(os.path.dirname(__file__), '../../resources/share')
-    return d
+    paths = [Defaults.SHARE_DIR,
+             os.path.join(utilPath, '..', '..', '..', 'share'),
+             os.path.join(utilPath, '..', '..', '..', '..', 'share'),
+             os.path.join(utilPath, '..', '..', 'resources', 'share')]
 
+    for path in paths:
+        if os.path.exists(path):
+            return path
+
+    raise Exception("could not locate share directory; tried:\n%s" % "\n".join(paths))
 
 def getTemplateDir():
-    # TODO: Windows compatibility?
-    d = Defaults.TEMPLATE_DIR
-    if not os.path.exists(d):
-        d = os.path.join(os.path.dirname(__file__), '../../../../share/template')
-    if not os.path.exists(d):
-        d = os.path.join(os.path.dirname(__file__), '../../resources/share/template')
-    return d
+    paths = [Defaults.TEMPLATE_DIR,
+             os.path.join(utilPath, '..', '..', '..', 'share', 'template'),
+             os.path.join(utilPath, '..', '..', '..', '..', 'share', 'template'),
+             os.path.join(utilPath, '..', '..', 'resources', 'share', 'template')]
 
+    for path in paths:
+        if os.path.exists(path):
+            return path
+
+    raise Exception("could not locate template directory; tried:\n%s" % "\n".join(paths))
 
 def getResourcesDir():
-    # TODO: Windows compatibility?
-    d = Defaults.RESOURCES_DIR
-    if not os.path.exists(d):
-        d = os.path.join(os.path.dirname(__file__), '../../../../share/resources')
-    if not os.path.exists(d):
-        d = os.path.join(os.path.dirname(__file__), '../../resources/share/resources')
-    return d
+    paths = [Defaults.TEMPLATE_DIR,
+             os.path.join(utilPath, '..', '..', '..', 'share', 'resources'),
+             os.path.join(utilPath, '..', '..', '..', '..', 'share', 'resources'),
+             os.path.join(utilPath, '..', '..', 'resources', 'share', 'resources')]
 
+    for path in paths:
+        if os.path.exists(path):
+            return path
+
+    raise Exception("could not locate resources directory; tried:\n%s" % "\n".join(paths))
 
 def wget_as_xml(url, savePath):
     request = urllib2.Request(url, None, {'accept': 'application/xml'})
