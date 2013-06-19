@@ -66,10 +66,16 @@ unless forced.
         pass
 
     def _get_config_path(self):
-        src = os.path.join(Util.modulePath, '..', '..', '..', 'conf', self.refConfigFile)
-        if not os.path.exists(src):
-            src = os.path.join(Util.modulePath, '..', '..', '..', '..', 'etc', 'stratuslab', self.refConfigFile)
-        return src
+        root = os.path.join(Util.modulePath, '..', '..')
+        paths = [os.path.join(root, 'conf', self.refConfigFile),
+                 os.path.join(root, '..', 'conf', self.refConfigFile),
+                 os.path.join(root, '..', '..', 'etc', 'stratuslab', self.refConfigFile)]
+
+        for path in paths:
+            if os.path.exists(path):
+                return path
+
+        raise Exception('cannot locate reference configuration file')
 
     def _create_parent_dir(self, dst):
         d = os.path.dirname(dst)
