@@ -319,17 +319,22 @@ class Runner(object):
 
     @staticmethod
     def getTemplatePath(instance=None):
-        # TODO: Does this work on Windows?
-        vmTemplate = ''
+
+        paths = [os.path.join(Defaults.SHARE_DIR, 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', '..', 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', '..', 'src', 'main', 'resources', 
+                              'share', 'vm', 'schema.one')]
+
         if instance and hasattr(instance, 'vmTemplateFile'):
-            vmTemplate = instance.vmTemplateFile
-        if not os.path.exists(vmTemplate):
-            vmTemplate = os.path.join(Defaults.SHARE_DIR, 'vm/schema.one')
-        if not os.path.exists(vmTemplate):
-            vmTemplate = '%s/../../../share/vm/schema.one' % Util.modulePath
-        if not os.path.exists(vmTemplate):
-            vmTemplate = '%s/../../../src/main/resources/share/vm/schema.one' % Util.modulePath
-        return vmTemplate
+            paths.insert(0, instance.vmTemplateFile)
+
+        for path in paths:
+            if os.path.exists(path):
+                return path
+
+        raise Exception("cannot locate file schema.one; tried these locations:\n %s", 
+                        "\n".join(paths))
 
     @staticmethod
     def _findTokensInTemplate(template):
