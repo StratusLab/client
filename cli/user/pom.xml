@@ -9,7 +9,7 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli</artifactId>
-    <version>13.05.1</version>
+    <version>13.05.2-SNAPSHOT</version>
   </parent>
 
   <modules>
