@@ -28,7 +28,7 @@ import re
 
 packageManagerReposConfDir = '/etc/yum.repos.d'
 installCmd = 'yum -y --nogpgcheck install'
-updateCmd = 'yum update'
+updateCmd = 'yum -y update'
 cleanPackageCacheCmd = 'yum clean all'
 queryPackageCmd = 'rpm -q'
 
