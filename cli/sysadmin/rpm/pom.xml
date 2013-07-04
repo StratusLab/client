@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli-sysadmin</artifactId>
-    <version>13.05.0-SNAPSHOT</version>
+    <version>13.05.2-SNAPSHOT</version>
   </parent>
 
   <profiles>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-cli-sysadmin-zip</artifactId>
-      <version>13.05.0-SNAPSHOT</version>
+      <version>13.05.2-SNAPSHOT</version>
       <!-- <classifier>cli-sysadmin-bundle</classifier> -->
       <type>zip</type>
       <scope>compile</scope>
@@ -88,7 +88,6 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-deploy-plugin</artifactId>
-	<version>2.5</version>
       </plugin>
 
       <plugin>

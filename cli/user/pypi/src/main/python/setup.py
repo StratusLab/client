@@ -14,12 +14,12 @@ except:
 
 setup(
     name='stratuslab-client',
-    version='13.05.0-SNAPSHOT',
+    version='${project.version}',
     author='StratusLab',
     author_email='contact@stratuslab.eu',
     url='http://stratuslab.eu/',
     license='Apache Software License 2.0',
-    description='StratusLab client',
+    description='${project.description}',
     long_description=open('README.txt').read(),
 
     scripts=[
@@ -63,10 +63,32 @@ setup(
         ],
 
     data_files=[
-        ('java', ['java/metadata-13.05.0-SNAPSHOT-jar-with-dependencies.jar']),
+        ('java', ['java/metadata-${metadata.version}-jar-with-dependencies.jar']),
         ('share/vm', ['share/vm/schema.one']),
         ('share/template', ['share/template/manifest.xml.tpl']),
         ('conf', ['conf/stratuslab-user.cfg.ref']),
+        ('Scripts', ['windows/stratus-attach-volume.bat',
+                     'windows/stratus-build-metadata.bat',
+                     'windows/stratus-connect-instance.bat',
+                     'windows/stratus-copy-config.bat',
+                     'windows/stratus-create-image.bat',
+                     'windows/stratus-create-volume.bat',
+                     'windows/stratus-delete-volume.bat',
+                     'windows/stratus-deprecate-metadata.bat',
+                     'windows/stratus-describe-instance.bat',
+                     'windows/stratus-describe-volumes.bat',
+                     'windows/stratus-detach-volume.bat',
+                     'windows/stratus-hash-password.bat',
+                     'windows/stratus-kill-instance.bat',
+                     'windows/stratus-prepare-context.bat',
+                     'windows/stratus-run-cluster.bat',
+                     'windows/stratus-run-instance.bat',
+                     'windows/stratus-shutdown-instance.bat',
+                     'windows/stratus-sign-metadata.bat',
+                     'windows/stratus-update-volume.bat',
+                     'windows/stratus-upload-image.bat',
+                     'windows/stratus-upload-metadata.bat',
+                     'windows/stratus-validate-metadata.bat']),
         ],
 
     classifiers=[

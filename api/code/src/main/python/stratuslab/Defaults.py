@@ -21,7 +21,7 @@ from os.path import join, expanduser
 
 userHome = expanduser('~')
 
-sshPublicKeyLocation = join(userHome, '.ssh/id_rsa.pub')
+sshPublicKeyLocation = join(userHome, '.ssh', 'id_rsa.pub')
 
 _globusDirectory = join(userHome, '.globus')
 

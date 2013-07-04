@@ -114,16 +114,12 @@ class TMQuarantine(object):
     def _changeOwnerOfSnapshotVolume(self):
         pdisk = PersistentDisk(self.configHolder)
 
-        # root volume must exist
-        if not self.rootVolumeUuid:
-            uris = "\n".join(self.attachedVolumeURIs)
-            msg = "Missing root volume uuid.\nAttached URIs are: %s\n" % uris
-            raise Exception(msg)
-
-        # only change ownership of snapshot volumes
-        disk_identifier = pdisk.getValue('identifier', self.rootVolumeUuid)
-        if re.match('.*snapshot.*', disk_identifier):
-            pdisk.quarantineVolume(self.rootVolumeUuid)
+        # root volume may not exist, if this is an image creation
+        # only actually change ownership of snapshot volumes
+        if self.rootVolumeUuid:
+            disk_identifier = pdisk.getValue('identifier', self.rootVolumeUuid)
+            if re.match('.*snapshot.*', disk_identifier):
+                pdisk.quarantineVolume(self.rootVolumeUuid)
 
     def _moveFilesToQuarantine(self):
         instance_dir = os.path.join(self.vmDir, str(self.instanceId))
@@ -167,14 +163,18 @@ class TMQuarantine(object):
         self.rootVolumeUuid = None
         for pdisk_uri in self.attachedVolumeURIs:
 
-            # saves the root volume uuid so that the ownership can be changed later
-            if not self.rootVolumeUuid:
-                self.rootVolumeUuid = self._getDiskNameFromURI(pdisk_uri)
+            pdisk_uri = pdisk_uri.strip()
 
-            try:
-                self._detachSingleVolume(pdisk, pdisk_uri)
-            except Exception as e:
-                msg += str(e) + "\n"
+            if pdisk_uri:
+                # saves the root volume uuid so that the ownership can be changed later
+                if not self.rootVolumeUuid:
+                    self.rootVolumeUuid = self._getDiskNameFromURI(pdisk_uri)
+
+                try:
+                    self._detachSingleVolume(pdisk, pdisk_uri)
+                except Exception as e:
+                    msg += str(e) + "\n"
+
         if msg:
             raise Exception(msg)
 

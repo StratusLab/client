@@ -95,7 +95,7 @@ class ManifestInfo(object):
         self.hypervisor = '' # kvm, xen, ..
 
         self.publisher = 'StratusLab'
-        
+
         self.disksbus = ManifestInfo.DISKS_BUS_DEFAULT
         self.inboundports = ManifestInfo.INBOUND_PORTS_DEFAULT
 
@@ -159,9 +159,9 @@ class ManifestInfo(object):
         try:
             xml_tree = etree.fromstring(manifest)
         except SyntaxError, ex:
-            raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' % 
+            raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' %
                                      (str(ex), manifest))
-        
+
         self.parseManifestFromXmlTree(xml_tree)
 
     def _setEndorserFromXmlTree(self, xml_tree):
@@ -180,14 +180,14 @@ class ManifestInfo(object):
             else:
                 attr = elem
                 setattr(self, attr, val)
-        
+
         checksums = xml_tree.findall('.//{%s}checksum' % NS_SLREQ)
         for checksum in checksums:
             checkSumType = checksum.find('.//{%s}algorithm' % NS_SLREQ).text
             checkSumType = _normalizeForInstanceAttribute(checkSumType)
             checkSumValue = checksum.find('.//{%s}value' % NS_SLREQ).text
             setattr(self, checkSumType, checkSumValue)
-        
+
 
     def _setClientXmlTemplateAttributesFromXmlTree(self, xml_tree):
         """Attributes from client XML template."""
@@ -259,7 +259,7 @@ class ManifestInfo(object):
 
     def _getLocationsAsXml(self):
         joint = '\n        '
-        return joint.join([copy.copy(self._locations_xml) % {'location':location} 
+        return joint.join([copy.copy(self._locations_xml) % {'location':location}
                            for location in self.locations])
 
     def __str__(self):
@@ -285,16 +285,19 @@ class ManifestIdentifier(object):
     sha1Bits = 160
     fieldBits = 6
     identifierChars = sha1Bits / fieldBits + 1
-    devisor = long(2) ** fieldBits
+    divisor = long(2) ** fieldBits
 
     def sha1ToIdentifier(self, sha1):
-        sha1 = int(sha1, 16)
-        sb = ''
-        for _ in range(self.identifierChars):
-            values = divmod(sha1, self.devisor)
-            sha1 = values[0]
-            sb += self.encoding[int(values[1])]
-        return sb[::-1]
+        try:
+            sha1 = long(sha1, 16)
+            sb = ''
+            for _ in range(self.identifierChars):
+                values = divmod(sha1, self.divisor)
+                sha1 = values[0]
+                sb += self.encoding[int(values[1])]
+            return sb[::-1]
+        except ValueError as e:
+            raise ValueError('invalid SHA-1 checksum: %s' % sha1)
 
     def identifierToSha1(self, identifier):
         sha1 = long(0)

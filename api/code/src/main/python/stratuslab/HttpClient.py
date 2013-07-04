@@ -25,6 +25,7 @@ import base64
 import mimetools
 import mimetypes
 import httplib2
+import ssl
 from httplib2 import httplib
 from time import gmtime, strftime
 from stratuslab import Util
@@ -146,6 +147,11 @@ class HttpClient(object):
                     return httpObject.request(url, method, body, headers=headers)
                 else:
                     return httpObject.request(url, method, body)
+            except ssl.SSLError as e:
+                t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                self._printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
+                lastException = e
+                retries += 1
             except httplib2.ssl_SSLError as e:
                 t = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 self._printDetail('SSL ERROR ENCOUNTERED (%s): %s' % (t, str(e)))
