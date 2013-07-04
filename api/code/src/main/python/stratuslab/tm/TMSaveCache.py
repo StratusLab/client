@@ -383,8 +383,6 @@ class TMSaveCache(object):
         conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
         return conf.get('type')
 
-    conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
-
     def _retrieveTargetMarketplace(self):
         if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):
             self.targetMarketplace = self.createImageInfo['NEWIMAGE_MARKETPLACE']
