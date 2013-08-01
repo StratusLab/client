@@ -45,7 +45,7 @@ class CouchbaseServer(Installator):
         self._serviceName = 'couchbase-server'
         self._packages = ['couchbase-server']
 
-        self._cb_yum_url = 'http://packages.couchbase.com/rpm/couchbase-centos62-x86_64.repo'
+        self._cb_pkg_url = 'http://packages.couchbase.com/releases/2.0.0/couchbase-server-community_x86_64_2.0.0.rpm'
 
         self._cb_cluster_username = 'admin'
         self._cb_cluster_password = CouchbaseServer._generate_password()
@@ -64,12 +64,18 @@ class CouchbaseServer(Installator):
         self._restartService()
 
     def _installPackages(self):
-        Util.printStep('Configuring machine to use Couchbase yum repository')
-        cmd = 'curl --output /etc/yum.repos.d/couchbase.repo %s' % self._cb_yum_url
+        Util.printStep('Removing old Couchbase server package')
+        pkgfile = '/tmp/couchbase-server.rpm'
+        cmd = 'rm -f %s' % pkgfile
         self._executeExitOnError(cmd)
 
-        Util.printStep('Installing packages')
-        self.system.installPackages(self._packages)
+        Util.printStep('Downloading Couchbase server package')
+        cmd = 'curl --output %s %s' % (pkgfile, self._cb_pkg_url)
+        self._executeExitOnError(cmd)
+
+        Util.printStep('Installing Couchbase server package')
+        cmd = 'yum install -y %s' % pkgfile
+        self._executeExitOnError(cmd)
 
     def _configure(self):
         Util.printStep('(Re-)starting Couchbase')
