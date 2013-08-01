@@ -36,6 +36,27 @@ from stratuslab.Exceptions import NetworkException
 
 class HttpClient(object):
 
+    ENV_HTTP_PROXY = 'http_proxy'
+    ENV_NO_PROXY = 'no_proxy'
+
+    @staticmethod
+    def getHttpProxyForUrl(url):
+        proxy = None
+        url_host = Util.parseUri(url)[1]
+        envProxy = HttpClient._getEnvVarProxy()
+        if envProxy and not (url_host in HttpClient._getEnvVarNoProxy()):
+            proxy_server, proxy_port = Util.parseUri(envProxy)[1:3]
+            proxy = httplib2.ProxyInfo(3, proxy_server, int(proxy_port), 
+                                       proxy_rdns=True)
+        return proxy
+
+    @staticmethod
+    def _getEnvVarProxy():
+        return os.environ.get(HttpClient.ENV_HTTP_PROXY)
+    @staticmethod
+    def _getEnvVarNoProxy():
+        return os.environ.get(HttpClient.ENV_NO_PROXY)
+
     def __init__(self, configHolder=ConfigHolder()):
         self.verboseLevel = None
         self.configHolder = configHolder
@@ -197,10 +218,11 @@ class HttpClient(object):
             if str(resp.status).startswith('5'):
                 resp, content = _handle5xx()
 
+        proxy = self.getHttpProxyForUrl(url)
         if self.useHttpCache:
-            h = httplib2.Http(".cache")
+            h = httplib2.Http(".cache", proxy_info=proxy)
         else:
-            h = httplib2.Http()
+            h = httplib2.Http(proxy_info=proxy)
         h.force_exception_to_status_code = False
         h.disable_ssl_certificate_validation=True
         self._printDetail('Contacting the server with %s, at: %s' % (method, url))
@@ -229,4 +251,3 @@ class HttpClient(object):
                 raise
 
         return resp, content
-

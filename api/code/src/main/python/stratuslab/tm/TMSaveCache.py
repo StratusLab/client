@@ -294,6 +294,83 @@ class TMSaveCache(object):
         self.imageSha1 = self._getSnapshotSha1()
 
     def _getSnapshotSha1(self):
+        iscsi_type = self._configPdiskGetIscsiBackendType()
+        if iscsi_type == 'NetApp':
+            return self._getSnapshotChecksum_NetApp()
+        elif iscsi_type == 'lvm':
+            return self._getSnapshotChecksum_Lvm()
+        else:
+            raise ConfigurationException('Unknown iSCSI backend type: %s' % iscsi_type)
+
+    def _getSnapshotChecksum_NetApp(self):
+
+        PDISK_BACKEND_CMD = '/usr/sbin/persistent-disk-backend.py'
+        PDISK_BACKEND_CFG = '/etc/stratuslab/pdisk-backend.cfg'
+
+        PDISK_CLIENT_CMD = '/usr/sbin/stratus-pdisk-client.py'
+
+        PDISK_ID = 'pdisk:localhost:8445:%s' % self.diskName
+
+        def _mapDisk():
+            # LUN mapping might be needed
+            netapp_map = [PDISK_BACKEND_CMD, 
+                          '--config', PDISK_BACKEND_CFG, 
+                          '--action', 'map',
+                          self.diskName]
+            self._ssh(self.persistentDiskIp, netapp_map,
+                      'Failed to map %s on NetApp' % self.diskName, 
+                      dontRaiseOnError=True)
+        def _getTURL():
+            # Get TURL
+            get_turl_cmd = [PDISK_BACKEND_CMD, 
+                            '--config', PDISK_BACKEND_CFG, 
+                            '--action', 'getturl', 
+                            self.diskName]
+            return self._ssh(self.persistentDiskIp, get_turl_cmd, 
+                             'Failed to get TURL for %s' % self.diskName)
+        def _attachLUN(turl):
+            snapshotPath = os.path.join('/var/tmp/stratuslab', 
+                                        self.diskName + '.link')
+            # Attach LUN and link to a known location
+            rescan_cmd = ['sudo', 'iscsiadm', '--mode', 'session', '--rescan']
+            self._ssh(self.persistentDiskIp, rescan_cmd, 
+                      'Failed rescanning iSCSI targets.')
+            attach_and_link_cmd = ['sudo', PDISK_CLIENT_CMD, 
+                                   '--op', 'up', 
+                                   '--attach', 
+                                   '--pdisk-id', PDISK_ID, 
+                                   '--link-to', snapshotPath, 
+                                   '--turl', turl]
+            self._ssh(self.persistentDiskIp, attach_and_link_cmd,
+                      'Failed attaching %s to %s' % (PDISK_ID, self.persistentDiskIp))
+            return snapshotPath
+        def _checksumSnapshot(snapshotPath):
+            checksumOutput = self._ssh(self.persistentDiskIp, ['sudo', self._CHECKSUM_CMD, snapshotPath],
+                                       'Unable to compute checksum of "%s"' % snapshotPath)
+            return checksumOutput.split(' ')[0]
+        def _clenup(snapshotPath):
+            # Unmount
+            detach_lun_cmd = ['sudo', PDISK_CLIENT_CMD,
+                              '--op', 'down', 
+                              '--attach', 
+                              '--pdisk-id', PDISK_ID, 
+                              '--turl', turl]
+            self._ssh(self.persistentDiskIp, detach_lun_cmd,
+                      'Failed detaching %s from %s' % (PDISK_ID, self.persistentDiskIp))
+            # Remove link
+            self._ssh(self.persistentDiskIp, ['sudo', 'rm', '-f', snapshotPath],
+                      'Failed to remove link to %s on %s' % (self.diskName, self.persistentDiskIp), 
+                      dontRaiseOnError=True)
+
+        _mapDisk()
+        turl = _getTURL()
+        snapshotPath = _attachLUN(turl)
+        checksum = _checksumSnapshot(snapshotPath)
+        _clenup(snapshotPath)
+
+        return checksum
+
+    def _getSnapshotChecksum_Lvm(self):
         snapshotPath = self._getSnapshotPath()
         checksumOutput = self._ssh(self.persistentDiskIp, [self._CHECKSUM_CMD, snapshotPath],
                                    'Unable to compute checksum of "%s"' % snapshotPath)
@@ -301,6 +378,10 @@ class TMSaveCache(object):
         printInfo('snapshot path: "%s"' % snapshotPath)
         printInfo('checksum output is: "%s"' % checksumOutput)
         return checksumOutput.split(' ')[0]
+
+    def _configPdiskGetIscsiBackendType(self):
+        conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
+        return conf.get('type')
 
     def _retrieveTargetMarketplace(self):
         if self.createImageInfo.get('NEWIMAGE_MARKETPLACE'):

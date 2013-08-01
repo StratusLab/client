@@ -124,7 +124,15 @@ class TMQuarantine(object):
     def _moveFilesToQuarantine(self):
         instance_dir = os.path.join(self.vmDir, str(self.instanceId))
         quarantine_dir = os.path.join(self.vmDir, 'quarantine')
+        self._moveFilesToQuarantineLocal(instance_dir, quarantine_dir)
+        self._moveFilesToQuarantineHypervisor(instance_dir, quarantine_dir)
+
+    def _moveFilesToQuarantineLocal(self, instance_dir, quarantine_dir):
         shutil.move(instance_dir, quarantine_dir)
+
+    def _moveFilesToQuarantineHypervisor(self, instance_dir, quarantine_dir):
+        self._sshDst(['mv', instance_dir, quarantine_dir], 
+                     'Failed to quarantine VM on hypervisor.')
 
     #--------------------------------------------
     # Persistent disk and related

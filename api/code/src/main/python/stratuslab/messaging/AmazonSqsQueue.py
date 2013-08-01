@@ -19,9 +19,10 @@
 #
 
 import base64
-import httplib
+import httplib2
 import urllib
 
+from stratuslab.HttpClient import HttpClient
 from stratuslab.messaging.MsgBase import MsgBase
 
 SECRET_HEADER = {'User-Agent':'StratusLab'}
@@ -29,8 +30,10 @@ SECRET_HEADER = {'User-Agent':'StratusLab'}
 class AmazonSqsQueue(MsgBase):
     def __init__(self, configHolder):
         super(AmazonSqsQueue, self).__init__(configHolder)
-
-        self.conn = httplib.HTTPSConnection(self.msg_endpoint)
+        self.conn = httplib2.Http(
+                    proxy_info=HttpClient.getHttpProxyForUrl(self.msg_endpoint))
+        self.conn.force_exception_to_status_code = False
+        self.conn.disable_ssl_certificate_validation=True
         self.conn.debuglevel = self.verboseLevel
         self.headers = {'Accept':'*/*', 
                         'Content-Type':'application/x-www-form-urlencoded'}
@@ -46,11 +49,10 @@ class AmazonSqsQueue(MsgBase):
 
     def send(self, message):
         'message - dictionary'
-        params = self._build_query_params(message)
-        self.conn.request('POST', self.msg_queue, params, self.headers)
-        response = self.conn.getresponse()
+        url = self.msg_endpoint + '/' + self.msg_queue.strip('/')
+        url_params = '%s?%s' % (url, self._build_query_params(message))
+        response, content = self.conn.request(url_params, 'POST', 
+                                              headers=self.headers)
         status = str(response.status)
         if not status.startswith('2'):
-            data = response.read()
-            raise Exception(data)
-        self.conn.close()
+            raise Exception('HTTP call failed with ' + str(status))
