@@ -51,7 +51,7 @@ class CouchbaseClient(Installator):
         self._executeExitOnError(cmd)
 
         Util.printStep('Removing Couchbase python client')
-        cmd = 'pip uninstall -y couchbase'
+        cmd = 'pip uninstall couchbase'
         rc, output = Util.execute(cmd.split(' '),
                                   withOutput=True,
                                   verboseLevel=self.verboseLevel,
@@ -72,7 +72,7 @@ class CouchbaseClient(Installator):
         self._executeExitOnError(cmd)
 
         Util.printStep('Installing Couchbase python client')
-        cmd = 'pip install -y couchbase'
+        cmd = 'pip install couchbase'
         self._executeExitOnError(cmd)
 
     def _configure(self):
