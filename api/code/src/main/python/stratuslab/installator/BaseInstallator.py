@@ -26,6 +26,7 @@ from stratuslab.installator.Sunstone import Sunstone
 from stratuslab.installator.PortTranslation import PortTranslation
 from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.CouchbaseServer import CouchbaseServer
+from stratuslab.installator.CouchbaseClient import CouchbaseClient
 from stratuslab.installator.CIMI import CIMI
 
 class BaseInstallator(object):
@@ -38,6 +39,7 @@ class BaseInstallator(object):
                 ('registration', Registration),
                 ('port-translation', PortTranslation),
                 ('couchbase', CouchbaseServer),
+                ('couchbase-client', CouchbaseClient),
                 ('cimi', CIMI),
                 ('sunstone', Sunstone))
 
