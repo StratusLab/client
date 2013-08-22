@@ -37,6 +37,7 @@ class BaseInstallator(object):
                 ('registration', Registration),
                 ('port-translation', PortTranslation),
                 ('couchbase', CouchbaseServer),
+                ('cimi', CIMI),
                 ('sunstone', Sunstone))
 
     @staticmethod
