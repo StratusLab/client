@@ -30,8 +30,8 @@ class CIMI(Installator):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
 
-        self._serviceName = 'cimi-server'
-        self._packages = ['stratuslab-cimi-server']
+        self._serviceName = 'cimi'
+        self._package = 'stratuslab-cimi-server'
 
     def _installFrontend(self):
         self._installPackages()
@@ -44,11 +44,11 @@ class CIMI(Installator):
 
     def _installPackages(self):
         Util.printStep('Removing CIMI server package')
-        cmd = 'yum erase -y %s' % pkgfile
+        cmd = 'yum erase -y %s' % self._package
         self._executeExitOnError(cmd)
 
         Util.printStep('Installing CIMI server package')
-        cmd = 'yum install -y %s' % pkgfile
+        cmd = 'yum install --nogpgcheck -y %s' % self._package
         self._executeExitOnError(cmd)
 
     def _configure(self):
