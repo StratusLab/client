@@ -26,6 +26,7 @@ from stratuslab.installator.Sunstone import Sunstone
 from stratuslab.installator.PortTranslation import PortTranslation
 from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.CouchbaseServer import CouchbaseServer
+from stratuslab.installator.CIMI import CIMI
 
 class BaseInstallator(object):
 
