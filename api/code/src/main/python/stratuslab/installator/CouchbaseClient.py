@@ -51,13 +51,18 @@ class CouchbaseClient(Installator):
         self._executeExitOnError(cmd)
 
         Util.printStep('Removing Couchbase python client')
-        cmd = 'pip uninstall -y couchbase'
-        rc, output = Util.execute(cmd.split(' '),
-                                  withOutput=True,
-                                  verboseLevel=self.verboseLevel,
-                                  verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
-        if rc != 0:
-            Util.printInfo("cannot uninstall couchbase python client\n%s" % output)
+        try:
+            cmd = 'pip uninstall -y couchbase'
+            rc, output = Util.execute(cmd.split(' '),
+                                      withOutput=True,
+                                      verboseLevel=self.verboseLevel,
+                                      verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
+            if rc != 0:
+                Util.printInfo('Couchbase python client NOT removed')
+            else:
+                Util.printInfo('Couchbase python client removed')
+        except:
+            Util.printInfo("Couchbase python client NOT removed")
 
         Util.printStep('Removing Couchbase C client')
         cmd = 'yum erase -y %s' % ' '.join(self._pkgs)
