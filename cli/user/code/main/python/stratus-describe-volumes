@@ -75,8 +75,8 @@ that have a tag matching the regex pattern.''',
         if not len(volumes):
             print 'No disk to show'
         for disk in volumes:
-            print ':: DISK %s' % disk['uuid']
-            self._printDict(disk, ['uuid', ])
+            print ':: DISK %s' % disk['id']
+            self._printDict(disk, ['id', ])
 
     def _printDict(self, dictionary, excludeKey=[]):
         for k, v in dictionary.items():

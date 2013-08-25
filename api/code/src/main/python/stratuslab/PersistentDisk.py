@@ -26,7 +26,7 @@ import re
 from urllib import urlencode
 from socket import getfqdn
 
-from stratuslab.HttpClient import HttpClient
+from cimi.client.cloud_entry_point import CloudEntryPoint
 from uuid import UUID
 from stratuslab.Util import printError
 import Util
@@ -65,12 +65,16 @@ class PersistentDisk(object):
                 raise ConfigurationException('Missing persistent disk endpoint.')
 
     def _initPDiskConnection(self, configHolder=None):
-        self.client = HttpClient(configHolder or self.configHolder)
-        self._addCredentials()
-        self._buildFQNEndpoint()
+        cep = CloudEntryPoint(self._getEndpoint(configHolder or self.configHolder), 
+                              ssl_verify=False)
+        self.client = cep['volumes']
 
-    def _getJson(self, url):
-        return self.client.get(url, accept='application/json')
+    def _getEndpoint(self, configHolder):
+        return 'https://%s:8082' % configHolder.pdiskEndpoint
+
+    def _getJson(self, url='to keep lint happy'):
+        self.client.reload()
+        return self.client.data and self.client.data.get('volumes', {}) or {}
 
     def _getGzip(self, url):
         return self.client.get(url, accept='application/x-gzip')
@@ -98,11 +102,8 @@ class PersistentDisk(object):
     def describeVolumes(self, filters={}):
         self._initPDiskConnection()
         self._printContacting()
-        listVolUrl = '%s/disks/' % self.endpoint
-        headers, jsonDiskList = self._getJson(listVolUrl)
-        self._raiseOnErrors(headers, jsonDiskList)
-        disks = json.loads(jsonDiskList)
-        return self._filterDisks(disks, filters)
+        jsonDiskList = self._getJson()
+        return self._filterDisks(jsonDiskList, filters)
 
     def search(self, key, value):
         self._setPDiskUserCredentials()
@@ -364,7 +365,7 @@ class PersistentDisk(object):
         return True
 
     def _printContacting(self):
-        self._printDetail('Accessing storage service at: %s' % self.endpoint)
+        self._printDetail('Accessing storage service at: %s' % self.client.uri)
 
     def _printDetail(self, message):
         Util.printDetail(message, self.verboseLevel, 1)
