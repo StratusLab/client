@@ -63,7 +63,7 @@ class CentOS(BaseSystem):
             'openssh', 'ruby', 'gcc', 'gcc-c++', 'zlib-devel', 'genisoimage', 'curl'
         ]
         self.nodeDeps = ['ruby', 'curl', 'libvirt', 'genisoimage', 'openssh', 'bridge-utils',
-                         'stratuslab-libvirt-monitor']
+                         'stratuslab-vmusage']
         self.hypervisorDeps = {
             'xen': ['xen', 'kernel-xen'],
             'kvm': ['qemu-kvm'],
