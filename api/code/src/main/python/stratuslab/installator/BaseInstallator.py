@@ -28,7 +28,8 @@ from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.CouchbaseServer import CouchbaseServer
 from stratuslab.installator.CouchbaseClient import CouchbaseClient
 from stratuslab.installator.CIMI import CIMI
-
+from stratuslab.installator.VMUsage import VMUsage
+from stratuslab.installator.Consolidation import Consolidation
 class BaseInstallator(object):
 
     @staticmethod
