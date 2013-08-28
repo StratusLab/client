@@ -42,7 +42,6 @@ class BaseInstallator(object):
                 ('couchbase', CouchbaseServer),
                 ('couchbase-client', CouchbaseClient),
                 ('cimi', CIMI),
-		('vmusage', VMUsage),
 		('consolidation', Consolidation),
                 ('sunstone', Sunstone))
 
