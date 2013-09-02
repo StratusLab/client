@@ -110,7 +110,6 @@ setup(
         "dirq >= 1.2.2",
         "stomp.py >= 3.1.3",
         "pika >= 0.9.9",
-        "httplib2 >= 0.7.7",
-        "couchbase == 0.8.2"
+        "httplib2 >= 0.7.7"
     ],
 )
