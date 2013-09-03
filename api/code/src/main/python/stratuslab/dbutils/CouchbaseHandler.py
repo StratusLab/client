@@ -16,7 +16,7 @@
 
 import logging as log
 import ConfigParser
-from couchbase.client import Couchbase
+from couchbase import Couchbase
 
 class stratuslab.dbutils.CouchbaseHandler (log.Handler):
     """
@@ -38,11 +38,11 @@ class stratuslab.dbutils.CouchbaseHandler (log.Handler):
         happen if the document exists already.
         """
         try:
-            self.bucket.add(self.docid, 0, 0, '')
+            self.cb.add(self.docid,'')
         except:
             pass
 
-    def __init__(self, docid, dbhost='127.0.0.1:8091', 
+    def __init__(self, docid, dbhost='127.0.0.1', 
                  bucket='default', password='', level=log.INFO):
         """
         Constructor requires the document ID (docid) for the log.
@@ -58,8 +58,7 @@ class stratuslab.dbutils.CouchbaseHandler (log.Handler):
         """
         super(CouchbaseHandler, self).__init__(level=level)
 
-        couchbase = Couchbase(dbhost, bucket, password)
-        self.bucket = couchbase[bucket]
+        self.cb = Couchbase.connect(host=dbhost, bucket=bucket, password=password)
 
         if not docid:
             raise Exception('docid cannot be empty or null')
@@ -75,6 +74,6 @@ class stratuslab.dbutils.CouchbaseHandler (log.Handler):
         """
         try:
             msg = self.format(record) + "\n"
-            self.bucket.append(self.docid, msg)
+            self.cb.append(self.docid, msg)
         except:
             self.handleError(record)

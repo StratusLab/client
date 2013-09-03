@@ -28,7 +28,7 @@ from stratuslab.installator.OpenLDAP import OpenLDAP
 from stratuslab.installator.CouchbaseServer import CouchbaseServer
 from stratuslab.installator.CouchbaseClient import CouchbaseClient
 from stratuslab.installator.CIMI import CIMI
-
+from stratuslab.installator.Consolidation import Consolidation
 class BaseInstallator(object):
 
     @staticmethod
@@ -41,6 +41,7 @@ class BaseInstallator(object):
                 ('couchbase', CouchbaseServer),
                 ('couchbase-client', CouchbaseClient),
                 ('cimi', CIMI),
+		('consolidation', Consolidation),
                 ('sunstone', Sunstone))
 
     @staticmethod
