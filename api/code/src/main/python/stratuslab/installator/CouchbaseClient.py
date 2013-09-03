@@ -45,6 +45,18 @@ class CouchbaseClient(Installator):
     def _startServicesFrontend(self):
         pass
 
+
+    def _installNode(self):
+	self.system.workOnNode()
+        self._installPackagesOnNode()
+
+    def _setupNode(self):
+        pass
+
+    def _startServicesNode(self):
+        pass
+
+
     def _installPackages(self):
         Util.printStep('Setting up Couchbase yum repository')
         cmd = 'curl --output %s %s' % (self._repofile, self._repourl)
@@ -80,6 +92,43 @@ class CouchbaseClient(Installator):
         cmd = 'pip install couchbase'
         self._executeExitOnError(cmd)
 
+
+    def _installPackagesOnNode(self):
+        Util.printStep('Setting up Couchbase yum repository on node')
+        cmd = 'curl --output %s %s' % (self._repofile, self._repourl)
+        self._executeOnNodeExitOnError(cmd)
+
+        Util.printStep('Removing Couchbase python client')
+        try:
+            cmd = 'pip uninstall -y couchbase'
+            rc, output = self.system._nodeShell(cmd.split(' '),
+                                      withOutput=True,
+				      shell=True)	
+            if rc != 0:
+                Util.printInfo('Couchbase python client NOT removed')
+            else:
+                Util.printInfo('Couchbase python client removed')
+        except:
+            Util.printInfo("Couchbase python client NOT removed")
+
+        Util.printStep('Removing Couchbase C client')
+        cmd = 'yum erase -y %s' % ' '.join(self._pkgs)
+        self._executeOnNodeExitOnError(cmd)
+
+        Util.printStep('Installing Couchbase C client')
+        cmd = 'yum install -y %s' % ' '.join(self._pkgs)
+        self._executeOnNodeExitOnError(cmd)
+
+        Util.printStep('Installing Couchbase python client dependencies')
+        cmd = 'yum install --nogpgcheck -y %s' % ' '.join(self._deps)
+        self._executeOnNodeExitOnError(cmd)
+
+        Util.printStep('Installing Couchbase python client')
+        cmd = 'pip install couchbase'
+        self._executeOnNodeExitOnError(cmd)
+
+
+
     def _configure(self):
         pass
 
@@ -91,5 +140,15 @@ class CouchbaseClient(Installator):
                                   withOutput=True,
                                   verboseLevel=self.verboseLevel,
                                   verboseThreshold=Util.VERBOSE_LEVEL_DETAILED)
+        if rc != 0:
+            printError('Failed running: %s\n%s' % (cmd_str, output))
+
+
+
+
+    def _executeOnNodeExitOnError(self, cmd_str):
+        rc, output = self.system._nodeShell(cmd_str.split(' '),
+                                  withOutput=True, 
+                                  shell=True)
         if rc != 0:
             printError('Failed running: %s\n%s' % (cmd_str, output))
