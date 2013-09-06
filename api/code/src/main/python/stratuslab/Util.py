@@ -68,6 +68,7 @@ SSH_CONNECTION_RETRY_SLEEP_MAX = 60
 
 def getShareDir():
     paths = [Defaults.SHARE_DIR,
+             os.path.join(utilPath, 'share'),
              os.path.join(utilPath, '..', '..', '..', 'share'),
              os.path.join(utilPath, '..', '..', '..', '..', 'share'),
              os.path.join(utilPath, '..', '..', 'resources', 'share')]
@@ -80,6 +81,7 @@ def getShareDir():
 
 def getTemplateDir():
     paths = [Defaults.TEMPLATE_DIR,
+             os.path.join(utilPath, 'share'),
              os.path.join(utilPath, '..', '..', '..', 'share', 'template'),
              os.path.join(utilPath, '..', '..', '..', '..', 'share', 'template'),
              os.path.join(utilPath, '..', '..', 'resources', 'share', 'template')]
@@ -91,7 +93,8 @@ def getTemplateDir():
     raise Exception("could not locate template directory; tried:\n%s" % "\n".join(paths))
 
 def getResourcesDir():
-    paths = [Defaults.TEMPLATE_DIR,
+    paths = [Defaults.RESOURCES_DIR,
+             os.path.join(utilPath, 'share'),
              os.path.join(utilPath, '..', '..', '..', 'share', 'resources'),
              os.path.join(utilPath, '..', '..', '..', '..', 'share', 'resources'),
              os.path.join(utilPath, '..', '..', 'resources', 'share', 'resources')]
