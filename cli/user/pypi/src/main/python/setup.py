@@ -109,7 +109,6 @@ setup(
     install_requires=[
         "dirq >= 1.2.2",
         "stomp.py >= 3.1.3",
-        "pika >= 0.9.9",
         "httplib2 >= 0.7.7"
     ],
 )

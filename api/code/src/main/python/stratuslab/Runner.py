@@ -66,13 +66,6 @@ class Runner(object):
   TARGET=%(vm_disks_prefix)sc,
   DRIVER="raw" ]'''
 
-    NOTIFICATION = '''NOTIFICATION = [
-  HOST="{0}",
-  VHOST="{1}",
-  USER="{2}",
-  PASSWORD="{3}",
-  QUEUE="{4}" ]'''
-
     CREATE_IMAGE = '''CREATE_IMAGE = [
 %s
 ]'''
@@ -414,7 +407,6 @@ class Runner(object):
         self._manageRawData()
         self._manageExtraContext()
         self._manageVnc()
-        self._manageNotifications()
         self._manageCreateImage()
         self._manageRequirements()
         self._manageInboundPorts()
@@ -544,19 +536,6 @@ class Runner(object):
             vncInfo.append('type = "vnc"')
 
             self.graphics = 'GRAPHICS = [\n%s\n]' % (',\n'.join(vncInfo))
-
-    def _formatRecipient(self, recipient):
-        # fields are: 'host', 'vhost', 'user', 'pass', 'queue'
-        # badly formatted inputs are silently ignored
-        values = recipient.split(',')
-        return Runner.NOTIFICATION.format(*values) if (len(values) == 5) else ''
-
-    def _manageNotifications(self):
-        if self.msgRecipients:
-            notificationInfo = map(self._formatRecipient, self.msgRecipients)
-            self.notifications = ('\n'.join(notificationInfo))
-        else:
-            self.notifications = ''
 
     def _manageCreateImage(self):
         if not self.saveDisk:

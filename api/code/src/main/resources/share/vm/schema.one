@@ -31,6 +31,5 @@ public_key = "%(public_key)s",
 %(extra_context)s
 target = "hdd"
 ]
-%(notifications)s
 %(create_image)s
 %(inbound_ports)s
