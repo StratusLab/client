@@ -17,6 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import sys
+import traceback
 import urllib2
 
 from Util import Util as MarketplaceUtil
@@ -76,8 +78,9 @@ class ManifestDownloader(object):
         try:
             return self.__getManifest(url)
         except:
-            Util.printError('Failed to get manifest for resource uri: %s' % resourceUri)
-            raise
+            reason = ''.join(traceback.format_exception_only(*(sys.exc_info()[:2])))
+            Util.printError('Failed to get manifest for resource uri: %s. %s' % (url, 
+                                                                                 reason))
 
     def __getManifest(self, url):
         errorMessage = 'Failed to find metadata entry: %s' % url
