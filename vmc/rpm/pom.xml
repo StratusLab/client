@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-vmc-rpm</artifactId>
-  <name>StratusLab Virtual Machine Management (RPM)</name>
+  <name>Virtual Machine Controller (RPM)</name>
   <packaging>rpm</packaging>
 
   <parent>

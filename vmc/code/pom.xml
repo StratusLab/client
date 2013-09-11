@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-vmc-pkg</artifactId>
-  <name>StratusLab Virtual Machine Management (PKG)</name>
+  <name>Virtual Machine Controller (PKG)</name>
   <packaging>pom</packaging>
 
   <parent>

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>stratuslab-vmc</artifactId>
-  <name>StratusLab Virtual Machine Management (POM)</name>
+  <name>Virtual Machine Controller (POM)</name>
   <packaging>pom</packaging>
 
   <parent>
