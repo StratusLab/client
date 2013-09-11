@@ -5,9 +5,9 @@ class Controller():
     
     def __init__(self):
         self.stdin_path = '/dev/null'
-        self.stdout_path = '/var/log/vmc.log'
-        self.stderr_path = '/var/log/vms.log'
-        self.pidfile_path =  '/var/lib/run/vmc.pid'
+        self.stdout_path = '/var/log/stratuslab-vmc.log'
+        self.stderr_path = '/var/log/stratuslab-vmc.log'
+        self.pidfile_path =  '/var/run/stratuslab-vmc.pid'
         self.pidfile_timeout = 5
         
     def run(self):

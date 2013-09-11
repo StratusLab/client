@@ -108,6 +108,7 @@
 	  <requires>
 	    <require>stratuslab-api</require>
 	    <require>libvirt-python</require>
+            <require>python-daemon</require>
 	  </requires>
 	  
 	  <mappings>
@@ -134,6 +135,19 @@
 	      <sources>
 		<source>
 		  <location>${project.build.directory}/zip-sources/lib</location>
+		</source>
+	      </sources>
+	    </mapping>
+
+	    <mapping>
+	      <directory>/etc/init.d</directory>
+	      <directoryIncluded>false</directoryIncluded>
+	      <filemode>755</filemode>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <sources>
+		<source>
+		  <location>${basedir}/src/main/scripts</location>
 		</source>
 	      </sources>
 	    </mapping>
