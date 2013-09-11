@@ -1,34 +1,34 @@
 #!/bin/bash
 #
-# /etc/rc.d/init.d/stratuslab-vmc
+# /etc/init.d/stratuslab-vmc
 #
 # StratusLab VM Controller
 #
 # chkconfig: 345 90 10
-# pidfile: /var/lib/run/stratuslab-vmc.pid
+# pidfile: /var/run/stratuslab-vmc.pid
 
 # Source function library.
 . /etc/rc.d/init.d/functions
 
 case "$1" in
     start)
-        echo -n "Starting stratuslab-vmc: "
-        /usr/sbin/stratuslab-vmc start
+        echo "Starting stratuslab-vmc..."
+        /usr/sbin/stratuslab-vmc.py start
         touch /var/lock/subsys/stratuslab-vmc
         ;;
     stop)
-        echo -n "Shutting down stratuslab-vmc: "
-        /usr/sbin/stratuslab-vmc stop
+        echo "Shutting down stratuslab-vmc..."
+        /usr/sbin/stratuslab-vmc.py stop
         rm -f /var/lock/subsys/stratuslab-vmc
         ;;
     status)
-        status()
+        status -p /var/run/stratuslab-vmc.pid stratuslab-vmc
         ;;
     restart)
-        /usr/sbin/stratuslab-vmc restart
+        /usr/sbin/stratuslab-vmc.py restart
         ;;
     reload)
-        /usr/sbin/stratuslab-vmc restart
+        /usr/sbin/stratuslab-vmc.py restart
         ;;
     *)
         echo "Usage: stratuslab-vmc {start|stop|status|reload|restart"
