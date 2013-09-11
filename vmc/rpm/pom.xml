@@ -111,15 +111,29 @@
 	  </requires>
 	  
 	  <mappings>
+
 	    <mapping>
-	      <directory>/var/lib/one/remotes/vmc/kvm-py/</directory>
-	      <directoryIncluded>true</directoryIncluded>
+	      <directory>/usr/sbin</directory>
+	      <directoryIncluded>false</directoryIncluded>
 	      <filemode>755</filemode>
 	      <username>root</username>
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
 		  <location>${project.build.directory}/zip-sources/bin</location>
+		</source>
+	      </sources>
+	    </mapping>
+
+	    <mapping>
+	      <directory>/var/lib/stratuslab/python</directory>
+	      <directoryIncluded>true</directoryIncluded>
+	      <filemode>644</filemode>
+	      <username>root</username>
+	      <groupname>root</groupname>
+	      <sources>
+		<source>
+		  <location>${project.build.directory}/zip-sources/lib</location>
 		</source>
 	      </sources>
 	    </mapping>
