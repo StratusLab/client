@@ -16,13 +16,13 @@
       <fileMode>0755</fileMode>
       <directoryMode>0755</directoryMode>
       <includes>
-        <include>stratuslab-vmc.py</include>
+        <include>stratuslab-pdc.py</include>
       </includes>
     </fileSet>
     
     <fileSet>
-      <directory>${basedir}/src/main/python/stratuslab_vmc</directory>
-      <outputDirectory>lib/stratuslab_vmc</outputDirectory>
+      <directory>${basedir}/src/main/python/stratuslab_pdc</directory>
+      <outputDirectory>lib/stratuslab_pdc</outputDirectory>
       <fileMode>0644</fileMode>
       <directoryMode>0644</directoryMode>
     </fileSet>
