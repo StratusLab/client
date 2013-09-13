@@ -1,0 +1,32 @@
+<assembly>
+  <id>pdc-bundle</id>
+  
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <formats>
+    <format>tar.gz</format>
+    <format>zip</format>
+  </formats>
+  
+  <fileSets>
+    
+    <fileSet>
+      <directory>${basedir}/src/main/python/</directory>
+      <outputDirectory>bin</outputDirectory>
+      <fileMode>0755</fileMode>
+      <directoryMode>0755</directoryMode>
+      <includes>
+        <include>stratuslab-vmc.py</include>
+      </includes>
+    </fileSet>
+    
+    <fileSet>
+      <directory>${basedir}/src/main/python/stratuslab_vmc</directory>
+      <outputDirectory>lib/stratuslab_vmc</outputDirectory>
+      <fileMode>0644</fileMode>
+      <directoryMode>0644</directoryMode>
+    </fileSet>
+    
+  </fileSets>
+  
+</assembly>

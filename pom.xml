@@ -28,6 +28,7 @@ with minimal dependencies for maximum portability.
     <module>cgi</module>
     <module>cli</module>
     <module>vmc</module>
+    <module>pdc</module>
   </modules>
 
   <properties>
