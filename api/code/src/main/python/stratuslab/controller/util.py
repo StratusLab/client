@@ -24,40 +24,62 @@ import time
 from ConfigParser import SafeConfigParser
 
 from couchbase import Couchbase
+import couchbase
 
 from stratuslab import Defaults
 
+HEARTBEAT_TTL = 24 * 60 * 60  # one day in seconds
+
 CB_CFG_PATH = os.path.join(Defaults.ETC_DIR, 'couchbase.cfg')
 
-HEARTBEAT_TTL = 2 * 60 * 60  # two hours in seconds
+CB_CFG_DEFAULTS = {'host': 'localhost',
+                   'bucket': 'default',
+                   'password': '',
+                   'cfg_docid': ''}
 
 
-def read_cb_cfg(service_name, cfg_path=CB_CFG_PATH, default_docid=''):
+def read_cb_cfg(service_name, default_cfg_docid, cfg_path=CB_CFG_PATH):
     """
-    Returns a ConfigParser containing the Couchbase connection
-    parameters for a service.
+    Returns a dict with the validated Couchbase client connection parameters.
+    Will raise an exception if the configuration file cannot be read or if
+    there are missing parameters in the configuration.
     """
-    cfg = SafeConfigParser({'host': 'localhost:8091',
-                            'bucket': 'default',
-                            'password': '',
-                            'docid': default_docid})
+    cfg = SafeConfigParser(CB_CFG_DEFAULTS)
 
     cfg.read(cfg_path)
 
     if not cfg.has_section(service_name):
         service_name = 'DEFAULT'
 
-    params = {'host': cfg.get(service_name, 'host'),
-              'bucket': cfg.get(service_name, 'bucket'),
-              'password': cfg.get(service_name, 'password'),
-              'docid': cfg.get(service_name, 'docid')
-    }
+    cb_cfg = {}
+    for key in ['host', 'bucket', 'password', 'cfg_docid']:
+        cb_cfg[key] = cfg.get(service_name, key)
 
-    return params
+    if cb_cfg['cfg_docid'] == '':
+        cb_cfg['cfg_docid'] = default_cfg_docid
+
+    print cb_cfg
+
+    return cb_cfg
 
 
-def get_cb_client(**kwargs):
-    return Couchbase.connect(host=kwargs['host'], bucket=kwargs['bucket'], password=kwargs['password'])
+def init_cb_client(cb_cfg):
+    """
+    Initializes a connection to the Couchbase database.
+
+    :param cb_cfg: validated dict containing the Couchbase host, bucket, and password
+    :return: initialized Couchbase client
+    """
+    return Couchbase.connect(host=cb_cfg['host'],
+                             bucket=cb_cfg['bucket'],
+                             password=cb_cfg['password'])
+
+
+def get_service_cfg(cb_client, cfg_docid):
+    try:
+        return cb_client.get(cfg_docid)
+    except couchbase.exceptions.NotFoundError:
+        return {}
 
 
 def heartbeat(cb_client, docid, status='OK', message='OK', ttl=HEARTBEAT_TTL):
@@ -69,7 +91,7 @@ def heartbeat(cb_client, docid, status='OK', message='OK', ttl=HEARTBEAT_TTL):
     data = {'status': status,
             'timestamp': timestamp,
             'message': message}
-    cb_client.set(docid, data, ttl)
+    cb_client.set(docid, data, ttl=ttl, format=couchbase.FMT_JSON)
 
 
 def claim_job(cb_client, docid, executor):

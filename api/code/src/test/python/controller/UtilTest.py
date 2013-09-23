@@ -32,59 +32,80 @@ class UtilTest(unittest.TestCase):
     def testDefaultsFromEmptyCfg(self):
         _, cfg_file = tempfile.mkstemp()
 
-        params = util.read_cb_cfg('pdc', cfg_file)
+        params = util.read_cb_cfg('pdc', '', cfg_path=cfg_file)
 
         os.remove(cfg_file)
-        self.assertEqual('localhost:8091', params['host'])
+        self.assertEqual('localhost', params['host'])
         self.assertEqual('default', params['bucket'])
         self.assertEqual('', params['password'])
-        self.assertEqual('', params['docid'])
+        self.assertEqual('', params['cfg_docid'])
 
     def testCfgValuesFromDefaultSection(self):
         cfg_parser = SafeConfigParser()
 
-        cfg_parser.set('DEFAULT', 'host', 'myhost:9999')
+        cfg_parser.set('DEFAULT', 'host', 'myhost')
         cfg_parser.set('DEFAULT', 'bucket', 'mybucket')
         cfg_parser.set('DEFAULT', 'password', 'mypassword')
-        cfg_parser.set('DEFAULT', 'docid', 'mydocid')
+        cfg_parser.set('DEFAULT', 'cfg_docid', 'mycfg_docid')
 
         _, cfg_file = tempfile.mkstemp()
         with open(cfg_file, 'w') as fp:
             cfg_parser.write(fp)
 
-        params = util.read_cb_cfg('pdc', cfg_file)
+        params = util.read_cb_cfg('pdc', '', cfg_path=cfg_file)
 
         os.remove(cfg_file)
-        self.assertEqual('myhost:9999', params['host'])
+        self.assertEqual('myhost', params['host'])
         self.assertEqual('mybucket', params['bucket'])
         self.assertEqual('mypassword', params['password'])
-        self.assertEqual('mydocid', params['docid'])
+        self.assertEqual('mycfg_docid', params['cfg_docid'])
 
     def testCfgValuesFromNamedSection(self):
         cfg_parser = SafeConfigParser()
 
-        cfg_parser.set('DEFAULT', 'host', 'myhost:9999')
+        cfg_parser.set('DEFAULT', 'host', 'myhost')
         cfg_parser.set('DEFAULT', 'bucket', 'mybucket')
         cfg_parser.set('DEFAULT', 'password', 'mypassword')
-        cfg_parser.set('DEFAULT', 'docid', 'mydocid')
+        cfg_parser.set('DEFAULT', 'cfg_docid', 'mycfg_docid')
 
         cfg_parser.add_section('pdc')
-        cfg_parser.set('pdc', 'host', 'pdchost:9999')
+        cfg_parser.set('pdc', 'host', 'pdchost')
         cfg_parser.set('pdc', 'bucket', 'pdcbucket')
         cfg_parser.set('pdc', 'password', 'pdcpassword')
-        cfg_parser.set('pdc', 'docid', 'pdcdocid')
+        cfg_parser.set('pdc', 'cfg_docid', 'pdccfg_docid')
 
         _, cfg_file = tempfile.mkstemp()
         with open(cfg_file, 'w') as fp:
             cfg_parser.write(fp)
 
-        params = util.read_cb_cfg('pdc', cfg_file)
+        params = util.read_cb_cfg('pdc', '', cfg_path=cfg_file)
 
         os.remove(cfg_file)
-        self.assertEqual('pdchost:9999', params['host'])
+        self.assertEqual('pdchost', params['host'])
         self.assertEqual('pdcbucket', params['bucket'])
         self.assertEqual('pdcpassword', params['password'])
-        self.assertEqual('pdcdocid', params['docid'])
+        self.assertEqual('pdccfg_docid', params['cfg_docid'])
+
+    def testDefaultCfgDocId(self):
+        cfg_parser = SafeConfigParser()
+
+        cfg_parser.set('DEFAULT', 'host', 'myhost')
+        cfg_parser.set('DEFAULT', 'bucket', 'mybucket')
+        cfg_parser.set('DEFAULT', 'password', 'mypassword')
+
+        cfg_parser.add_section('pdc')
+        cfg_parser.set('pdc', 'host', 'pdchost')
+        cfg_parser.set('pdc', 'bucket', 'pdcbucket')
+        cfg_parser.set('pdc', 'password', 'pdcpassword')
+
+        _, cfg_file = tempfile.mkstemp()
+        with open(cfg_file, 'w') as fp:
+            cfg_parser.write(fp)
+
+        params = util.read_cb_cfg('pdc', 'default_docid', cfg_path=cfg_file)
+
+        os.remove(cfg_file)
+        self.assertEqual('default_docid', params['cfg_docid'])
 
 if __name__ == "__main__":
     unittest.main()

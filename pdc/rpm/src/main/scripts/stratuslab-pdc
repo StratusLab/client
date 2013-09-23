@@ -1,37 +1,37 @@
 #!/bin/bash
 #
-# /etc/init.d/stratuslab-vmc
+# /etc/init.d/stratuslab-pdc
 #
 # StratusLab VM Controller
 #
 # chkconfig: 345 90 10
-# pidfile: /var/run/stratuslab-vmc.pid
+# pidfile: /var/run/stratuslab-pdc.pid
 
 # Source function library.
 . /etc/rc.d/init.d/functions
 
 case "$1" in
     start)
-        echo "Starting stratuslab-vmc..."
-        /usr/sbin/stratuslab-vmc.py start
-        touch /var/lock/subsys/stratuslab-vmc
+        echo "Starting stratuslab-pdc..."
+        /usr/sbin/stratuslab-pdc.py start
+        touch /var/lock/subsys/stratuslab-pdc
         ;;
     stop)
-        echo "Shutting down stratuslab-vmc..."
-        /usr/sbin/stratuslab-vmc.py stop
-        rm -f /var/lock/subsys/stratuslab-vmc
+        echo "Shutting down stratuslab-pdc..."
+        /usr/sbin/stratuslab-pdc.py stop
+        rm -f /var/lock/subsys/stratuslab-pdc
         ;;
     status)
-        status -p /var/run/stratuslab-vmc.pid stratuslab-vmc
+        status -p /var/run/stratuslab-pdc.pid stratuslab-pdc
         ;;
     restart)
-        /usr/sbin/stratuslab-vmc.py restart
+        /usr/sbin/stratuslab-pdc.py restart
         ;;
     reload)
-        /usr/sbin/stratuslab-vmc.py restart
+        /usr/sbin/stratuslab-pdc.py restart
         ;;
     *)
-        echo "Usage: stratuslab-vmc {start|stop|status|reload|restart"
+        echo "Usage: stratuslab-pdc {start|stop|status|reload|restart"
         exit 1
         ;;
 esac
