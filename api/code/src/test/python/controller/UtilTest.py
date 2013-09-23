@@ -38,7 +38,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual('localhost:8091', params['host'])
         self.assertEqual('default', params['bucket'])
         self.assertEqual('', params['password'])
-        self.assertEqual(None, params['docid'])
+        self.assertEqual('', params['docid'])
 
     def testCfgValuesFromDefaultSection(self):
         cfg_parser = SafeConfigParser()

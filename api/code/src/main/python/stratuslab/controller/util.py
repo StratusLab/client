@@ -32,7 +32,7 @@ CB_CFG_PATH = os.path.join(Defaults.ETC_DIR, 'couchbase.cfg')
 HEARTBEAT_TTL = 2 * 60 * 60  # two hours in seconds
 
 
-def read_cb_cfg(service_name, cfg_path=CB_CFG_PATH, default_docid=None):
+def read_cb_cfg(service_name, cfg_path=CB_CFG_PATH, default_docid=''):
     """
     Returns a ConfigParser containing the Couchbase connection
     parameters for a service.
