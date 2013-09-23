@@ -52,6 +52,7 @@ setup(
         'stratuslab.api',
         'stratuslab.cloud',
         'stratuslab.cloudinit',
+        'stratuslab.controller',
         'stratuslab.commandbase',
         'stratuslab.image',
         #'stratuslab.installator',
