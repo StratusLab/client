@@ -6,8 +6,6 @@ from stratuslab.api.controller import Util
 
 class Controller():
 
-    SEC_IN_DAY = 24 * 60 * 60
-    
     def __init__(self):
         cb_cfg = Util.read_cb_cfg()
 
@@ -20,12 +18,13 @@ class Controller():
 
         self.heartbeat_docid = 'Heatbeat/pdc/%s' % socket.getfqdn()
 
+        # daemon parameters
         self.stdin_path = '/dev/null'
         self.stdout_path = '/var/log/stratuslab-pdc.log'
         self.stderr_path = '/var/log/stratuslab-pdc.log'
         self.pidfile_path =  '/var/run/stratuslab-pdc.pid'
         self.pidfile_timeout = 5
-        
+
     def run(self):
         while True:
             Util.heartbeat(self.cb, self.heartbeat_docid)

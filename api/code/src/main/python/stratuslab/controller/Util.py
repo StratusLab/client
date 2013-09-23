@@ -18,28 +18,51 @@
 # limitations under the License.
 #
 
-import socket
+import os
+import time
+
 from ConfigParser import SafeConfigParser
 
 from couchbase import Couchbase
 
-cb_cfg_path = os.path.join(Defaults.ETC_DIR, 'couchbase.cfg')
+from stratuslab import Defaults
 
-def read_cb_cfg(service_name, default_cfg_docid):
+CB_CFG_PATH = os.path.join(Defaults.ETC_DIR, 'couchbase.cfg')
+
+HEARTBEAT_TTL = 2 * 60 * 60  # two hours in seconds
+
+
+def read_cb_cfg(service_name, cfg_path=CB_CFG_PATH, default_docid=None):
     """
     Returns a ConfigParser containing the Couchbase connection
     parameters for a service.
     """
-    cfg = SafeConfigParser()
-    cfg.read(cb_cfg_path)
-    return cfg
+    cfg = SafeConfigParser({'host': 'localhost:8091',
+                            'bucket': 'default',
+                            'password': '',
+                            'docid': default_docid})
 
-def get_cb_client(host='127.0.0.1:8091', bucket='default', password=''):
-    return Couchbase.connect(host=host, bucket=bucket, password=password)
+    cfg.read(cfg_path)
 
-def heartbeat(cb_client, docid, status='OK', message='OK', ttl=SEC_IN_DAY):
+    if not cfg.has_section(service_name):
+        service_name = 'DEFAULT'
+
+    params = {'host': cfg.get(service_name, 'host'),
+              'bucket': cfg.get(service_name, 'bucket'),
+              'password': cfg.get(service_name, 'password'),
+              'docid': cfg.get(service_name, 'docid')
+    }
+
+    return params
+
+
+def get_cb_client(**kwargs):
+    return Couchbase.connect(host=kwargs['host'], bucket=kwargs['bucket'], password=kwargs['password'])
+
+
+def heartbeat(cb_client, docid, status='OK', message='OK', ttl=HEARTBEAT_TTL):
     """
-    Emits a heartbeat message for a service with the current 
+    Emits a heartbeat message for a service with the current
     UTC time as the timestamp.
     """
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
@@ -47,6 +70,7 @@ def heartbeat(cb_client, docid, status='OK', message='OK', ttl=SEC_IN_DAY):
             'timestamp': timestamp,
             'message': message}
     cb_client.set(docid, data, ttl)
+
 
 def claim_job(cb_client, docid, executor):
     """
@@ -57,24 +81,25 @@ def claim_job(cb_client, docid, executor):
     Returns True if the job was successfully claimed; False otherwise.
     """
     try:
-        retry_update_job(cb_client, docid, executor=executor)
+        retry_update_job(cb_client, docid, state='RUNNING', executor=executor)
         return True
     except Exception:
         return False
 
+
 def retry_update_job(cb_client, docid, state,
                      previous_state='QUEUED', progress=0, msg=None, executor=None, retries=3):
-
     for i in range(0, retries):
         try:
-            update_job(cb_client, docid, state, 
+            update_job(cb_client, docid, state,
                        previous_state=previous_state, progress=progress, msg=msg,
                        executor=executor)
         except ConcurrentModificationException:
             time.sleep(2)
 
+
 def update_job(cb_client, docid, state,
-                   previous_state='QUEUED', progress=0, msg=None, executor=None):
+               previous_state='QUEUED', progress=0, msg=None, executor=None):
     """
     Updates the given job by updating the state, progress, and
     message.
@@ -82,16 +107,16 @@ def update_job(cb_client, docid, state,
     rv = cb_client.get(docid)
 
     if not rv.success:
-        throw Exception('cannot retrieve job %s' % docid)
+        raise Exception('cannot retrieve job %s' % docid)
 
     job = rv.value
 
     try:
         current_state = job['state']
         if current_state != previous_state:
-            msg = 'job is not in the expected state (%s); '\
-                'current state is %s' \
-                % (previous_state, current_state))
+            msg = 'job is not in the expected state (%s); ' \
+                  'current state is %s' \
+                  % (previous_state, current_state)
             raise Exception(msg % (previous_state, current_state))
     except Exception:
         raise Exception('malformed job without a state value')
@@ -114,3 +139,7 @@ def update_job(cb_client, docid, state,
         raise ConcurrentModificationException()
     except couchbase.exceptions.NotFoundError:
         raise Exception('job deleted during update')
+
+
+class ConcurrentModificationException(Exception):
+    pass
