@@ -52,7 +52,7 @@ class BaseInstallatorTest(unittest.TestCase):
         baseInst = self._initBaseInstallator(install=True)
 
         components = baseInst._selectCompenentsToInstall()
-        self.assertEquals(components, baseInst.availableInstallatorNames())
+        self.assertEqual(components, baseInst.availableInstallatorNames())
 
     def test_selectCompenenstToInstall_Custom(self):
         baseInst = self._initBaseInstallator()
@@ -62,7 +62,7 @@ class BaseInstallatorTest(unittest.TestCase):
         baseInst._assignConfigHolder(self.ch)
 
         components = baseInst._selectCompenentsToInstall()
-        self.assertEquals(components, ('openldap', 'port-translation'))
+        self.assertEqual(components, ('openldap', 'port-translation'))
 
     def test_launchInstallator_CheckCallOrder(self):
         BaseInstallator._executeInstall = Mock()
@@ -91,7 +91,7 @@ class BaseInstallatorTest(unittest.TestCase):
         baseInst._assignConfigHolder(self.ch)
 
         components = baseInst._selectCompenentsToInstall()
-        self.assertEquals(components, ('openldap', 'port-translation'))
+        self.assertEqual(components, ('openldap', 'port-translation'))
         
 
 if __name__ == "__main__":

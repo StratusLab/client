@@ -51,7 +51,7 @@ class UtilTest(unittest.TestCase):
 
         self.assertTrue(len(encoded) > 0)
         self.assertTrue(len(decoded) > 0)
-        self.assertEquals(initial_text, decoded)
+        self.assertEqual(initial_text, decoded)
 
     def testEncodeDecodeMultipartAsJson(self):
         initial_text = 'some dummy data to check encoding and decoding'
@@ -63,8 +63,8 @@ class UtilTest(unittest.TestCase):
 
         self.assertTrue(len(encoded) > 0)
         self.assertTrue(len(decoded) > 0)
-        self.assertEquals(initial_text, json_data['user-data'])
-        self.assertEquals(dsmode, json_data['dsmode'])
+        self.assertEqual(initial_text, json_data['user-data'])
+        self.assertEqual(dsmode, json_data['dsmode'])
 
     def testEncodeOversizedMultipart(self):
         self.assertRaises(ValueError, Util.encodeMultipart, self.TOO_LONG_RAW)
@@ -88,7 +88,7 @@ class UtilTest(unittest.TestCase):
         for file in files:
             os.remove(file)
 
-        self.assertEquals("\n".join(values)+"\n", result)
+        self.assertEqual("\n".join(values)+"\n", result)
 
     def testCreateMultipartString(self):
         files = []
@@ -108,7 +108,7 @@ class UtilTest(unittest.TestCase):
             if msg.is_multipart():
                 i = 0
                 for msg in part.get_payload():
-                    self.assertEquals(values[i], msg.get_payload())
+                    self.assertEqual(values[i], msg.get_payload())
                     i = i + 1
 
     def testCreateMultipartStringWithNone(self):
@@ -121,7 +121,7 @@ class UtilTest(unittest.TestCase):
 
         result = Util.createMultipartString(files)
 
-        self.assertEquals(values[0], result)
+        self.assertEqual(values[0], result)
 
 
     def testCreateMultipartStringFromFiles(self):
@@ -148,7 +148,7 @@ class UtilTest(unittest.TestCase):
             if msg.is_multipart():
                 i = 0
                 for msg in part.get_payload():
-                    self.assertEquals(values[i], msg.get_payload())
+                    self.assertEqual(values[i], msg.get_payload())
                     i = i + 1
 
 
@@ -165,7 +165,7 @@ class UtilTest(unittest.TestCase):
 
         result = Util.createMultipartStringFromFiles(files)
 
-        self.assertEquals(values[0], result)
+        self.assertEqual(values[0], result)
 
 
 if __name__ == "__main__":

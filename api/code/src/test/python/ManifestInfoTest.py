@@ -161,7 +161,7 @@ class ManifestInfoTest(unittest.TestCase):
         infoDC = ManifestInfo()
         infoDC.parseManifest(ManifestInfoTest.manifestDcFull)
 
-        self.assertEquals('2011-01-24T09:59:42Z', infoDC.created)
+        self.assertEqual('2011-01-24T09:59:42Z', infoDC.created)
 
     def testUpdateManifest(self):
 
@@ -169,7 +169,7 @@ class ManifestInfoTest(unittest.TestCase):
         info._template = self.template
         info.parseManifest(ManifestInfoTest.manifestDcFull)
 
-        self.assertEquals('machine', info.type)
+        self.assertEqual('machine', info.type)
         info.type = 'disk'
 
         xml = info.tostring()
@@ -177,7 +177,7 @@ class ManifestInfoTest(unittest.TestCase):
         info.template = self.template
         info.parseManifest(xml)
 
-        self.assertEquals('disk', info.type)
+        self.assertEqual('disk', info.type)
 
     def testMissingElements(self):
 
@@ -236,7 +236,7 @@ class ManifestIdentifierTest(unittest.TestCase):
     def testConversion(self):
         sha1 = 'c319bbd5afc0a22ba3eaed0507c39383ec28eeff'
         id = ManifestIdentifier()
-        self.assertEquals(int(sha1, 16),
+        self.assertEqual(int(sha1, 16),
                           int(id.identifierToSha1(id.sha1ToIdentifier(sha1)), 16))
 
 if __name__ == "__main__":

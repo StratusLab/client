@@ -35,10 +35,10 @@ class UtilTest(unittest.TestCase):
         params = util.read_cb_cfg('pdc', cfg_file)
 
         os.remove(cfg_file)
-        self.assertEquals('localhost:8091', params['host'])
-        self.assertEquals('default', params['bucket'])
-        self.assertEquals('', params['password'])
-        self.assertIsNone(params['docid'])
+        self.assertEqual('localhost:8091', params['host'])
+        self.assertEqual('default', params['bucket'])
+        self.assertEqual('', params['password'])
+        self.assertEqual(None, params['docid'])
 
     def testCfgValuesFromDefaultSection(self):
         cfg_parser = SafeConfigParser()
@@ -55,10 +55,10 @@ class UtilTest(unittest.TestCase):
         params = util.read_cb_cfg('pdc', cfg_file)
 
         os.remove(cfg_file)
-        self.assertEquals('myhost:9999', params['host'])
-        self.assertEquals('mybucket', params['bucket'])
-        self.assertEquals('mypassword', params['password'])
-        self.assertEquals('mydocid', params['docid'])
+        self.assertEqual('myhost:9999', params['host'])
+        self.assertEqual('mybucket', params['bucket'])
+        self.assertEqual('mypassword', params['password'])
+        self.assertEqual('mydocid', params['docid'])
 
     def testCfgValuesFromNamedSection(self):
         cfg_parser = SafeConfigParser()
@@ -81,10 +81,10 @@ class UtilTest(unittest.TestCase):
         params = util.read_cb_cfg('pdc', cfg_file)
 
         os.remove(cfg_file)
-        self.assertEquals('pdchost:9999', params['host'])
-        self.assertEquals('pdcbucket', params['bucket'])
-        self.assertEquals('pdcpassword', params['password'])
-        self.assertEquals('pdcdocid', params['docid'])
+        self.assertEqual('pdchost:9999', params['host'])
+        self.assertEqual('pdcbucket', params['bucket'])
+        self.assertEqual('pdcpassword', params['password'])
+        self.assertEqual('pdcdocid', params['docid'])
 
 if __name__ == "__main__":
     unittest.main()

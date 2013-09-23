@@ -63,7 +63,7 @@ class RegistrationTest(unittest.TestCase):
         h = httplib2.Http(".cache", disable_ssl_certificate_validation=True)
         resp, content = h.request(url);
 
-        self.assertEquals(200, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(200, resp.status, url + ': invalid status ' + str(resp.status))
 
         length = len(content)
         self.assertTrue(length > 0, url + ': invalid length ' + str(length))
@@ -92,7 +92,7 @@ class RegistrationTest(unittest.TestCase):
         resp, content = h.request(url, "POST", body=body, headers=headers)
 
         # A correct registration should return a redirect. 
-        self.assertEquals(303, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(303, resp.status, url + ': invalid status ' + str(resp.status))
 
         # Ensure user is found in LDAP
         self.findUserInLdap()
@@ -139,7 +139,7 @@ class RegistrationTest(unittest.TestCase):
         h.add_credentials(self.username, self.userPassword)
         resp, content = h.request(self.baseUrl + '/profile/')
 
-        self.assertEquals(200, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(200, resp.status, url + ': invalid status ' + str(resp.status))
 
         length = len(content)
         self.assertTrue(length > 0, url + ': invalid length ' + str(length))
@@ -160,7 +160,7 @@ class RegistrationTest(unittest.TestCase):
         resp, content = h.request(url, "POST", body=body, headers=headers)
 
         # A correct registration should return a redirect. 
-        self.assertEquals(303, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(303, resp.status, url + ': invalid status ' + str(resp.status))
 
 
     def getActionsFromLdap(self):
@@ -191,7 +191,7 @@ class RegistrationTest(unittest.TestCase):
         url = self.baseUrl + '/action/' + actionUuid
         resp, content = h.request(url)
 
-        self.assertEquals(200, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(200, resp.status, url + ': invalid status ' + str(resp.status))
 
 
     def resetPasswordUseCase(self):
@@ -201,7 +201,7 @@ class RegistrationTest(unittest.TestCase):
             self.startPasswordReset()
             currentActions = self.getActionsFromLdap()
             newActions = currentActions.difference(previousActions)
-            self.assertEquals(1, len(newActions))
+            self.assertEqual(1, len(newActions))
             actionUuid = newActions.pop()
             self.confirmPasswordReset(actionUuid)
 

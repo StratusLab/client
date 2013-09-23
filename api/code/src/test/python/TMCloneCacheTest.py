@@ -45,8 +45,8 @@ one_port = 2633
                            TMCloneCache._ARG_DST_POS : 'foo:bar',
                            'bar' : 'baz'},
                            conf_filename=self.conf_filename)
-        self.assertEquals(tm.pdiskEndpoint, '127.0.0.1')
-        self.assertEquals(tm.persistentDiskIp, '127.0.0.1')
+        self.assertEqual(tm.pdiskEndpoint, '127.0.0.1')
+        self.assertEqual(tm.persistentDiskIp, '127.0.0.1')
 
     # Utils
     def _write_conf_file(self):

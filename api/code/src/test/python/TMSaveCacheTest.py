@@ -77,8 +77,8 @@ one_port = 2633
 
     def testInit(self):
         tm = TMSaveCache({}, conf_filename=self.conf_filename)
-        self.assertEquals(tm.pdiskEndpoint, '127.0.0.1')
-        self.assertEquals(tm.persistentDiskIp, '127.0.0.1')
+        self.assertEqual(tm.pdiskEndpoint, '127.0.0.1')
+        self.assertEqual(tm.persistentDiskIp, '127.0.0.1')
 
     def testParseArgs(self):
         tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo'},
@@ -88,8 +88,8 @@ one_port = 2633
         tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo:bar'},
                          conf_filename=self.conf_filename)
         tm._parseArgs()
-        self.assertEquals(tm.diskSrcHost, 'foo')
-        self.assertEquals(tm.diskSrcPath, 'bar')
+        self.assertEqual(tm.diskSrcHost, 'foo')
+        self.assertEqual(tm.diskSrcPath, 'bar')
 
     def testRetrieveInstanceId(self):
         tm = TMSaveCache({},

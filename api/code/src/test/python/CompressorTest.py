@@ -36,11 +36,11 @@ class CompressorTest(unittest.TestCase):
     def testGetCompressionFormat(self):
         for suffix in Compressor.compressionFormats:
             fname = "dummy.%s" % suffix
-            self.assertEquals(Compressor.getCompressionFormat(fname), suffix)
+            self.assertEqual(Compressor.getCompressionFormat(fname), suffix)
             fname = "dummy.%s" % suffix.upper()
-            self.assertEquals(Compressor.getCompressionFormat(fname), suffix)
-        self.assertEquals(Compressor.getCompressionFormat("dummy"), "")
-        self.assertEquals(Compressor.getCompressionFormat(""), "")
+            self.assertEqual(Compressor.getCompressionFormat(fname), suffix)
+        self.assertEqual(Compressor.getCompressionFormat("dummy"), "")
+        self.assertEqual(Compressor.getCompressionFormat(""), "")
 
     def _foo_tempfile(self, suffix=''):
         fd, filename = tempfile.mkstemp(suffix=suffix)
@@ -69,13 +69,13 @@ class CompressorTest(unittest.TestCase):
         for filename in filenames:
             try:
                 size, sums = Compressor.checksum_file(filename, ['sha1'])
-                self.assertEquals(size, foo_size)
-                self.assertEquals(sums, {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
+                self.assertEqual(size, foo_size)
+                self.assertEqual(sums, {'sha1' : '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'})
 
                 size, sums = Compressor.checksum_file(filename, ['md5', 'sha1'])
-                self.assertEquals(size, foo_size)
+                self.assertEqual(size, foo_size)
                 for sum, val in sums.items():
-                    self.assertEquals(checksums_ref[sum], val)
+                    self.assertEqual(checksums_ref[sum], val)
 
                 self.failUnlessRaises(Exception, Compressor.checksum_file, filename, ['bar'])
 

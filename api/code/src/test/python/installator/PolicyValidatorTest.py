@@ -28,9 +28,9 @@ class PolicyValidatorTest(unittest.TestCase):
                         'checksums')
 
         for sectionName in sectionNames:
-            self.assertEquals('whitelist%(section)sv1, whitelist%(section)sv2' % {'section': sectionName}, 
+            self.assertEqual('whitelist%(section)sv1, whitelist%(section)sv2' % {'section': sectionName}, 
                               policyCfg.get(sectionName, 'whitelist' + sectionName))
-            self.assertEquals('blacklist%(section)sv1, blacklist%(section)sv2' % {'section': sectionName}, 
+            self.assertEqual('blacklist%(section)sv1, blacklist%(section)sv2' % {'section': sectionName}, 
                               policyCfg.get(sectionName, 'blacklist' + sectionName))
 
         self.assertTrue(os.path.exists(PolicyValidator.CONFIG_SAV))
@@ -56,7 +56,7 @@ class PolicyValidatorTest(unittest.TestCase):
         self._createConfiguration()
 
         # Should be empty, since not created        
-        self.assertEquals(open(PolicyValidator.CONFIG).read(), '')
+        self.assertEqual(open(PolicyValidator.CONFIG).read(), '')
 
 
     def testReplacedOnlyIfBackupFileDoesntExist(self):

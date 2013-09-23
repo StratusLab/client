@@ -171,7 +171,7 @@ bad4 =
         for s in testValues.keys():
             trueValue = testValues[s]
             t = UserConfigurator._instanceTypeStringToTuple(s);
-            self.assertEquals(t, trueValue, 'incorrect value mapping: %s, %s, %s' % (s, t, trueValue))
+            self.assertEqual(t, trueValue, 'incorrect value mapping: %s, %s, %s' % (s, t, trueValue))
 
     def testValidTuples(self):
         testValues = [ (1,2,3),
@@ -202,22 +202,22 @@ bad4 =
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
         usercfg = UserConfigurator(file)
         values = usercfg.getSectionDict()
-        self.assertEquals(len(values), 0)
+        self.assertEqual(len(values), 0)
     
     def testSectionDictWithNonexistentSection(self):
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
         usercfg = UserConfigurator(file)
         values = usercfg.getSectionDict('non-existent-section')
-        self.assertEquals(len(values), 0)
+        self.assertEqual(len(values), 0)
     
     def testSectionDictWithDefaultSection(self):
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)
         usercfg = UserConfigurator(file)
         values = usercfg.getSectionDict('default')
-        self.assertEquals(len(values), 3)
-        self.assertEquals(values['endpoint'], '<cloud.frontend.hostname>')
-        self.assertEquals(values['username'], '<username>')
-        self.assertEquals(values['password'], '<password>')
+        self.assertEqual(len(values), 3)
+        self.assertEqual(values['endpoint'], '<cloud.frontend.hostname>')
+        self.assertEqual(values['username'], '<username>')
+        self.assertEqual(values['password'], '<password>')
     
     def testDefaultOnly(self):
         file = StringIO.StringIO(self.VALID_CONFIG_DEFAULT_ONLY)

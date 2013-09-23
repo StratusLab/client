@@ -51,9 +51,9 @@ class TMContextTest(unittest.TestCase):
     
             params = TMContext._parseContextFile(filename)
 
-            self.assertEquals(params['context_method'], 'cloud-init')
-            self.assertEquals(params['authorized_keys'], 'DUMMY_DATA')
-            self.assertEquals(params['user_data'], 'DUMMY_DATA')
+            self.assertEqual(params['context_method'], 'cloud-init')
+            self.assertEqual(params['authorized_keys'], 'DUMMY_DATA')
+            self.assertEqual(params['user_data'], 'DUMMY_DATA')
 
         finally:
             os.remove(filename)

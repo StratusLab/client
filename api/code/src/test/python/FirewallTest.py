@@ -38,13 +38,13 @@ class FirewallTest(unittest.TestCase):
     def testFromRuleSpecToRuleAndTable(self):
         ruleSpec = {'rule':'foo'}
         rule, table = self.firewall._getRuleAndTableFromRuleSpec(ruleSpec)
-        self.assertEquals(rule, 'foo')
-        self.assertEquals(table, 'filter')
+        self.assertEqual(rule, 'foo')
+        self.assertEqual(table, 'filter')
 
         ruleSpec = {'rule':'foo', 'table':'bar'}
         rule, table = self.firewall._getRuleAndTableFromRuleSpec(ruleSpec)
-        self.assertEquals(rule, 'foo')
-        self.assertEquals(table, 'bar')
+        self.assertEqual(rule, 'foo')
+        self.assertEqual(table, 'bar')
 
     def testSetDeleteFirewallRule(self):
         ruleSpec = {'rule':'-A INPUT -p udp -m udp --dport 65534 -j ACCEPT'}

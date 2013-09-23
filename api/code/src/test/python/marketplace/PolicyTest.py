@@ -19,7 +19,7 @@ class PolicyTest(unittest.TestCase):
 
         filteredManifestList = policy.check(manifests[0].identifier)
 
-        self.assertEquals(1, len(filteredManifestList))
+        self.assertEqual(1, len(filteredManifestList))
 
     def testFilterWithOneEntryAndValid(self):
         xml = ElementTree()
@@ -33,7 +33,7 @@ class PolicyTest(unittest.TestCase):
 
         filteredManifestList = policy.check(manifests[0].identifier)
 
-        self.assertEquals(1, len(filteredManifestList))
+        self.assertEqual(1, len(filteredManifestList))
 
 if __name__ == "__main__":
     unittest.main()

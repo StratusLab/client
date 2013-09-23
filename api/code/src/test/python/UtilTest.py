@@ -115,18 +115,18 @@ olcLastMod: TRUE
     def testExecuteWithOutput(self):
         output = Util.execute('ls -l'.split(), withOutput=True)
 
-        self.assertEquals(type(output), tuple)
-        self.assertEquals(len(output), 2)
+        self.assertEqual(type(output), tuple)
+        self.assertEqual(len(output), 2)
         self.assertTrue(isinstance(output[1], basestring))
         assert len(output[1]) >= 1
 
     def testGatewayIpFromNetAddress(self):
-        self.assertEquals(Util.gatewayIpFromNetAddress('0.0.0.0'), '0.0.0.1')
+        self.assertEqual(Util.gatewayIpFromNetAddress('0.0.0.0'), '0.0.0.1')
 
 
     def testConstructEndPoint(self):
-        self.assertEquals(Util.constructEndPoint('protocol://address:1234/path'), 'protocol://address:1234/path')
-        self.assertEquals(Util.constructEndPoint('address', 'protocol', '1234', 'path'), 'protocol://address:1234/path')
+        self.assertEqual(Util.constructEndPoint('protocol://address:1234/path'), 'protocol://address:1234/path')
+        self.assertEqual(Util.constructEndPoint('address', 'protocol', '1234', 'path'), 'protocol://address:1234/path')
 
     def testSshCmdRetry(self):
         wrongPort = '33'
@@ -154,11 +154,11 @@ olcLastMod: TRUE
                           ('http://www.google.com/nosuchfile.txt'))
 
     def testSanitizeEndpoint(self):
-        self.assertEquals(Util.sanitizeEndpoint(''), '')
-        self.assertEquals(Util.sanitizeEndpoint('http://localhost', 'https', 888), 'http://localhost')
-        self.assertEquals(Util.sanitizeEndpoint('localhost', 'https', 888), 'https://localhost:888')
-        self.assertEquals(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
-        self.assertEquals(Util.sanitizeEndpoint('localhost'), 'https://localhost:80')
+        self.assertEqual(Util.sanitizeEndpoint(''), '')
+        self.assertEqual(Util.sanitizeEndpoint('http://localhost', 'https', 888), 'http://localhost')
+        self.assertEqual(Util.sanitizeEndpoint('localhost', 'https', 888), 'https://localhost:888')
+        self.assertEqual(Util.sanitizeEndpoint('http://localhost:555'), 'http://localhost:555')
+        self.assertEqual(Util.sanitizeEndpoint('localhost'), 'https://localhost:80')
 
     def testfilePutGetContentUnicode(self):
         _, filename = tempfile.mkstemp()

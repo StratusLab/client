@@ -25,17 +25,17 @@ class ConfigHolderTest(unittest.TestCase):
 
     def testCamelCase(self):
         configHolder = ConfigHolder()
-        self.assertEquals('oneTwoThree', configHolder._camelCase('One_Two_Three'))
-        self.assertEquals('oneTwoThree', configHolder._camelCase('one_two_three'))
-        self.assertEquals('a', configHolder._camelCase('a'))
-        self.assertEquals('', configHolder._camelCase(''))
+        self.assertEqual('oneTwoThree', configHolder._camelCase('One_Two_Three'))
+        self.assertEqual('oneTwoThree', configHolder._camelCase('one_two_three'))
+        self.assertEqual('a', configHolder._camelCase('a'))
+        self.assertEqual('', configHolder._camelCase(''))
 
     def testConfigToDict(self):
         configHolder = ConfigHolder()
         config = {'one_two_three': '123'}
         key, value = configHolder._formatConfigKeys(config).items()[0]
-        self.assertEquals('oneTwoThree', key)
-        self.assertEquals('123', value)
+        self.assertEqual('oneTwoThree', key)
+        self.assertEqual('123', value)
 
     def testCopy(self):
         original = ConfigHolder({'a':'A'},{'b':'B'})
@@ -44,8 +44,8 @@ class ConfigHolderTest(unittest.TestCase):
         copy.options['a'] = '_A'
         copy.config['b'] = '_B'
 
-        self.assertEquals('A', original.options['a'])
-        self.assertEquals('B', original.config['b'])
+        self.assertEqual('A', original.options['a'])
+        self.assertEqual('B', original.config['b'])
 
     def testToString(self):
         configHolder = ConfigHolder({'a':'A'},{'b':'B'})
@@ -55,17 +55,17 @@ class ConfigHolderTest(unittest.TestCase):
 ** CONFIG:
   b = B
 """
-        self.assertEquals(str(configHolder), result)
+        self.assertEqual(str(configHolder), result)
 
     def testGetterSetter(self):
         configHolder = ConfigHolder({'a':'A'},{'b':'B'})
 
         configHolder.c = 'C'
 
-        self.assertEquals('A', configHolder.a)
-        self.assertEquals('B', configHolder.b)
+        self.assertEqual('A', configHolder.a)
+        self.assertEqual('B', configHolder.b)
 
-        self.assertEquals('C', configHolder.c)
+        self.assertEqual('C', configHolder.c)
         
     def testGetterSetterEmpty(self):
         configHolder = ConfigHolder()

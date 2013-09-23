@@ -34,18 +34,18 @@ class OneStateTest(unittest.TestCase):
     def testState(self):
         
         state = OneVmState('0')
-        self.assertEquals('Init', str(state))
+        self.assertEqual('Init', str(state))
 
         state = OneVmState('0','3')
-        self.assertEquals('Init', str(state))
+        self.assertEqual('Init', str(state))
 
     def testLcmState(self):
         
         state = OneVmState('3','0')
-        self.assertEquals('Lcm_Init', str(state))
+        self.assertEqual('Lcm_Init', str(state))
 
         state = OneVmState('3','16')
-        self.assertEquals('Unknown', str(state))
+        self.assertEqual('Unknown', str(state))
 
 if __name__ == "__main__":
     unittest.main()

@@ -68,7 +68,7 @@ class LdapAuthenticationTest(unittest.TestCase):
         resp, content = h.request(url, "POST", body=body, headers=headers)
 
         # A correct registration should return a redirect. 
-        self.assertEquals(303, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(303, resp.status, url + ': invalid status ' + str(resp.status))
 
 
     def verifyProfile(self):
@@ -77,7 +77,7 @@ class LdapAuthenticationTest(unittest.TestCase):
         url = self.baseUrl + '/profile/'
         resp, content = h.request(url)
 
-        self.assertEquals(200, resp.status, url + ': invalid status ' + str(resp.status))
+        self.assertEqual(200, resp.status, url + ': invalid status ' + str(resp.status))
 
         length = len(content)
         self.assertTrue(length > 0, url + ': invalid length ' + str(length))
