@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+from couchbase.views.iterator import View
+from couchbase.views.params import Query
+
 from stratuslab.controller.base_controller import BaseController
 
 
@@ -25,10 +28,27 @@ class Controller(BaseController):
         pass
 
     def _jobs(self):
-        return ['dummy']
+
+        # get queued jobs from the database
+        q = Query(mapkey_range=['Job/', 'Job/' + Query.STRING_RANGE_END])
+        results = View(self.cb, 'cimi.0', 'doc-id', include_docs=True, query=q)
+
+        relevant_jobs = []
+        for result in results:
+            job = result.doc.value
+            try:
+                if job['state'] == 'QUEUED':
+                    if job['targetResource'].startswith('Volume/'):
+                        action = job['action']
+                        if action == 'create' or action == 'delete':
+                            relevant_jobs.append(job)
+            except KeyError:
+                pass
+
+        return relevant_jobs
 
     def _claim(self, job):
         return True
 
     def _execute(self, job):
-        print 'Executing job: %s' % job
+        self.logger.info('executing job: %s' % self._job_id(job))

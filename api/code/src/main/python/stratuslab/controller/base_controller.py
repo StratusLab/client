@@ -18,6 +18,7 @@ import logging
 import logging.handlers
 import socket
 import time
+import traceback
 
 import stratuslab.controller.util as util
 
@@ -53,9 +54,9 @@ class BaseController():
         self.pidfile_path = '/var/run/%s.pid' % self.service_name
         self.pidfile_timeout = 5
 
-    def run(self):
+    def _setup_logger(self, logger_name):
 
-        logger = logging.getLogger(self.service_name)
+        logger = logging.getLogger(logger_name)
         logger.setLevel(logging.INFO)
 
         handler = logging.handlers.SysLogHandler(address='/dev/log')
@@ -64,50 +65,70 @@ class BaseController():
 
         logger.addHandler(handler)
 
-        logger.info('starting')
+        return logging.getLogger(logger_name)
+
+    def run(self):
+
+        self.logger = self._setup_logger(self.service_name)
+
+        self.logger.info('starting')
 
         try:
             cb_cfg = util.read_cb_cfg(self.service_name, self.default_cfg_docid)
-            logger.info('read Couchbase configuration: %(host)s, %(bucket)s' % cb_cfg)
+            self.logger.info('read Couchbase configuration: %(host)s, %(bucket)s' % cb_cfg)
         except Exception as e:
-            logger.error('error reading Couchbase configuration: %s' % e)
+            self.logger.error('error reading Couchbase configuration: %s' % e)
             return 1
 
         try:
-            cb = util.init_cb_client(cb_cfg)
-            logger.info('created Couchbase client')
+            self.cb = util.init_cb_client(cb_cfg)
+            self.logger.info('created Couchbase client')
         except Exception as e:
-            logger.error('error creating Couchbase client: %s' % e)
+            self.logger.error('error creating Couchbase client: %s' % e)
             return 1
 
         try:
-            self.cfg = util.get_service_cfg(cb, cb_cfg['cfg_docid'])
-            logger.info('read service configuration')
+            self.cfg = util.get_service_cfg(self.cb, cb_cfg['cfg_docid'])
+            self.logger.info('read service configuration')
         except Exception as e:
-            logger.error('error reading service configuration: %s' % e)
+            self.logger.error('error reading service configuration: %s' % e)
             return 1
 
         try:
             self._validate_service_cfg()
         except Exception as e:
-            logger.error('service configuration error: %s' % e)
+            self.logger.error('service configuration error: %s' % e)
             return 1
 
-        logger.info('finished initialization')
+        self.logger.info('finished initialization')
 
-        while True:
-            util.heartbeat(cb, self.heartbeat_docid)
+        try:
 
-            for job in self._jobs():
-                logger.info('evaluating job %s' % self._job_string(job))
-                if self._claim(job):
-                    logger.info('claimed job %s' % self._job_string(job))
-                    self._execute(job)
+            while True:
+                util.heartbeat(self.cb, self.heartbeat_docid)
 
-            time.sleep(self.pause)
+                for job in self._jobs():
+                    job_id = self._job_id(job)
+                    self.logger.info('evaluating %s' % job_id)
+                    if self._claim(job):
+                        self.logger.info('claimed %s' % job_id)
+                        self._execute(job)
 
-    def _job_string(self, job):
-        return job
+                time.sleep(self.pause)
+
+        except SystemExit:
+            util.heartbeat(self.cb, self.heartbeat_docid, status='STOPPED', message='normal shutdown')
+            self.logger.info('terminated')
+
+        except Exception as e:
+            util.heartbeat(self.cb, self.heartbeat_docid, status='ERROR', message=str(e))
+            self.logger.error('unexpected exception: %s' % traceback.format_exc())
+
+    def _job_id(self, job):
+        try:
+            return str(job['id'])
+        except:
+            return '< ID_UNKNOWN >'
 
     def _validate_service_cfg(self):
         """
