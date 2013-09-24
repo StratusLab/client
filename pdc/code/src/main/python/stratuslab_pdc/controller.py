@@ -24,7 +24,7 @@ class Controller(BaseController):
     def _validate_service_cfg(self):
         pass
 
-    def _get_jobs(self):
+    def _jobs(self):
         return ['dummy']
 
     def _claim(self, job):
