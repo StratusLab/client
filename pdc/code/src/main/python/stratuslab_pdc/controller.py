@@ -14,61 +14,15 @@
 # limitations under the License.
 #
 
-import logging
-import logging.handlers
-import socket
-import time
-
-import stratuslab.controller.util as util
+from stratuslab.controller.base_controller import BaseController
 
 
-class Controller():
-    SERVICE_NAME = 'pdc'
-
-    DEFAULT_CFG_DOCID = 'Configuration/pdc'
-
+class Controller(BaseController):
     def __init__(self):
+        BaseController.__init__(self, 'sl-pdc', 'Configuration/sl-pdc')
 
-        self.heartbeat_docid = 'Heartbeat/%s/%s' % (self.SERVICE_NAME, socket.getfqdn())
-
-        self.log_path = '/var/log/stratuslab-pdc.log'
-        self.stdin_path = '/dev/null'
-        self.stdout_path = '/dev/null'
-        self.stderr_path = '/dev/null'
-        self.pidfile_path = '/var/run/stratuslab-pdc.pid'
-        self.pidfile_timeout = 5
-
-    def run(self):
-
-        logging.basicConfig(format='%(asctime)s :: %(message)s')
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        handler = logging.handlers.TimedRotatingFileHandler(self.log_path,
-                                                            when='midnight',
-                                                            interval=1,
-                                                            backupCount=7)
-        logger.addHandler(handler)
-
-        logger.info('starting')
-
-        cb_cfg = util.read_cb_cfg(self.SERVICE_NAME, self.DEFAULT_CFG_DOCID)
-
-        cb = util.init_cb_client(cb_cfg)
-
-        cfg = util.get_service_cfg(cb, cb_cfg['cfg_docid'])
-
-        logger.info('finished initialization')
-
-        while True:
-            util.heartbeat(cb, self.heartbeat_docid)
-
-            for job in self._get_jobs():
-                logger.info('evaluating job %s' % job)
-                if self._claim(job):
-                    logger.info('claimed job %s' % job)
-                    self._execute(job)
-
-            time.sleep(10)
+    def _validate_service_cfg(self):
+        pass
 
     def _get_jobs(self):
         return ['dummy']
