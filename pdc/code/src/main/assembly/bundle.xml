@@ -16,7 +16,7 @@
       <fileMode>0755</fileMode>
       <directoryMode>0755</directoryMode>
       <includes>
-        <include>stratuslab-pdc.py</include>
+        <include>*.py</include>
       </includes>
     </fileSet>
     
