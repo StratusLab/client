@@ -39,8 +39,7 @@ class BaseController():
         repeated until the daemon is stopped.
 
         The daemon's activity is logged to syslog.  The logger for the
-        service can be found by looking for the logger with the name
-        __name__.
+        service has the same name as the service_name.
         """
 
         self.service_name = service_name
@@ -56,7 +55,7 @@ class BaseController():
 
     def run(self):
 
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(self.service_name)
         logger.setLevel(logging.INFO)
 
         handler = logging.handlers.SysLogHandler(address='/dev/log')
