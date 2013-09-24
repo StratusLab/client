@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# /etc/init.d/sl-vmc
+#
+# StratusLab VM Controller
+#
+# chkconfig: 345 90 10
+# pidfile: /var/run/sl-vmc.pid
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+case "$1" in
+    start)
+        echo "Starting sl-vmc..."
+        /usr/sbin/sl-vmc.py start
+        touch /var/lock/subsys/sl-vmc
+        ;;
+    stop)
+        echo "Shutting down sl-vmc..."
+        /usr/sbin/sl-vmc.py stop
+        rm -f /var/lock/subsys/sl-vmc
+        ;;
+    status)
+        status -p /var/run/sl-vmc.pid sl-vmc
+        ;;
+    restart)
+        /usr/sbin/sl-vmc.py restart
+        ;;
+    reload)
+        /usr/sbin/sl-vmc.py restart
+        ;;
+    *)
+        echo "Usage: sl-vmc {start|stop|status|reload|restart}"
+        exit 1
+        ;;
+esac

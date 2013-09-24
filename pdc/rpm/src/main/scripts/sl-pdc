@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# /etc/init.d/sl-pdc
+#
+# StratusLab Persistent Disk Controller
+#
+# chkconfig: 345 90 10
+# pidfile: /var/run/sl-pdc.pid
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+case "$1" in
+    start)
+        echo "Starting sl-pdc..."
+        /usr/sbin/sl-pdc.py start
+        touch /var/lock/subsys/sl-pdc
+        ;;
+    stop)
+        echo "Shutting down sl-pdc..."
+        /usr/sbin/sl-pdc.py stop
+        rm -f /var/lock/subsys/sl-pdc
+        ;;
+    status)
+        status -p /var/run/sl-pdc.pid sl-pdc
+        ;;
+    restart)
+        /usr/sbin/sl-pdc.py restart
+        ;;
+    reload)
+        /usr/sbin/sl-pdc.py restart
+        ;;
+    *)
+        echo "Usage: sl-pdc {start|stop|status|reload|restart}"
+        exit 1
+        ;;
+esac
