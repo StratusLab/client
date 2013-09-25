@@ -46,7 +46,8 @@ class BaseController():
         self.service_name = service_name
         self.default_cfg_docid = default_cfg_docid
         self.pause = pause
-        self.heartbeat_docid = 'Heartbeat/%s/%s' % (self.service_name, socket.getfqdn())
+        self.executor = '%s/%s' % (self.service_name, socket.getfqdn())
+        self.heartbeat_docid = 'Heartbeat/%s' % self.executor
 
         self.stdin_path = '/dev/null'
         self.stdout_path = '/dev/null'
@@ -87,25 +88,28 @@ class BaseController():
             self.logger.error('error creating Couchbase client: %s' % e)
             return 1
 
-        try:
-            self.cfg = util.get_service_cfg(self.cb, cb_cfg['cfg_docid'])
-            self.logger.info('read service configuration')
-        except Exception as e:
-            self.logger.error('error reading service configuration: %s' % e)
-            return 1
-
-        try:
-            self._validate_service_cfg()
-        except Exception as e:
-            self.logger.error('service configuration error: %s' % e)
-            return 1
-
         self.logger.info('finished initialization')
 
         try:
 
             while True:
-                util.heartbeat(self.cb, self.heartbeat_docid)
+
+                time.sleep(self.pause)
+
+                try:
+                    self.cfg = util.get_service_cfg(self.cb, cb_cfg['cfg_docid'])
+                except Exception as e:
+                    self.logger.error('error reading service configuration: %s' % e)
+                    continue
+
+                try:
+                    self._validate_service_cfg(self.cfg)
+                    util.heartbeat(self.cb, self.heartbeat_docid)
+                except Exception as e:
+                    msg = 'service configuration error: %s' % e
+                    util.heartbeat(self.cb, self.heartbeat_docid, status='ERROR', message=msg)
+                    self.logger.error(msg)
+                    continue
 
                 for job in self._jobs():
                     job_id = self._job_id(job)
@@ -113,8 +117,6 @@ class BaseController():
                     if self._claim(job):
                         self.logger.info('claimed %s' % job_id)
                         self._execute(job)
-
-                time.sleep(self.pause)
 
         except SystemExit:
             util.heartbeat(self.cb, self.heartbeat_docid, status='STOPPED', message='normal shutdown')
@@ -130,7 +132,7 @@ class BaseController():
         except:
             return '< ID_UNKNOWN >'
 
-    def _validate_service_cfg(self):
+    def _validate_service_cfg(self, cfg):
         """
         This method validates the service configuration read from the
         database.  This method should raise an exception with a

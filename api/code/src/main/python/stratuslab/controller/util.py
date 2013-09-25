@@ -77,9 +77,13 @@ def init_cb_client(cb_cfg):
 
 def get_service_cfg(cb_client, cfg_docid):
     try:
-        return cb_client.get(cfg_docid)
+        rv = cb_client.get(cfg_docid)
+        if rv.success:
+            return rv.value
+        else:
+            raise Exception('error reading %s' % cfg_docid)
     except couchbase.exceptions.NotFoundError:
-        return {}
+        raise Exception('%s not found' % cfg_docid)
 
 
 def heartbeat(cb_client, docid, status='OK', message='OK', ttl=HEARTBEAT_TTL):
@@ -116,6 +120,7 @@ def retry_update_job(cb_client, docid, state,
             update_job(cb_client, docid, state,
                        previous_state=previous_state, progress=progress, msg=msg,
                        executor=executor)
+            break
         except ConcurrentModificationException:
             time.sleep(2)
 
@@ -143,9 +148,13 @@ def update_job(cb_client, docid, state,
     except Exception:
         raise Exception('malformed job without a state value')
 
+    timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+
     # update the job record
     job['state'] = state
     job['progress'] = progress
+    job['updated'] = timestamp
+    job['timeOfStatusChange'] = timestamp
     if msg is not None:
         job['statusMessage'] = msg
 
