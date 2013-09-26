@@ -317,7 +317,7 @@ class Runner(object):
                  os.path.join(Util.utilPath, 'share', 'vm', 'schema.one'),
                  os.path.join(Util.modulePath, '..', '..', 'share', 'vm', 'schema.one'),
                  os.path.join(Util.modulePath, '..', '..', '..', 'share', 'vm', 'schema.one'),
-                 os.path.join(Util.modulePath, '..', '..', '..', 'src', 'main', 'resources', 
+                 os.path.join(Util.modulePath, '..', '..', '..', 'src', 'main', 'resources',
                               'share', 'vm', 'schema.one')]
 
         if instance and hasattr(instance, 'vmTemplateFile'):
@@ -327,7 +327,7 @@ class Runner(object):
             if os.path.exists(path):
                 return path
 
-        raise Exception("cannot locate file schema.one; tried these locations:\n %s", 
+        raise Exception("cannot locate file schema.one; tried these locations:\n %s",
                         "\n".join(paths))
 
     @staticmethod
