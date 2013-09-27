@@ -60,6 +60,7 @@ setup(
         'stratuslab.messaging',
         'stratuslab.pat',
         'stratuslab.system',
+        'stratuslab.volume_manager',
         #'stratuslab.tm',
         ],
 
