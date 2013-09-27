@@ -347,22 +347,6 @@ class PersistentDisk(object):
                                               Defaults.pdiskPort)
         self.endpoint += self.endpointSuffix
 
-    @staticmethod
-    def getFQNHostname(hostname):
-        try:
-            return getfqdn(hostname)
-        except Exception:
-            printError('Unable to translate endpoint "%s" to an IP address' % hostname,
-                       exit=False)
-
-    @staticmethod
-    def isValidUuid(uuid):
-        try:
-            UUID(uuid)
-        except ValueError:
-            return False
-        return True
-
     def _printContacting(self):
         self._printDetail('Accessing storage service at: %s' % self.endpoint)
 
