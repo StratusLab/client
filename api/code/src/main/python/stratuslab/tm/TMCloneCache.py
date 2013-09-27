@@ -28,7 +28,7 @@ from stratuslab.Util import sshCmdWithOutput, defaultConfigFile, printStep
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
@@ -98,7 +98,7 @@ class TMCloneCache(object):
         self.pdiskEndpoint = self.configHolder.persistentDiskIp
         self.pdiskLVMDevice = self.configHolder.persistentDiskLvmDevice
         self.configHolder.set('pdiskEndpoint', self.pdiskEndpoint)
-        self.pdisk = PersistentDisk(self.configHolder)
+        self.pdisk = VolumeManagerFactory.create(self.configHolder)
 
     def _initMarketplaceRelated(self):
         self._retrieveMarketplaceInfos()

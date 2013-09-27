@@ -20,13 +20,14 @@
 #
 
 import sys
+from stratuslab.volume_manager import PersistentDisk
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.AuthnCommand import AuthnCommand
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 
 # initialize console logging
@@ -71,7 +72,7 @@ arguments are the unique identifiers of volumes to remove.
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
         for uuid in self.uuids:
             volumeId = pdisk.deleteVolume(uuid)
             print 'DELETED %s' % volumeId

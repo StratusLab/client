@@ -26,7 +26,7 @@ sys.path.append('/var/lib/stratuslab/python')
 from stratuslab.Util import printError
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 
 # initialize console logging
@@ -69,7 +69,7 @@ volume-uuid is the unique identifier for the volume to update.
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         keyvalues = self.extractVolumeOptionsAsDict()
 

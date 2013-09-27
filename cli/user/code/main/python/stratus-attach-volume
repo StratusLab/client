@@ -27,7 +27,7 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.AuthnCommand import AuthnCommand
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Authn import AuthnFactory
 from stratuslab.Exceptions import OneException
@@ -86,7 +86,7 @@ attach.
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
         for uuid in self.uuids:
             free, _ = pdisk.getVolumeUsers(uuid)
             if free < 1:

@@ -23,7 +23,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.commandbase.StorageCommand import StorageCommand
 
@@ -63,7 +63,7 @@ the given key and value.
         config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
 
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         key = self.args[0]
         value = self.args[1]

@@ -31,7 +31,8 @@ from stratuslab.image.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
 
@@ -253,13 +254,13 @@ class Runner(object):
         if not self.persistentDiskUUID:
             return
 
-        self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
+        self.pdiskEndpointHostname = VolumeManagerInterface.getFQNHostname(self.pdiskEndpoint)
         self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
 
         self._checkPersistentDiskAvailable()
 
     def _checkPersistentDiskAvailable(self):
-        self.pdisk = PersistentDisk(self.configHolder)
+        self.pdisk = VolumeManagerFactory.create(self.configHolder)
         try:
             available, _ = self.pdisk.getVolumeUsers(self.persistentDiskUUID)
             if self.instanceNumber > available:
@@ -668,7 +669,7 @@ class Runner(object):
 
     def _createDiskUrlIfDiskId(self, image):
         if Image.isDiskId(image):
-            self.pdiskEndpointHostname = PersistentDisk.getFQNHostname(self.pdiskEndpoint)
+            self.pdiskEndpointHostname = VolumeManagerInterface.getFQNHostname(self.pdiskEndpoint)
             return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
         else:
             return image

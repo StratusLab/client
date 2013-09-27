@@ -24,7 +24,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import printError
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.commandbase.StorageCommand import StorageCommand
 
@@ -108,7 +108,7 @@ and use it but can't delete it.''', action='store_true', default=False)
         config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
 
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         if self.options.originUuid:
             volumeId = pdisk.createCowVolume(self.options.originUuid,
@@ -123,7 +123,9 @@ and use it but can't delete it.''', action='store_true', default=False)
                                           self.options.volumeVisibility)
         print 'DISK %s' % volumeId
 
-    #
+        #
+
+
 if __name__ == '__main__':
     try:
         MainProgram()

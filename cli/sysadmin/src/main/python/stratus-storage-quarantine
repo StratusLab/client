@@ -24,7 +24,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.commandbase.StorageCommand import StorageCommand
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Configurator import Configurator
 
@@ -77,7 +77,7 @@ a UUID.
         if not configHolder.pdiskEndpoint:
             configHolder.pdiskEndpoint = Configurator(configHolder).getValue('persistent_disk_ip')
 
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         if self.options.quarantineCleanUp:
             pdisk.cleanQuarantine()

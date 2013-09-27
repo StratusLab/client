@@ -29,7 +29,7 @@ from socket import getfqdn
 from stratuslab.HttpClient import HttpClient
 from uuid import UUID
 from stratuslab.Util import printError
-import Util
+from stratuslab import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
 from stratuslab.Exceptions import ValidationException, ClientException, \

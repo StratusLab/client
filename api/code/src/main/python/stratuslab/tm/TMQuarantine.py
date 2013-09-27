@@ -24,7 +24,7 @@ from stratuslab.Util import defaultConfigFile, sshCmdWithOutput
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 
@@ -112,7 +112,7 @@ class TMQuarantine(object):
         self.diskSrcHost = self._getDiskHost(src)
 
     def _changeOwnerOfSnapshotVolume(self):
-        pdisk = PersistentDisk(self.configHolder)
+        pdisk = VolumeManagerFactory.create(self.configHolder)
 
         # root volume may not exist, if this is an image creation
         # only actually change ownership of snapshot volumes
@@ -131,7 +131,7 @@ class TMQuarantine(object):
         shutil.move(instance_dir, quarantine_dir)
 
     def _moveFilesToQuarantineHypervisor(self, instance_dir, quarantine_dir):
-        self._sshDst(['mv', instance_dir, quarantine_dir], 
+        self._sshDst(['mv', instance_dir, quarantine_dir],
                      'Failed to quarantine VM on hypervisor.')
 
     #--------------------------------------------
@@ -143,9 +143,9 @@ class TMQuarantine(object):
         self.attachedVolumeURIs = uris
 
     def _getAttachedVolumeURIs(self):
-        register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
-                                                    '--vm-id',  str(self.instanceId)],
-                                                   'Unable to get registered volumes')
+        register_filename_contents = self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
+                                                   '--vm-id', str(self.instanceId)],
+                                                  'Unable to get registered volumes')
         return register_filename_contents.splitlines()
 
     def _getDiskNameFromURI(self, uri):
@@ -157,8 +157,8 @@ class TMQuarantine(object):
         return ':'.join(splittedUri[1:3])
 
     def _detachAllVolumes(self):
+        pdisk = VolumeManagerFactory.create(self.configHolder)
 
-        pdisk = PersistentDisk(self.configHolder)
         msg = ''
         self.rootVolumeUuid = None
         for pdisk_uri in self.attachedVolumeURIs:

@@ -27,7 +27,7 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Compressor import Compressor
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.marketplace.Uploader import Uploader as MarketplaceUploader
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint, PDiskVolume
 
 
@@ -82,7 +82,7 @@ class Uploader(object):
 
         self.imageUrl = ''
 
-        self.pdisk = PersistentDisk(self.configHolder)
+        self.pdisk = VolumeManagerFactory.create(self.configHolder)
 
     def start(self):
         Util.printAction('Starting image upload')

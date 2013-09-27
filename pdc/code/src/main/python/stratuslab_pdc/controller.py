@@ -20,11 +20,11 @@ import couchbase
 from couchbase.views.iterator import View
 from couchbase.views.params import Query
 
-import stratuslab.controller.util as util
+import stratuslab.controller.util as Util
 from stratuslab.controller.base_controller import BaseController
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 
 
 class Controller(BaseController):
@@ -60,7 +60,7 @@ class Controller(BaseController):
 
     def _claim(self, job):
         job_id = self._job_id(job)
-        rv = util.claim_job(self.cb, job_id, self.executor)
+        rv = Util.claim_job(self.cb, job_id, self.executor)
         self.logger.debug('claim result for %s is %s' % (job_id, str(rv)))
         return rv
 
@@ -77,13 +77,14 @@ class Controller(BaseController):
     def _set_job_error(self, job_id, msg):
         self.logger.error(msg)
         try:
-            util.retry_update_job(self.cb, job_id, state='FAILED',
+            Util.retry_update_job(self.cb, job_id, state='FAILED',
                                   previous_state='RUNNING', progress=100,
                                   msg=msg, executor=self.executor)
         except Exception as e:
             self.logger.error('cannot update %s: %s' % (job_id, str(e)))
 
-    def kb_to_gb(self, kbytes):
+    @staticmethod
+    def kb_to_gb(kbytes):
         nbytes = 1000 * kbytes
         if nbytes < 0:
             nbytes = 0
@@ -138,7 +139,7 @@ class Controller(BaseController):
             self.update_volume_state(vol_docid, volume, cas, 'ERROR', msg=msg)
             return
 
-        size = self.kb_to_gb(kbytes)
+        size = Controller.kb_to_gb(kbytes)
 
         try:
             tag = str(volume['name'])
@@ -148,7 +149,8 @@ class Controller(BaseController):
         config_holder = ConfigHolder(config=self.cfg)
 
         try:
-            pdisk = PersistentDisk(config_holder)
+            pdisk = VolumeManagerFactory.create(config_holder)
+
             sl_uuid = pdisk.createVolume(size, tag, 'private')
         except Exception as e:
             msg = 'error creating volume: %s' % str(e)
@@ -161,7 +163,7 @@ class Controller(BaseController):
         self.update_volume_state(vol_docid, volume, cas, 'AVAILABLE', sl_uuid=sl_uuid)
 
         try:
-            util.retry_update_job(self.cb, job_id, state='SUCCESS',
+            Util.retry_update_job(self.cb, job_id, state='SUCCESS',
                                   previous_state='RUNNING', progress=100,
                                   msg='OK', executor=self.executor)
         except Exception as e:
@@ -191,7 +193,7 @@ class Controller(BaseController):
         config_holder = ConfigHolder(config=self.cfg)
 
         try:
-            pdisk = PersistentDisk(config_holder)
+            pdisk = VolumeManagerFactory.create(config_holder)
             pdisk.deleteVolume(sl_uuid)
         except Exception as e:
             msg = 'error deleting sl_uuid %s: %s' % (sl_uuid, str(e))
@@ -206,7 +208,7 @@ class Controller(BaseController):
             return
 
         try:
-            util.retry_update_job(self.cb, job_id, state='SUCCESS',
+            Util.retry_update_job(self.cb, job_id, state='SUCCESS',
                                   previous_state='RUNNING', progress=100,
                                   msg='OK', executor=self.executor)
         except Exception as e:

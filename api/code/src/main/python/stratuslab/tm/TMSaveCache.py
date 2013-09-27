@@ -33,7 +33,7 @@ from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.Defaults import marketplaceEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CertGenerator import CertGenerator
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
@@ -169,9 +169,9 @@ class TMSaveCache(object):
         self.diskName = self._getDiskNameFromURI(uris[0])
 
     def _getAttachedVolumeURIs(self):
-        register_filename_contents =  self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
-                                                    '--vm-id',  str(self.instanceId)],
-                                                   'Unable to get registered volumes')
+        register_filename_contents = self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
+                                                   '--vm-id', str(self.instanceId)],
+                                                  'Unable to get registered volumes')
         return register_filename_contents.splitlines()
 
     def _getDiskNameFromURI(self, uri):
@@ -183,7 +183,7 @@ class TMSaveCache(object):
         return ':'.join(splittedUri[1:3])
 
     def _detachAllVolumes(self):
-        pdisk = PersistentDisk(self.configHolder)
+        pdisk = VolumeManagerFactory.create(self.configHolder)
         msg = ''
         for pdisk_uri in self.attachedVolumeURIs:
             try:
@@ -211,11 +211,11 @@ class TMSaveCache(object):
         self.originMarketPlace = '/'.join(vmSource.split('/')[:-2])
 
     def _rebaseSnapshot(self):
-        pdisk = PersistentDisk(self.configHolder)
+        pdisk = VolumeManagerFactory.create(self.configHolder)
         self.createdPDiskId = pdisk.rebaseVolume(self.diskName)
 
     def _updateVolumeIdentifier(self):
-        pdisk = PersistentDisk(self.configHolder)
+        pdisk = VolumeManagerFactory.create(self.configHolder)
         pdiskOwner = pdisk.getValue(self._OWNER_KEY, self.diskName)
         pdisk.updateVolume({self._IDENTIFIER_KEY: self.snapshotMarketplaceId,
                             self._OWNER_KEY: pdiskOwner,
@@ -313,53 +313,57 @@ class TMSaveCache(object):
 
         def _mapDisk():
             # LUN mapping might be needed
-            netapp_map = [PDISK_BACKEND_CMD, 
-                          '--config', PDISK_BACKEND_CFG, 
+            netapp_map = [PDISK_BACKEND_CMD,
+                          '--config', PDISK_BACKEND_CFG,
                           '--action', 'map',
                           self.diskName]
             self._ssh(self.persistentDiskIp, netapp_map,
-                      'Failed to map %s on NetApp' % self.diskName, 
+                      'Failed to map %s on NetApp' % self.diskName,
                       dontRaiseOnError=True)
+
         def _getTURL():
             # Get TURL
-            get_turl_cmd = [PDISK_BACKEND_CMD, 
-                            '--config', PDISK_BACKEND_CFG, 
-                            '--action', 'getturl', 
+            get_turl_cmd = [PDISK_BACKEND_CMD,
+                            '--config', PDISK_BACKEND_CFG,
+                            '--action', 'getturl',
                             self.diskName]
-            return self._ssh(self.persistentDiskIp, get_turl_cmd, 
+            return self._ssh(self.persistentDiskIp, get_turl_cmd,
                              'Failed to get TURL for %s' % self.diskName)
+
         def _attachLUN(turl):
-            snapshotPath = os.path.join('/var/tmp/stratuslab', 
+            snapshotPath = os.path.join('/var/tmp/stratuslab',
                                         self.diskName + '.link')
             # Attach LUN and link to a known location
             rescan_cmd = ['sudo', 'iscsiadm', '--mode', 'session', '--rescan']
-            self._ssh(self.persistentDiskIp, rescan_cmd, 
+            self._ssh(self.persistentDiskIp, rescan_cmd,
                       'Failed rescanning iSCSI targets.')
-            attach_and_link_cmd = ['sudo', PDISK_CLIENT_CMD, 
-                                   '--op', 'up', 
-                                   '--attach', 
-                                   '--pdisk-id', PDISK_ID, 
-                                   '--link-to', snapshotPath, 
+            attach_and_link_cmd = ['sudo', PDISK_CLIENT_CMD,
+                                   '--op', 'up',
+                                   '--attach',
+                                   '--pdisk-id', PDISK_ID,
+                                   '--link-to', snapshotPath,
                                    '--turl', turl]
             self._ssh(self.persistentDiskIp, attach_and_link_cmd,
                       'Failed attaching %s to %s' % (PDISK_ID, self.persistentDiskIp))
             return snapshotPath
+
         def _checksumSnapshot(snapshotPath):
             checksumOutput = self._ssh(self.persistentDiskIp, ['sudo', self._CHECKSUM_CMD, snapshotPath],
                                        'Unable to compute checksum of "%s"' % snapshotPath)
             return checksumOutput.split(' ')[0]
+
         def _clenup(snapshotPath):
             # Unmount
             detach_lun_cmd = ['sudo', PDISK_CLIENT_CMD,
-                              '--op', 'down', 
-                              '--attach', 
-                              '--pdisk-id', PDISK_ID, 
+                              '--op', 'down',
+                              '--attach',
+                              '--pdisk-id', PDISK_ID,
                               '--turl', turl]
             self._ssh(self.persistentDiskIp, detach_lun_cmd,
                       'Failed detaching %s from %s' % (PDISK_ID, self.persistentDiskIp))
             # Remove link
             self._ssh(self.persistentDiskIp, ['sudo', 'rm', '-f', snapshotPath],
-                      'Failed to remove link to %s on %s' % (self.diskName, self.persistentDiskIp), 
+                      'Failed to remove link to %s on %s' % (self.diskName, self.persistentDiskIp),
                       dontRaiseOnError=True)
 
         _mapDisk()
@@ -537,7 +541,7 @@ validity of this entry is only %(imageValidity)s hours!
 To provide a longer validity period you must:
 1) edit the attached manifest, updating the validity period,
 2) sign the manifest with the stratus-sign-metadata command, and
-3) upload the manifest to the Marketplace.  
+3) upload the manifest to the Marketplace.
 
 The manifest can be uploaded either via the Marketplace's web
 interface or via the command stratus-upload-metadata.

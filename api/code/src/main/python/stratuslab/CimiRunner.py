@@ -30,9 +30,9 @@ from stratuslab.image.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
-from stratuslab.PersistentDisk import PersistentDisk
 from marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
+from stratuslab.volume_manager import PersistentDisk
 
 
 class CimiRunner(object):

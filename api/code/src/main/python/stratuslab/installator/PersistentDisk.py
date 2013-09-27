@@ -21,18 +21,19 @@
 import os
 import re
 import socket
-import stratuslab.Util as Util
 import string
 import stat
 from random import choice
 
+import stratuslab.Util as Util
 from stratuslab import Defaults
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.PersistentDisk import PersistentDisk as PDiskClient
 from stratuslab.Util import printStep, fileGetContent
 from stratuslab.system import SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab.Exceptions import ExecutionException
+from stratuslab.volume_manager import PersistentDisk as PDiskClient
+
 
 class PersistentDisk(Installator):
 
@@ -43,19 +44,19 @@ class PersistentDisk(Installator):
     def __init__(self, configHolder=ConfigHolder()):
         self.configHolder = configHolder
         self.configHolder.assign(self)
-        
+
         self.profile = None # Can be frontend or node
-        self.system = SystemFactory.getSystem(self.persistentDiskSystem, 
+        self.system = SystemFactory.getSystem(self.persistentDiskSystem,
                                               self.configHolder)
-        
+
         # Package to be installed
         self.packages = { 'frontend': {
                           'pdisk': ['stratuslab-pdisk-server', ],
                           'iscsi': ['scsi-target-utils', 'iscsi-initiator-utils'],
                           'nfs': ['nfs-utils', 'nfs-utils-lib'],
                           'lvm': ['lvm2', ],
-                          'file': ['qemu-img'], 
-                        }, 
+                          'file': ['qemu-img'],
+                        },
                           'node': {
                           'pdisk': ['stratuslab-pdisk-host', ],
                           'iscsi': ['iscsi-initiator-utils', ],
@@ -65,7 +66,7 @@ class PersistentDisk(Installator):
                        },
         }
 
-        self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(), 
+        self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(),
                                                   self.PDISK_BACKEND_CONF_NAME + '.tpl')
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
@@ -74,7 +75,7 @@ class PersistentDisk(Installator):
         self.cloudNodeKey = os.path.join(self.pdiskHomeDir, 'cloud_node.key')
         self.pdiskUsername = 'pdisk'
         self.pdiskPassword = self._extractPdiskPassword()
-            
+
     def _setPDiskEndpoint(self):
         '''Fool the script to avoid rewrite huge amount of code:
            As the pdisk service can be installed on another machine than the
@@ -83,7 +84,7 @@ class PersistentDisk(Installator):
         self.system.setNodePrivateKey(self.persistentDiskPrivateKey)
         if not self.persistentDiskIp:
             self.persistentDiskIp = socket.gethostbyname(socket.gethostname())
-        
+
         self.system.setNodeAddr(self.persistentDiskIp)
 
     def _installFrontend(self):
@@ -92,7 +93,7 @@ class PersistentDisk(Installator):
         self._validateConfiguration()
         self._commonInstallActions()
         self._copyCloudNodeKey()
-        
+
     def _validateConfiguration(self):
         pass
 
@@ -101,7 +102,7 @@ class PersistentDisk(Installator):
         self._writePdiskConfig()
         self._writePdiskBackendConfig()
         self._setPdiskUserAndPassword()
-        # downloading images requires configured client on front-end 
+        # downloading images requires configured client on front-end
         self._updateConfigHostPDiskClient()
         self._createDatabase()
         if self.persistentDiskShare == 'nfs':
@@ -113,7 +114,7 @@ class PersistentDisk(Installator):
         else:
             self._createFileHddDirectory()
 
-        
+
     def _writePdiskConfig(self):
         printStep('Writing configuration...')
         self._overrideConfig('disk.store.share', self.persistentDiskShare)
@@ -147,12 +148,12 @@ class PersistentDisk(Installator):
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
         createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS %s" % PersistentDisk.PDISK_DB_NAME
 
-        rc, output = self.system.execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist), 
+        rc, output = self.system.execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist),
                                    withOutput=True, shell=True)
         if rc != 0:
             raise ExecutionException("Couldn't create database '%s'.\n%s" % (PersistentDisk.PDISK_DB_NAME,
                                                                              output))
-                
+
     def _startServicesFrontend(self):
         self._setPDiskEndpoint()
         if self.persistentDiskStorage == 'lvm':
@@ -169,11 +170,11 @@ class PersistentDisk(Installator):
     def _installNode(self):
         self.profile = 'node'
         self._commonInstallActions()
-        
+
     def _setupNode(self):
         self._configureNodeSudo()
         self._configureNodeScripts()
-        
+
     def _configureNodeSudo(self):
         printStep('Configuring sudo rights...')
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
@@ -200,14 +201,14 @@ class PersistentDisk(Installator):
     def _installPackages(self, section):
         packages = self.packages[self.profile][section]
         if packages:
-            printStep('Installing packages on %s for section "%s": %s' 
+            printStep('Installing packages on %s for section "%s": %s'
                       % (self.profile, section,
                          ', '.join(packages)))
             self.system.installNodePackages(packages)
 
     def _randomPassword(self, length=12, chars=string.letters+string.digits):
         return ''.join([choice(chars) for _ in range(length)])
-            
+
     def _commonInstallActions(self):
         self.system.workOnNode()
         self._installPackages('pdisk')
@@ -216,62 +217,62 @@ class PersistentDisk(Installator):
             self._configureNfsServer()
         else:
             self._installPackages(self.persistentDiskStorage)
-        
+
     def _service(self, service, action):
         printStep("Trying to %s %s service..." % (action, service))
         self.system._nodeShell('service %s %s' % (service, action))
-        
+
     def _overrideConfig(self, key, value):
-        self._overrideValueInFile(key, value, self.pdiskConfigFile)    
+        self._overrideValueInFile(key, value, self.pdiskConfigFile)
 
     def _overrideHostConfigFile2(self, key, value):
-        self._overrideValueInFile(key, value, self.pdiskHostConfigFile2)   
-        
+        self._overrideValueInFile(key, value, self.pdiskHostConfigFile2)
+
     def _overrideValueInFile(self, key, value, fileName):
         search = key + '=.*'
         replace = key + '=' + value
         self.system._remoteAppendOrReplaceInFile(fileName, search, replace)
-        
+
     def _extractPdiskPassword(self):
 
         pswd = self._randomPassword()
-    
+
         if not os.path.isfile(self.authnConfigFile):
             lines = []
         else:
             fileContent = fileGetContent(self.authnConfigFile)
             lines = fileContent.split('\n')
-        
+
         pattern = '^\s*%s\s*=\s*([\w-]+)(?:\s*,.*)?$' % (self.pdiskUsername)
         search = re.compile(pattern)
 
         for line in lines:
             if search.match(line):
                 pswd = search.findall(line)[0]
-            
+
         return pswd
 
     def _createLvmGroup(self):
-        if 0 == self.system._nodeShell('%s %s' 
+        if 0 == self.system._nodeShell('%s %s'
               % (self.persistentDiskLvmVgdisplay, self.persistentDiskLvmDevice)):
             return
         printStep('Creating LVM volume group...')
-        self.system._nodeShell('%s %s' 
+        self.system._nodeShell('%s %s'
            % (self.persistentDiskLvmPvcreate, self.persistentDiskPhysicalDevices))
         self.system._nodeShell('%s %s %s'
            % (self.persistentDiskLvmVgcreate, self.persistentDiskLvmDevice,
               self.persistentDiskPhysicalDevices))
-                
+
     def _createFileHddDirectory(self):
         printStep('Creating disk store directory...')
         self.system._remoteCreateDirs(self.persistentDiskFileLocation)
-        
+
     def _copyCloudNodeKey(self):
         self.system.copyCmd(self.persistentDiskCloudNodeKey, self.cloudNodeKey)
-                
+
     def _stripMultiLineValue(self, value):
         return '\n'.join(map(lambda x: x.strip(), value.split('\n')))
-        
+
     def _setPdiskUserAndPassword(self):
         self._overrideValueInFile(self.pdiskUsername,
                                   '%s,cloud-access' % (self.pdiskPassword),
@@ -296,7 +297,7 @@ class PersistentDisk(Installator):
              configFile,
              confLine % loginConf % pdiskDir,
              confLine % loginConf % oneproxyDir)
-        
+
     def _configureNfsServer(self):
         printStep('Configuring NFS sharing...')
         if self._nfsShareAlreadyExists():

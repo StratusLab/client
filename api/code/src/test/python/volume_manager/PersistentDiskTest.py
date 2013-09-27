@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 import unittest
-
-from mock.mock import Mock
-
-from stratuslab.PersistentDisk import PersistentDisk
-from stratuslab.Exceptions import ValidationException
 from datetime import datetime
 from datetime import timedelta
+
+from mock.mock import Mock
+from stratuslab.Exceptions import ValidationException
 from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.volume_manager.PersistentDisk import PersistentDisk
+
 
 class PersistentDiskTest(unittest.TestCase):
 
@@ -33,11 +33,11 @@ class PersistentDiskTest(unittest.TestCase):
         now = datetime.now()
         past = str(now - timedelta(days=1))
         way_past = str(now - timedelta(days=3))
-                
+
         mock = Mock(return_value = [{'quarantine': past, 'uuid': 'past'},
                                     {'quarantine': way_past, 'uuid': 'way_past'},
                                     {'quarantine': str(now), 'uuid': 'now'}])
-        
+
         config = ConfigHolder()
         config.set('endpoint', 'something')
         pd = PersistentDisk(config)
@@ -50,7 +50,7 @@ class PersistentDiskTest(unittest.TestCase):
         pd.cleanQuarantine()
 
         self.assertEqual(('way_past',), pd.deleteVolume.call_args[0])
-        
+
         self.assertEqual(1, pd.deleteVolume.call_count)
 
     def testParseQuarantinePeriod(self):
@@ -73,7 +73,7 @@ class PersistentDiskTest(unittest.TestCase):
         self.assertEqual(pd._getQuarantinePeriod(), 15*60)
         pd.quarantinePeriod = '15d'
         self.assertEqual(pd._getQuarantinePeriod(), 15*60*24)
-        
+
 
 if __name__ == "__main__":
     unittest.main()

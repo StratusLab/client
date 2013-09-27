@@ -43,9 +43,9 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
-from stratuslab.PersistentDisk import PersistentDisk
+from stratuslab.volume_manager_factory import VolumeManagerFactory
 from stratuslab.Util import sleep, filePutContent
-from stratuslab.Util import printStep, printInfo, printWarning, printError
+from stratuslab.Util import printStep, printInfo, printWarning
 from stratuslab.image.Image import Image
 from stratuslab.ManifestInfo import ManifestInfo
 
@@ -565,7 +565,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.pdiskUsername = Testor.configHolder.testUsername
         configHolder.pdiskPassword = Testor.configHolder.testPassword
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         Util.printAction('Creating a new persistent disk')
         diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
@@ -634,7 +634,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.pdiskUsername = Testor.configHolder.testUsername
         configHolder.pdiskPassword = Testor.configHolder.testPassword
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         runner = self._startVmWithPDiskAndWaitUntilUp(image=self.ubuntuImg)
 
@@ -714,7 +714,7 @@ class Testor(unittest.TestCase):
         configHolder = Testor.configHolder.copy()
         configHolder.pdiskUsername = Testor.configHolder.testUsername
         configHolder.pdiskPassword = Testor.configHolder.testPassword
-        pdisk = PersistentDisk(configHolder)
+        pdisk = VolumeManagerFactory.create(configHolder)
 
         Util.printAction('Creating a new persistent disk')
         diskUUID = pdisk.createVolume(1, 'test %s' % datetime.datetime.today(), False)
