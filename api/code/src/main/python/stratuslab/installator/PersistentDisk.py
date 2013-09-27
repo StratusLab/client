@@ -32,11 +32,10 @@ from stratuslab.Util import printStep, fileGetContent
 from stratuslab.system import SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab.Exceptions import ExecutionException
-from stratuslab.volume_manager import PersistentDisk as PDiskClient
+from stratuslab.volume_manager_interface import VolumeManagerInterface
 
 
 class PersistentDisk(Installator):
-
     PDISK_BACKEND_CONF_NAME = 'pdisk-backend.cfg'
     pdiskConfigBackendFile = os.path.join(Defaults.ETC_DIR, PDISK_BACKEND_CONF_NAME)
     PDISK_DB_NAME = 'storage'
@@ -50,20 +49,20 @@ class PersistentDisk(Installator):
                                               self.configHolder)
 
         # Package to be installed
-        self.packages = { 'frontend': {
-                          'pdisk': ['stratuslab-pdisk-server', ],
-                          'iscsi': ['scsi-target-utils', 'iscsi-initiator-utils'],
-                          'nfs': ['nfs-utils', 'nfs-utils-lib'],
-                          'lvm': ['lvm2', ],
-                          'file': ['qemu-img'],
-                        },
-                          'node': {
-                          'pdisk': ['stratuslab-pdisk-host', ],
-                          'iscsi': ['iscsi-initiator-utils', ],
-                          'nfs': ['nfs-utils', 'nfs-utils-lib'],
-                          'lvm': [],
-                          'file': [],
-                       },
+        self.packages = {'frontend': {
+            'pdisk': ['stratuslab-pdisk-server', ],
+            'iscsi': ['scsi-target-utils', 'iscsi-initiator-utils'],
+            'nfs': ['nfs-utils', 'nfs-utils-lib'],
+            'lvm': ['lvm2', ],
+            'file': ['qemu-img'],
+        },
+                         'node': {
+                             'pdisk': ['stratuslab-pdisk-host', ],
+                             'iscsi': ['iscsi-initiator-utils', ],
+                             'nfs': ['nfs-utils', 'nfs-utils-lib'],
+                             'lvm': [],
+                             'file': [],
+                         },
         }
 
         self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(),
@@ -132,7 +131,8 @@ class PersistentDisk(Installator):
         printStep('Writing backend configuration...')
         config = self.__dict__.copy()
         config['persistentDiskBackendSections'] = self._stripMultiLineValue(config['persistentDiskBackendSections'])
-        self.system._remoteFilePutContents(self.pdiskConfigBackendFile, fileGetContent(self.pdiskConfigBackendTpl) % config)
+        self.system._remoteFilePutContents(self.pdiskConfigBackendFile,
+                                           fileGetContent(self.pdiskConfigBackendTpl) % config)
 
     def _writeTgtdConfig(self):
         iscsi_config_filename = os.path.join(Defaults.ETC_DIR, 'iscsi.conf')
@@ -149,7 +149,7 @@ class PersistentDisk(Installator):
         createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS %s" % PersistentDisk.PDISK_DB_NAME
 
         rc, output = self.system.execute("%s -e \"%s\"" % (mysqlCommand, createDbIfNotExist),
-                                   withOutput=True, shell=True)
+                                         withOutput=True, shell=True)
         if rc != 0:
             raise ExecutionException("Couldn't create database '%s'.\n%s" % (PersistentDisk.PDISK_DB_NAME,
                                                                              output))
@@ -178,11 +178,11 @@ class PersistentDisk(Installator):
     def _configureNodeSudo(self):
         printStep('Configuring sudo rights...')
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
-             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername,
-             '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername)
+                                                 '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername,
+                                                 '%s ALL = NOPASSWD: /sbin/iscsiadm, /usr/sbin/lsof, /usr/bin/virsh' % self.oneUsername)
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
-             'Defaults:%s !requiretty' % self.oneUsername,
-             'Defaults:%s !requiretty' % self.oneUsername)
+                                                 'Defaults:%s !requiretty' % self.oneUsername,
+                                                 'Defaults:%s !requiretty' % self.oneUsername)
 
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
@@ -206,7 +206,7 @@ class PersistentDisk(Installator):
                          ', '.join(packages)))
             self.system.installNodePackages(packages)
 
-    def _randomPassword(self, length=12, chars=string.letters+string.digits):
+    def _randomPassword(self, length=12, chars=string.letters + string.digits):
         return ''.join([choice(chars) for _ in range(length)])
 
     def _commonInstallActions(self):
@@ -254,14 +254,14 @@ class PersistentDisk(Installator):
 
     def _createLvmGroup(self):
         if 0 == self.system._nodeShell('%s %s'
-              % (self.persistentDiskLvmVgdisplay, self.persistentDiskLvmDevice)):
+                % (self.persistentDiskLvmVgdisplay, self.persistentDiskLvmDevice)):
             return
         printStep('Creating LVM volume group...')
         self.system._nodeShell('%s %s'
-           % (self.persistentDiskLvmPvcreate, self.persistentDiskPhysicalDevices))
+                               % (self.persistentDiskLvmPvcreate, self.persistentDiskPhysicalDevices))
         self.system._nodeShell('%s %s %s'
-           % (self.persistentDiskLvmVgcreate, self.persistentDiskLvmDevice,
-              self.persistentDiskPhysicalDevices))
+                               % (self.persistentDiskLvmVgcreate, self.persistentDiskLvmDevice,
+                                  self.persistentDiskPhysicalDevices))
 
     def _createFileHddDirectory(self):
         printStep('Creating disk store directory...')
@@ -277,6 +277,7 @@ class PersistentDisk(Installator):
         self._overrideValueInFile(self.pdiskUsername,
                                   '%s,cloud-access' % (self.pdiskPassword),
                                   self.authnConfigFile)
+
     def _mergeAuthWithProxy(self):
         loginConf = os.path.join(Defaults.ETC_DIR, '%s/login.conf')
         pdiskDir = 'storage/pdisk'
@@ -294,9 +295,9 @@ class PersistentDisk(Installator):
         if 0 == self.system._nodeShell(['grep', '"%s"' % confLine % loginConf % oneproxyDir, configFile]):
             return
         self.system._remoteAppendOrReplaceInFile(
-             configFile,
-             confLine % loginConf % pdiskDir,
-             confLine % loginConf % oneproxyDir)
+            configFile,
+            confLine % loginConf % pdiskDir,
+            confLine % loginConf % oneproxyDir)
 
     def _configureNfsServer(self):
         printStep('Configuring NFS sharing...')
@@ -304,7 +305,8 @@ class PersistentDisk(Installator):
             self.system.configureExistingNfsShare(self.persistentDiskExistingNfs,
                                                   self.persistentDiskNfsMountPoint)
         elif self.profile == 'node':
-            self.system.configureExistingNfsShare('%s:%s' % (PDiskClient.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint),
+            self.system.configureExistingNfsShare('%s:%s' % (
+            VolumeManagerInterface.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint),
                                                   self.persistentDiskNfsMountPoint)
         else:
             self.system.configureNewNfsServer(self.persistentDiskNfsMountPoint,
@@ -333,5 +335,5 @@ class PersistentDisk(Installator):
         #self.system.restartService('udev')
 
         data = """*/15 * * * * root sed -i -e 's/^KERNEL==\"dm-\*\", OPTIONS+=\"watch\"/%s/' %s""" % \
-                (replace, fileName)
+               (replace, fileName)
         Util.filePutContent('/etc/cron.d/fix-udev-for-lvm-monitoring.cron', data)
