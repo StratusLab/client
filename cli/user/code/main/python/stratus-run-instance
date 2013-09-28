@@ -24,7 +24,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
-from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager.vm_manager import VmManager
 from stratuslab.Creator import Creator
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
@@ -45,7 +45,7 @@ the Marketplace ID or persistent volume UUID to start.
 '''
 
     def parse(self):
-        options = VmManagerInterface.defaultRunOptions()
+        options = VmManager.defaultRunOptions()
 
         self.parser.add_option('-n', '--number', dest='instanceNumber',
                                help='number of machines to start (default 1)', metavar='INT',

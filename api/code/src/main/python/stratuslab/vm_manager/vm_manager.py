@@ -29,7 +29,7 @@ from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 import stratuslab.Util as Util
 
 
-class VmManagerInterface(object):
+class VmManager(object):
     """
     Provides an abstract interface for different VM manager
     implementations.  The initial interface is exactly the same
@@ -99,8 +99,8 @@ class VmManagerInterface(object):
         defaultOp = {'userPublicKeyFile': _sshPublicKey,
                      'userPrivateKeyFile': _sshPrivateKey,
                      'instanceNumber': 1,
-                     'instanceType': VmManagerInterface.DEFAULT_INSTANCE_TYPE,
-                     'vmTemplateFile': VmManagerInterface.getTemplatePath(),
+                     'instanceType': VmManager.DEFAULT_INSTANCE_TYPE,
+                     'vmTemplateFile': VmManager.getTemplatePath(),
                      'rawData': '',
                      'vmKernel': '',
                      'vmRamdisk': '',
@@ -109,7 +109,7 @@ class VmManagerInterface(object):
                      'vmCpu': None,
                      'vmRam': None,
                      'vmSwap': None,
-                     'vmDisksBus': VmManagerInterface.vmDisksBus,
+                     'vmDisksBus': VmManager.vmDisksBus,
                      'vmRequirements': '',
                      'isLocalIp': False,
                      'isPrivateIp': False,

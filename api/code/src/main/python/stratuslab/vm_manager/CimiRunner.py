@@ -32,7 +32,7 @@ from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
-from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager.volume_manager import VolumeManager
 
 
 class CimiRunner(object):
@@ -526,7 +526,7 @@ class CimiRunner(object):
 
     def _createDiskUrlIfDiskId(self, image):
         if Image.isDiskId(image):
-            self.pdiskEndpointHostname = VolumeManagerInterface.getFQNHostname(self.pdiskEndpoint)
+            self.pdiskEndpointHostname = VolumeManager.getFQNHostname(self.pdiskEndpoint)
             return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
         else:
             return image

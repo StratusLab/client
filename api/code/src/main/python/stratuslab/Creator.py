@@ -42,7 +42,7 @@ from stratuslab.system import Systems
 from stratuslab import Defaults
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.Monitor import Monitor
-from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager.vm_manager import VmManager
 from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
 
 
@@ -88,7 +88,7 @@ class Creator(object):
         self.vmStartTimeout = self.VM_START_TIMEOUT
         self.vmPingTimeout = self.VM_PING_TIMEOUT
 
-        self.options = VmManagerInterface.defaultRunOptions()
+        self.options = VmManager.defaultRunOptions()
         self.options.update(configHolder.options)
         self.configHolder.options.update(self.options)
 
@@ -241,12 +241,12 @@ class Creator(object):
         image.checkImageExists(self.image)
 
     def _getCreateImageTemplateDict(self):
-        return {VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
-                VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_NAME: self.author,
-                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_TITLE: self.title,
-                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: self.comment,
-                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: self.newImageGroupVersion,
-                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
+        return {VmManager.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
+                VmManager.CREATE_IMAGE_KEY_CREATOR_NAME: self.author,
+                VmManager.CREATE_IMAGE_KEY_NEWIMAGE_TITLE: self.title,
+                VmManager.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: self.comment,
+                VmManager.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: self.newImageGroupVersion,
+                VmManager.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
 
     def createRunner(self):
         self.__createRunner()

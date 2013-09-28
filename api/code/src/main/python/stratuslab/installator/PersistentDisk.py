@@ -32,7 +32,7 @@ from stratuslab.Util import printStep, fileGetContent
 from stratuslab.system import SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab.Exceptions import ExecutionException
-from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager.volume_manager import VolumeManager
 
 
 class PersistentDisk(Installator):
@@ -306,7 +306,7 @@ class PersistentDisk(Installator):
                                                   self.persistentDiskNfsMountPoint)
         elif self.profile == 'node':
             self.system.configureExistingNfsShare('%s:%s' % (
-            VolumeManagerInterface.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint),
+            VolumeManager.getFQNHostname(self.persistentDiskIp), self.persistentDiskNfsMountPoint),
                                                   self.persistentDiskNfsMountPoint)
         else:
             self.system.configureNewNfsServer(self.persistentDiskNfsMountPoint,

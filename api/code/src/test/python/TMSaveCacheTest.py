@@ -28,7 +28,7 @@ from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.Exceptions import ConfigurationException
-from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager.vm_manager import VmManager
 
 
 class TMSaveCacheTest(unittest.TestCase):
@@ -118,11 +118,11 @@ one_port = 2633
                          conf_filename=self.conf_filename)
         tm._parseArgs()
         tm._retrieveAttachedVolumeInfo()
-        tm.createImageInfo = {VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_EMAIL: 'jrandom@tester.org',
-                              VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_NAME: 'Jay Random',
-                              VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: 'test',
-                              VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: '0.0',
-                              VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: 'http://new.markeplace.org'}
+        tm.createImageInfo = {VmManager.CREATE_IMAGE_KEY_CREATOR_EMAIL: 'jrandom@tester.org',
+                              VmManager.CREATE_IMAGE_KEY_CREATOR_NAME: 'Jay Random',
+                              VmManager.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: 'test',
+                              VmManager.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: '0.0',
+                              VmManager.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: 'http://new.markeplace.org'}
         tm.imageSha1 = 'ea7d0ddf7af4e2ea431db89639feb7036fb23062'
         tm.createdPDiskId = 'foo-bar-baz'
 

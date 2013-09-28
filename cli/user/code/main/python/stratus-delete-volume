@@ -20,7 +20,7 @@
 #
 
 import sys
-from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager.volume_manager import VolumeManager
 
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -66,7 +66,7 @@ arguments are the unique identifiers of volumes to remove.
 
     def _checkUuid(self):
         for uuid in self.uuids:
-            if not VolumeManagerInterface.isValidUuid(uuid):
+            if not VolumeManager.isValidUuid(uuid):
                 printError('Invalid UUID %s' % uuid)
 
     def doWork(self):

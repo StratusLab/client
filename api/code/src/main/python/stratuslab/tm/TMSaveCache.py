@@ -34,7 +34,7 @@ from stratuslab.Defaults import marketplaceEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CertGenerator import CertGenerator
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
-from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager.vm_manager import VmManager
 from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
@@ -224,7 +224,7 @@ class TMSaveCache(object):
 
     def _getTitle(self):
         try:
-            return self.createImageInfo[VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_TITLE]
+            return self.createImageInfo[VmManager.CREATE_IMAGE_KEY_NEWIMAGE_TITLE]
         except KeyError:
             return ""
 
@@ -262,11 +262,11 @@ class TMSaveCache(object):
         manifest_info = manifest_downloader.getManifestInfo(self.originImageIdUrl)
 
         manifest_info.sha1 = self.imageSha1
-        manifest_info.creator = self.createImageInfo[VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_NAME]
-        manifest_info.version = self.createImageInfo[VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or \
+        manifest_info.creator = self.createImageInfo[VmManager.CREATE_IMAGE_KEY_CREATOR_NAME]
+        manifest_info.version = self.createImageInfo[VmManager.CREATE_IMAGE_KEY_NEWIMAGE_VERSION] or \
                                 Util.incrementMinorVersionNumber(manifest_info.version)
         manifest_info.title = self._getTitle()
-        manifest_info.comment = self.createImageInfo[VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT]
+        manifest_info.comment = self.createImageInfo[VmManager.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT]
         manifest_info.locations = [self.pdiskPathNew]
         manifest_info.IMAGE_VALIDITY = self._IMAGE_VALIDITY
 
@@ -497,30 +497,30 @@ class TMSaveCache(object):
         self._publishImageId()
 
     def _sendEmailToUser(self):
-        if not self.createImageInfo[VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_EMAIL]:
+        if not self.createImageInfo[VmManager.CREATE_IMAGE_KEY_CREATOR_EMAIL]:
             return
 
         configHolder = self.configHolder.copy()
         configHolder.set('subject', 'New image created %s' % self.snapshotMarketplaceId)
-        configHolder.set('recipient', self.createImageInfo[VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_EMAIL])
+        configHolder.set('recipient', self.createImageInfo[VmManager.CREATE_IMAGE_KEY_CREATOR_EMAIL])
 
         emailClient = EmailClient(configHolder)
         emailClient.send(self._emailText(),
                          attachment=self.manifestNotSignedPath)
 
     def _publishImageId(self):
-        msg_type = self.createImageInfo.get(VmManagerInterface.CREATE_IMAGE_KEY_MSG_TYPE, '')
+        msg_type = self.createImageInfo.get(VmManager.CREATE_IMAGE_KEY_MSG_TYPE, '')
         if not msg_type:
             return
 
         configHolder = self.configHolder.copy()
         configHolder.set('msg_type', msg_type)
         configHolder.set('msg_endpoint',
-                         self.createImageInfo.get(VmManagerInterface.CREATE_IMAGE_KEY_MSG_ENDPOINT, ''))
+                         self.createImageInfo.get(VmManager.CREATE_IMAGE_KEY_MSG_ENDPOINT, ''))
         configHolder.set('msg_queue',
-                         self.createImageInfo.get(VmManagerInterface.CREATE_IMAGE_KEY_MSG_QUEUE, ''))
+                         self.createImageInfo.get(VmManager.CREATE_IMAGE_KEY_MSG_QUEUE, ''))
 
-        message = self.createImageInfo.get(VmManagerInterface.CREATE_IMAGE_KEY_MSG_MESSAGE, '{}')
+        message = self.createImageInfo.get(VmManager.CREATE_IMAGE_KEY_MSG_MESSAGE, '{}')
 
         ImageIdPublisher(message,
                          self.snapshotMarketplaceId,

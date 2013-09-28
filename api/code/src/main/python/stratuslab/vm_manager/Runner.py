@@ -31,14 +31,14 @@ from stratuslab.image.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
-from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
-from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
+from stratuslab.vm_manager.vm_manager import VmManager
+from stratuslab.volume_manager.volume_manager import VolumeManager
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
 
 
-class Runner(VmManagerInterface):
+class Runner(VmManager):
     class HeadRequest(urllib2.Request):
         def get_method(self):
             return "HEAD"
@@ -233,7 +233,7 @@ class Runner(VmManagerInterface):
         if not self.persistentDiskUUID:
             return
 
-        self.pdiskEndpointHostname = VolumeManagerInterface.getFQNHostname(self.pdiskEndpoint)
+        self.pdiskEndpointHostname = VolumeManager.getFQNHostname(self.pdiskEndpoint)
         self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
 
         self._checkPersistentDiskAvailable()
@@ -648,7 +648,7 @@ class Runner(VmManagerInterface):
 
     def _createDiskUrlIfDiskId(self, image):
         if Image.isDiskId(image):
-            self.pdiskEndpointHostname = VolumeManagerInterface.getFQNHostname(self.pdiskEndpoint)
+            self.pdiskEndpointHostname = VolumeManager.getFQNHostname(self.pdiskEndpoint)
             return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
         else:
             return image

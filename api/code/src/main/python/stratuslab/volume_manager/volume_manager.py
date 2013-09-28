@@ -26,7 +26,7 @@ from stratuslab.Util import printError
 from stratuslab.ConfigHolder import ConfigHolder
 
 
-class VolumeManagerInterface(object):
+class VolumeManager(object):
     """
     Provides an abstract interface for different volume manager
     implementations.  The initial interface is exactly the same
