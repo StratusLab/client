@@ -31,9 +31,9 @@ from stratuslab.image.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
-from stratuslab.vm_manager_interface import VmManagerInterface
-from stratuslab.volume_manager_interface import VolumeManagerInterface
-from stratuslab.volume_manager_factory import VolumeManagerFactory
+from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
+from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
 

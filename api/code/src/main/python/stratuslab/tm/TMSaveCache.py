@@ -33,9 +33,8 @@ from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.Defaults import marketplaceEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CertGenerator import CertGenerator
-from stratuslab.vm_manager import Runner
-from stratuslab.volume_manager_factory import VolumeManagerFactory
-from stratuslab.vm_manager_interface import VmManagerInterface
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
+from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
 from stratuslab.marketplace.Uploader import Uploader
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint

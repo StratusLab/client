@@ -28,7 +28,7 @@ from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.Exceptions import ConfigurationException
-from stratuslab.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
 
 
 class TMSaveCacheTest(unittest.TestCase):

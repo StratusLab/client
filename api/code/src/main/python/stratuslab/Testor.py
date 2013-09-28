@@ -42,8 +42,8 @@ from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
-from stratuslab.volume_manager_factory import VolumeManagerFactory
-from stratuslab.vm_manager_factory import VmManagerFactory
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
+from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
 from stratuslab.Util import sleep, filePutContent
 from stratuslab.Util import printStep, printInfo, printWarning
 from stratuslab.image.Image import Image

@@ -42,8 +42,8 @@ from stratuslab.system import Systems
 from stratuslab import Defaults
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.Monitor import Monitor
-from stratuslab.vm_manager_interface import VmManagerInterface
-from stratuslab.vm_manager_factory import VmManagerFactory
+from stratuslab.vm_manager.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
 
 
 class Creator(object):

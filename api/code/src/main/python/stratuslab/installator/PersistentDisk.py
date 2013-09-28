@@ -32,7 +32,7 @@ from stratuslab.Util import printStep, fileGetContent
 from stratuslab.system import SystemFactory
 from stratuslab.installator.Installator import Installator
 from stratuslab.Exceptions import ExecutionException
-from stratuslab.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
 
 
 class PersistentDisk(Installator):

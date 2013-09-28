@@ -23,7 +23,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.vm_manager_factory import VmManagerFactory
+from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 

@@ -32,7 +32,7 @@ from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
-from stratuslab.volume_manager_interface import VolumeManagerInterface
+from stratuslab.volume_manager.volume_manager_interface import VolumeManagerInterface
 
 
 class CimiRunner(object):

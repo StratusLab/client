@@ -28,7 +28,7 @@ from stratuslab.Util import sshCmdWithOutput, defaultConfigFile, printStep
 from stratuslab.Authn import LocalhostCredentialsConnector
 from stratuslab.Defaults import sshPublicKeyLocation
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.volume_manager_factory import VolumeManagerFactory
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.marketplace.Policy import Policy
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint

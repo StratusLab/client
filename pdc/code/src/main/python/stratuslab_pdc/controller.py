@@ -24,7 +24,7 @@ import stratuslab.controller.util as Util
 from stratuslab.controller.base_controller import BaseController
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.volume_manager_factory import VolumeManagerFactory
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 
 
 class Controller(BaseController):
