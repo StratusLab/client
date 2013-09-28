@@ -56,7 +56,7 @@ class VmManager(object):
                             'virtio': 'vd'}
 
     def __init__(self, image=None, config_holder=None):
-        if image is None:
+        if image == '':
             raise ValueError('Image ID must be provided.')
 
         if config_holder is None:

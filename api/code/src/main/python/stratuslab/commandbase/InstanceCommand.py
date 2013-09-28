@@ -20,19 +20,17 @@
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
-from stratuslab.vm_manager import Runner
+from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
 
 
 class InstanceCommand(AuthnCommand):
     """A command-line program to kill a virtual machine."""
-
 
     def __init__(self):
         self.vmIds = []
         super(InstanceCommand, self).__init__()
 
     def parse(self):
-
         self.parser.usage = self.parser_usage
         self.parser.description = self.parser_description
 
@@ -54,13 +52,13 @@ class InstanceCommand(AuthnCommand):
 
         super(InstanceCommand, self).checkOptions()
 
-    def _getRunner(self):
+    def _get_runner(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        return Runner(None, configHolder)
+        return VmManagerFactory.create(None, configHolder)
 
     def shutdownInstances(self):
-        self._getRunner().shutdownInstances(self.vmIds)
+        self._get_runner().shutdownInstances(self.vmIds)
 
     def killInstances(self):
-        self._getRunner().killInstances(self.vmIds)
+        self._get_runner().killInstances(self.vmIds)
 
