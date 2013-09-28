@@ -261,20 +261,6 @@ class Runner(VmManager):
                 pass
 
     @staticmethod
-    def getDefaultInstanceTypes():
-        types = {
-            # name      :   (cpu, ram, swap)
-            't1.micro': (1, 512, 512),
-            'm1.small': (1, 1536, 1536),
-            'm1.medium': (1, 3072, 3072),
-            'm1.large': (2, 6144, 6144),
-            'm1.xlarge': (4, 8192, 8192),
-            'c1.medium': (2, 1536, 1536),
-            'c1.xlarge': (4, 6144, 6144),
-        }
-        return types
-
-    @staticmethod
     def getVmTemplatesParameters(instance=None):
         vmTemplate = Runner.getTemplatePath(instance)
 
