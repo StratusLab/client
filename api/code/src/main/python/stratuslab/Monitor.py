@@ -200,7 +200,7 @@ class Monitor(Configurable):
         return result
 
     def _formatVmInfoHeader(self, headerAttributes):
-        result = Util.EMPHASIS_START
+        result = ''
 
         try:
             for attrib in headerAttributes[:-1]:
@@ -212,7 +212,6 @@ class Monitor(Configurable):
             label = self._decorateLabel(attrib[0])
             result += label.ljust(len(attrib[0]))
         finally:
-            result += Util.EMPHASIS_STOP
             result += "\n"
 
         return result
@@ -285,9 +284,7 @@ class MultisiteMonitor(object):
 
         result = ''
         for endpoint, username, password in self.endpoints:
-            result += Util.EMPHASIS_START
             result += '::: %s : %s :::' % (endpoint, username)
-            result += Util.EMPHASIS_STOP
 
             configHolder.set('endpoint', endpoint)
             configHolder.set('username', username)
