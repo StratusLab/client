@@ -28,9 +28,6 @@
       <includes>
         <include>stratus-*</include>
       </includes>
-      <excludes>
-        <exclude>stratus-save-instance</exclude>
-      </excludes>
     </fileSet>
     
     <fileSet>
@@ -39,9 +36,6 @@
       <includes>
         <include>stratus-*.bat</include>
       </includes>
-      <excludes>
-        <exclude>stratus-save-instance.bat</exclude>
-      </excludes>
     </fileSet>
     
     <fileSet>
