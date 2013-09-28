@@ -19,11 +19,12 @@
 #
 import os
 
-from stratuslab.Runner import Runner
 from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
 
 from marketplace.Util import Util as MarketplaceUtil
+from stratuslab.vm_manager import Runner
+
 
 class Runnable(AuthnCommand):
     '''Base class for command which need to start a machine.'''
@@ -45,7 +46,7 @@ class Runnable(AuthnCommand):
         self.parser.description = self.parser_description
 
         self.parser.add_option('-k', '--key', dest='userPublicKeyFile',
-                help='SSH public key(s) (.pub) to log on the machine. Default %s. In case of multiple keys, concatenate them to the file.' % defaultOptions['userPublicKeyFile'], 
+                help='SSH public key(s) (.pub) to log on the machine. Default %s. In case of multiple keys, concatenate them to the file.' % defaultOptions['userPublicKeyFile'],
                 metavar='FILE',
                 default=defaultOptions['userPublicKeyFile'])
 
@@ -112,7 +113,7 @@ class Runnable(AuthnCommand):
         self.parser.add_option('--vm-disks-bus', dest='vmDisksBus', metavar='BUSTYPE',
                 help='VM disks bus type defined for all disks. Overrides "disks-bus" '
                 'element value defined in image manifest. '
-                'Available types: %s. ' % ', '.join(Runner.DISKS_BUS_AVAILABLE) + 
+                'Available types: %s. ' % ', '.join(Runner.DISKS_BUS_AVAILABLE) +
                 'If not provided, by default the value is taken from disks-bus '
                 'element of image manifest. If the latter is not set, '
                 'by default "%s" is assumed.' % Runner.DISKS_BUS_DEFAULT,

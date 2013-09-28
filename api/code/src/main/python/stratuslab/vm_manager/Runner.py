@@ -31,13 +31,14 @@ from stratuslab.image.Image import Image
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
+from stratuslab.vm_manager_interface import VmManagerInterface
 from stratuslab.volume_manager_interface import VolumeManagerInterface
 from stratuslab.volume_manager_factory import VolumeManagerFactory
-from marketplace.Util import Util as MarketplaceUtil
+from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ManifestInfo import ManifestInfo
 
 
-class Runner(object):
+class Runner(VmManagerInterface):
     class HeadRequest(urllib2.Request):
         def get_method(self):
             return "HEAD"
@@ -71,29 +72,14 @@ class Runner(object):
 %s
 ]'''
 
-    CREATE_IMAGE_KEY_CREATOR_EMAIL = 'CREATOR_EMAIL'
-    CREATE_IMAGE_KEY_CREATOR_NAME = 'CREATOR_NAME'
-    CREATE_IMAGE_KEY_NEWIMAGE_TITLE = 'NEWIMAGE_TITLE'
-    CREATE_IMAGE_KEY_NEWIMAGE_COMMENT = 'NEWIMAGE_COMMENT'
-    CREATE_IMAGE_KEY_NEWIMAGE_VERSION = 'NEWIMAGE_VERSION'
-    CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE = 'NEWIMAGE_MARKETPLACE'
-    CREATE_IMAGE_KEY_MSG_TYPE = 'MSG_TYPE'
-    CREATE_IMAGE_KEY_MSG_ENDPOINT = 'MSG_ENDPOINT'
-    CREATE_IMAGE_KEY_MSG_QUEUE = 'MSG_QUEUE'
-    CREATE_IMAGE_KEY_MSG_MESSAGE = 'MSG_MESSAGE'
-
     DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
     DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
     DISKS_BUS_PREFIX_MAP = {'ide': 'hd',
                             'scsi': 'sd',
                             'virtio': 'vd'}
-    vmDisksBus = None
-
-    DEFAULT_INSTANCE_TYPE = 'm1.small'
 
     def __init__(self, image, configHolder):
-        if image == '':
-            raise ValueError('Image ID should be provided.')
+        super(Runner, self).__init__(image, configHolder)
 
         self.vm_image = image
         self.persistentDiskUUID = None
@@ -126,21 +112,14 @@ class Runner(object):
         self.userDefinedInstanceTypes = {}
         self.pdiskPort = Defaults.pdiskPort
         self.inboundPorts = None
-
         configHolder.assign(self)
         self.configHolder = configHolder
-
         self._setCloudContext()
-
         self.createImageData = {self.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
                                 self.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
-
         self._initVmAttributes()
-
         self.instancesDetail = []
-
         self.availableInstanceTypes = self._getAvailableInstanceTypes()
-
         self._validateInstanceType()
 
     def _setCloudContext(self):

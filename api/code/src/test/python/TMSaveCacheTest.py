@@ -28,10 +28,10 @@ from stratuslab.tm.TMSaveCache import TMSaveCache
 from stratuslab.Signator import Signator
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.Exceptions import ConfigurationException
-from stratuslab.Runner import Runner
+from stratuslab.vm_manager_interface import VmManagerInterface
+
 
 class TMSaveCacheTest(unittest.TestCase):
-
     CONFIG_FILE = """[default]
 persistent_disk_ip = 127.0.0.1
 one_username = oneadmin
@@ -81,11 +81,11 @@ one_port = 2633
         self.assertEqual(tm.persistentDiskIp, '127.0.0.1')
 
     def testParseArgs(self):
-        tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo'},
+        tm = TMSaveCache({TMSaveCache._ARG_SRC_POS: 'foo'},
                          conf_filename=self.conf_filename)
         self.failUnlessRaises(ValueError, tm._parseArgs)
 
-        tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo:bar'},
+        tm = TMSaveCache({TMSaveCache._ARG_SRC_POS: 'foo:bar'},
                          conf_filename=self.conf_filename)
         tm._parseArgs()
         self.assertEqual(tm.diskSrcHost, 'foo')
@@ -93,7 +93,7 @@ one_port = 2633
 
     def testRetrieveInstanceId(self):
         tm = TMSaveCache({},
-                         conf_filename=self.conf_filename)
+            conf_filename=self.conf_filename)
 
         for path in ['foo', '/a/b', '/1/2']:
             tm.diskSrcPath = path
@@ -107,21 +107,22 @@ one_port = 2633
     def testGenerateManifest(self):
         manifest_info = ManifestInfo()
         manifest_info.parseManifest(self.TEST_MANIFEST)
-        ManifestDownloader.getManifestInfo = Mock(return_value = manifest_info)
+        ManifestDownloader.getManifestInfo = Mock(return_value=manifest_info)
 
         PDISK_ENDPOINT = 'pdisk:0.0.0.0:8445'
 
-        TMSaveCache._getAttachedVolumeURIs = Mock(return_value = [PDISK_ENDPOINT+':48ac4190-9a11-4a06-8bef-03fd97080eba'])
+        TMSaveCache._getAttachedVolumeURIs = Mock(
+            return_value=[PDISK_ENDPOINT + ':48ac4190-9a11-4a06-8bef-03fd97080eba'])
 
-        tm = TMSaveCache({TMSaveCache._ARG_SRC_POS : 'foo:/bar/1'},
+        tm = TMSaveCache({TMSaveCache._ARG_SRC_POS: 'foo:/bar/1'},
                          conf_filename=self.conf_filename)
         tm._parseArgs()
         tm._retrieveAttachedVolumeInfo()
-        tm.createImageInfo = {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL:'jrandom@tester.org',
-                              Runner.CREATE_IMAGE_KEY_CREATOR_NAME:'Jay Random',
-                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT:'test',
-                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION:'0.0',
-                              Runner.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE:'http://new.markeplace.org'}
+        tm.createImageInfo = {VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_EMAIL: 'jrandom@tester.org',
+                              VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_NAME: 'Jay Random',
+                              VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: 'test',
+                              VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: '0.0',
+                              VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: 'http://new.markeplace.org'}
         tm.imageSha1 = 'ea7d0ddf7af4e2ea431db89639feb7036fb23062'
         tm.createdPDiskId = 'foo-bar-baz'
 
@@ -134,14 +135,14 @@ one_port = 2633
             tm.pdiskPathNew = tm._buildPDiskPath(tm.createdPDiskId)
             tm._buildAndSaveManifest()
             self.failUnless(os.path.exists(tm.manifestNotSignedPath))
-            
+
             minfo = ManifestInfo()
             minfo.parseManifestFromFile(tm.manifestNotSignedPath)
             assert minfo.comment == 'test'
             assert minfo.creator == 'Jay Random'
             assert minfo.version == '0.0'
             assert minfo.sha1 == tm.imageSha1
-            assert minfo.locations == [PDISK_ENDPOINT+':foo-bar-baz']
+            assert minfo.locations == [PDISK_ENDPOINT + ':foo-bar-baz']
 
             self.failUnless('foo-bar-baz' in str(tm._emailText()))
 
@@ -154,26 +155,26 @@ one_port = 2633
             tm._cleanup()
 
     def xtestSendEmail_Live(self):
-        """Remove 'x' from the test name, set correct values for 
-        email_address and smtp_host, and run the test manually. 
+        """Remove 'x' from the test name, set correct values for
+        email_address and smtp_host, and run the test manually.
         You should receive email."""
-        
+
         email_address = '<your@email.com>'
         smtp_host = '<SMTP host>'
 
         tm = TMSaveCache({},
-                         conf_filename=self.conf_filename)
+            conf_filename=self.conf_filename)
         tm.snapshotMarketplaceId = 'ABC'
         tm.createImageInfo = {}
         tm.createImageInfo['creatorEmail'] = email_address
         tm.manifestNotSignedPath = self.conf_filename
         tm.configHolder.set('smtp_host', smtp_host)
-        
+
         tm._sendEmailToUser()
 
     def test_getSnapshotPathConfParamNotInFile(self):
         tm = TMSaveCache({},
-                         conf_filename=self.conf_filename)
+            conf_filename=self.conf_filename)
         PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
 foo = bar
 """)
@@ -184,7 +185,7 @@ foo = bar
 
     def test_getSnapshotPath(self):
         tm = TMSaveCache({},
-                         conf_filename=self.conf_filename)
+            conf_filename=self.conf_filename)
         PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
 volume_name = /foo/bar
 """)
@@ -200,6 +201,7 @@ volume_name = /foo/bar
         os.write(fd, content)
         os.close(fd)
         return conf_filename
-        
+
+
 if __name__ == "__main__":
     unittest.main()

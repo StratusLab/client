@@ -23,7 +23,8 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Runner import Runner
+from stratuslab.vm_manager_factory import VmManagerFactory
+from stratuslab.vm_manager_interface import VmManagerInterface
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Util import printAction
@@ -47,7 +48,7 @@ Marketplace ID of image with batch software installed.
 
 
     def parse(self):
-        options = Runner.defaultRunOptions()
+        options = VmManagerInterface.defaultRunOptions()
 
         self.parser.add_option('--shared-folder', dest='shared_folder', action='store',
                                help='folder to share over NFS',
@@ -145,7 +146,7 @@ Marketplace ID of image with batch software installed.
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        runner = Runner(self.image, configHolder)
+        runner = VmManagerFactory.create(self.image, configHolder)
         cluster = Cluster(configHolder, runner, self.options.master_vmid)
 
         printAction('Starting cluster')

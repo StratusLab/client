@@ -19,9 +19,10 @@
 #
 import unittest
 
-from stratuslab.Runner import Runner
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Cluster import Cluster
+from stratuslab.vm_manager import Runner
+
 
 class ClusterTest(unittest.TestCase):
     instanceNumber = 2
@@ -34,19 +35,19 @@ class ClusterTest(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'mpi_machine_file': True, 
+                        'mpi_machine_file': True,
                         'instanceType': self.instanceType,
-                        'cluster_admin': 'root', 
+                        'cluster_admin': 'root',
                         'cluster_user':'testuser',
                         'master_vmid': None,
-                        'tolerate_failures': False, 
+                        'tolerate_failures': False,
                         'clean_after_failure': False,
-                        'include_master': True, 
+                        'include_master': True,
                         'shared_folder':'/home',
-                        'add_packages': None, 
-                        'ssh_hostbased': False, 
+                        'add_packages': None,
+                        'ssh_hostbased': False,
                         'instanceNumber': self.instanceNumber,
-                        'verboseLevel':0, 
+                        'verboseLevel':0,
                         'marketplaceEndpoint':'https://marketplace.stratuslab.eu'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
@@ -61,25 +62,25 @@ class ClusterTest(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'mpi_machine_file': True, 
+                        'mpi_machine_file': True,
                         'instanceType': self.instanceType,
-                        'cluster_admin': 'root', 
+                        'cluster_admin': 'root',
                         'cluster_user':'testuser',
                         'master_vmid': None,
-                        'tolerate_failures': False, 
+                        'tolerate_failures': False,
                         'clean_after_failure': False,
-                        'include_master': True, 
+                        'include_master': True,
                         'shared_folder': None,
-                        'add_packages': None, 
-                        'ssh_hostbased': True, 
+                        'add_packages': None,
+                        'ssh_hostbased': True,
                         'instanceNumber': self.instanceNumber,
-                        'verboseLevel':0, 
+                        'verboseLevel':0,
                         'marketplaceEndpoint':'https://marketplace.stratuslab.eu'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)
         cluster = Cluster(configHolder, runner, options['master_vmid'])
         runner.runInstance()
-        
+
         self.assertTrue(cluster.deploy() in [0, 128])
 
         runner.killInstances(runner.vmIds)
@@ -89,8 +90,8 @@ class ClusterTest(unittest.TestCase):
         options = Runner.defaultRunOptions()
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'instanceType': 'm1.large', 
-                        'instanceNumber': 1, 
+                        'instanceType': 'm1.large',
+                        'instanceNumber': 1,
                         'verboseLevel':0,
                         'marketplaceEndpoint':'https://marketplace.stratuslab.eu'})
         configHolder = ConfigHolder(options)
@@ -102,19 +103,19 @@ class ClusterTest(unittest.TestCase):
         # Worker node instance
         options.update({'username': ClusterTest.username,
                         'password': ClusterTest.password,
-                        'mpi_machine_file': True, 
+                        'mpi_machine_file': True,
                         'instanceType': self.instanceType,
-                        'cluster_admin': 'root', 
+                        'cluster_admin': 'root',
                         'cluster_user':'testuser',
                         'master_vmid': runner.vmIds[0],
-                        'include_master': True, 
+                        'include_master': True,
                         'shared_folder': '/home',
-                        'tolerate_failures': False, 
+                        'tolerate_failures': False,
                         'clean_after_failure': False,
-                        'add_packages': None, 
-                        'ssh_hostbased': False, 
+                        'add_packages': None,
+                        'ssh_hostbased': False,
                         'instanceNumber': self.instanceNumber-1,
-                        'verboseLevel':0, 
+                        'verboseLevel':0,
                         'marketplaceEndpoint':'https://marketplace.stratuslab.eu'})
         configHolder = ConfigHolder(options)
         runner = Runner(self.image, configHolder)

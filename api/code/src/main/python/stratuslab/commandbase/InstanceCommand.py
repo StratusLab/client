@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-from stratuslab.Runner import Runner
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.vm_manager import Runner
 
 
 class InstanceCommand(AuthnCommand):

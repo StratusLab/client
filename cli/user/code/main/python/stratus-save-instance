@@ -23,7 +23,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.Runner import Runner
+from stratuslab.vm_manager_factory import VmManagerFactory
 from stratuslab.Runnable import Runnable
 from stratuslab.ConfigHolder import ConfigHolder
 
@@ -61,7 +61,7 @@ class MainProgram(Runnable):
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        runner = Runner(self.image, configHolder)
+        runner = VmManagerFactory.create(self.image, configHolder)
         runner.save_instance_as_new_image()
 
 

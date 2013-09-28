@@ -1,0 +1,169 @@
+#!/usr/bin/env python
+#
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2013, Centre National de la Recherche Scientifique (CNRS)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os
+
+from stratuslab import Defaults
+from stratuslab.AuthnCommand import CloudEndpoint
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.commandbase.StorageCommand import PDiskEndpoint
+
+import stratuslab.Util as Util
+
+
+class VmManagerInterface(object):
+    """
+    Provides an abstract interface for different VM manager
+    implementations.  The initial interface is exactly the same
+    public interface presented by the old Runner class.
+    """
+
+    CREATE_IMAGE_KEY_CREATOR_EMAIL = 'CREATOR_EMAIL'
+    CREATE_IMAGE_KEY_CREATOR_NAME = 'CREATOR_NAME'
+    CREATE_IMAGE_KEY_NEWIMAGE_TITLE = 'NEWIMAGE_TITLE'
+    CREATE_IMAGE_KEY_NEWIMAGE_COMMENT = 'NEWIMAGE_COMMENT'
+    CREATE_IMAGE_KEY_NEWIMAGE_VERSION = 'NEWIMAGE_VERSION'
+    CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE = 'NEWIMAGE_MARKETPLACE'
+    CREATE_IMAGE_KEY_MSG_TYPE = 'MSG_TYPE'
+    CREATE_IMAGE_KEY_MSG_ENDPOINT = 'MSG_ENDPOINT'
+    CREATE_IMAGE_KEY_MSG_QUEUE = 'MSG_QUEUE'
+    CREATE_IMAGE_KEY_MSG_MESSAGE = 'MSG_MESSAGE'
+
+
+    DEFAULT_INSTANCE_TYPE = 'm1.small'
+    vmDisksBus = None
+
+
+    def __init__(self, image=None, config_holder=None):
+        if image is None:
+            raise ValueError('Image ID must be provided.')
+
+        if config_holder is None:
+            config_holder = ConfigHolder()
+
+        self.vm_image = image
+        self.configHolder = config_holder
+
+
+    @staticmethod
+    def getTemplatePath(instance=None):
+
+        paths = [os.path.join(Defaults.SHARE_DIR, 'vm', 'schema.one'),
+                 os.path.join(Util.utilPath, 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', '..', 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', '..', 'src', 'main', 'resources',
+                              'share', 'vm', 'schema.one')]
+
+        if instance and hasattr(instance, 'vmTemplateFile'):
+            paths.insert(0, instance.vmTemplateFile)
+
+        for path in paths:
+            if os.path.exists(path):
+                return path
+
+        raise Exception("cannot locate file schema.one; tried these locations:\n %s",
+                        "\n".join(paths))
+
+    @staticmethod
+    def getDefaultInstanceTypes():
+        raise NotImplementedError()
+
+    @staticmethod
+    def defaultRunOptions():
+        raise NotImplementedError()
+
+    @staticmethod
+    def defaultRunOptions():
+
+        _sshPublicKey = os.getenv('STRATUSLAB_KEY', Defaults.sshPublicKeyLocation)
+        _sshPrivateKey = _sshPublicKey.strip('.pub')
+        defaultOp = {'userPublicKeyFile': _sshPublicKey,
+                     'userPrivateKeyFile': _sshPrivateKey,
+                     'instanceNumber': 1,
+                     'instanceType': VmManagerInterface.DEFAULT_INSTANCE_TYPE,
+                     'vmTemplateFile': VmManagerInterface.getTemplatePath(),
+                     'rawData': '',
+                     'vmKernel': '',
+                     'vmRamdisk': '',
+                     'vmName': '',
+                     'vmCpuAmount': None,
+                     'vmCpu': None,
+                     'vmRam': None,
+                     'vmSwap': None,
+                     'vmDisksBus': VmManagerInterface.vmDisksBus,
+                     'vmRequirements': '',
+                     'isLocalIp': False,
+                     'isPrivateIp': False,
+                     'extraContextFile': '',
+                     'extraContextData': '',
+                     'cloudInit': '',
+                     # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM.
+                     #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
+                     'vncPort': '-1',
+                     #'vncPort': None,
+
+                     'vncListen': '',
+                     'specificAddressRequest': None,
+                     'diskFormat': 'raw',
+                     'saveDisk': False,
+                     'inVmIdsFile': None,
+                     'outVmIdsFile': None,
+                     'noCheckImageUrl': False,
+                     'msgRecipients': [],
+                     'marketplaceEndpoint': Defaults.marketplaceEndpoint,
+                     'authorEmail': ''}
+        defaultOp.update(CloudEndpoint.options())
+        defaultOp.update(PDiskEndpoint.options())
+        return defaultOp
+
+    def getInstanceResourceValues(self):
+        raise NotImplementedError()
+
+    def updateCreateImageTemplateData(self, updateDict):
+        raise NotImplementedError()
+
+    def runInstance(self, details=False):
+        raise NotImplementedError()
+
+    def save_instance_as_new_image(self, vm_id):
+        raise NotImplementedError()
+
+    def getNetworkDetail(self, vmId):
+        raise NotImplementedError()
+
+    def killInstances(self, ids=None):
+        raise NotImplementedError()
+
+    def shutdownInstances(self, ids=None):
+        raise NotImplementedError()
+
+    def printDetail(self, msg, verboseLevel=Util.VERBOSE_LEVEL_NORMAL):
+        raise NotImplementedError()
+
+    def waitUntilVmRunningOrTimeout(self, vmId, vmStartTimeout=120, failOn=()):
+        raise NotImplementedError()
+
+    def getVmState(self, vmId):
+        raise NotImplementedError()
+
+    def listInstanceTypes(self):
+        raise NotImplementedError()

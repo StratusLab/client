@@ -23,7 +23,6 @@ import time
 import tempfile
 
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
-from stratuslab.Runner import Runner
 from stratuslab.Util import sshCmd
 from stratuslab.Util import sshCmdWithOutput
 from stratuslab.Util import waitUntilPingOrTimeout
@@ -43,6 +42,8 @@ from stratuslab.system import Systems
 from stratuslab import Defaults
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.Monitor import Monitor
+from stratuslab.vm_manager_interface import VmManagerInterface
+from stratuslab.vm_manager_factory import VmManagerFactory
 
 
 class Creator(object):
@@ -87,7 +88,7 @@ class Creator(object):
         self.vmStartTimeout = self.VM_START_TIMEOUT
         self.vmPingTimeout = self.VM_PING_TIMEOUT
 
-        self.options = Runner.defaultRunOptions()
+        self.options = VmManagerInterface.defaultRunOptions()
         self.options.update(configHolder.options)
         self.configHolder.options.update(self.options)
 
@@ -240,12 +241,12 @@ class Creator(object):
         image.checkImageExists(self.image)
 
     def _getCreateImageTemplateDict(self):
-        return {Runner.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
-                Runner.CREATE_IMAGE_KEY_CREATOR_NAME: self.author,
-                Runner.CREATE_IMAGE_KEY_NEWIMAGE_TITLE: self.title,
-                Runner.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: self.comment,
-                Runner.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: self.newImageGroupVersion,
-                Runner.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
+        return {VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
+                VmManagerInterface.CREATE_IMAGE_KEY_CREATOR_NAME: self.author,
+                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_TITLE: self.title,
+                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_COMMENT: self.comment,
+                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_VERSION: self.newImageGroupVersion,
+                VmManagerInterface.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
 
     def createRunner(self):
         self.__createRunner()
@@ -257,7 +258,7 @@ class Creator(object):
 
         self.configHolder.set('saveDisk', True)
 
-        self.runner = Runner(self.image, self.configHolder)
+        self.runner = VmManagerFactory(self.image, self.configHolder)
 
         self.runner.updateCreateImageTemplateData(
             self._getCreateImageTemplateDict())

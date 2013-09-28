@@ -29,7 +29,6 @@ from os import mkdir, rmdir, remove
 
 from stratuslab.Monitor import Monitor
 from stratuslab.Registrar import Registrar
-from stratuslab.Runner import Runner
 from stratuslab.marketplace.Uploader import Uploader as marketplaceUploader
 from stratuslab.Creator import Creator
 from stratuslab.Exceptions import OneException, ClientException
@@ -44,6 +43,7 @@ import stratuslab.ClusterTest as ClusterTest
 import stratuslab.RegistrationTest as RegistrationTest
 import stratuslab.LdapAuthenticationTest as LdapAuthenticationTest
 from stratuslab.volume_manager_factory import VolumeManagerFactory
+from stratuslab.vm_manager_factory import VmManagerFactory
 from stratuslab.Util import sleep, filePutContent
 from stratuslab.Util import printStep, printInfo, printWarning
 from stratuslab.image.Image import Image
@@ -219,7 +219,7 @@ class Testor(unittest.TestCase):
         if not image:
             image = self.image
 
-        options = Runner.defaultRunOptions()
+        options = VmManagerInstance.defaultRunOptions()
         options['username'] = self.testUsername
         options['password'] = self.testPassword
         options['userPublicKeyFile'] = self.sshKeyPub
@@ -233,7 +233,7 @@ class Testor(unittest.TestCase):
             options['isLocalIp'] = True
 
         configHolder = ConfigHolder(options)
-        return Runner(image, configHolder)
+        return VmManagerFactory.create(image, configHolder)
 
     def _repeatCall(self, method, *args):
         numberOfRepetition = 60

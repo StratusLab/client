@@ -21,12 +21,13 @@ import unittest
 
 from mock.mock import Mock
 
-from stratuslab.Runner import Runner
 import stratuslab.ConfigHolder as ConfigHolder
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
+from stratuslab.vm_manager.Runner import Runner
+
 
 class RunnerTest(unittest.TestCase):
-    
+
     MANIFEST_DISKS_BUS_IDE = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:dcterms="http://purl.org/dc/terms/" xmlns:slreq="http://mp.stratuslab.eu/slreq#"
@@ -90,7 +91,7 @@ class RunnerTest(unittest.TestCase):
     </rdf:Description>
 </rdf:RDF>
 """
-    
+
     def setUp(self):
         Runner._setCloudContext = Mock()
         self.ch = ConfigHolder.ConfigHolder()
@@ -103,7 +104,7 @@ class RunnerTest(unittest.TestCase):
                                             'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         self.failUnlessEqual('vd', vm_params['vm_disks_prefix'])
-        
+
     def testDisksBusTypeIde(self):
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_IDE,
                                             'MMZu9WvwKIro-rtBQfDk4PsKO7_')
@@ -127,7 +128,7 @@ class RunnerTest(unittest.TestCase):
         extra_disk = Runner.EXTRA_DISK % {'extraDiskSize' : '1',
                                           'vm_disks_prefix' : 'vd'}
         self.failUnlessEqual(extra_disk, vm_params['extra_disk'])
-        
+
     def testDisksBusTypeReadonlyDiskIde(self):
         uuid = 'f25cd0dc-e56f-4eea-be0c-88d866a2c73c'
         self.ch.set('readonlyDiskId', uuid)
@@ -161,7 +162,7 @@ class RunnerTest(unittest.TestCase):
                                             'MMZu9WvwKIro-rtBQfDk4PsKO7_')
         vm_params = runner._vmParamDict()
         self.failUnlessEqual('vd', vm_params['vm_disks_prefix'])
-        
+
     def testDisksBusTypeFromCommandLineScsi(self):
         self.ch.set('vmDisksBus', 'scsi')
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
@@ -178,6 +179,6 @@ class RunnerTest(unittest.TestCase):
     def _mockManifestDownloader(manifest):
         mock = Mock(return_value = ManifestDownloader._parseXml(manifest))
         ManifestDownloader._download = mock
-    
+
 if __name__ == "__main__":
     unittest.main()
