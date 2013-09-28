@@ -35,7 +35,6 @@ from stratuslab.vm_manager.vm_manager import VmManager
 from stratuslab.volume_manager.volume_manager import VolumeManager
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
-from stratuslab.ManifestInfo import ManifestInfo
 
 
 class Runner(VmManager):
@@ -72,11 +71,6 @@ class Runner(VmManager):
 %s
 ]'''
 
-    DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
-    DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
-    DISKS_BUS_PREFIX_MAP = {'ide': 'hd',
-                            'scsi': 'sd',
-                            'virtio': 'vd'}
 
     def __init__(self, image, configHolder):
         super(Runner, self).__init__(image, configHolder)

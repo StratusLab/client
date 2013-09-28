@@ -21,11 +21,11 @@
 
 import os
 
+from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab import Defaults
 from stratuslab.AuthnCommand import CloudEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
-
 import stratuslab.Util as Util
 
 
@@ -47,10 +47,13 @@ class VmManager(object):
     CREATE_IMAGE_KEY_MSG_QUEUE = 'MSG_QUEUE'
     CREATE_IMAGE_KEY_MSG_MESSAGE = 'MSG_MESSAGE'
 
-
     DEFAULT_INSTANCE_TYPE = 'm1.small'
     vmDisksBus = None
-
+    DISKS_BUS_AVAILABLE = ['ide', 'scsi', 'virtio']
+    DISKS_BUS_DEFAULT = ManifestInfo.DISKS_BUS_DEFAULT
+    DISKS_BUS_PREFIX_MAP = {'ide': 'hd',
+                            'scsi': 'sd',
+                            'virtio': 'vd'}
 
     def __init__(self, image=None, config_holder=None):
         if image is None:
@@ -96,44 +99,44 @@ class VmManager(object):
 
         _sshPublicKey = os.getenv('STRATUSLAB_KEY', Defaults.sshPublicKeyLocation)
         _sshPrivateKey = _sshPublicKey.strip('.pub')
-        defaultOp = {'userPublicKeyFile': _sshPublicKey,
-                     'userPrivateKeyFile': _sshPrivateKey,
-                     'instanceNumber': 1,
-                     'instanceType': VmManager.DEFAULT_INSTANCE_TYPE,
-                     'vmTemplateFile': VmManager.getTemplatePath(),
-                     'rawData': '',
-                     'vmKernel': '',
-                     'vmRamdisk': '',
-                     'vmName': '',
-                     'vmCpuAmount': None,
-                     'vmCpu': None,
-                     'vmRam': None,
-                     'vmSwap': None,
-                     'vmDisksBus': VmManager.vmDisksBus,
-                     'vmRequirements': '',
-                     'isLocalIp': False,
-                     'isPrivateIp': False,
-                     'extraContextFile': '',
-                     'extraContextData': '',
-                     'cloudInit': '',
-                     # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM.
-                     #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
-                     'vncPort': '-1',
-                     #'vncPort': None,
+        default_options = {'userPublicKeyFile': _sshPublicKey,
+                           'userPrivateKeyFile': _sshPrivateKey,
+                           'instanceNumber': 1,
+                           'instanceType': VmManager.DEFAULT_INSTANCE_TYPE,
+                           'vmTemplateFile': VmManager.getTemplatePath(),
+                           'rawData': '',
+                           'vmKernel': '',
+                           'vmRamdisk': '',
+                           'vmName': '',
+                           'vmCpuAmount': None,
+                           'vmCpu': None,
+                           'vmRam': None,
+                           'vmSwap': None,
+                           'vmDisksBus': VmManager.vmDisksBus,
+                           'vmRequirements': '',
+                           'isLocalIp': False,
+                           'isPrivateIp': False,
+                           'extraContextFile': '',
+                           'extraContextData': '',
+                           'cloudInit': '',
+                           # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM.
+                           #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
+                           'vncPort': '-1',
+                           #'vncPort': None,
 
-                     'vncListen': '',
-                     'specificAddressRequest': None,
-                     'diskFormat': 'raw',
-                     'saveDisk': False,
-                     'inVmIdsFile': None,
-                     'outVmIdsFile': None,
-                     'noCheckImageUrl': False,
-                     'msgRecipients': [],
-                     'marketplaceEndpoint': Defaults.marketplaceEndpoint,
-                     'authorEmail': ''}
-        defaultOp.update(CloudEndpoint.options())
-        defaultOp.update(PDiskEndpoint.options())
-        return defaultOp
+                           'vncListen': '',
+                           'specificAddressRequest': None,
+                           'diskFormat': 'raw',
+                           'saveDisk': False,
+                           'inVmIdsFile': None,
+                           'outVmIdsFile': None,
+                           'noCheckImageUrl': False,
+                           'msgRecipients': [],
+                           'marketplaceEndpoint': Defaults.marketplaceEndpoint,
+                           'authorEmail': ''}
+        default_options.update(CloudEndpoint.options())
+        default_options.update(PDiskEndpoint.options())
+        return default_options
 
     def getInstanceResourceValues(self):
         raise NotImplementedError()

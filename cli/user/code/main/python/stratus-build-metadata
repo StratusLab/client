@@ -29,7 +29,7 @@ from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageF
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Compressor import Compressor
 from stratuslab.image.Image import Image
-from stratuslab.Runner import Runner
+from stratuslab.vm_manager.vm_manager import VmManager
 import stratuslab.Util as Util
 
 # initialize console logging
@@ -110,8 +110,8 @@ image argument is the machine or disk image file to describe.
                                default='', metavar='TEXT')
 
         self.parser.add_option('--disks-bus', dest='disksbus',
-                               help='Disks bus type. One of: %s' % ', '.join(Runner.DISKS_BUS_AVAILABLE),
-                               default=Runner.DISKS_BUS_DEFAULT, metavar='TYPE')
+                               help='Disks bus type. One of: %s' % ', '.join(VmManager.DISKS_BUS_AVAILABLE),
+                               default=VmManager.DISKS_BUS_DEFAULT, metavar='TYPE')
 
         self.parser.add_option('--md5', dest='md5',
                                help='md5 checksum',
@@ -158,9 +158,9 @@ image argument is the machine or disk image file to describe.
             compression = Compressor.getCompressionFormat(self.image)
             self.options.__dict__.update({'compression': compression})
 
-        if self.options.disksbus not in Runner.DISKS_BUS_AVAILABLE:
+        if self.options.disksbus not in VmManager.DISKS_BUS_AVAILABLE:
             self.parser.error("Unknown disks bus type %s. Available types: %s" % \
-                              (self.options.disksbus, ', '.join(Runner.DISKS_BUS_AVAILABLE)))
+                              (self.options.disksbus, ', '.join(VmManager.DISKS_BUS_AVAILABLE)))
 
     def doWork(self):
         self._calculateCheckSums()
