@@ -219,7 +219,7 @@ class HttpClient(object):
                 resp, content = _handle5xx()
 
         proxy = self.getHttpProxyForUrl(url)
-        if self.useHttpCache:
+        if Util.isTrueConfVal(self.useHttpCache):
             h = httplib2.Http(".cache", proxy_info=proxy)
         else:
             h = httplib2.Http(proxy_info=proxy)
