@@ -47,7 +47,7 @@ class Uploader(object):
 
 
     def upload(self, manifestFilename):
-        client = HttpClient()
+        client = HttpClient(self.confHolder)
         if not os.path.exists(manifestFilename):
             raise InputException('Can\'t find metadata file: %s' % manifestFilename)
         
