@@ -8,9 +8,9 @@ import datetime
 
 # Inputs
 
-userId = 2
+userIds = [6]
 fromDate = [2013,05,04] # YYYY MM DD
-toDate = [2013,05,30]
+toDate = [2013,12,30]
 
 
 fromInSecs = (datetime.datetime(fromDate[0],fromDate[1],fromDate[2])-datetime.datetime(1970,1,1)).total_seconds()
@@ -18,16 +18,19 @@ toInSecs = (datetime.datetime(toDate[0],toDate[1],toDate[2])-datetime.datetime(1
 
 marketplaceSizeCache = {}
 
-def get_all_vms_from_one():
-    print 'Querying OpenNebula Accounting...'
+def get_all_vms_from_one(userId):
+    #print 'Querying OpenNebula Accounting...'
     return check_output(["oneacct", "-u", str(userId), "-x"])
 
 def get_vm_details_from_one(vmId):
-    print 'Extracting OpenNebula VM details...'
+    #print 'Extracting OpenNebula VM details...'
     return check_output(["onevm", "show", str(vmId), "-x"])
 
 def to_xml(xml_as_string):
-    return ET.fromstring(xml_as_string)
+    xml = None
+    if xml_as_string.strip():
+        xml = ET.fromstring(xml_as_string)
+    return xml
 
 def get_stime(vm):
     return vm.find('slice/stime').text
@@ -45,16 +48,30 @@ def in_range(vm):
 
 def filter_vms(root):
     vms = []
-    for vm in root.iter('vm'):
-        if in_range(vm):
-            slice = vm.find('slice')
-            if slice is not None:
-                stime = ET.Element('starttime')
-                inSecs = int(slice.find('stime').text)
-                stime.text = str(datetime.datetime.fromtimestamp(inSecs))
-                vm.append(stime)
-                vm.remove(slice)
-            vms.append(vm)
+    if root is not None:
+        for vm in root.iter('vm'):
+            if in_range(vm):
+                timeElem = vm.find('time')
+                timeElem.text = str(float(timeElem.text) / 60 / 60) # in hours
+                slice = vm.find('slice')
+                if slice is None:
+                    print 'time for missing slice:', vm.findtext('time')
+                    timeElem.text = "XX"
+                else:
+                    stime = ET.Element('starttime')
+                    stimeInSecs = int(slice.find('stime').text)
+                    stime.text = str(datetime.datetime.fromtimestamp(stimeInSecs))
+                    vm.append(stime)
+                    etime = ET.Element('endtime')
+                    etimeInSecs = int(slice.find('etime').text)
+                    etime.text = str(datetime.datetime.fromtimestamp(etimeInSecs))
+                    vm.append(etime)
+                    delta = (etimeInSecs - stimeInSecs) / 60 / 60 # in hours
+                    if delta < 0:
+                        delta = 0
+                    timeElem.text = str(delta) # add one to round up
+                    vm.remove(slice)
+                vms.append(vm)
     return vms
         
 def bytes_to_giga_approximation(numberOfBytes):
@@ -66,7 +83,7 @@ def get_sizes(vmDetail):
     return sizes
 
 def insert_disks(vm, sizes):
-    print 'Inserting disk info...'
+    #print 'Inserting disk info...'
     for size in sizes:
         diskElement = ET.Element('disk')
         sizeElement = ET.Element('size')
@@ -77,9 +94,10 @@ def insert_disks(vm, sizes):
 def add_detail_info(vms):
     for vm in vms:
         vmDetail = to_xml(get_vm_details_from_one(get_id(vm)))
-        sizes = get_sizes(vmDetail)
-        insert_disks(vm, sizes)
-        vm.find('name').text = vmDetail.find('NAME').text
+        if vmDetail is not None:
+            sizes = get_sizes(vmDetail)
+            insert_disks(vm, sizes)
+            vm.find('name').text = vmDetail.find('NAME').text
     return vms
 
 def get_disks(vm):
@@ -90,11 +108,15 @@ def get_size_from_marketplace(disk):
     url = source.text
     if url in marketplaceSizeCache:
         return marketplaceSizeCache[url]        
-    print 'Retrieving marketplace info:', url, '...'
-    marketplaceDefinition = urllib2.urlopen(url + '?status=all&location=all').read()
-    root = ET.fromstring(marketplaceDefinition)
-    bytes = root.find('rdf:RDF/rdf:Description/ns2:bytes', namespaces={"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","ns2":"http://mp.stratuslab.eu/slreq#"}).text
-    bytes = int(bytes)
+    #print 'Retrieving marketplace info:', url, '...'
+    try:
+        marketplaceDefinition = urllib2.urlopen(url + '?status=all&location=all').read()
+        root = ET.fromstring(marketplaceDefinition)
+        bytes = root.find('rdf:RDF/rdf:Description/ns2:bytes', namespaces={"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","ns2":"http://mp.stratuslab.eu/slreq#"}).text
+        bytes = int(bytes)
+    except (urllib2.URLError, ValueError):
+        bytes = 0
+        print "Error retrieving marketplace url:", url
     marketplaceSizeCache[url] = bytes
     return bytes
 
@@ -117,7 +139,8 @@ def compute_totals(root):
     totalNetTx = 0
 
     for vm in root.findall('vm'):
-        time = float(vm.find('time').text) / 60 / 60 # in hours
+        time = float(vm.find('time').text) # in hours
+        #print "time:", time
         totalTime += time
         totalCpu += float(vm.find('cpu').text) * time
         totalRam += float(vm.find('mem').text) * time / 1024
@@ -133,20 +156,25 @@ def compute_totals(root):
     root.set('total_net_rx', str("%.2f" % (bytes_to_GB(totalNetRx))))
     root.set('total_net_tx', str("%.2f" % (bytes_to_GB(totalNetTx))))
 
-vmsFromOne = get_all_vms_from_one()
-allVms = to_xml(vmsFromOne)
-filteredVms = filter_vms(allVms)
-withDiskInfoVms = add_detail_info(filteredVms)
+for id in userIds:
 
-root = ET.Element('usagerecord')
-root.set('userid', allVms.get('id'))
-root.set('from', str(datetime.datetime.fromtimestamp(fromInSecs)))
-if toInSecs:
-    root.set('to', str(datetime.datetime.fromtimestamp(toInSecs)))
+    #print "Processing userid:", id
+    vmsFromOne = get_all_vms_from_one(id)
+    allVms = to_xml(vmsFromOne)
+    if allVms is None:
+        continue
+    filteredVms = filter_vms(allVms)
+    withDiskInfoVms = add_detail_info(filteredVms)
 
-for vm in withDiskInfoVms:
-    root.append(vm)
+    root = ET.Element('usagerecord')
+    root.set('userid', allVms.get('id'))
+    root.set('from', str(datetime.datetime.fromtimestamp(fromInSecs)))
+    if toInSecs:
+        root.set('to', str(datetime.datetime.fromtimestamp(toInSecs)))
 
-compute_totals(root)
+    for vm in withDiskInfoVms:
+        root.append(vm)
 
-print ET.dump(root)
+    compute_totals(root)
+
+    open("userid-" + str(id) + '.log','w').write(ET.tostring(root))
