@@ -444,9 +444,26 @@ class TMSaveCache(object):
 
     def _retrieveVmDir(self):
         self.vmDir = dirname(dirname(self.diskSrcPath))
+        
+    def _getRemoteFileContent(self, host, fn):
+        return self._ssh(host, ['cat', fn], 
+                         "Failed to get content of '%s' from host '%s'." % (fn, host))
+
+    def _getRemoteFileAsFileHandler(self, host, fn):
+        import StringIO
+        fh = StringIO.StringIO()
+        content = self._getRemoteFileContent(host, fn)
+        fh.write(content)
+        fh.seek(0)
+        return fh
+
+    def _getRemoteConfFileAsDict(self, host, conf_file):
+        fh = self._getRemoteFileAsFileHandler(host, conf_file)
+        return ConfigHolder.configFileHandlerToDict(fh)
 
     def _getSnapshotPath(self):
-        conf = ConfigHolder.configFileToDict(PDiskInstaller.pdiskConfigBackendFile)
+        conf = self._getRemoteConfFileAsDict(self.persistentDiskIp, 
+                                             PDiskInstaller.pdiskConfigBackendFile)
         key = 'volume_name'
         try:
             volume_path = conf[key]

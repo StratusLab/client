@@ -162,8 +162,7 @@ one_port = 2633
         email_address = '<your@email.com>'
         smtp_host = '<SMTP host>'
 
-        tm = TMSaveCache({},
-            conf_filename=self.conf_filename)
+        tm = TMSaveCache({}, conf_filename=self.conf_filename)
         tm.snapshotMarketplaceId = 'ABC'
         tm.createImageInfo = {}
         tm.createImageInfo['creatorEmail'] = email_address
@@ -173,27 +172,19 @@ one_port = 2633
         tm._sendEmailToUser()
 
     def test_getSnapshotPathConfParamNotInFile(self):
-        tm = TMSaveCache({},
-            conf_filename=self.conf_filename)
-        PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
+        tm = TMSaveCache({}, conf_filename=self.conf_filename)
+        tm._getRemoteFileContent = Mock(return_value="""[default]
 foo = bar
 """)
-        try:
-            self.failUnlessRaises(ConfigurationException, tm._getSnapshotPath)
-        finally:
-            os.unlink(PersistentDisk.pdiskConfigBackendFile)
+        self.failUnlessRaises(ConfigurationException, tm._getSnapshotPath)
 
     def test_getSnapshotPath(self):
-        tm = TMSaveCache({},
-            conf_filename=self.conf_filename)
-        PersistentDisk.pdiskConfigBackendFile = self._write_conf_file("""[default]
+        tm = TMSaveCache({}, conf_filename=self.conf_filename)
+        tm._getRemoteFileContent = Mock(return_value="""[default]
 volume_name = /foo/bar
 """)
         tm.diskName = 'baz'
-        try:
-            assert '/foo/bar/baz' == tm._getSnapshotPath()
-        finally:
-            os.unlink(PersistentDisk.pdiskConfigBackendFile)
+        assert '/foo/bar/baz' == tm._getSnapshotPath()
 
     # Utils
     def _write_conf_file(self, content):
