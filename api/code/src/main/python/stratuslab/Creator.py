@@ -258,7 +258,7 @@ class Creator(object):
 
         self.configHolder.set('saveDisk', True)
 
-        self.runner = VmManagerFactory(self.image, self.configHolder)
+        self.runner = VmManagerFactory.create(self.image, self.configHolder)
 
         self.runner.updateCreateImageTemplateData(
             self._getCreateImageTemplateDict())
