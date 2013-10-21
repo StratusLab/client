@@ -9,7 +9,7 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-vmc</artifactId>
-    <version>13.10.0</version>
+    <version>13.10.1-SNAPSHOT</version>
   </parent>
 
   <build>
