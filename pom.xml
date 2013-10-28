@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.client</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>13.10.1-SNAPSHOT</version>
+  <version>13.12.0-SNAPSHOT</version>
   <name>StratusLab Parent (POM)</name>
 
   <url>http://github.com/StratusLab/client</url>
@@ -20,7 +20,7 @@ with minimal dependencies for maximum portability.
   <parent>
     <groupId>eu.stratuslab</groupId>
     <artifactId>distribution</artifactId>
-    <version>13.10.0</version>
+    <version>13.12.0-SNAPSHOT</version>
   </parent>
 
   <modules>
