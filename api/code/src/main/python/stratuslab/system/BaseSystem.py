@@ -42,7 +42,7 @@ class BaseSystem(object):
     os = ''
     caRepoName = 'CAs'
     voIdCardUrl = 'http://operations-portal.egi.eu/xml/voIDCard/public/all/true'
-    vomsesDir = '/etc/grid-security/vomses'
+    vomsesDir = '/etc/grid-security/vomsdir'
 
     def __init__(self):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -904,7 +904,7 @@ class BaseSystem(object):
 
     def _installVomsFiles(self):
 
-        r = requests.get(self.voIdCardURL)
+        r = requests.get(self.voIdCardUrl)
         if r.status_code == requests.codes.ok:
             if not os.path.exists(self.vomsesDir):
                 try:
@@ -937,7 +937,7 @@ class BaseSystem(object):
                         except Exception as e:
                             Util.printError('could not create file ' + path)
         else:
-            Util.printError('error retrieving VO ID card data from ' + self.voIdCardURL)
+            Util.printError('error retrieving VO ID card data from ' + self.voIdCardUrl)
 
     # -------------------------------------------
     # DHCP server
