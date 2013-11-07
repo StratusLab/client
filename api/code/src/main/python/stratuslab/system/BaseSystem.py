@@ -22,7 +22,10 @@ import re
 import shutil
 import time
 import tempfile
+import xml.etree.ElementTree as ET
 from datetime import datetime
+
+import requests
 
 from stratuslab import Exceptions
 from stratuslab import Defaults
@@ -33,10 +36,13 @@ from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.system import Systems
 from stratuslab.Exceptions import ExecutionException
 
+
 class BaseSystem(object):
 
     os = ''
     caRepoName = 'CAs'
+    voIdCardUrl = 'http://operations-portal.egi.eu/xml/voIDCard/public/all/true'
+    vomsesDir = '/etc/grid-security/vomses'
 
     def __init__(self):
         dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -865,6 +871,7 @@ class BaseSystem(object):
             self._installCAs()
             self._installFetchCrl()
             self._enableFetchCrl()
+            self._installVomsFiles()
 
     def _enableFetchCrl(self):
         pass
@@ -894,6 +901,44 @@ class BaseSystem(object):
         self.installPackages([package])
         if not self.isPackageInstalled(package):
             Util.printError('Failed to install %s.' % package)
+
+    def _installVomsFiles(self):
+
+        r = requests.get(self.voIdCardURL)
+        if r.status_code == requests.codes.ok:
+
+            if not os.path.exists(self.vomsesDir):
+                try:
+                    os.mkdir(self.vomsesDir)
+                except Exception as e:
+                    Util.printError('could not create ' + vomsesDir)
+
+            vo_data = ET.fromstring(r.text)
+
+            for idcard in vo_data:
+                voname = idcard.attrib['Name']
+                vopath = os.path.join(self.vomsesDir, voname)
+
+                if not os.path.exists(vopath):
+                    try:
+                        os.mkdir(vopath)
+                    except Exception as e:
+                        Util.printError('could not create ' + vopath)
+
+                for server in idcard.findall('./gLiteConf/VOMSServers/VOMS_Server'):
+                    hostname = server.find('hostname')
+                    dn = server.find('X509Cert/DN')
+                    ca_dn = server.find('X509Cert/CA_DN')
+                    if hostname is not None and dn is not None and ca_dn is not None:
+                        contents = '%s\n%s\n' % (dn.text, ca_dn.text)
+                        path = os.path.join(vopath, hostname.text)
+                        try:
+                            with open(path, 'w') as f:
+                                f.write(contents)
+                        except Exception e:
+                            Util.printError('could not create file ' + path)
+        else:
+            Util.printError('error retrieving VO ID card data from ' + self.voIdCardURL)
 
     # -------------------------------------------
     # DHCP server
