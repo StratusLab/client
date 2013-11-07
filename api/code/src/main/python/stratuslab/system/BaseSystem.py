@@ -930,7 +930,7 @@ class BaseSystem(object):
                     ca_dn = server.find('X509Cert/CA_DN')
                     if hostname is not None and dn is not None and ca_dn is not None:
                         contents = '%s\n%s\n' % (dn.text, ca_dn.text)
-                        path = os.path.join(vopath, hostname.text)
+                        path = os.path.join(vopath, hostname.text + '.lsc')
                         try:
                             with open(path, 'w') as f:
                                 f.write(contents)
