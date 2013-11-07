@@ -906,7 +906,6 @@ class BaseSystem(object):
 
         r = requests.get(self.voIdCardURL)
         if r.status_code == requests.codes.ok:
-
             if not os.path.exists(self.vomsesDir):
                 try:
                     os.mkdir(self.vomsesDir)
@@ -935,7 +934,7 @@ class BaseSystem(object):
                         try:
                             with open(path, 'w') as f:
                                 f.write(contents)
-                        except Exception e:
+                        except Exception as e:
                             Util.printError('could not create file ' + path)
         else:
             Util.printError('error retrieving VO ID card data from ' + self.voIdCardURL)
