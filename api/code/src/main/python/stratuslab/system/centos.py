@@ -97,7 +97,7 @@ enabled=1
 """, 'filename' : repoFileNamePattern % self.caRepoName}
             }
 
-        self.packages.update = {'apache2': PackageInfo('httpd','/etc/httpd'),
+        self.packages.update({'apache2': PackageInfo('httpd','/etc/httpd'),
                          'dhcp': PackageInfo('dhcp',
                                              configFile='/etc/dhcp/dhcpd.conf',
                                              initdScriptName='dhcpd'),
@@ -107,7 +107,7 @@ enabled=1
                                                     initdScriptName='mysqld'),
                          'fetch-crl': PackageInfo('fetch-crl',
                                                   packageVersion='3*'),
-                         'sendmail': PackageInfo('sendmail')}
+                         'sendmail': PackageInfo('sendmail')})
 
         self.installPackagesErrorMsgs = ['No package .* available']
 
