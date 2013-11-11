@@ -48,6 +48,9 @@ class OpenNebulaFrontend(OpenNebulaCommon):
     def _installCAs(self):
         self.frontend.installCAs()
 
+    def _installOpenNebula(self):
+        self.frontend.installOpenNebula()
+
     def _installSendmail(self):
         self.frontend.installSendmail()
         

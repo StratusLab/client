@@ -52,6 +52,7 @@ class BaseSystem(object):
 
         self.extraRepos = {}
         self.packages = {}
+        self.packages.update({'opennebula' : PackageInfo('one-3.2-StratusLab')})
         self.installPackagesErrorMsgs = []
         self.repoFileNamePattern = '/etc/%s'
         self.certificateAuthorityPackages = ''
@@ -895,6 +896,10 @@ class BaseSystem(object):
         for package in packages:
             if not self.isPackageInstalled(package):
                 Util.printError('Failed to install %s.' % package)
+
+    def installOpenNebula(self, packages):
+        Util.printDetail('Installing OpenNebula')
+        self.installPackages([self.getPackageName('opennebula')])
 
     def _installFetchCrl(self):
         package = self.getPackageName('fetch-crl')

@@ -109,9 +109,12 @@
 	  
 	  <requires>
 	    <require>stratuslab-api</require>
-	    <require>one-3.2-StratusLab</require>
-	    <require>mysql</require>
 	    <require>python-ldap</require>
+	    <require>mysql</require>
+            <!-- OpenNebula dependencies are handled directly 
+                 by the installer now.
+	    <require>one-3.2-StratusLab</require>
+            -->
 	  </requires>
 
 	  <mappings>

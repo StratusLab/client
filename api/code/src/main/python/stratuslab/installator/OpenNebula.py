@@ -63,6 +63,9 @@ class OpenNebula(OpenNebulaNode, OpenNebulaFrontend, Installator):
         printStep('Installing sendmail')
         self._installSendmail()
 
+        printStep('Installing OpenNebula')
+        self._installOpenNebula()
+
         self._printInstallCompleted(self.frontend.stdout.name, self.frontend.stderr.name)
 
     def _setupFrontend(self):

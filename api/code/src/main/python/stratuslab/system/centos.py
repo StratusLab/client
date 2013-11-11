@@ -97,7 +97,7 @@ enabled=1
 """, 'filename' : repoFileNamePattern % self.caRepoName}
             }
 
-        self.packages = {'apache2': PackageInfo('httpd','/etc/httpd'),
+        self.packages.update = {'apache2': PackageInfo('httpd','/etc/httpd'),
                          'dhcp': PackageInfo('dhcp',
                                              configFile='/etc/dhcp/dhcpd.conf',
                                              initdScriptName='dhcpd'),
