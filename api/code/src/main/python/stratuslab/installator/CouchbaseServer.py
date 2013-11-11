@@ -16,6 +16,7 @@
 
 import time
 import string
+import os
 import os.path
 from random import choice
 import stratuslab.system.SystemFactory as SystemFactory
@@ -45,8 +46,6 @@ class CouchbaseServer(Installator):
         self._serviceName = 'couchbase-server'
         self._packages = ['couchbase-server']
 
-        self._cb_pkg_url = 'http://packages.couchbase.com/releases/2.0.0/couchbase-server-community_x86_64_2.0.0.rpm'
-
         self._cb_cluster_username = 'admin'
         self._cb_cluster_password = CouchbaseServer._generate_password()
         self._cb_cluster_password_path = '/opt/couchbase/cluster-password.txt'
@@ -64,18 +63,8 @@ class CouchbaseServer(Installator):
         self._restartService()
 
     def _installPackages(self):
-        Util.printStep('Removing old Couchbase server package')
-        pkgfile = '/tmp/couchbase-server.rpm'
-        cmd = 'rm -f %s' % pkgfile
-        self._executeExitOnError(cmd)
-
-        Util.printStep('Downloading Couchbase server package')
-        cmd = 'curl --output %s %s' % (pkgfile, self._cb_pkg_url)
-        self._executeExitOnError(cmd)
-
-        Util.printStep('Installing Couchbase server package')
-        cmd = 'yum install -y %s' % pkgfile
-        self._executeExitOnError(cmd)
+        Util.printStep('Installing Couchbase packages')
+        self.system.installPackages(self._packages)
 
     def _configure(self):
         Util.printStep('(Re-)starting Couchbase')
@@ -107,7 +96,8 @@ class CouchbaseServer(Installator):
         with open(self._cb_cluster_password_path, 'w') as f:
             f.write(self._cb_cluster_password + "\n")
 
-        # TODO: Need to reduce the permissions of cluster password file.
+        Util.printStep('Reducing read access to password file')
+        os.chmod(self._cb_cluster_password_path, 0400)
 
     def _restartService(self):
         Util.printStep('Adding %s to chkconfig and restarting' % self._serviceName)
