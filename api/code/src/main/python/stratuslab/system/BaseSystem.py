@@ -216,13 +216,19 @@ class BaseSystem(object):
                         self.oneGroup])
 
     def createCloudAdmin(self):
+        # see below...
+        # self.createDirsCmd(os.path.dirname(self.oneHome))
 
-        self.createDirsCmd(os.path.dirname(self.oneHome))
-
-        self.executeCmd(['useradd', '-d', self.oneHome, '-g',
+        self.executeCmd(['useradd', '-g',
                         self.oneGroup, '-u', self.oneUid, self.oneUsername,
                         '-s', '/bin/bash', '-p', self.onePassword, '--create-home',
                         '--expiredate ""', '--inactive -1'])
+
+        # hack to reset the value of self.oneHome
+        # the code assumes that the account exists before initializing this class
+        # this is not the case as it is created by installing the one package
+        self.oneHome = None
+        self._setOneHome()
 
     # -------------------------------------------
     #     ONE admin env config and related
@@ -302,6 +308,12 @@ class BaseSystem(object):
         self.chmodCmd(confFile, 0600)
 
     def configureCloudAdminAccount(self):
+        # hack to reset the value of self.oneHome
+        # the code assumes that the account exists before initializing this class
+        # this is not the case as it is created by installing the one package
+        self.oneHome = None
+        self._setOneHome()
+
         oneAuthFile = '%s/.one/one_auth' % self.oneHome
         self.appendOrReplaceInFileCmd(oneAuthFile,
                                       self.oneUsername, '%s:%s' % (self.oneUsername, self.onePassword))
