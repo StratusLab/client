@@ -897,7 +897,7 @@ class BaseSystem(object):
             if not self.isPackageInstalled(package):
                 Util.printError('Failed to install %s.' % package)
 
-    def installOpenNebula(self, packages):
+    def installOpenNebula(self):
         Util.printDetail('Installing OpenNebula')
         self.installPackages([self.getPackageName('opennebula')])
 
