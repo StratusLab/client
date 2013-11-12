@@ -38,7 +38,7 @@ class CIMI(Installator):
         self._installPackages()
 
     def _installCAs(self):
-        printStep('Installing CAs and VOMS configuration')
+        Util.printStep('Installing CAs and VOMS configuration')
         self.system.installCAs()
 
     def _setupFrontend(self):
