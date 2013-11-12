@@ -34,7 +34,12 @@ class CIMI(Installator):
         self._package = 'stratuslab-cimi-server'
 
     def _installFrontend(self):
+        self._installCAs()
         self._installPackages()
+
+    def _installCAs(self):
+        printStep('Installing CAs and VOMS configuration')
+        self.system.installCAs()
 
     def _setupFrontend(self):
         pass
