@@ -8,7 +8,7 @@ import datetime
 
 # Inputs
 
-userIds = [6]
+userIds = [6,7]
 fromDate = [2013,05,04] # YYYY MM DD
 toDate = [2013,12,30]
 
@@ -73,7 +73,7 @@ def filter_vms(root):
                     vm.remove(slice)
                 vms.append(vm)
     return vms
-        
+
 def bytes_to_giga_approximation(numberOfBytes):
     return (numberOfBytes / 1024**3) + 1
 
@@ -107,7 +107,7 @@ def get_size_from_marketplace(disk):
     source = disk.find('SOURCE')
     url = source.text
     if url in marketplaceSizeCache:
-        return marketplaceSizeCache[url]        
+        return marketplaceSizeCache[url]
     #print 'Retrieving marketplace info:', url, '...'
     try:
         marketplaceDefinition = urllib2.urlopen(url + '?status=all&location=all').read()
@@ -149,12 +149,12 @@ def compute_totals(root):
         disk = reduce(lambda a,b: a+b, [float(disk.find('size').text) for disk in vm.findall('disk')], 0)
         totalDisk += disk * time
 
-    root.set('total_time', str("%.2f" % totalTime))
-    root.set('total_cpu', str("%.2f" % totalCpu))
-    root.set('total_ram', str("%.2f" % totalRam))
-    root.set('total_disk', str("%.2f" % totalDisk))
-    root.set('total_net_rx', str("%.2f" % (bytes_to_GB(totalNetRx))))
-    root.set('total_net_tx', str("%.2f" % (bytes_to_GB(totalNetTx))))
+    root.set('total_time', str("%.0f" % totalTime))
+    root.set('total_cpu', str("%.0f" % totalCpu))
+    root.set('total_ram', str("%.0f" % totalRam))
+    root.set('total_disk', str("%.0f" % totalDisk))
+    root.set('total_net_rx', str("%.0f" % (bytes_to_GB(totalNetRx))))
+    root.set('total_net_tx', str("%.0f" % (bytes_to_GB(totalNetTx))))
 
 for id in userIds:
 
