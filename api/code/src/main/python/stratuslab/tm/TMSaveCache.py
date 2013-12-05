@@ -294,15 +294,15 @@ class TMSaveCache(object):
         self.imageSha1 = self._getSnapshotSha1()
 
     def _getSnapshotSha1(self):
-        iscsi_type = self._configPdiskGetIscsiBackendType()
-        if iscsi_type == 'NetApp':
-            return self._getSnapshotChecksum_NetApp()
+        iscsi_type = self._configPdiskGetIscsiBackendType().lower()
+        if iscsi_type in ('netapp', 'ceph'):
+            return self._getSnapshotChecksumFromAttachedDevice()
         elif iscsi_type == 'lvm':
             return self._getSnapshotChecksum_Lvm()
         else:
             raise ConfigurationException('Unknown iSCSI backend type: %s' % iscsi_type)
 
-    def _getSnapshotChecksum_NetApp(self):
+    def _getSnapshotChecksumFromAttachedDevice(self):
 
         PDISK_BACKEND_CMD = '/usr/sbin/persistent-disk-backend.py'
         PDISK_BACKEND_CFG = '/etc/stratuslab/pdisk-backend.cfg'
@@ -334,9 +334,11 @@ class TMSaveCache(object):
             snapshotPath = os.path.join('/var/tmp/stratuslab',
                                         self.diskName + '.link')
             # Attach LUN and link to a known location
-            rescan_cmd = ['sudo', 'iscsiadm', '--mode', 'session', '--rescan']
-            self._ssh(self.persistentDiskIp, rescan_cmd,
-                      'Failed rescanning iSCSI targets.')
+            backend_type = self._configPdiskGetIscsiBackendType().lower()
+            if backend_type == 'netapp':
+                rescan_cmd = ['sudo', 'iscsiadm', '--mode', 'session', '--rescan']
+                self._ssh(self.persistentDiskIp, rescan_cmd,
+                          'Failed rescanning iSCSI targets.')
             attach_and_link_cmd = ['sudo', PDISK_CLIENT_CMD,
                                    '--op', 'up',
                                    '--attach',
