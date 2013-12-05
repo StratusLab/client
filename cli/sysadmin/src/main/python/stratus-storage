@@ -24,7 +24,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import printError
-from stratuslab.volume_manager_factory import VolumeManagerFactory
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.commandbase.StorageCommand import StorageCommand
 
