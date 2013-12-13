@@ -550,8 +550,11 @@ class TMSaveCache(object):
 The image creation was SUCCESSFUL.  The image has an ID of
 %(snapshotMarketplaceId)s.
 
-It is stored in the persistent service with UUID
-%(pdiskId)s.
+It is stored in the persistent disks service.  By default, the image 
+is private and can only be accessed/launched by the image creator.  
+You can change the access policy by visiting the links below
+https://%(pdiskHostPort)s/pswd/disks/%(pdiskId)s
+https://%(pdiskHostPort)s/cert/disks/%(pdiskId)s 
 
 A draft image manifest entry has been generated and is attached to
 this message.  It has also been uploaded to %(marketplace)s.  The
@@ -566,7 +569,8 @@ The manifest can be uploaded either via the Marketplace's web
 interface or via the command stratus-upload-metadata.
 
 Cheers.
-        """ % {'pdiskId': self.createdPDiskId,
+        """ % {'pdiskHostPort': self.pdiskHostPort,
+               'pdiskId': self.createdPDiskId,
                'snapshotMarketplaceId': self.snapshotMarketplaceId,
                'marketplace': self.targetMarketplace,
                'imageValidity': self._P12_VALIDITY * 24}
