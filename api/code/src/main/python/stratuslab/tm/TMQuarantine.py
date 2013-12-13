@@ -27,6 +27,7 @@ from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
+from stratuslab.Util import is_uuid
 
 
 class TMQuarantine(object):
@@ -146,7 +147,12 @@ class TMQuarantine(object):
         register_filename_contents = self._sshDst(['/usr/sbin/stratus-list-registered-volumes.py',
                                                    '--vm-id', str(self.instanceId)],
                                                   'Unable to get registered volumes')
-        return register_filename_contents.splitlines()
+        return self._sanitizeVolumeURIs(register_filename_contents.splitlines())
+
+    def _sanitizeVolumeURIs(self, volume_uris):
+        "Filtering assumes that the disk's name is UUID."
+        return filter(lambda x: is_uuid(self._getDiskNameFromURI(x.strip())),
+                      volume_uris)
 
     def _getDiskNameFromURI(self, uri):
         return uri.split(':')[-1]

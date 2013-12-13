@@ -63,6 +63,10 @@ SSH_CONNECTION_RETRY_NUMBER = 2
 SSH_CONNECTION_RETRY_SLEEP_MAX = 60
 
 
+UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+RE_UUID = re.compile(UUID_REGEX)
+
+
 def getShareDir():
     paths = [Defaults.SHARE_DIR,
              os.path.join(utilPath, 'share'),
@@ -769,3 +773,6 @@ def getValueInKB(value):
         valueUnit = (value[-2:]).strip().upper()
         valueKB = int(valueNum) * (1024 ** unit.index(valueUnit))
     return str(valueKB)
+
+def is_uuid(str_uuid):
+    return RE_UUID.match(str_uuid)
