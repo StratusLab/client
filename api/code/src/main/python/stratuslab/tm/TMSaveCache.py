@@ -68,6 +68,7 @@ class TMSaveCache(object):
     _IDENTIFIER_KEY = 'identifier'
     _OWNER_KEY = 'owner'
     _TAG_KEY = 'tag'
+    _SEED_KEY = 'seed'
 
     def __init__(self, args, **kwargs):
         self.args = args
@@ -216,11 +217,16 @@ class TMSaveCache(object):
 
     def _updateVolumeIdentifier(self):
         pdisk = VolumeManagerFactory.create(self.configHolder)
-        pdiskOwner = pdisk.getValue(self._OWNER_KEY, self.diskName)
+        pdiskOwner = self._getPdiskOwner()
         pdisk.updateVolume({self._IDENTIFIER_KEY: self.snapshotMarketplaceId,
                             self._OWNER_KEY: pdiskOwner,
+                            self._SEED_KEY: 'on',
                             self._TAG_KEY: self._getTitle()},
-                           self.createdPDiskId)
+                            self.createdPDiskId)
+        
+    def _getPdiskOwner(self):
+        "pdisk volume owner is the owner of the VM."
+        return self.cloud.getVmOwner(self.instanceId)
 
     def _getTitle(self):
         try:
