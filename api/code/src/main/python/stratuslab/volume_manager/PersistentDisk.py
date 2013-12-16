@@ -24,11 +24,8 @@ from datetime import timedelta
 import json
 import re
 from urllib import urlencode
-from socket import getfqdn
 
 from stratuslab.HttpClient import HttpClient
-from uuid import UUID
-from stratuslab.Util import printError
 from stratuslab import Util
 from stratuslab import Defaults
 from stratuslab.Authn import UsernamePasswordCredentialsLoader
