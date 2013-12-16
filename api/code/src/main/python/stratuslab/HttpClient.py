@@ -179,7 +179,7 @@ class HttpClient(object):
             except:
                 return ''
 
-        def _handle3xx():
+        def _handle3xx(resp):
             if resp.status == 302:
                 # Redirected
                 resp, content = self._httpCall(resp['location'], method, body, accept)
@@ -187,14 +187,14 @@ class HttpClient(object):
                 raise Exception('Should have been handled by httplib2!! ' + str(resp.status) + ": " + resp.reason)
             return resp, content
 
-        def _handle4xx():
+        def _handle4xx(resp):
             error_message = _getErrorMessageFromJsonContent(content)
             raise ClientException('Failed calling method %s on url %s, with reason: %s. Error: %s' %
                                   (method, url, str(resp.status) + ": " + resp.reason, error_message),
                                   content=content,
                                   status=str(resp.status))
 
-        def _handle5xx():
+        def _handle5xx(resp):
             if retry:
                 return self._httpCall(url, method, body, contentType, accept, False)
             raise ServerException('Failed calling method %s on url %s, with reason: %s' %
@@ -210,13 +210,13 @@ class HttpClient(object):
                 return resp, content
 
             if str(resp.status).startswith('3'):
-                resp, content = _handle3xx()
+                resp, content = _handle3xx(resp)
 
             if str(resp.status).startswith('4'):
-                resp, content = _handle4xx()
+                resp, content = _handle4xx(resp)
 
             if str(resp.status).startswith('5'):
-                resp, content = _handle5xx()
+                resp, content = _handle5xx(resp)
 
         proxy = self.getHttpProxyForUrl(url)
         if Util.isTrueConfVal(self.useHttpCache):
