@@ -51,11 +51,7 @@ class TMCloneCache(object):
 
     _PDISK_PORT = 8445
 
-    _UNCOMPRESS_TOOL = {'gz': '/bin/gunzip',
-                        'bz2': '/bin/bunzip2'}
-
     _CHECKSUM = 'sha1'
-    _CHECKSUM_CMD = '%ssum' % _CHECKSUM
 
     _ACCEPTED_EXTRA_DISK_TYPE = ['DATA_IMAGE_RAW_READONLY', 'DATA_IMAGE_RAW_READ_WRITE']
     _ACCEPTED_ROOT_DISK_TYPE = 'MACHINE_IMAGE_LIVE'
