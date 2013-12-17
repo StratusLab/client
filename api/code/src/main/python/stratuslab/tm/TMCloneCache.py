@@ -59,6 +59,11 @@ class TMCloneCache(object):
     _IDENTIFIER_KEY = 'identifier'
     _COUNT_KEY = 'count'
     _TYPE_KEY = 'type'
+    _OWNER_KEY = 'owner'
+    _VISIBILITY_KEY = 'visibility'
+    
+    _PDISK_SUPERUSER = 'pdisk'
+    _DISK_UNAUTHORIZED_VISIBILITIES = ['PRIVATE']
 
     def __init__(self, args, **kwargs):
 
@@ -71,6 +76,7 @@ class TMCloneCache(object):
         self.pdiskSnapshotId = None
         self.downloadedLocalImageLocation = None
         self.downloadedLocalImageSize = 0
+        self.vmOwner = None
 
         self._parseArgs(args)
 
@@ -371,12 +377,18 @@ class TMCloneCache(object):
         self._setPDiskIdentifier(snapshotIdentifier, self.pdiskSnapshotId)
 
     def _checkAuthorization(self):
-        pass
+        self.vmOwner = self._deriveVMOwner()
+        disk_owner = self._getDiskOwner(self.pdiskImageId)
+        disk_visibility = self._getDiskVisibility(self.pdiskImageId)
+        if self.vmOwner not in [disk_owner, self._PDISK_SUPERUSER] and \
+             disk_visibility in self._DISK_UNAUTHORIZED_VISIBILITIES:
+            raise ValueError('User %s is not authorized to start image %s' % \
+                             (self.vmOwner, self.marketplaceImageId))
 
     def _setSnapshotOwner(self):
-        instanceId = self._retrieveInstanceId()
-        owner = self._getVMOwner(instanceId)
-        self.pdisk.updateVolume({'owner': owner}, self.pdiskSnapshotId)
+        if not self.vmOwner:
+            raise ValueError('VM owner is not set.')
+        self.pdisk.updateVolume({'owner': self.vmOwner}, self.pdiskSnapshotId)
 
     def _setPDiskInfo(self, key, value, pdiskId):
         self.pdisk.updateVolume({key: value}, pdiskId)
@@ -484,3 +496,14 @@ class TMCloneCache(object):
             raise ValueError(errorMsg % ((len(instanceId) == 0) and 'Unable to find'
                                          or 'Too many candidates'))
         return instanceId.pop()
+
+    def _deriveVMOwner(self):
+        instanceId = self._retrieveInstanceId()
+        owner = self._getVMOwner(instanceId)
+        return owner
+
+    def _getDiskOwner(self, pdiskImageId):
+        return self.pdisk.getValue(self._OWNER_KEY, pdiskImageId)
+
+    def _getDiskVisibility(self, pdiskImageId):
+        return self.pdisk.getValue(self._VISIBILITY_KEY, pdiskImageId)

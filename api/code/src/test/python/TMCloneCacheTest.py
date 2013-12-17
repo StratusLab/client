@@ -23,6 +23,7 @@ import os
 import tempfile
 
 from stratuslab.tm.TMCloneCache import TMCloneCache
+from mock.mock import Mock
 
 class TMCloneCacheTest(unittest.TestCase):
 
@@ -47,6 +48,41 @@ one_port = 2633
                            conf_filename=self.conf_filename)
         self.assertEqual(tm.pdiskEndpoint, '127.0.0.1')
         self.assertEqual(tm.persistentDiskIp, '127.0.0.1')
+
+    def test_checkAuthorization(self):
+        tm = TMCloneCache({TMCloneCache._ARG_SRC_POS : 'foo:bar',
+                           TMCloneCache._ARG_DST_POS : 'foo:bar',
+                           'bar' : 'baz'},
+                           conf_filename=self.conf_filename)
+
+        tm._deriveVMOwner = Mock(return_value='jayrandom')
+        tm._getDiskOwner = Mock(return_value='jayrandom')
+        tm._getDiskVisibility = Mock(return_value='whatever')
+        try:
+            tm._checkAuthorization()
+        except ValueError:
+            self.fail('Should not have thrown ValueError')
+
+        tm._deriveVMOwner = Mock(return_value='jayrandom')
+        tm._getDiskOwner = Mock(return_value='jayrandom')
+        tm._getDiskVisibility = Mock(return_value=tm._DISK_UNAUTHORIZED_VISIBILITIES[0])
+        try:
+            tm._checkAuthorization()
+        except ValueError:
+            self.fail('Should not have thrown ValueError')
+
+        tm._deriveVMOwner = Mock(return_value='jayrandom')
+        tm._getDiskOwner = Mock(return_value='johndoe')
+        tm._getDiskVisibility = Mock(return_value='whatever')
+        try:
+            tm._checkAuthorization()
+        except ValueError:
+            self.fail('Should not have thrown ValueError')
+
+        tm._deriveVMOwner = Mock(return_value='jayrandom')
+        tm._getDiskOwner = Mock(return_value='johndoe')
+        tm._getDiskVisibility = Mock(return_value=tm._DISK_UNAUTHORIZED_VISIBILITIES[0])
+        self.failUnlessRaises(ValueError, tm._checkAuthorization)
 
     # Utils
     def _write_conf_file(self):
