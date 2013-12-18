@@ -380,7 +380,7 @@ class TMCloneCache(object):
         self.vmOwner = self._deriveVMOwner()
         disk_owner = self._getDiskOwner(self.pdiskImageId)
         disk_visibility = self._getDiskVisibility(self.pdiskImageId)
-        if self.vmOwner not in [disk_owner, self._PDISK_SUPERUSER] and \
+        if disk_owner not in [self.vmOwner, self._PDISK_SUPERUSER] and \
              disk_visibility in self._DISK_UNAUTHORIZED_VISIBILITIES:
             raise ValueError('User %s is not authorized to start image %s' % \
                              (self.vmOwner, self.marketplaceImageId))

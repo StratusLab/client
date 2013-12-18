@@ -84,6 +84,14 @@ one_port = 2633
         tm._getDiskVisibility = Mock(return_value=tm._DISK_UNAUTHORIZED_VISIBILITIES[0])
         self.failUnlessRaises(ValueError, tm._checkAuthorization)
 
+        tm._deriveVMOwner = Mock(return_value='jayrandom')
+        tm._getDiskOwner = Mock(return_value=tm._PDISK_SUPERUSER)
+        tm._getDiskVisibility = Mock(return_value=tm._DISK_UNAUTHORIZED_VISIBILITIES[0])
+        try:
+            tm._checkAuthorization()
+        except ValueError:
+            self.fail('Should not have thrown ValueError')
+
     # Utils
     def _write_conf_file(self):
         fd, self.conf_filename = tempfile.mkstemp()
