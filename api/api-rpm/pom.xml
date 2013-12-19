@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-api</artifactId>
-    <version>13.12.0</version>
+    <version>13.12.1-SNAPSHOT</version>
   </parent>
 
   <profiles>
