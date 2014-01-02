@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-pdc</artifactId>
-    <version>13.12.1-SNAPSHOT</version>
+    <version>14.02.0-SNAPSHOT</version>
   </parent>
 
   <profiles>
@@ -73,7 +73,7 @@
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-pdc-pkg</artifactId>
-      <version>13.12.1-SNAPSHOT</version>
+      <version>14.02.0-SNAPSHOT</version>
       <type>zip</type>
       <scope>compile</scope>
     </dependency>
