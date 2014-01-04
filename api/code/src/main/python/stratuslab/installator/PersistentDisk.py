@@ -210,7 +210,7 @@ class PersistentDisk(Installator):
         self._overrideHostConfigFile2('volume_mgmt_dir', self.persistentDiskHostVolumeMgmtDir)
 
     def _installPackages(self, section):
-        packages = self.packages[self.profile][section]
+        packages = self.packages[self.profile].get(section, [])
         if packages:
             printStep('Installing packages on %s for section "%s": %s'
                       % (self.profile, section,
