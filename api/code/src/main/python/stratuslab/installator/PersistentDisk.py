@@ -41,6 +41,8 @@ class PersistentDisk(Installator):
     PDISK_DB_NAME = 'storage'
 
     def __init__(self, configHolder=ConfigHolder()):
+        self.persistentDiskDbHost = 'localhost'
+
         self.configHolder = configHolder
         self.configHolder.assign(self)
 
@@ -145,6 +147,10 @@ class PersistentDisk(Installator):
         Util.appendOrReplaceInFile('/etc/tgt/targets.conf', pattern, pattern)
 
     def _createDatabase(self):
+        """Create DB only if RDMS is on the same host with PDisk."""
+        if not self._isDbOnPdiskHost():
+            return
+
         mysqlCommand = "/usr/bin/mysql -uroot -p%s" % self.oneDbRootPassword
         createDbIfNotExist = "CREATE DATABASE IF NOT EXISTS %s" % PersistentDisk.PDISK_DB_NAME
 
@@ -153,6 +159,11 @@ class PersistentDisk(Installator):
         if rc != 0:
             raise ExecutionException("Couldn't create database '%s'.\n%s" % (PersistentDisk.PDISK_DB_NAME,
                                                                              output))
+
+    def _isDbOnPdiskHost(self):
+        return self.persistentDiskDbHost in ['localhost', '127.0.0.1',
+                                             self.persistentDiskIp, 
+                                             VolumeManager.getFQNHostname(self.persistentDiskIp)]
 
     def _startServicesFrontend(self):
         self._setPDiskEndpoint()
@@ -199,7 +210,7 @@ class PersistentDisk(Installator):
         self._overrideHostConfigFile2('volume_mgmt_dir', self.persistentDiskHostVolumeMgmtDir)
 
     def _installPackages(self, section):
-        packages = self.packages[self.profile][section]
+        packages = self.packages[self.profile].get(section, [])
         if packages:
             printStep('Installing packages on %s for section "%s": %s'
                       % (self.profile, section,
