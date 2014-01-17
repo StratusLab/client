@@ -190,7 +190,15 @@ class UsernamePasswordCredentialsLoader(SimpleConfigParser):
         return (first, rest)
     
     def get_password(self, username):
-        return self.credentials[username][UsernamePasswordCredentialsLoader.PASSWORD_INDEX]
+        secrets = self._get_secrets(username)
+        return secrets[UsernamePasswordCredentialsLoader.PASSWORD_INDEX]
             
     def get_group(self, username):
-        return self.credentials[username][UsernamePasswordCredentialsLoader.GROUP_INDEX]
+        secrets = self._get_secrets(username)
+        return secrets[UsernamePasswordCredentialsLoader.GROUP_INDEX]
+    
+    def _get_secrets(self, username):
+        try:
+            return self.credentials[username]
+        except KeyError:
+            raise ValueError("No credentials for user: %s" % username)
