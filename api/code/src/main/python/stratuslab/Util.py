@@ -19,6 +19,7 @@
 #
 
 import codecs
+import os
 import os.path
 import re
 import subprocess
@@ -42,7 +43,7 @@ import Defaults
 utilPath = os.path.abspath(os.path.dirname(__file__))
 defaultRepoConfigSection = 'stratuslab_repo'
 defaultRepoConfigPath = '.stratuslab/stratuslab.repo.cfg'
-modulePath = os.path.abspath(os.path.join(utilPath, '..'))
+modulePath = os.path.abspath(os.path.join(utilPath, os.pardir))
 systemsDir = os.path.join(modulePath, 'stratuslab', 'system')
 varLibDir = '/var/lib/stratuslab/python'
 defaultConfigFile = os.path.join(Defaults.ETC_DIR, 'stratuslab.cfg')
@@ -70,9 +71,10 @@ RE_UUID = re.compile(UUID_REGEX)
 def getShareDir():
     paths = [Defaults.SHARE_DIR,
              os.path.join(utilPath, 'share'),
-             os.path.join(utilPath, '..', '..', '..', 'share'),
-             os.path.join(utilPath, '..', '..', '..', '..', 'share'),
-             os.path.join(utilPath, '..', '..', 'resources', 'share')]
+             os.path.join(modulePath, 'share'),
+             os.path.join(modulePath, os.pardir, os.pardir, 'share'),
+             os.path.join(modulePath, os.pardir, os.pardir, os.pardir, 'share'),
+             os.path.join(modulePath, os.pardir, 'resources', 'share')]
 
     for path in paths:
         if os.path.exists(path):
@@ -81,30 +83,20 @@ def getShareDir():
     raise Exception("could not locate share directory; tried:\n%s" % "\n".join(paths))
 
 def getTemplateDir():
-    paths = [Defaults.TEMPLATE_DIR,
-             os.path.join(utilPath, 'share', 'template'),
-             os.path.join(utilPath, '..', '..', '..', 'share', 'template'),
-             os.path.join(utilPath, '..', '..', '..', '..', 'share', 'template'),
-             os.path.join(utilPath, '..', '..', 'resources', 'share', 'template')]
+    path = os.path.join(getShareDir(), 'template')
 
-    for path in paths:
-        if os.path.exists(path):
-            return path
-
-    raise Exception("could not locate template directory; tried:\n%s" % "\n".join(paths))
+    if os.path.exists(path):
+        return path
+    else:
+        raise Exception("could not locate template directory; tried:\n%s\n" % path)
 
 def getResourcesDir():
-    paths = [Defaults.RESOURCES_DIR,
-             os.path.join(utilPath, 'share', 'resources'),
-             os.path.join(utilPath, '..', '..', '..', 'share', 'resources'),
-             os.path.join(utilPath, '..', '..', '..', '..', 'share', 'resources'),
-             os.path.join(utilPath, '..', '..', 'resources', 'share', 'resources')]
+    path = os.path.join(getShareDir(), 'resources')
 
-    for path in paths:
-        if os.path.exists(path):
-            return path
-
-    raise Exception("could not locate resources directory; tried:\n%s" % "\n".join(paths))
+    if os.path.exists(path):
+        return path
+    else:
+        raise Exception("could not locate resources directory; tried:\n%s\n" % path)
 
 def wget_as_xml(url, savePath):
     request = urllib2.Request(url, None, {'accept': 'application/xml'})

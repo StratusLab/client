@@ -54,8 +54,6 @@ patVerboseLevel = 0
 
 ETC_DIR = '/etc/stratuslab'
 SHARE_DIR = '/var/share/stratuslab'
-TEMPLATE_DIR = join(SHARE_DIR, 'template')
-RESOURCES_DIR = join(SHARE_DIR, 'resources')
 ONE_PROXY_DIR = '/opt/stratuslab/one-proxy'
 
 AUTHN_CONFIG_FILE = ETC_DIR + '/authn/login-pswd.properties'
