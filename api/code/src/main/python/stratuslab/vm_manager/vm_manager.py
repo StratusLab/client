@@ -71,8 +71,9 @@ class VmManager(object):
 
         paths = [os.path.join(Defaults.SHARE_DIR, 'vm', 'schema.one'),
                  os.path.join(Util.utilPath, 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, 'share', 'vm', 'schema.one'), # easy_install
                  os.path.join(Util.modulePath, '..', '..', 'share', 'vm', 'schema.one'),
-                 os.path.join(Util.modulePath, '..', '..', '..', 'share', 'vm', 'schema.one'),
+                 os.path.join(Util.modulePath, '..', '..', '..', 'share', 'vm', 'schema.one'), # pip
                  os.path.join(Util.modulePath, '..', '..', '..', 'src', 'main', 'resources',
                               'share', 'vm', 'schema.one')]
 
