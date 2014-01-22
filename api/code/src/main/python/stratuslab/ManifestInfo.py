@@ -30,26 +30,26 @@ from stratuslab.Exceptions import ExecutionException
 
 etree = Util.importETree()
 
-NS_RDF     = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+NS_RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 NS_DCTERMS = 'http://purl.org/dc/terms/'
 NS_SLTERMS = 'http://mp.stratuslab.eu/slterms#'
-NS_SLREQ   = 'http://mp.stratuslab.eu/slreq#'
+NS_SLREQ = 'http://mp.stratuslab.eu/slreq#'
 
 imageTypes = ['base', 'grid']
 imageKinds = ('machine', 'disk')
 imageFormats = ['raw', 'qcow2']
 
-class ManifestInfo(object):
 
-    NS_RDF     = NS_RDF
+class ManifestInfo(object):
+    NS_RDF = NS_RDF
     NS_DCTERMS = NS_DCTERMS
     NS_SLTERMS = NS_SLTERMS
-    NS_SLREQ   = NS_SLREQ
+    NS_SLREQ = NS_SLREQ
 
-    IMAGE_VALIDITY = (356/2) * 24 * 3600 # 1/2 year in sec
+    IMAGE_VALIDITY = (356 / 2) * 24 * 3600 # 1/2 year in sec
 
     MANDATORY_CHECKSUMS = ('sha1',)
-    CHECKSUM_NAMES = ('md5','sha1','sha256','sha512')
+    CHECKSUM_NAMES = ('md5', 'sha1', 'sha256', 'sha512')
 
     DISKS_BUS_DEFAULT = 'ide'
     INBOUND_PORTS_DEFAULT = []
@@ -103,29 +103,28 @@ class ManifestInfo(object):
 
         configHolder.assign(self)
 
-        self._template = os.path.join(os.path.join(Util.getTemplateDir(),
-                                                   'manifest.xml.tpl'))
+        self._template = Util.get_share_file(['template', 'manifest.xml.tpl'])
 
         self._manifestTemplateElements = \
-                (('type',       'type',       NS_DCTERMS, None),
-                 ('created',    'created',    NS_DCTERMS, None),
-                 ('valid',      'valid',      NS_DCTERMS, None),
-                 ('title',      'title',      NS_DCTERMS, ''),
-                 ('tag',        'alternative',NS_DCTERMS, ''),
-                 ('comment',    'description',NS_DCTERMS, None),
-                 ('compression','compression',NS_DCTERMS, None),
-                 ('creator',    'creator',    NS_DCTERMS, self.creator),
-                 ('user',       'creator',    NS_DCTERMS, self.creator),
-                 ('format',     'format',     NS_DCTERMS, self.format),
-                 ('publisher',  'publisher',  NS_DCTERMS, self.publisher),
-                 ('os',         'os',         NS_SLTERMS, None),
-                 ('arch',       'os-arch',    NS_SLTERMS, None),
-                 ('osversion',  'os-version', NS_SLTERMS, None),
-                 ('version',    'version',    NS_SLTERMS, None),
-                 ('kind',       'kind',       NS_SLTERMS, self.kind),
-                 ('disksbus',   'disks-bus',  NS_SLTERMS, self.disksbus),
-                 ('hypervisor', 'hypervisor', NS_SLTERMS, self.hypervisor),
-                 ('email',      'email',      NS_SLREQ,   self.email))
+            (('type', 'type', NS_DCTERMS, None),
+             ('created', 'created', NS_DCTERMS, None),
+             ('valid', 'valid', NS_DCTERMS, None),
+             ('title', 'title', NS_DCTERMS, ''),
+             ('tag', 'alternative', NS_DCTERMS, ''),
+             ('comment', 'description', NS_DCTERMS, None),
+             ('compression', 'compression', NS_DCTERMS, None),
+             ('creator', 'creator', NS_DCTERMS, self.creator),
+             ('user', 'creator', NS_DCTERMS, self.creator),
+             ('format', 'format', NS_DCTERMS, self.format),
+             ('publisher', 'publisher', NS_DCTERMS, self.publisher),
+             ('os', 'os', NS_SLTERMS, None),
+             ('arch', 'os-arch', NS_SLTERMS, None),
+             ('osversion', 'os-version', NS_SLTERMS, None),
+             ('version', 'version', NS_SLTERMS, None),
+             ('kind', 'kind', NS_SLTERMS, self.kind),
+             ('disksbus', 'disks-bus', NS_SLTERMS, self.disksbus),
+             ('hypervisor', 'hypervisor', NS_SLTERMS, self.hypervisor),
+             ('email', 'email', NS_SLREQ, self.email))
 
     @staticmethod
     def addElementToManifest(root, elementName, value):
@@ -135,8 +134,9 @@ class ManifestInfo(object):
             # Check if already present. If yes, do nothing.
             for elem in elems:
                 if elem.text and elem.text == value:
-                    Util.printWarning("Element '%s' with value '%s' already defined in the manifest. Skipping addition of the element." % \
-                                      (elementName, elem.text))
+                    Util.printWarning(
+                        "Element '%s' with value '%s' already defined in the manifest. Skipping addition of the element." % \
+                        (elementName, elem.text))
                     return
 
         elem = etree.Element('{%s}%s' % (ManifestInfo.NS_SLTERMS, elementName))
@@ -226,7 +226,7 @@ class ManifestInfo(object):
         self._setInboundPortsFromXmlTree(xml_tree)
 
         self.created = getattr(xml_tree.find('.//{%s}endorsement/{%s}created' % (NS_SLREQ, NS_DCTERMS)), 'text',
-                            self.created)
+                               self.created)
 
     def parseManifestFromFile(self, filename):
         manifest = file(filename).read()
@@ -239,7 +239,7 @@ class ManifestInfo(object):
                                              self.arch, self.type,
                                              self.version, Util.manifestExt)
         Util.filePutContent(filename, manifestText)
-        Util.printDetail("Manifest: %s"%filename, self.verboseLevel,
+        Util.printDetail("Manifest: %s" % filename, self.verboseLevel,
                          Util.VERBOSE_LEVEL_DETAILED)
 
     def build(self):
@@ -259,7 +259,7 @@ class ManifestInfo(object):
 
     def _getLocationsAsXml(self):
         joint = '\n        '
-        return joint.join([copy.copy(self._locations_xml) % {'location':location}
+        return joint.join([copy.copy(self._locations_xml) % {'location': location}
                            for location in self.locations])
 
     def __str__(self):
@@ -274,12 +274,13 @@ class ManifestInfo(object):
             output += '  %s = %s\n' % (k, self.__dict__[k])
         return output
 
+
 class ManifestIdentifier(object):
     encoding = string.ascii_uppercase + string.ascii_lowercase + string.digits + '-_'
     encoding = [x for x in encoding]
 
     decoding = {}
-    for i,v in enumerate(encoding):
+    for i, v in enumerate(encoding):
         decoding[v] = long(i)
 
     sha1Bits = 160
@@ -303,12 +304,14 @@ class ManifestIdentifier(object):
         sha1 = long(0)
         for i in range(len(identifier)):
             sha1 = sha1 << self.fieldBits
-            bits = long(self.decoding[identifier[i:i+1]])
+            bits = long(self.decoding[identifier[i:i + 1]])
             sha1 = sha1 | bits
         return hex(sha1).lstrip('0x').rstrip('L')
 
+
 def _normalizeForInstanceAttribute(attr):
     return _removeDashes(attr.lower())
+
 
 def _removeDashes(string):
     return re.sub('-', '', string)

@@ -63,40 +63,52 @@ SSH_EXIT_STATUS_ERROR = 255
 SSH_CONNECTION_RETRY_NUMBER = 2
 SSH_CONNECTION_RETRY_SLEEP_MAX = 60
 
-
 UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 RE_UUID = re.compile(UUID_REGEX)
 
 
-def getShareDir():
-    paths = [Defaults.SHARE_DIR,
-             os.path.join(utilPath, 'share'),
-             os.path.join(modulePath, 'share'),
-             os.path.join(modulePath, os.pardir, os.pardir, 'share'),
-             os.path.join(modulePath, os.pardir, os.pardir, os.pardir, 'share'),
-             os.path.join(modulePath, os.pardir, 'resources', 'share')]
+def get_share_file(path_elements, additional_path=None):
+    '''
+    Checks the list of possible share directories for a file with
+    the given path elements.  If an additional path is given (which
+    must be absolute and include the path elements already), then
+    this path is checked first.  It returns the first file found or
+    raises an exception if it doesn't exist.
+    '''
+
+    share_paths = [[Defaults.SHARE_DIR],
+                   [utilPath, 'share'],
+                   [modulePath, 'share'],
+                   [modulePath, os.pardir, os.pardir, 'share'],
+                   [modulePath, os.pardir, os.pardir, os.pardir, 'share'],
+                   [modulePath, os.pardir, 'resources', 'share']]
+
+    paths = []
+    for share_path in share_paths:
+        path = share_path + path_elements
+        paths.append(os.path.join(*path))
+
+    if additional_path:
+        paths.insert(0, additional_path)
 
     for path in paths:
         if os.path.exists(path):
             return path
 
-    raise Exception("could not locate share directory; tried:\n%s" % "\n".join(paths))
+    raise Exception("could not locate file; tried:\n%s" % "\n".join(paths))
 
-def getTemplateDir():
-    path = os.path.join(getShareDir(), 'template')
 
-    if os.path.exists(path):
-        return path
-    else:
-        raise Exception("could not locate template directory; tried:\n%s\n" % path)
+def get_template_file(path_elements, additional_path=None):
+    elements = list(path_elements)
+    elements.insert(0, 'template')
+    return get_share_file(elements, additional_path)
 
-def getResourcesDir():
-    path = os.path.join(getShareDir(), 'resources')
 
-    if os.path.exists(path):
-        return path
-    else:
-        raise Exception("could not locate resources directory; tried:\n%s\n" % path)
+def get_resources_file(path_elements, additional_path=None):
+    elements = list(path_elements)
+    elements.insert(0, 'template')
+    return get_share_file(elements, additional_path)
+
 
 def wget_as_xml(url, savePath):
     request = urllib2.Request(url, None, {'accept': 'application/xml'})
@@ -104,14 +116,17 @@ def wget_as_xml(url, savePath):
     filePutContent(savePath, fd.read())
     fd.close()
 
+
 def wget(url, savePath):
     fd = _wget(url)
     filePutContent(savePath, fd.read())
     fd.close()
 
+
 def wstring_as_xml(url):
     request = urllib2.Request(url, None, {'accept': 'application/xml'})
     return wstring(request)
+
 
 def wstring(url):
     fd = _wget(url)
@@ -703,10 +718,12 @@ def isFalseConfVal(var):
 def importETree():
     try:
         import xml.etree.cElementTree as etree  # c-version first
+
         return etree
     except ImportError:
         try:
             import xml.etree.ElementTree as etree  # python version
+
             return etree
         except ImportError:
             raise Exception('failed to import ElementTree')
@@ -765,6 +782,7 @@ def getValueInKB(value):
         valueUnit = (value[-2:]).strip().upper()
         valueKB = int(valueNum) * (1024 ** unit.index(valueUnit))
     return str(valueKB)
+
 
 def is_uuid(str_uuid):
     return RE_UUID.match(str_uuid)

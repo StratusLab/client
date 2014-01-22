@@ -12,18 +12,18 @@ class Consolidation(Installator):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         self.packages = ['stratuslab-consolidation']
-        
+
     def _installFrontend(self):
         printStep('Installing packages')
         self.system.installPackages(self.packages)
 
     def _setupFrontend(self):
         printStep('Creating monitoring configuration file')
-        monitoringTpl = os.path.join(Util.getTemplateDir(), 'monitoring.cfg.tpl')
-        monitoringConfFile = os.path.join(Defaults.ETC_DIR, 'monitoring.cfg') 
+        monitoringTpl = Util.get_template_file(['monitoring.cfg.tpl'])
+        monitoringConfFile = os.path.join(Defaults.ETC_DIR, 'monitoring.cfg')
         self._writeConfigFromTemplate(monitoringConfFile, monitoringTpl)
 
     def _writeConfigFromTemplate(self, config, tpl):
         filePutContent(config,
                        fileGetContent(tpl) % self.__dict__)
-       
+

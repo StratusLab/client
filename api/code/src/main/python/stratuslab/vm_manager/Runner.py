@@ -71,7 +71,6 @@ class Runner(VmManager):
 %s
 ]'''
 
-
     def __init__(self, image, configHolder):
         super(Runner, self).__init__(image, configHolder)
 
@@ -272,24 +271,10 @@ class Runner(VmManager):
 
     @staticmethod
     def getTemplatePath(instance=None):
-
-        paths = [os.path.join(Defaults.SHARE_DIR, 'vm', 'schema.one'),
-                 os.path.join(Util.utilPath, 'share', 'vm', 'schema.one'),
-                 os.path.join(Util.modulePath, 'share', 'vm', 'schema.one'), # easy_install
-                 os.path.join(Util.modulePath, '..', '..', 'share', 'vm', 'schema.one'),
-                 os.path.join(Util.modulePath, '..', '..', '..', 'share', 'vm', 'schema.one'), # pip
-                 os.path.join(Util.modulePath, '..', '..', '..', 'src', 'main', 'resources',
-                              'share', 'vm', 'schema.one')]
-
         if instance and hasattr(instance, 'vmTemplateFile'):
-            paths.insert(0, instance.vmTemplateFile)
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        raise Exception("cannot locate file schema.one; tried these locations:\n %s",
-                        "\n".join(paths))
+            return Util.get_share_file(['vm', 'schema.one'], instance.vmTemplateFile)
+        else:
+            return Util.get_share_file(['vm', 'schema.one'])
 
     @staticmethod
     def _findTokensInTemplate(template):

@@ -31,7 +31,7 @@ class Registration(Installator):
         configHolder.assign(self)
         self.system = SystemFactory.getSystem(self.frontendSystem, configHolder)
         self.packages = ['stratuslab-registration']
-        
+
     def _installFrontend(self):
         printStep('Installing packages')
         self.system.installPackages(self.packages)
@@ -39,10 +39,10 @@ class Registration(Installator):
     def _setupFrontend(self):
         self._validateParameters()
         printStep('Creating registration configuration file')
-        registrationTpl = os.path.join(Util.getTemplateDir(), 'registration.cfg.tpl')
-        registrationConfFile = os.path.join(Defaults.ETC_DIR, 'registration.cfg') 
+        registrationTpl = Util.get_template_file(['registration.cfg.tpl'])
+        registrationConfFile = os.path.join(Defaults.ETC_DIR, 'registration.cfg')
         self._writeConfigFromTemplate(registrationConfFile, registrationTpl)
-        
+
     def _validateParameters(self):
         Util.printStep('Validating parameters')
         if not self.registrationLdapScheme:
@@ -75,7 +75,7 @@ class Registration(Installator):
     def _writeConfigFromTemplate(self, config, tpl):
         filePutContent(config,
                        fileGetContent(tpl) % self.__dict__)
-       
+
     def _startServicesFrontend(self):
         self._restartService('registration')
 
