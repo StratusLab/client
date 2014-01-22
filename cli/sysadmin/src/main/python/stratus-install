@@ -82,7 +82,7 @@ Install selected services of the StratusLab cloud distribution.
 
         oneGroup.add_option('-t', '--template', dest='onedTpl',
                             help='ONe daemon template', metavar='TEMPLATE',
-                            default=os.path.join(Util.getTemplateDir(), 'oned.conf.tpl'))
+                            default=Util.get_template_file(['oned.conf.tpl']))
         oneGroup.add_option('--im', dest='infoDriver',
                             help='information driver', metavar='IM_NAME', default=None)
         oneGroup.add_option('--vmm', dest='virtDriver',
