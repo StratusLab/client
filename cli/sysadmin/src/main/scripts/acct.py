@@ -205,15 +205,15 @@ class Computer(object):
         root.set('to', str(to))
 
         self.compute_totals(root)
-    dateFormat = '%d%m%Y'
-    hourFormat = '%H%M%S'
-    filenameTemplate = "acctpy_User-Id%(id)s_%(date)s.xml"
+        dateFormat = '%d%m%Y'
+        hourFormat = '%H%M%S'
+        filenameTemplate = "acctpy_User-Id%(id)s_%(date)s.xml"
         if(self.daily):
-        formattedDate = to.strftime(dateFormat)
+            formattedDate = to.strftime(dateFormat)
             filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
         else:
-        formattedDate = _from.strftime(dateFormat) + '_' + _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
-        filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
+            formattedDate = _from.strftime(dateFormat) + '_' + _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
+            filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
         open(filename,'w').write(ET.tostring(root))
 
     def compute(self):
