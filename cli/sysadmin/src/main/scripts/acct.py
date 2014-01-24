@@ -11,10 +11,10 @@ import datetime
 from optparse import OptionParser
 
 class Computer(object):
-
+    
     def __init__(self, fromInSecs, toInSecs, outputDir, daily):
         self.outputDir = outputDir
-	self.daily = daily
+    self.daily = daily
         self.marketplaceSizeCache = {}
         self.fromInSecs = fromInSecs
         self.toInSecs = toInSecs
@@ -43,7 +43,7 @@ class Computer(object):
     def get_stime(self, vm):
         return vm.find('slice/stime').text
 
-    def get_id(vm):
+    def get_id(self, vm):
         return vm.get('id')
 
     def vm_in_range(self, vm):
@@ -119,7 +119,7 @@ class Computer(object):
 
     def add_detail_info(self, vms):
         for vm in vms:
-            vmDetail = self.to_xml(get_vm_details_from_one(get_id(vm)))
+            vmDetail = self.to_xml(self.get_vm_details_from_one(self.get_id(vm)))
             if vmDetail is not None:
                 sizes = self.get_sizes(vmDetail)
                 self.insert_disks(vm, sizes)
@@ -132,8 +132,8 @@ class Computer(object):
     def get_size_from_marketplace(self, disk):
         source = disk.find('SOURCE')
         url = source.text
-        if url in marketplaceSizeCache:
-            return marketplaceSizeCache[url]
+        if url in self.marketplaceSizeCache:
+            return self.marketplaceSizeCache[url]
         try:
             marketplaceDefinition = urllib2.urlopen(url + '?status=all&location=all').read()
             root = ET.fromstring(marketplaceDefinition)
@@ -142,7 +142,7 @@ class Computer(object):
         except (urllib2.URLError, ValueError):
             bytes = 0
             print "Error retrieving marketplace url:", url
-        marketplaceSizeCache[url] = bytes
+        self.marketplaceSizeCache[url] = bytes
         return bytes
 
     def get_disk_size(self, disk):
@@ -150,7 +150,7 @@ class Computer(object):
         if size is not None:
             return float(size.text)/1024
         else:
-            return bytes_to_giga_approximation(get_size_from_marketplace(disk))
+            return self.bytes_to_giga_approximation(self.get_size_from_marketplace(disk))
 
     def bytes_to_GB(self, bytes):
         return bytes / 1024 / 1024 / 1024
@@ -205,15 +205,15 @@ class Computer(object):
         root.set('to', str(to))
 
         self.compute_totals(root)
-	dateFormat = '%d%m%Y'
-	hourFormat = '%H%M%S'
-	filenameTemplate = "acctpy_User-Id%(id)s_%(date)s.xml"
+    dateFormat = '%d%m%Y'
+    hourFormat = '%H%M%S'
+    filenameTemplate = "acctpy_User-Id%(id)s_%(date)s.xml"
         if(self.daily):
-	    formattedDate = to.strftime(dateFormat)
+        formattedDate = to.strftime(dateFormat)
             filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
         else:
-	    formattedDate = _from.strftime(dateFormat) + '_' + _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
-	    filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
+        formattedDate = _from.strftime(dateFormat) + '_' + _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
+        filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
         open(filename,'w').write(ET.tostring(root))
 
     def compute(self):
@@ -258,8 +258,8 @@ class MainProgram():
         except:
             print "invalid <last-no-of-hours> format"
             self._exit(2)
-	if self.lastNoOfHours > 24:
-	    print "Invalid <last-no-of-hours>, cannot be more than 24"
+    if self.lastNoOfHours > 24:
+        print "Invalid <last-no-of-hours>, cannot be more than 24"
         if self.lastNoOfHours < 1:
             print "Invalid <last-no-of-hours>, cannot be less than 1"
         self.outputDir = self.options.outputDir
@@ -288,10 +288,10 @@ class MainProgram():
         fromInSecs = self.total_seconds(now - delta - refDate)
         toInSecs = self.total_seconds(now - refDate)
 
-	if self.lastNoOfHours == 24:
-	    daily = True
-	else:
-	    daily = False
+    if self.lastNoOfHours == 24:
+        daily = True
+    else:
+        daily = False
         Computer(fromInSecs, toInSecs, self.outputDir, daily).compute()
 
     def total_seconds(self, td):
