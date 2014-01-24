@@ -33,6 +33,8 @@ class Signator(Configurable):
         dirs.append(os.path.join(module_dirname, devRelativePath))
         tarballRelativePath = '../../../../java/'
         dirs.append(os.path.join(module_dirname, tarballRelativePath))
+        easyInstallRelativePath = '../java/'
+        dirs.append(os.path.join(module_dirname, easyInstallRelativePath))
         dirs.append('/var/lib/stratuslab/java')
         
         for dir in dirs:

@@ -67,8 +67,9 @@ unless forced.
 
     def _get_config_path(self):
         root = os.path.join(Util.modulePath, '..', '..')
-        paths = [os.path.join(root, 'conf', self.refConfigFile),
-                 os.path.join(root, '..', 'conf', self.refConfigFile),
+        paths = [os.path.join(Util.modulePath, 'conf', self.refConfigFile), # easy_install
+                 os.path.join(root, 'conf', self.refConfigFile),
+                 os.path.join(root, '..', 'conf', self.refConfigFile), # pip
                  os.path.join(root, '..', '..', 'etc', 'stratuslab', self.refConfigFile)]
 
         for path in paths:

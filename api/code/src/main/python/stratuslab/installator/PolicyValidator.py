@@ -25,12 +25,12 @@ from stratuslab.marketplace.Policy import Policy
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.installator.Installator import Installator
 from stratuslab.Util import printStep, filePutContent,\
-    getTemplateDir, printWarning, execute, fileGetContent
+    get_template_file, printWarning, execute, fileGetContent
 
 class PolicyValidator(Installator):
-    
-    TEMPLATE_CFG = os.path.join(getTemplateDir(), 'policy.cfg.tpl')
-    CONFIG = os.path.join(Defaults.ETC_DIR, Policy.POLICY_CFG) 
+
+    TEMPLATE_CFG = get_template_file(['policy.cfg.tpl'])
+    CONFIG = os.path.join(Defaults.ETC_DIR, Policy.POLICY_CFG)
     CONFIG_SAV = CONFIG + '.sav'
     ONE_SCRIPTS_CONFIGS = [os.path.join(Defaults.CLOUD_CONF_DIR,'tm_ssh/tm_ssh.conf')]
 
@@ -55,7 +55,7 @@ class PolicyValidator(Installator):
 
     def _writeConfigFromTemplate(self):
         filePutContent(PolicyValidator.CONFIG,
-                        fileGetContent(PolicyValidator.TEMPLATE_CFG) % self.__dict__)        
+                        fileGetContent(PolicyValidator.TEMPLATE_CFG) % self.__dict__)
 
     def _updateOneConfig(self, sedCmdsPart):
         for config in PolicyValidator.ONE_SCRIPTS_CONFIGS:
@@ -64,10 +64,10 @@ class PolicyValidator(Installator):
 
     def _backupConfigFileExists(self):
         return os.path.exists(PolicyValidator.CONFIG_SAV)
-    
+
     def _backup(self):
         if os.path.exists(PolicyValidator.CONFIG):
             shutil.move(PolicyValidator.CONFIG, PolicyValidator.CONFIG_SAV)
-    
+
     def _execute(self, cmd):
         return execute(cmd, shell=True)

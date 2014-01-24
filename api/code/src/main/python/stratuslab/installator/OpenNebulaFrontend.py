@@ -19,17 +19,16 @@
 #
 from stratuslab.installator.OpenNebulaCommon import OpenNebulaCommon
 from stratuslab.Exceptions import OneException, ExecutionException
-from stratuslab.Util import printWarning, fileGetContent, printError,\
-    getTemplateDir, getValueInKB
+from stratuslab.Util import printWarning, fileGetContent, printError, getValueInKB
 from stratuslab import Defaults
-from os.path import join, isfile
+from os.path import join
 import stratuslab.Util as Util
 from stratuslab.system import SystemFactory
 
 etree = Util.importETree()
 
 class OpenNebulaFrontend(OpenNebulaCommon):
-    
+
     def __init__(self, configHolder):
         super(OpenNebulaFrontend, self).__init__(configHolder)
         self.cloudConfDir = Defaults.CLOUD_CONF_DIR
@@ -37,7 +36,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
         self.cloudVarLibDir = Defaults.CLOUD_VAR_LIB_DIR
         self.defaultStaticNetworks = ['public', 'local']
         self.defaultRangedNetworks = ['private']
-        
+
         self._setFrontendSystem()
 
     def _setFrontendSystem(self):
@@ -53,13 +52,13 @@ class OpenNebulaFrontend(OpenNebulaCommon):
 
     def _installSendmail(self):
         self.frontend.installSendmail()
-        
+
     def _configureQuarantine(self):
         self.frontend.configureQuarantine()
-        
+
     def _configureCloudProxyService(self):
         self.frontend.configureCloudProxyService()
-        
+
     def _configureFirewall(self):
         self.frontend.configureFirewall()
 
@@ -72,14 +71,14 @@ class OpenNebulaFrontend(OpenNebulaCommon):
     def _configureCloudAdminFrontend(self):
         self.frontend.configureCloudAdminAccount()
         self.frontend.configureCloudAdminSshKeys()
-    
+
     def _startServicesFrontend(self):
         self.frontend.startCloudSystem()
 
     def _addDefaultNetworks(self):
         self._createNetwork(self.defaultStaticNetworks, self._buildFixedNetworkTemplate)
         self._createNetwork(self.defaultRangedNetworks, self._buildRangedNetworkTemplate)
-        
+
     def _createNetwork(self, networks, builder):
         for vnet in networks:
             try:
@@ -89,7 +88,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
 
     def _buildFixedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(join(Defaults.SHARE_DIR, 'vnet/fixed.net'))
-        
+
         ips = self._getIPs(networkName)
         macs = self._getMACs(networkName)
         leases = ['LEASES = [ IP="%s", MAC="%s"]' % (ip, mac) for ip, mac in zip(ips, macs)]
@@ -98,7 +97,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
                               'bridge': self.config.get('node_bridge_name'),
                               'leases': '\n'.join(leases)})
         return vnetTpl
-    
+
     def _getIPs(self, networkName):
         ips = self.config.get('one_%s_network_addr' % networkName)
         return ips and ips.split(' ') or []
@@ -106,7 +105,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
     def _getMACs(self, networkName):
         macs = self.config.get('one_%s_network_mac' % networkName)
         return macs and macs.split(' ') or []
-    
+
     def _buildRangedNetworkTemplate(self, networkName):
         vnetTpl = fileGetContent(join(Defaults.SHARE_DIR, 'vnet/ranged.net'))
         vnetTpl = vnetTpl % ({'network_name': networkName,
@@ -114,7 +113,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
                               'network_size': self.config.get('one_%s_network_size' % networkName),
                               'network_addr': self.config.get('one_%s_network' % networkName)})
         return vnetTpl
-    
+
     def _addDefaultAcls(self):
         self._addDefaultNetworkAcl()
         self._addDefaultUserAcl()
@@ -136,13 +135,13 @@ class OpenNebulaFrontend(OpenNebulaCommon):
             net_ids.append(int(vnet_id))
 
         return net_ids
-    
+
     def _getVnetIdFromVnetName(self, vnet_name):
             vnet_info = self._getVnetInfoXml(vnet_name)
             try:
                 vnet_tree = etree.fromstring(vnet_info)
             except SyntaxError, ex:
-                raise ExecutionException('Unable to parse vnet %s info: %s' % 
+                raise ExecutionException('Unable to parse vnet %s info: %s' %
                                          (vnet_name, str(ex)))
             try:
                 vnet_id = vnet_tree.find('ID').text
@@ -157,7 +156,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
 
     @staticmethod
     def _getVnetInfoXml(vnet_name):
-        rc, output = Util.execute(['onevnet', 'show', '--xml', vnet_name], 
+        rc, output = Util.execute(['onevnet', 'show', '--xml', vnet_name],
                                   withOutput=True)
         if rc != 0:
             raise ExecutionException("Couldn't get network info for network '%s'." % vnet_name)
@@ -168,22 +167,22 @@ class OpenNebulaFrontend(OpenNebulaCommon):
         # * VM+IMAGE+TEMPLATE/* CREATE+INFO_POOL_MINE+INSTANTIATE
         __acls = '* VM+IMAGE+TEMPLATE/* CREATE+USE'
         users,resources, rights = self._getDefaultUserAcl()
-        
+
         try:
             self.cloud.addUserAcl(users, resources, rights)
         except OneException, ex:
             printWarning("Couldn't add default user ACL [%s]. %s" % (__acls, str(ex)))
-            
+
     def _getDefaultUserAcl(self):
         users = hex(self.cloud.ACL_USERS['ALL'])
         resources = hex(self.cloud.ACL_RESOURCES['VM'] +
                         self.cloud.ACL_RESOURCES['IMAGE'] +
                         self.cloud.ACL_RESOURCES['TEMPLATE'] +
                         self.cloud.ACL_USERS['ALL'])
-        rights = hex(self.cloud.ACL_RIGHTS['CREATE'] + 
+        rights = hex(self.cloud.ACL_RIGHTS['CREATE'] +
                     self.cloud.ACL_RIGHTS['USE'])
         return users, resources, rights
-            
+
     def _configureCloudSystem(self):
         self._configureOneDaemon()
 
@@ -197,18 +196,18 @@ class OpenNebulaFrontend(OpenNebulaCommon):
     def _configurePolicies(self):
         oneAuthTpl = self._getTemplateFile('quota.conf.tpl', 'ONE auth configuration')
         authConfFile = self.cloudConfDir + 'auth/quota.conf'
-        
+
         self.quotaMemoryKB = getValueInKB(self.quotaMemory)
         self.frontend.filePutContentsCmd(authConfFile,
                                          fileGetContent(oneAuthTpl) % self.__dict__)
-        
+
     def _getTemplateFile(self, tpl, name):
-        tplPath = join(getTemplateDir(), tpl)
-        if not isfile(tplPath):
-            printError('%s template %s does not exists' % (name, tplPath))
-        return tplPath
-        
-        
+        try:
+            return Util.get_template_file([tpl])
+        except:
+            printError('%s template does not exist' % name)
+            return tpl
+
     def _setupFileSharingServer(self):
         self.frontend.installPackages(self.frontend.fileSharingFrontendDeps.get(self.shareType, []))
         self._configureFileSharingServer()
@@ -232,4 +231,4 @@ class OpenNebulaFrontend(OpenNebulaCommon):
 
     def _nfsShareAlreadyExists(self):
         return not (self.config.get('existing_nfs', '') == '')
-    
+

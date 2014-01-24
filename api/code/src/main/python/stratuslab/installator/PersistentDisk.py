@@ -67,8 +67,7 @@ class PersistentDisk(Installator):
                          },
         }
 
-        self.pdiskConfigBackendTpl = os.path.join(Util.getTemplateDir(),
-                                                  self.PDISK_BACKEND_CONF_NAME + '.tpl')
+        self.pdiskConfigBackendTpl = Util.get_template_file([self.PDISK_BACKEND_CONF_NAME + '.tpl'])
         self.authnConfigFile = Defaults.AUTHN_CONFIG_FILE
         self.pdiskConfigFile = os.path.join(Defaults.ETC_DIR, 'pdisk.cfg')
         self.pdiskHostConfigFile2 = os.path.join(Defaults.ETC_DIR, 'pdisk-host.conf')
@@ -162,7 +161,7 @@ class PersistentDisk(Installator):
 
     def _isDbOnPdiskHost(self):
         return self.persistentDiskDbHost in ['localhost', '127.0.0.1',
-                                             self.persistentDiskIp, 
+                                             self.persistentDiskIp,
                                              VolumeManager.getFQNHostname(self.persistentDiskIp)]
 
     def _startServicesFrontend(self):

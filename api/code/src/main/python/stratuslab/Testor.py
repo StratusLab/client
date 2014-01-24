@@ -464,8 +464,7 @@ class Testor(unittest.TestCase):
         return Creator(image, configHolder)
 
     def _registerInvalidImageInMarketplace(self):
-        manifest_file = os.path.join(Util.getResourcesDir(),
-                                     'manifest-invalid-sha1.xml')
+        manifest_file = Util.get_resources_file(['manifest-invalid-sha1.xml'])
 
         manifestInfo = ManifestInfo()
         manifestInfo.parseManifestFromFile(manifest_file)
