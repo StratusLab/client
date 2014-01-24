@@ -14,7 +14,7 @@ class Computer(object):
     
     def __init__(self, fromInSecs, toInSecs, outputDir, daily):
         self.outputDir = outputDir
-    self.daily = daily
+        self.daily = daily
         self.marketplaceSizeCache = {}
         self.fromInSecs = fromInSecs
         self.toInSecs = toInSecs
