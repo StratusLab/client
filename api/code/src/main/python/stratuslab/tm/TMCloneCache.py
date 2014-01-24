@@ -139,7 +139,7 @@ class TMCloneCache(object):
             self._checkBootDisk(diskId, diskType)
         elif diskType not in self._ACCEPTED_EXTRA_DISK_TYPE:
             raise ValueError('Only %s type disks can be attached as extra disks'
-                             % self._ACCEPTED_EXTRA_DISK_TYPE.join(', '))
+                             % ', '.join(self._ACCEPTED_EXTRA_DISK_TYPE))
 
         self._createDestinationDir()
         self._attachPDisk(self.diskSrc)
