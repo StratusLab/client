@@ -26,12 +26,28 @@ import datetime
 
 class Computer(object):
     
-    def __init__(self, fromInSecs, toInSecs, outputDir, daily):
+    # The queueing time of the VM instantiation request.
+    VM_STARTTIME_ELEM = 'stime'
+    VM_ENDTIME_ELEM = 'etime'
+    VM_RUN_STARTTIME_ELEM = 'rstime'
+    VM_RUN_ENDTIME_ELEM = 'retime'
+    VM_EPILOG_ENDTIME_ELEM = 'eetime'
+    
+    def __init__(self, fromInSecs, toInSecs, outputDir, daily, rtimes=True):
         self.outputDir = outputDir
         self.daily = daily
         self.marketplaceSizeCache = {}
-        self.fromInSecs = fromInSecs
-        self.toInSecs = toInSecs
+        self.fromInSecs = int(fromInSecs)
+        self.toInSecs = int(toInSecs)
+
+        """Start time corresponds to the VM entering Running state. Alternative 
+        is to use get_stime() - time when the request for the VM instantiation 
+        was queued (Pending state)."""
+        self.get_starttime = rtimes and self.get_rstime or self.get_stime
+    
+        """End time is when the VM stopped Running. Another option is to use 
+        get_donetime() which takes into account Epilog."""
+        self.get_endtime = rtimes and self.get_retime or self.get_donetime
 
     def run_command(self, cmd):
         rc, output = commands.getstatusoutput(cmd)
@@ -55,17 +71,44 @@ class Computer(object):
         return xml
 
     def get_stime(self, vm):
-        return vm.find('slice/stime').text
+        return int(vm.find('slice/' + self.VM_STARTTIME_ELEM).text)
 
+    def get_rstime(self, vm):
+        return int(vm.find('slice/' + self.VM_RUN_STARTTIME_ELEM).text)
+
+    def get_retime(self, vm):
+        return int(vm.find('slice/' + self.VM_RUN_ENDTIME_ELEM).text)
+
+    def get_eetime(self, vm):
+        return int(vm.find('slice/' + self.VM_EPILOG_ENDTIME_ELEM).text)
+
+    def get_etime(self, vm):
+        return int(vm.find('slice/' + self.VM_ENDTIME_ELEM).text)
+
+    def get_donetime(self, vm):
+        retime = self.get_retime(vm)
+        eetime = self.get_eetime(vm)
+        return (eetime > retime) and eetime or retime
+    
     def get_id(self, vm):
         return vm.get('id')
 
     def vm_in_range(self, vm):
-        stime = int(self.get_stime(vm))
-        if self.fromInSecs and stime < self.fromInSecs:
+        """Filter out VMs that were stopped before or started after the time 
+        slice we are concerned with."""
+        endtime = int(self.get_endtime(vm))
+        # endtime == 0 assumes that the VM is still running or didn't run
+        if endtime > 0 and endtime < self.fromInSecs: # ended before metering window
             return False
-        if self.toInSecs and stime > self.toInSecs:
+        starttime = int(self.get_starttime(vm))
+        if starttime > self.toInSecs: # started after metering window
             return False
+        if starttime == 0: # VM didn't run
+            stime = self.get_stime(vm)
+            if stime > self.fromInSecs and stime < self.toInSecs:
+                return True
+            else:
+                return False
         return True
 
     def user_in_range(self, user):
@@ -87,33 +130,73 @@ class Computer(object):
                     users.append(user)
         return users
 
-    def filter_vms(self, root):
+    def filter_and_update_vms(self, root):
         vms = []
         if root is not None:
             for vm in root.getiterator('vm'):
                 if self.vm_in_range(vm):
-                    timeElem = vm.find('time')
-                    timeElem.text = str(float(timeElem.text) / 60 / 60) # in hours
-                    slice = vm.find('slice')
-                    if slice is None:
-                        print 'time for missing slice:', vm.findtext('time')
-                        timeElem.text = "XX"
-                    else:
-                        stime = ET.Element('starttime')
-                        stimeInSecs = int(slice.findtext('stime'))
-                        stime.text = str(datetime.datetime.fromtimestamp(stimeInSecs))
-                        vm.append(stime)
-                        etime = ET.Element('endtime')
-                        etimeInSecs = int(slice.findtext('etime'))
-                        etime.text = str(datetime.datetime.fromtimestamp(etimeInSecs))
-                        vm.append(etime)
-                        delta = (etimeInSecs - stimeInSecs) / 60 / 60 # in hours
-                        if delta < 0:
-                            delta = 0
-                        timeElem.text = str(delta) # add one to round up
-                        vm.remove(slice)
+                    self._update_time_on_vm(vm)
                     vms.append(vm)
         return vms
+
+    def _update_time_on_vm(self, vm):
+        timeElem = vm.find('time')
+        _slice = vm.find('slice')
+        if _slice is None:
+            print 'time for missing slice:', vm.findtext('time')
+            timeElem.text = "XX"
+        else:
+            meter_stime, meter_etime = self.get_meter_start_end_times(vm)
+
+            self.set_starttime(vm, meter_stime)
+            self.set_endtime(vm, meter_etime)
+            # Total time should be in hours
+            delta = int((meter_etime - meter_stime) / 60 / 60)
+            self.set_totaltime(vm, (delta > 0) and delta or 0)
+
+            vm.remove(_slice)
+
+    def get_meter_start_end_times(self, vm):
+        if self.get_starttime(vm) == self.get_endtime(vm): # VM didn't run
+            meter_stime = self.get_stime(vm)
+            meter_etime = self.get_etime(vm)
+        else:
+            meter_stime = self.get_meter_stime(vm)
+            meter_etime = self.get_meter_etime(vm)
+        return meter_stime, meter_etime
+
+    def get_meter_stime(self, vm):
+        stime = self.get_starttime(vm)
+        if stime == 0: # VM didn't run
+            stime = self.get_stime(vm)
+        if self.fromInSecs > stime:
+            return self.fromInSecs
+        else:
+            return stime
+
+    def get_meter_etime(self, vm):
+        etime = self.get_endtime(vm)
+        if etime == 0: # Machine is still running or didn't run
+            return self.toInSecs
+        if etime < self.toInSecs:
+            return etime
+        else:
+            return self.toInSecs
+
+    def set_totaltime(self, vm, _time):
+        time_elem = vm.find('time')
+        time_elem.text = str(_time)
+
+    def set_starttime(self, vm, starttime):
+        self._vm_set_time_in_sec(vm, starttime, 'starttime')
+
+    def set_endtime(self, vm, endtime):
+        self._vm_set_time_in_sec(vm, endtime, 'endtime')
+
+    def _vm_set_time_in_sec(self, vm, _time, time_elem_name):
+        time_elem = ET.Element(time_elem_name)
+        time_elem.text = str(datetime.datetime.fromtimestamp(float(_time)))
+        vm.append(time_elem)
 
     def bytes_to_giga_approximation(self, numberOfBytes):
         return (numberOfBytes / 1024**3) + 1
@@ -151,13 +234,13 @@ class Computer(object):
         try:
             marketplaceDefinition = urllib2.urlopen(url + '?status=all&location=all').read()
             root = ET.fromstring(marketplaceDefinition)
-            bytes = root.find('rdf:RDF/rdf:Description/ns2:bytes', namespaces={"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","ns2":"http://mp.stratuslab.eu/slreq#"}).text
-            bytes = int(bytes)
+            _bytes = root.find('rdf:RDF/rdf:Description/ns2:bytes', namespaces={"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","ns2":"http://mp.stratuslab.eu/slreq#"}).text
+            _bytes = int(_bytes)
         except (urllib2.URLError, ValueError):
-            bytes = 0
+            _bytes = 0
             print "Error retrieving marketplace url:", url
-        self.marketplaceSizeCache[url] = bytes
-        return bytes
+        self.marketplaceSizeCache[url] = _bytes
+        return _bytes
 
     def get_disk_size(self, disk):
         size = disk.find('SIZE')
@@ -166,8 +249,8 @@ class Computer(object):
         else:
             return self.bytes_to_giga_approximation(self.get_size_from_marketplace(disk))
 
-    def bytes_to_GB(self, bytes):
-        return bytes / 1024 / 1024 / 1024
+    def bytes_to_GB(self, _bytes):
+        return _bytes / 1024 / 1024 / 1024
 
     def compute_totals(self, root):
         totalTime = 0
@@ -199,23 +282,23 @@ class Computer(object):
 
     def _append_vms(self, root, allVms):
         if allVms is not None:
-            filteredVms = self.filter_vms(allVms)
+            filteredVms = self.filter_and_update_vms(allVms)
             withDiskInfoVms = self.add_detail_info(filteredVms)
 
             for vm in withDiskInfoVms:
                 root.append(vm)
 
     def compute_user(self, user):
-        id = user['id']
+        _id = user['id']
         username = user['name']
         print 'processing', username, '...'
-        vmsFromOne = self.get_all_vms_from_one(id)
+        vmsFromOne = self.get_all_vms_from_one(_id)
         allVms = self.to_xml(vmsFromOne)
         root = ET.Element('usagerecord')
         
         self._append_vms(root, allVms)
         
-        root.set('userid', id)
+        root.set('userid', _id)
         root.set('username', username)
         _from = datetime.datetime.fromtimestamp(self.fromInSecs)
         root.set('from', str(_from))
@@ -228,10 +311,10 @@ class Computer(object):
         filenameTemplate = "acctpy_User-Id%(id)s_%(date)s.xml"
         if(self.daily):
             formattedDate = to.strftime(dateFormat)
-            filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
+            filename = os.path.join(self.outputDir, filenameTemplate % {'id': _id, 'date': formattedDate})
         else:
             formattedDate = _from.strftime(dateFormat) + '_' + _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
-            filename = os.path.join(self.outputDir, filenameTemplate % {'id': id, 'date': formattedDate})
+            filename = os.path.join(self.outputDir, filenameTemplate % {'id': _id, 'date': formattedDate})
         open(filename,'w').write(ET.tostring(root))
 
     def compute(self):
