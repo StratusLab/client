@@ -99,6 +99,8 @@ class TMSaveCache(object):
 
         self.persistentDiskIp = None
         self.persistentDiskLvmDevice = None
+        
+        self.builtImageValidityPeriod = None
 
         self._initFromConfig(kwargs.get('conf_filename', ''))
 
@@ -239,6 +241,7 @@ class TMSaveCache(object):
     #--------------------------------------------
 
     def _generateManifest(self):
+        self._update_endroser_cert_and_image_validity_periods()
         self._generateP12Cert()
         self._createManifest()
 
@@ -246,6 +249,13 @@ class TMSaveCache(object):
         self._retrieveManifestsPath()
         self.pdiskPathNew = self._buildPDiskPath(self.createdPDiskId)
         self._buildAndSignManifest()
+
+    def _update_endroser_cert_and_image_validity_periods(self):
+        try:
+            self._P12_VALIDITY = int(self.builtImageValidityPeriod)
+            self._IMAGE_VALIDITY = self._P12_VALIDITY * 24 * 3600
+        except TypeError:
+            pass
 
     def _retrieveManifestsPath(self):
         self._createManifestTempDir()

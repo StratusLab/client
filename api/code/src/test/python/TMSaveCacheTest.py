@@ -32,12 +32,17 @@ from stratuslab.vm_manager.vm_manager import VmManager
 
 
 class TMSaveCacheTest(unittest.TestCase):
+
+    IMAGE_VALIDITY_DAYS = 123
+
     CONFIG_FILE = """[default]
 persistent_disk_ip = 127.0.0.1
 one_username = oneadmin
 one_password = oneadmin
 one_port = 2633
-"""
+built_image_validity_period = %s
+""" % IMAGE_VALIDITY_DAYS
+
     TEST_MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:dcterms="http://purl.org/dc/terms/" xmlns:slreq="http://mp.stratuslab.eu/slreq#"
@@ -185,6 +190,17 @@ volume_name = /foo/bar
 """)
         tm.diskName = 'baz'
         assert '/foo/bar/baz' == tm._getSnapshotPath()
+
+    def testResetImageValidity(self):
+        tm = TMSaveCache({}, conf_filename=self.conf_filename)
+
+        assert 2 == tm._P12_VALIDITY
+        assert 2 * 24 * 3600 == tm._IMAGE_VALIDITY
+
+        tm._update_endroser_cert_and_image_validity_periods()
+
+        assert self.IMAGE_VALIDITY_DAYS == tm._P12_VALIDITY
+        assert self.IMAGE_VALIDITY_DAYS * 24 * 3600 == tm._IMAGE_VALIDITY
 
     # Utils
     def _write_conf_file(self, content):

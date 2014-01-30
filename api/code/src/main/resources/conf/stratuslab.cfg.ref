@@ -279,6 +279,9 @@ caching = False
 # Local Marketplace. To be used on Frontend by TM scripts for policy check 
 # and image creation.
 marketplace_endpoint_local = 
+# Validity of the newly built image in the Marketplace (in days). A sensible 
+# default is provided in the code.
+built_image_validity_period = 
 
 [messaging]
 # JSON encoded dictionary with REST endpoints as keys
