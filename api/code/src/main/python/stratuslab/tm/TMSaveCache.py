@@ -548,6 +548,7 @@ class TMSaveCache(object):
         configHolder = self.configHolder.copy()
         configHolder.set('subject', 'New image created %s' % self.snapshotMarketplaceId)
         configHolder.set('recipient', self.createImageInfo[VmManager.CREATE_IMAGE_KEY_CREATOR_EMAIL])
+        configHolder.set('sender', self.saveImageReplyToEmail)
 
         emailClient = EmailClient(configHolder)
         emailClient.send(self._emailText(),
