@@ -584,7 +584,7 @@ You can change the access policy by visiting the links below
 
 A draft image manifest entry has been generated and is attached to
 this message.  It has also been uploaded to %(marketplace)s.  The
-validity of this entry is only %(imageValidity)s hours!
+validity of this entry is only %(imageValidity)s days!
 
 To provide a longer validity period you must:
 1) edit the attached manifest, updating the validity period,
@@ -599,7 +599,7 @@ Cheers.
                'pdiskId': self.createdPDiskId,
                'snapshotMarketplaceId': self.snapshotMarketplaceId,
                'marketplace': self.targetMarketplace,
-               'imageValidity': self._P12_VALIDITY * 24}
+               'imageValidity': self._P12_VALIDITY}
 
     def _emitNewImageInfo(self):
         """To be able to recover image ID from log file by image creation test."""
