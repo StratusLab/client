@@ -146,7 +146,7 @@ class PersistentDisk(Installator):
         Util.appendOrReplaceInFile('/etc/tgt/targets.conf', pattern, pattern)
 
     def _createDatabase(self):
-        """Create DB only if RDMS is on the same host with PDisk."""
+        """Create DB only if RDMS is on the same host."""
         if not self._isDbOnPdiskHost():
             return
 
