@@ -321,7 +321,6 @@ class TMSaveCache(object):
     def _getSnapshotChecksumFromAttachedDevice(self):
 
         PDISK_BACKEND_CMD = '/usr/sbin/persistent-disk-backend.py'
-        PDISK_BACKEND_CFG = '/etc/stratuslab/pdisk-backend.cfg'
 
         PDISK_CLIENT_CMD = '/usr/sbin/stratus-pdisk-client.py'
 
@@ -330,7 +329,6 @@ class TMSaveCache(object):
         def _mapDisk():
             # LUN mapping might be needed
             netapp_map = [PDISK_BACKEND_CMD,
-                          '--config', PDISK_BACKEND_CFG,
                           '--action', 'map',
                           self.diskName]
             self._ssh(self.persistentDiskIp, netapp_map,
@@ -340,7 +338,6 @@ class TMSaveCache(object):
         def _getTURL():
             # Get TURL
             get_turl_cmd = [PDISK_BACKEND_CMD,
-                            '--config', PDISK_BACKEND_CFG,
                             '--action', 'getturl',
                             self.diskName]
             return self._ssh(self.persistentDiskIp, get_turl_cmd,
