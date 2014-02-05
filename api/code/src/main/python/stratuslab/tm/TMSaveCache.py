@@ -77,7 +77,7 @@ class TMSaveCache(object):
         self.diskSrcHost = None
         self.vmDir = None
         self.diskName = None
-        self.pdiskHostPort = None
+        self.persistentDiskPublicBaseUrl = None
         self.snapshotMarketplaceId = None
         self.targetMarketplace = None
         self.createdPDiskId = None
@@ -99,7 +99,7 @@ class TMSaveCache(object):
 
         self.persistentDiskIp = None
         self.persistentDiskLvmDevice = None
-        
+
         self.builtImageValidityPeriod = None
 
         self._initFromConfig(kwargs.get('conf_filename', ''))
@@ -144,6 +144,11 @@ class TMSaveCache(object):
         self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
+        if not self.persistentDiskPublicBaseUrl:
+            pdisk = VolumeManagerFactory.create(self.configHolder)
+            pdisk._buildFQNEndpoint()
+            self.persistentDiskPublicBaseUrl = Util.getProtoHostnamePortFromUri(pdisk.endpoint)
+
     def _initCloudConnector(self):
         credentials = LocalhostCredentialsConnector(self.configHolder)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
@@ -168,7 +173,7 @@ class TMSaveCache(object):
 
         # copy out the information for the first disk in the list
         # this will be the one used when saving a new image
-        self.pdiskPath = uris[0]
+        self.pdiskPath = self._updatePDiskIpForNewImageUri(uris[0])
         self.diskName = self._getDiskNameFromURI(uris[0])
 
     def _getAttachedVolumeURIs(self):
@@ -176,6 +181,14 @@ class TMSaveCache(object):
                                                    '--vm-id', str(self.instanceId)],
                                                   'Unable to get registered volumes')
         return register_filename_contents.splitlines()
+
+    def _updatePDiskIpForNewImageUri(self, pdisk_image_uri):
+        """pdisk_image_uri is assumed to be in the form pdisk:<ip>:<port>:<uuid>
+        as returned by TMSaveCache._getAttachedVolumeURIs()"""
+        pdisk_hostport_list = Util.getHostnamePortFromUri(self.persistentDiskPublicBaseUrl).split(':')
+        pdisk_image_uri_list = pdisk_image_uri.split(':')
+        pdisk_image_uri_list[1:len(pdisk_hostport_list) + 1] = pdisk_hostport_list
+        return ':'.join(pdisk_image_uri_list)
 
     def _getDiskNameFromURI(self, uri):
         return uri.split(':')[-1]
@@ -566,8 +579,8 @@ The image creation was SUCCESSFUL.  The image has an ID of
 It is stored in the persistent disks service.  By default, the image 
 is private and can only be accessed/launched by the image creator.  
 You can change the access policy by visiting the links below
-https://%(pdiskHostPort)s/pswd/disks/%(pdiskId)s
-https://%(pdiskHostPort)s/cert/disks/%(pdiskId)s 
+%(persistentDiskPublicBaseUrl)s/pswd/disks/%(pdiskId)s
+%(persistentDiskPublicBaseUrl)s/cert/disks/%(pdiskId)s 
 
 A draft image manifest entry has been generated and is attached to
 this message.  It has also been uploaded to %(marketplace)s.  The
@@ -582,7 +595,7 @@ The manifest can be uploaded either via the Marketplace's web
 interface or via the command stratus-upload-metadata.
 
 Cheers.
-        """ % {'pdiskHostPort': self.pdiskHostPort,
+        """ % {'persistentDiskPublicBaseUrl': self.persistentDiskPublicBaseUrl,
                'pdiskId': self.createdPDiskId,
                'snapshotMarketplaceId': self.snapshotMarketplaceId,
                'marketplace': self.targetMarketplace,

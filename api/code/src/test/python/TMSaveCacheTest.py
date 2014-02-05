@@ -29,6 +29,7 @@ from stratuslab.Signator import Signator
 from stratuslab.installator.PersistentDisk import PersistentDisk
 from stratuslab.Exceptions import ConfigurationException
 from stratuslab.vm_manager.vm_manager import VmManager
+import stratuslab.Util as Util
 
 
 class TMSaveCacheTest(unittest.TestCase):
@@ -147,7 +148,7 @@ built_image_validity_period = %s
             assert minfo.creator == 'Jay Random'
             assert minfo.version == '0.0'
             assert minfo.sha1 == tm.imageSha1
-            assert minfo.locations == [PDISK_ENDPOINT + ':foo-bar-baz']
+            assert minfo.locations == ['pdisk:' + Util.getHostnamePortFromUri(tm.persistentDiskPublicBaseUrl) + ':foo-bar-baz']
 
             self.failUnless('foo-bar-baz' in str(tm._emailText()))
 
@@ -201,6 +202,15 @@ volume_name = /foo/bar
 
         assert self.IMAGE_VALIDITY_DAYS == tm._P12_VALIDITY
         assert self.IMAGE_VALIDITY_DAYS * 24 * 3600 == tm._IMAGE_VALIDITY
+
+    def test_updatePDiskIpForNewImageUri(self):
+        tm = TMSaveCache({}, conf_filename=self.conf_filename)
+        
+        tm.persistentDiskPublicBaseUrl = 'https://1.2.3.4'
+        assert 'pdisk:1.2.3.4:987:uuid' == tm._updatePDiskIpForNewImageUri('pdisk:0.0.0.0:987:uuid')
+       
+        tm.persistentDiskPublicBaseUrl = 'https://1.2.3.4:123'
+        assert 'pdisk:1.2.3.4:123:uuid' == tm._updatePDiskIpForNewImageUri('pdisk:0.0.0.0:987:uuid')
 
     # Utils
     def _write_conf_file(self, content):

@@ -682,6 +682,12 @@ def getHostnameFromUri(uri):
     return parseUri(uri)[1]
 
 
+def getHostnamePortFromUri(uri):
+    groups = parseUri(uri)
+    port = (groups[2] and ':%s' % groups[2]) or ''
+    return groups[1] + port
+
+
 def getProtoFromUri(uri):
     return parseUri(uri)[0]
 
