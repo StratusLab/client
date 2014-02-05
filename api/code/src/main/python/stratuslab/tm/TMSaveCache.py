@@ -362,9 +362,10 @@ class TMSaveCache(object):
             # Attach LUN and link to a known location
             backend_type = self._configPdiskGetIscsiBackendType().lower()
             if backend_type == 'netapp':
-                rescan_cmd = ['sudo', 'iscsiadm', '--mode', 'session', '--rescan']
-                self._ssh(self.persistentDiskIp, rescan_cmd,
-                          'Failed rescanning iSCSI targets.')
+                portal = Util.getHostnameFromUri(turl) 
+                discover_cmd = ['sudo', 'iscsiadm', '-m', 'discovery', '-t', 'sendtargets', '-p', portal]
+                self._ssh(self.persistentDiskIp, discover_cmd,
+                          'Failed discovering iSCSI targets.')
             attach_and_link_cmd = ['sudo', PDISK_CLIENT_CMD,
                                    '--op', 'up',
                                    '--attach',
