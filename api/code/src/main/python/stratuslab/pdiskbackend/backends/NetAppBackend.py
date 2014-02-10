@@ -6,6 +6,23 @@ NETAPP_CLUSTER = ['netapp-cluster']
 
 NETAPP_FLAVOURS = NETAPP_7MODE + NETAPP_CLUSTER
 
+def getBackendProxy(config):
+    backend_attributes = {'initiator_group':'',
+                          'lun_namespace':'',
+                          'volume_name':'',
+                          'volume_snapshot_prefix':''}
+    proxy_name = config.get_proxy_name()
+    config.set_backend_proxy_attributes(backend_attributes, proxy_name)
+    backend_type = config.get_backend_type(proxy_name)
+
+    return getNetAppBackend(backend_type, proxy_name,
+                            backend_attributes['mgt_user_name'],
+                            backend_attributes['mgt_user_private_key'],
+                            backend_attributes['volume_name'],
+                            backend_attributes['lun_namespace'],
+                            backend_attributes['initiator_group'],
+                            backend_attributes['volume_snapshot_prefix'])   
+
 def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace, 
                      initiatorGroup, snapshotPrefix):
     if flavor.lower() in NETAPP_7MODE:
@@ -17,9 +34,6 @@ def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace,
     else:
         raise Exception('Unknown NetApp flavor provided: %s' % flavor)
 
-############################################
-# Class describing a NetApp iSCSI back-end #
-############################################
 
 class NetAppBackend(Backend):
 

@@ -5,6 +5,24 @@ import random
 from stratuslab.pdiskbackend.utils import debug
 from .Backend import Backend
 
+def getBackendProxy(config, proxy_name):    
+    backend_attributes = {'identity': None,
+                          'monitors': None,
+                          'pool_name': None,
+                          'snapshot_name': None}
+    config.set_backend_proxy_attributes(backend_attributes, proxy_name)    
+    monitors = None
+    if backend_attributes['monitors']:
+        monitors = backend_attributes['monitors'].split(',')
+    
+    return CephBackend(proxy_name,
+                       backend_attributes['mgt_user_name'],
+                       backend_attributes['mgt_user_private_key'],
+                       monitors=monitors,
+                       identity=backend_attributes['identity'],
+                       poolName=backend_attributes['pool_name'],
+                       snapshotName=backend_attributes['snapshot_name'])
+
 class CephBackend(Backend):
     """
     This backend manages a Ceph storage cluster. The proxy server and the

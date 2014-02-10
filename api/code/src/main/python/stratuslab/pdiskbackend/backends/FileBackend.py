@@ -4,9 +4,15 @@ import re
 from stratuslab.pdiskbackend.utils import debug
 from .Backend import Backend
 
-####################################
-# Class describing a File back-end #
-####################################
+def getBackendProxy(config):
+    backend_attributes = {'volume_name':''}
+    proxy_name = config.get_proxy_name()
+    config.set_backend_proxy_attributes(backend_attributes, proxy_name)
+
+    return FileBackend(proxy_name,
+                       backend_attributes['volume_name'],
+                       backend_attributes['mgt_user_name'],
+                       backend_attributes['mgt_user_private_key'])
 
 class FileBackend(Backend):
     # The following variables define which command to execute for each action.

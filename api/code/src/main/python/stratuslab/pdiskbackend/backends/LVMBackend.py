@@ -4,9 +4,17 @@ import re
 from stratuslab.pdiskbackend.utils import debug
 from .Backend import Backend
 
-#########################################
-# Class describing a LVM iSCSI back-end #
-#########################################
+def getBackendProxy(config, proxy_name):
+    # Retrieve NetApp back-end mandatory attributes.
+    # Mandatory attributes should be defined as keys of backend_attributes with an arbitrary value.
+    # Key name must match the attribute name in the configuration file.
+    backend_attributes = {'volume_name':''}
+    config.set_backend_proxy_attributes(backend_attributes, proxy_name)    
+
+    return LVMBackend(proxy_name,
+                      backend_attributes['volume_name'],
+                      backend_attributes['mgt_user_name'],
+                      backend_attributes['mgt_user_private_key']) 
 
 class LVMBackend(Backend):
     # The following variables define which command to execute for each action.
