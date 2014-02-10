@@ -38,18 +38,14 @@ class ConfigHolder(object):
     
     def get_proxy_name(self):
         """Return first proxy name from the comma separated list."""
-        try:
-            iscsi_proxies = self._config.get(CONFIG_MAIN_SECTION,'iscsi_proxies').split(',')
-        except ValueError:
-            abort("Invalid value specified for 'iscsi_proxies' (section %s) (must be a comma-separated list)" % (CONFIG_MAIN_SECTION))
-        return iscsi_proxies[0]
+        return self.get_proxy_names()[0]
     
     def get_proxy_names(self):
         """Return all proxy names as list from the comma separated list."""
         try:
             return self._config.get(CONFIG_MAIN_SECTION, 'iscsi_proxies').split(',')
         except ValueError:
-            abort("Invalid value specified for 'iscsi_proxies' (section %s) (must be a comma-separated list)" % (CONFIG_MAIN_SECTION))
+            abort("Invalid value specified for 'iscsi_proxies' (section %s) (must be a comma-separated list)" % CONFIG_MAIN_SECTION)
     
     def get_backend_type(self, proxy_name):
         try:
