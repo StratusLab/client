@@ -1,7 +1,7 @@
 import re
 import socket
 
-from stratuslab.pdiskbackend.utils import abort
+from stratuslab.pdiskbackend.utils import Logger, abort
 from .BackendCommand import BackendCommand
 
 ####################################################################
@@ -12,6 +12,9 @@ from .BackendCommand import BackendCommand
 ####################################################################
 
 class Backend(object):
+    
+    _type = ''
+    
     # Command prefix to use to connect through ssh
     ssh_cmd_prefix = [ 'ssh', '-x', '-i', '%%PRIVKEY%%', '%%ISCSI_PROXY%%' ]
     
@@ -85,11 +88,16 @@ class Backend(object):
     new_lun_required = {
                         }
 
-    def __init__(self):
+    def __init__(self, configHolder):
+        if not self._type:
+            raise Exception('Backend type should be set.')
+
         self.proxyHost = ''
         self.mgtPrivKey = ''
         self.volumeName = ''
         self.mgtUser = ''
+    
+        self._logger = Logger(configHolder)
     
     # Generator function returning:
     #    - the command corresponding to the action as a list of tokens, with iSCSI proxy related
@@ -205,3 +213,9 @@ class Backend(object):
         elif string == '%%VOLUME_NAME%%':
             string = self.volumeName
         return string
+
+    def getType(self):
+        return self._type
+
+    def debug(self, level, msg):
+        self._logger.debug(level, msg)

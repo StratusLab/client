@@ -1,22 +1,27 @@
 
 import re
 
-from stratuslab.pdiskbackend.utils import debug
 from .Backend import Backend
+from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
-def getBackendProxy(config, proxy_name):
+def getBackendProxy(config):
     # Retrieve NetApp back-end mandatory attributes.
     # Mandatory attributes should be defined as keys of backend_attributes with an arbitrary value.
     # Key name must match the attribute name in the configuration file.
     backend_attributes = {'volume_name':''}
+    proxy_name = config.get_proxy_name()
     config.set_backend_proxy_attributes(backend_attributes, proxy_name)    
 
     return LVMBackend(proxy_name,
                       backend_attributes['volume_name'],
                       backend_attributes['mgt_user_name'],
-                      backend_attributes['mgt_user_private_key']) 
+                      backend_attributes['mgt_user_private_key'],
+                      configHolder=config) 
 
 class LVMBackend(Backend):
+    
+    _type = 'lvm'
+    
     # The following variables define which command to execute for each action.
     # They are documented in the superclass Backend.
     
@@ -71,15 +76,15 @@ class LVMBackend(Backend):
     new_lun_required = {'rebase':True
                         }
     
-    def __init__(self, proxy, volume, mgtUser=None, mgtPrivKey=None):
-        super(LVMBackend, self).__init__()
+    def __init__(self, proxy, volume, mgtUser=None, mgtPrivKey=None, configHolder=ConfigHolder()):
+        super(LVMBackend, self).__init__(configHolder)
 
         self.volumeName = volume
         self.proxyHost = proxy
         self.mgtUser = mgtUser
         self.mgtPrivKey = mgtPrivKey
         if self.mgtUser and self.mgtPrivKey:
-            debug(1, 'SSH will be used to connect to LVM backend')
+            self.debug(1, 'SSH will be used to connect to %s backend' % self.getType())
             self.cmd_prefix = self.ssh_cmd_prefix
         else:
             self.cmd_prefix = [ ]
@@ -93,7 +98,3 @@ class LVMBackend(Backend):
         elif re.search('%%NEW_LOGVOL_PATH%%', string):
             string = re.sub('%%NEW_LOGVOL_PATH%%', self.volumeName + "/%%SNAP_UUID%%", string)
         return Backend.detokenize(self, string)
-    
-    # Return iSCSI back-end type
-    def getType(self):
-        return 'LVM'

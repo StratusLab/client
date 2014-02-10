@@ -2,14 +2,15 @@
 import os.path
 import random
 
-from stratuslab.pdiskbackend.utils import debug
 from .Backend import Backend
+from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
-def getBackendProxy(config, proxy_name):    
+def getBackendProxy(config):    
     backend_attributes = {'identity': None,
                           'monitors': None,
                           'pool_name': None,
                           'snapshot_name': None}
+    proxy_name = config.get_proxy_name()
     config.set_backend_proxy_attributes(backend_attributes, proxy_name)    
     monitors = None
     if backend_attributes['monitors']:
@@ -21,13 +22,16 @@ def getBackendProxy(config, proxy_name):
                        monitors=monitors,
                        identity=backend_attributes['identity'],
                        poolName=backend_attributes['pool_name'],
-                       snapshotName=backend_attributes['snapshot_name'])
+                       snapshotName=backend_attributes['snapshot_name'],
+                       configHolder=config)
 
 class CephBackend(Backend):
     """
     This backend manages a Ceph storage cluster. The proxy server and the
     hypervisors must have the appropriated Ceph configuration and tools.
     """
+    
+    _type = 'Ceph'
     
     rbd_bin = '/usr/bin/rbd'
     rbd_default_options = ['--no-progress', '--id', '%%IDENTITY%%']
@@ -134,15 +138,15 @@ class CephBackend(Backend):
     }
     
     def __init__(self, proxyHost, mgtUser, mgtPrivKey, monitors=None, identity='cloud', 
-                 poolName='cloud', snapshotName='base'):
-        super(CephBackend, self).__init__()
+                 poolName='cloud', snapshotName='base', configHolder=ConfigHolder()):
+        super(CephBackend, self).__init__(configHolder)
 
         self.proxyHost = proxyHost
         self.mgtUser = mgtUser
         self.mgtPrivKey = mgtPrivKey
         
         if self.mgtUser and self.mgtPrivKey:
-            debug(1, 'SSH will be used to connect to Ceph backend')
+            self.debug(1, 'SSH will be used to connect to %s backend.' % self.getType())
             self.cmd_prefix = self.ssh_cmd_prefix
         else:
             self.cmd_prefix = []
@@ -189,10 +193,6 @@ class CephBackend(Backend):
         """ Return a random monitor from the monitors list. """
         selected = random.randint(0, len(self.monitors) - 1)
         return self.monitors[selected]
-    
-    def getType(self):
-        """ Return the name of this backend. """
-        return 'Ceph'
     
     def parse(self, string):
         """ Replace variable tags in a string by their appropriated values. """

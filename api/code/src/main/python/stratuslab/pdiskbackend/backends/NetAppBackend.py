@@ -21,16 +21,17 @@ def getBackendProxy(config):
                             backend_attributes['volume_name'],
                             backend_attributes['lun_namespace'],
                             backend_attributes['initiator_group'],
-                            backend_attributes['volume_snapshot_prefix'])   
+                            backend_attributes['volume_snapshot_prefix'],
+                            config)   
 
 def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace, 
-                     initiatorGroup, snapshotPrefix):
+                     initiatorGroup, snapshotPrefix, configHolder):
     if flavor.lower() in NETAPP_7MODE:
         return NetApp7Mode(proxy, mgtUser, mgtPrivKey, volume, namespace, 
-                             initiatorGroup, snapshotPrefix)
+                             initiatorGroup, snapshotPrefix, configHolder)
     elif flavor.lower() in NETAPP_CLUSTER:
         return NetAppCluster(proxy, mgtUser, mgtPrivKey, volume, namespace, 
-                             initiatorGroup, snapshotPrefix)
+                             initiatorGroup, snapshotPrefix, configHolder)
     else:
         raise Exception('Unknown NetApp flavor provided: %s' % flavor)
 
@@ -59,8 +60,8 @@ class NetAppBackend(Backend):
     lunOS = 'linux'
     
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                 snapshotPrefix):
-        super(NetAppBackend, self).__init__()
+                 snapshotPrefix, configHolder):
+        super(NetAppBackend, self).__init__(configHolder)
         
         self.proxyHost = proxy
         self.mgtUser = mgtUser
@@ -73,8 +74,6 @@ class NetAppBackend(Backend):
         # Command to connect to NetApp filer (always ssh)
         self.cmd_prefix = self.ssh_cmd_prefix
         
-        self._type = 'netapp'
-    
     # Parse all variables related to iSCSI proxy in the string passed as argument.
     # Return parsed string.
     def parse(self, string):
@@ -90,12 +89,10 @@ class NetAppBackend(Backend):
             string = self.namespace + "/%%SNAP_UUID%%"
         return Backend.detokenize(self, string)
     
-    # Return iSCSI back-end type
-    def getType(self):
-        return self._type
-
-
 class NetApp7Mode(NetAppBackend):
+    
+    _type = 'netapp-7mode'
+    
     # The following variables define which command to execute for each action.
     # They are documented in the superclass Backend.
     
@@ -127,13 +124,13 @@ class NetApp7Mode(NetAppBackend):
                           }
     
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                 snapshotPrefix):
+                 snapshotPrefix, configHolder):
         super(NetApp7Mode, self).__init__(proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                                          snapshotPrefix)
-        self._type = 'netapp-7mode'
-
+                                          snapshotPrefix, configHolder)
 
 class NetAppCluster(NetApp7Mode):
+    
+    _type = 'netapp-clustered'
 
     backend_cmds = NetApp7Mode.backend_cmds.copy()
     backend_cmds.update({'clone':[ 'file', 'clone', 'create', '-destination-path', '%%SNAP_NAME%%', '-source-path', '%%NAME%%', '-s', '%%SNAP_PARENT%%'  ],
@@ -164,8 +161,7 @@ class NetAppCluster(NetApp7Mode):
                   'snapshot':['^creating snapshot', '^Snapshot already exists.']})
 
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                 snapshotPrefix):
+                 snapshotPrefix, configHolder):
         super(NetAppCluster, self).__init__(proxy, mgtUser, mgtPrivKey, volume, 
                                             namespace, initiatorGroup, 
-                                            snapshotPrefix)
-        self._type = 'netapp-clustered'
+                                            snapshotPrefix, configHolder)

@@ -1,5 +1,6 @@
 import StringIO
 import ConfigParser
+from ConfigParser import NoOptionError, NoSectionError
 
 from stratuslab.pdiskbackend.defaults import CONFIG_DEFAULTS, CONFIG_MAIN_SECTION,\
     CONFIG_FILE_NAME, VERBOSITY
@@ -31,7 +32,7 @@ class ConfigHolder(object):
     def get(self, section, param):
         return self._config.get(section, param)
 
-    def set_backend_proxy_attributes(self, backend_attributes, config, proxy_name):
+    def set_backend_proxy_attributes(self, backend_attributes, proxy_name):
         self._set_backend_proxy_specific_attributes(backend_attributes, proxy_name)
         backend_attributes['mgt_user_name'], backend_attributes['mgt_user_private_key'] =\
                         self._get_mgt_info_from_config(proxy_name)
@@ -57,8 +58,10 @@ class ConfigHolder(object):
         try:
             for attribute in backend_attributes.keys():
                 backend_attributes[attribute] = self._config.get(proxy_name, attribute)
-        except:
-            abort("Section '%s' or required attribute '%s' missing" % (proxy_name, attribute))
+        except NoOptionError:
+            abort("Required option '%s' is missing in section '%s'." % (attribute, proxy_name))
+        except NoSectionError:
+            abort("Section '%s' is missing in configuration" % proxy_name)
     
     def _get_mgt_info_from_config(self, backend_section):
         """Return a tuple with the appropriated management information."""

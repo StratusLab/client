@@ -20,6 +20,8 @@ class Logger(object):
     def __init__(self, configHolder):
         self._log_file = configHolder.get(defaults.CONFIG_MAIN_SECTION, 'log_file')
         self._verbosity = configHolder.verbosity
+        self._fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+ 
         self._logger = self._get_loger()
 
     def debug(self, level, msg):
@@ -33,30 +35,32 @@ class Logger(object):
         logging_source = 'stratuslab-pdisk'
         logger = logging.getLogger(logging_source)
         logger.setLevel(logging.DEBUG)
-        
-        # fmt=logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        
+
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG)
         logger.addHandler(console_handler)
         
-        logfile_handler = None
         if self._log_file:
-            try:
-                logfile_handler = logging.handlers.RotatingFileHandler(self._log_file,
-                                                                       'a', 100000, 10)
-                logfile_handler.setLevel(logging.DEBUG)
-                logfile_handler.setFormatter(fmt)
-                logger.addHandler(logfile_handler)
-            except ValueError:
-                abort("Invalid value specified for 'log_file' (section %s)" %
-                                                    defaults.CONFIG_MAIN_SECTION)
-        
-        if logfile_handler == None or not self._log_file:
-            # Use standard log destination in case a log file is not defined
-            syslog_handler = logging.handlers.SysLogHandler('/dev/log')
-            syslog_handler.setLevel(logging.WARNING)
-            logger.addHandler(syslog_handler)
-    
+            self._add_file_logger(logger)
+        else:
+            self._add_syslog_logger(logger)
+
         return logger
+
+    def _add_file_logger(self, logger):
+        try:
+            logfile_handler = logging.handlers.RotatingFileHandler(self._log_file,
+                                                                   'a', 100000, 10)
+            logfile_handler.setLevel(logging.DEBUG)
+            logfile_handler.setFormatter(self._fmt)
+            logger.addHandler(logfile_handler)
+        except ValueError:
+            abort("Invalid value specified for 'log_file' (section %s)" %
+                                                defaults.CONFIG_MAIN_SECTION)
+
+    def _add_syslog_logger(self, logger):
+        syslog_handler = logging.handlers.SysLogHandler('/dev/log')
+        syslog_handler.setLevel(logging.WARNING)
+        syslog_handler.setFormatter(self._fmt)
+        logger.addHandler(syslog_handler)
+
