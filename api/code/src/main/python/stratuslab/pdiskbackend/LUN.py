@@ -3,6 +3,7 @@ import uuid
 
 from stratuslab.pdiskbackend.utils import abort
 from stratuslab.pdiskbackend.CommandRunner import CommandRunner
+from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 #################################################################
 # Class describing a LUN and implementing the supported actions #
@@ -24,12 +25,13 @@ class LUN(object):
     additional_opt_info = {'rebase':'%%SNAP_UUID%%',
                           }
     
-    def __init__(self, uuid, size=None, proxy=None):
+    def __init__(self, uuid, size=None, proxy=None, configHolder=ConfigHolder()):
         self.uuid = uuid
         self.size = size
         self.proxy = proxy
         # Another LUN involved in actions like rebase or snapshot
         self.associatedLUN = None
+        self.configHolder = configHolder
     
     def getUuid(self):
         return self.uuid
@@ -152,10 +154,9 @@ class LUN(object):
                                  backendCmd.success_patterns,
                                  backendCmd.failure_ok_patterns)
 
-    @staticmethod
-    def _run_command(action, command, success_patterns, failure_ok_patterns):
+    def _run_command(self, action, command, success_patterns, failure_ok_patterns):
         command = CommandRunner(action, command, success_patterns, 
-                                failure_ok_patterns)
+                                failure_ok_patterns, configHolder=self.configHolder)
         command.execute()
         return command.checkStatus()
 
