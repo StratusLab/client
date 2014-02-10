@@ -518,6 +518,16 @@ def importSystem(system):
         raise
 
 
+def loadModule(module_name):
+    namespace = ''
+    name = module_name
+    if name.find('.') != -1:
+        # There's a namespace so we take it into account
+        namespace = '.'.join(name.split('.')[:-1])
+
+    return __import__(name, fromlist=namespace)
+
+
 def validateIp(ipAddress):
     return isValidIpV4(ipAddress) or isValidIpV6(ipAddress)
 
