@@ -1,8 +1,14 @@
 import unittest
+from mock.mock import Mock
+
+# Should go before importing Backend 
+from stratuslab.pdiskbackend.utils import EXITCODE_PDISK_OP_FAILED, Logger
+Logger._add_file_logger = Mock()
+Logger._add_syslog_logger = Mock()
 
 from stratuslab.pdiskbackend.backends.Backend import Backend
-from stratuslab.pdiskbackend.utils import EXITCODE_PDISK_OP_FAILED
 from stratuslab.pdiskbackend.backends.BackendCommand import BackendCommand
+from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 class BackendTest(unittest.TestCase):
 
@@ -13,7 +19,7 @@ class BackendTest(unittest.TestCase):
         pass
 
     def test_getCmd_missing_action(self):
-        backend = Backend()
+        backend = Backend(ConfigHolder())
         try:
             backend.getCmd('').next()
         except SystemExit as ex:
@@ -23,7 +29,7 @@ class BackendTest(unittest.TestCase):
 
     def test_getCmd_default_actions(self):
         for action in Backend.lun_backend_cmd_mapping.keys():
-            backend = Backend()
+            backend = Backend(ConfigHolder())
             assert None == backend.getCmd(action).next()
 
     def test_getCmd(self):
@@ -32,8 +38,9 @@ class BackendTest(unittest.TestCase):
 
         Backend.lun_backend_cmd_mapping.update({'check': ['foo']})
         Backend.backend_cmds = {'foo': ['bar']}
+        Backend._type = 'baz'
         try:
-            backend = Backend()
+            backend = Backend(ConfigHolder())
             backendCmd = backend.getCmd('check').next()
     
             assert None != backendCmd
