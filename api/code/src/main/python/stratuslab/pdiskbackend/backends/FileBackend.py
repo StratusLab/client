@@ -11,9 +11,9 @@ def getBackendProxy(config):
 
     return FileBackend(proxy_name,
                        backend_attributes['volume_name'],
-                       backend_attributes['mgt_user_name'],
-                       backend_attributes['mgt_user_private_key'],
-                       configHolder=config)
+                       config,
+                       mgtUser=backend_attributes['mgt_user_name'],
+                       mgtPrivKey=backend_attributes['mgt_user_private_key'])
 
 class FileBackend(Backend):
     
@@ -44,7 +44,7 @@ class FileBackend(Backend):
     success_msg_pattern = {'create' : '.*',
                            'getturl' : '(.*://.*)',
                            }
-    def __init__(self, proxy, volume, mgtUser=None, mgtPrivKey=None, configHolder=ConfigHolder()):
+    def __init__(self, proxy, volume, configHolder, mgtUser=None, mgtPrivKey=None):
         super(FileBackend, self).__init__(configHolder)
 
         self.volumeName = volume

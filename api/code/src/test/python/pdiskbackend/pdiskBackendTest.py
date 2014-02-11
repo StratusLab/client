@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 from mock.mock import Mock
 
@@ -13,13 +15,14 @@ from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 class BackendTest(unittest.TestCase):
 
     def setUp(self):
-        pass
+        fd, self.cfg_fname = tempfile.mkstemp()
+        os.close(fd)
 
     def tearDown(self):
-        pass
+        os.unlink(self.cfg_fname)
 
     def test_getCmd_missing_action(self):
-        backend = Backend(ConfigHolder())
+        backend = Backend(ConfigHolder(self.cfg_fname))
         try:
             backend.getCmd('').next()
         except SystemExit as ex:
@@ -29,7 +32,7 @@ class BackendTest(unittest.TestCase):
 
     def test_getCmd_default_actions(self):
         for action in Backend.lun_backend_cmd_mapping.keys():
-            backend = Backend(ConfigHolder())
+            backend = Backend(ConfigHolder(self.cfg_fname))
             assert None == backend.getCmd(action).next()
 
     def test_getCmd(self):
@@ -40,7 +43,7 @@ class BackendTest(unittest.TestCase):
         Backend.backend_cmds = {'foo': ['bar']}
         Backend._type = 'baz'
         try:
-            backend = Backend(ConfigHolder())
+            backend = Backend(ConfigHolder(self.cfg_fname))
             backendCmd = backend.getCmd('check').next()
     
             assert None != backendCmd

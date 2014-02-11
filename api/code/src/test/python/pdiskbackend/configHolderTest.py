@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 
 from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
@@ -6,13 +8,14 @@ from stratuslab.pdiskbackend import defaults
 class BackendTest(unittest.TestCase):
 
     def setUp(self):
-        pass
+        fd, self.cfg_fname = tempfile.mkstemp()
+        os.close(fd)
 
     def tearDown(self):
-        pass
+        os.unlink(self.cfg_fname)
 
     def testInit(self):
-        ch = ConfigHolder()
+        ch = ConfigHolder(self.cfg_fname)
         assert defaults.LOG_FILE == ch.get(defaults.CONFIG_MAIN_SECTION, 'log_file')
         
     def testConfigFileDoesNotExist(self):

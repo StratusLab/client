@@ -3,7 +3,6 @@ import os.path
 import random
 
 from .Backend import Backend
-from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 def getBackendProxy(config):    
     backend_attributes = {'identity': None,
@@ -19,11 +18,11 @@ def getBackendProxy(config):
     return CephBackend(proxy_name,
                        backend_attributes['mgt_user_name'],
                        backend_attributes['mgt_user_private_key'],
+                       config,
                        monitors=monitors,
                        identity=backend_attributes['identity'],
                        poolName=backend_attributes['pool_name'],
-                       snapshotName=backend_attributes['snapshot_name'],
-                       configHolder=config)
+                       snapshotName=backend_attributes['snapshot_name'])
 
 class CephBackend(Backend):
     """
@@ -137,8 +136,8 @@ class CephBackend(Backend):
       'size': '.*<size>([0-9]+)</size>.*',
     }
     
-    def __init__(self, proxyHost, mgtUser, mgtPrivKey, monitors=None, identity='cloud', 
-                 poolName='cloud', snapshotName='base', configHolder=ConfigHolder()):
+    def __init__(self, proxyHost, mgtUser, mgtPrivKey, configHolder, monitors=None, identity='cloud', 
+                 poolName='cloud', snapshotName='base'):
         super(CephBackend, self).__init__(configHolder)
 
         self.proxyHost = proxyHost

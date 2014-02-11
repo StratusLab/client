@@ -50,13 +50,13 @@ class BackendTest(unittest.TestCase):
         os.unlink(self.cfg_fname)
 
     def testInit(self):
-        ch = ConfigHolder(config_file_name=self.cfg_fname)
+        ch = ConfigHolder(self.cfg_fname)
         ch.get_proxy_name = Mock(return_value='foo')
         self.assertRaises(SystemExit, 
                           PdiskBackendProxyFactory.createBackendProxy, ch)
 
     def testCreateBackends(self):
-        ch = ConfigHolder(config_file_name=self.cfg_fname)
+        ch = ConfigHolder(self.cfg_fname)
         ch._set_backend_proxy_specific_attributes = Mock()
 
         for netapp_type in ['netapp.com', '7mode.netapp.com', 'cluster.netapp.com']:
