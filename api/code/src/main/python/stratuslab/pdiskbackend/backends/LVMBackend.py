@@ -2,7 +2,6 @@
 import re
 
 from .Backend import Backend
-from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 def getBackendProxy(config):
     # Retrieve NetApp back-end mandatory attributes.

@@ -2,7 +2,6 @@
 import re
 
 from .Backend import Backend
-from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 def getBackendProxy(config):
     backend_attributes = {'volume_name':''}
