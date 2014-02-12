@@ -172,6 +172,9 @@ class LUN(object):
         
     def _detokenizeCmd(self, action_cmd):
         """LUN related de-tokenization."""
+        if not action_cmd:
+            return action_cmd
+
         for i in range(len(action_cmd)):
             action_cmd[i] = self._detokenize(action_cmd[i])
         return action_cmd
