@@ -59,9 +59,9 @@ class FileBackend(Backend):
     
     # Parse all variables related to iSCSI proxy in the string passed as argument.
     # Return parsed string.
-    def parse(self, string):
+    def detokenize(self, string):
         if re.search('%%LOGVOL_PATH%%', string):
             string = re.sub('%%LOGVOL_PATH%%', self.volumeName + "/%%UUID%%", string)
         elif re.search('%%NEW_LOGVOL_PATH%%', string):
             string = re.sub('%%NEW_LOGVOL_PATH%%', self.volumeName + "/%%SNAP_UUID%%", string)
-        return Backend.detokenize(self, string)
+        return super(FileBackend, self).detokenize(string)

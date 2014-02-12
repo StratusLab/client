@@ -193,7 +193,7 @@ class CephBackend(Backend):
         selected = random.randint(0, len(self.monitors) - 1)
         return self.monitors[selected]
     
-    def parse(self, string):
+    def detokenize(self, string):
         """ Replace variable tags in a string by their appropriated values. """
         
         string = string.replace('%%DEVICE_NAME%%', self.buildImageDeviceTemplate())
@@ -213,4 +213,4 @@ class CephBackend(Backend):
         
         string = string.replace('%%SNAPSHOT_NAME%%', self.snapshotName)
         
-        return Backend.detokenize(self, string)
+        return super(CephBackend, self).detokenize(string)

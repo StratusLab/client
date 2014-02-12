@@ -76,7 +76,7 @@ class NetAppBackend(Backend):
         
     # Parse all variables related to iSCSI proxy in the string passed as argument.
     # Return parsed string.
-    def parse(self, string):
+    def detokenize(self, string):
         if string == '%%INITIATORGRP%%':
             string = self.initiatorGroup
         elif string == '%%LUNOS%%':
@@ -87,7 +87,7 @@ class NetAppBackend(Backend):
             string = self.namespace + "/%%UUID%%"
         elif string == '%%SNAP_NAME%%':
             string = self.namespace + "/%%SNAP_UUID%%"
-        return Backend.detokenize(self, string)
+        return super(NetAppBackend, self).detokenize(string)
     
 class NetApp7Mode(NetAppBackend):
     
