@@ -17,11 +17,11 @@ class CommandRunner(object):
     RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.'))]
     MAX_RETRIES = 3
     
-    def __init__(self, action, cmd, successMsgs=None, failureOkMsgs=None, configHolder=ConfigHolder()):
+    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs={}, configHolder=ConfigHolder()):
         self.action = action
         self.action_cmd = cmd
-        self.successMsgs = successMsgs
-        self.failureOkMsgs = failureOkMsgs
+        self.successMsgs = successMsgs or []
+        self.failureOkMsgs = failureOkMsgs or {}
         self.proc = None
         self._logger = Logger(configHolder)
     
