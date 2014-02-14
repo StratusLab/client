@@ -1,7 +1,7 @@
 import re
 import socket
 
-from stratuslab.pdiskbackend.utils import Logger, abort
+from stratuslab.pdiskbackend.utils import abort
 from .BackendCommand import BackendCommand
 
 ####################################################################
