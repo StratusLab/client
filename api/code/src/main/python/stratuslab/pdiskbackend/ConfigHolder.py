@@ -4,7 +4,7 @@ from ConfigParser import NoOptionError, NoSectionError
 
 from stratuslab.pdiskbackend.defaults import CONFIG_DEFAULTS, CONFIG_MAIN_SECTION,\
     CONFIG_FILE_NAME, VERBOSITY
-from stratuslab.pdiskbackend.utils import abort
+from stratuslab.pdiskbackend.utils import abort, Logger
 
 class ConfigHolder(object):
 
@@ -28,6 +28,14 @@ class ConfigHolder(object):
     def __init__(self, config_file_name=CONFIG_FILE_NAME, verbosity=VERBOSITY):
         self._config = self._read_configuration(config_file_name)
         self.verbosity = verbosity
+        self._logger = None
+
+    @property
+    def logger(self):
+        return self._logger and self._logger or Logger(self)
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
 
     def get(self, section, param):
         return self._config.get(section, param)

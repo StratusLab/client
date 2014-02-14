@@ -3,7 +3,7 @@ import re
 import time
 from subprocess import Popen, PIPE, STDOUT
 
-from stratuslab.pdiskbackend.utils import Logger, abort
+from stratuslab.pdiskbackend.utils import abort
 from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 #######################################################
@@ -23,7 +23,7 @@ class CommandRunner(object):
         self.successMsgs = successMsgs or []
         self.failureOkMsgs = failureOkMsgs or {}
         self.proc = None
-        self._logger = Logger(configHolder)
+        self._logger = configHolder.logger
     
     def execute(self):
         status = 0

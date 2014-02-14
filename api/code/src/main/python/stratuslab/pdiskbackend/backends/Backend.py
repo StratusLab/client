@@ -97,7 +97,7 @@ class Backend(object):
         self.volumeName = ''
         self.mgtUser = ''
     
-        self._logger = Logger(configHolder)
+        self._logger = configHolder.logger
     
     # Generator function returning:
     #    - the command corresponding to the action as a list of tokens, with iSCSI proxy related
