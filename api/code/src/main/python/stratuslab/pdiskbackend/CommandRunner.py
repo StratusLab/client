@@ -17,14 +17,23 @@ class CommandRunner(object):
     RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.'))]
     MAX_RETRIES = 3
     
-    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs={}, configHolder=ConfigHolder()):
+    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs={}, logger=None):
         self.action = action
         self.action_cmd = cmd
         self.successMsgs = successMsgs or []
         self.failureOkMsgs = failureOkMsgs or {}
         self.proc = None
-        self._logger = configHolder.logger
-    
+        self._set_logger(logger)
+
+    def _set_logger(self, logger):
+        if logger:
+            self._logger = logger
+        else:
+            self.__setattr__('debug', self._stdout_printer)
+            
+    def _stdout_printer(self, _, msg):
+        print msg
+
     def execute(self):
         status = 0
         # Execute command: NetApp command don't return an exit code. When a command is successful,
