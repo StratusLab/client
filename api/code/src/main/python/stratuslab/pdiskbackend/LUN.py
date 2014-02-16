@@ -12,7 +12,7 @@ class LUN(object):
 
     # Some LUN commands (e.g. rebase) needs to return information as a string on stdout
     # that will be captured by pdisk. The return value is built mainly from information
-    # capture in command output and returned as optInfo in __executeAction__ method.
+    # capture in command output and returned as optInfo in _execute_action method.
     # In addition to these optional informations produced by the command, it is possible
     # to add a value built from LUN class attributes. This value s appended to other
     # optional values, if any.
@@ -30,37 +30,37 @@ class LUN(object):
         self.proxy = proxy
         # Another LUN involved in actions like rebase or snapshot
         self.associatedLUN = None
-        self.configHolder = configHolder
+        self._logger = logger
     
     def getUuid(self):
         return self.uuid
     
     def check(self):
-        status, _ = self.__executeAction__('check')
+        status, _ = self._execute_action('check')
         return status
     
     def create(self):
-        status, _ = self.__executeAction__('create')
+        status, _ = self._execute_action('create')
         return status
     
     def delete(self):
-        status, _ = self.__executeAction__('delete')
+        status, _ = self._execute_action('delete')
         return status
     
     def getSize(self):
-        status, self.size = self.__executeAction__('size')
+        status, self.size = self._execute_action('size')
         if status != 0:
             abort('Failure to retrieve size of LUN %s' % (self.uuid))
         return status
     
     def getTurl(self):
-        status, self.turl = self.__executeAction__('getturl')
+        status, self.turl = self._execute_action('getturl')
         if status != 0:
             abort('Failure to retrieve Transport URL of %s' % (self.uuid))
         return self.turl
     
     def map(self):
-        status, _ = self.__executeAction__('map')
+        status, _ = self._execute_action('map')
         return status
     
     def rebase(self):
@@ -73,7 +73,7 @@ class LUN(object):
                 abort('An error occured creating a new LUN for rebasing %s' % (self.uuid))
         else:
             self.associatedLUN = self  # To simplify returned value
-        status, rebasedLUN = self.__executeAction__('rebase')
+        status, rebasedLUN = self._execute_action('rebase')
         if status != 0:
             abort('Failure to rebase LUN %s' % (self.uuid))
         # Don't return directly self.associatedLUN but use optional information
@@ -82,11 +82,11 @@ class LUN(object):
     
     def snapshot(self, snapshot_lun):
         self.associatedLUN = snapshot_lun
-        status, _ = self.__executeAction__('snapshot')
+        status, _ = self._execute_action('snapshot')
         return status
     
     def unmap(self):
-        status, _ = self.__executeAction__('unmap')
+        status, _ = self._execute_action('unmap')
         return status
     
     
@@ -99,7 +99,7 @@ class LUN(object):
     # Special values for commands are:
     #  - None: action is not implemented
     #  - empty list: action does nothing
-    def __executeAction__(self, action):
+    def _execute_action(self, action):
         optInfos = None
 
         for backendCmd in self._getBackendCmd(action):
