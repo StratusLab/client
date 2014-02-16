@@ -8,23 +8,6 @@ from stratuslab.pdiskbackend.utils import abort, Logger
 
 class ConfigHolder(object):
 
-    @staticmethod
-    def _read_configuration(config_file):
-        """Read configuration file. The file must exists as there is no 
-        sensible default value for several options.
-        """
-        config = ConfigParser.ConfigParser()
-        config.readfp(StringIO.StringIO(CONFIG_DEFAULTS))
-        try:
-            config.readfp(open(config_file))
-        except IOError as (errno, errmsg):
-            if errno == 2:
-                abort('Configuration file (%s) is missing.' % config_file)
-            else:
-                abort('Error opening configuration file (%s): %s (errno=%s)' %\
-                                                    (config_file, errmsg, errno))
-        return config
-
     def __init__(self, config_file_name=CONFIG_FILE_NAME, verbosity=VERBOSITY):
         self._config = self._read_configuration(config_file_name)
         self.verbosity = verbosity
@@ -39,6 +22,28 @@ class ConfigHolder(object):
 
     def get(self, section, param):
         return self._config.get(section, param)
+
+    def _read_configuration(self, config_file):
+        """Read configuration file. The file must exists as there is no 
+        sensible default value for several options.
+        """
+        config = ConfigParser.ConfigParser()
+        self._read_configuration_defaults(config)
+        self._read_configuration_from_file(config, config_file)
+        return config
+
+    def _read_configuration_defaults(self, config):
+        config.readfp(StringIO.StringIO(CONFIG_DEFAULTS))
+
+    def _read_configuration_from_file(self, config, config_file):
+        try:
+            config.readfp(open(config_file))
+        except IOError as (errno, errmsg):
+            if errno == 2:
+                abort('Configuration file (%s) is missing.' % config_file)
+            else:
+                abort('Error opening configuration file (%s): %s (errno=%s)' %\
+                                                    (config_file, errmsg, errno))
 
     def set_backend_proxy_attributes(self, backend_attributes, proxy_name):
         self._set_backend_proxy_specific_attributes(backend_attributes, proxy_name)
