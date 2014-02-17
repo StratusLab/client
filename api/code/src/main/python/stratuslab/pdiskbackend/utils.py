@@ -24,5 +24,5 @@ def initialize_logger(log_direction, verbosity):
     else:
         raise ConfigurationException('Wrong value for log_direction: %s' % log_direction)
 
-def print_detail(msg, level):
+def print_detail(msg, level=0):
     printDetail(msg, verboseThreshold=level)
