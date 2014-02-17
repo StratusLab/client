@@ -102,7 +102,14 @@ def get_syslog_logger(name=STRATUSLAB_API_LOGGER_NAME, level=logging.INFO):
 
     logger = logging.getLogger(name)
 
-    handler = SysLogHandler(address='/dev/log')
+    if sys.platform.startswith('linux'):
+        address = '/dev/log'
+    elif sys.platform == 'darwin':
+        address = '/var/run/syslog'
+    else:
+        raise Exception("Don't know syslog facility on %s" % sys.platform)
+
+    handler = SysLogHandler(address=address)
     logger.setLevel(level)
     logger.addHandler(handler)
     return logger
