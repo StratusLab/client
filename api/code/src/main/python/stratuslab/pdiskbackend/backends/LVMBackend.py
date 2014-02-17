@@ -13,7 +13,6 @@ def getBackendProxy(config):
 
     return LVMBackend(proxy_name,
                       backend_attributes['volume_name'],
-                      config,
                       mgtUser=backend_attributes['mgt_user_name'],
                       mgtPrivKey=backend_attributes['mgt_user_private_key']) 
 
@@ -75,8 +74,8 @@ class LVMBackend(Backend):
     new_lun_required = {'rebase':True
                         }
     
-    def __init__(self, proxy, volume, configHolder, mgtUser=None, mgtPrivKey=None):
-        super(LVMBackend, self).__init__(configHolder)
+    def __init__(self, proxy, volume, mgtUser=None, mgtPrivKey=None):
+        super(LVMBackend, self).__init__()
 
         self.volumeName = volume
         self.proxyHost = proxy

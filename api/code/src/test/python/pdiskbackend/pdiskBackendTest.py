@@ -1,28 +1,20 @@
-import os
-import tempfile
 import unittest
-from mock.mock import Mock
 
-# Should go before importing Backend 
-from stratuslab.pdiskbackend.utils import EXITCODE_PDISK_OP_FAILED, Logger
-Logger._add_file_logger = Mock()
-Logger._add_syslog_logger = Mock()
+from stratuslab.pdiskbackend.utils import EXITCODE_PDISK_OP_FAILED
 
 from stratuslab.pdiskbackend.backends.Backend import Backend
 from stratuslab.pdiskbackend.backends.BackendCommand import BackendCommand
-from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 
 class BackendTest(unittest.TestCase):
 
     def setUp(self):
-        fd, self.cfg_fname = tempfile.mkstemp()
-        os.close(fd)
+        pass
 
     def tearDown(self):
-        os.unlink(self.cfg_fname)
+        pass
 
     def test_getCmd_missing_action(self):
-        backend = Backend(ConfigHolder(self.cfg_fname))
+        backend = Backend()
         try:
             backend.getCmd('').next()
         except SystemExit as ex:
@@ -32,7 +24,7 @@ class BackendTest(unittest.TestCase):
 
     def test_getCmd_default_actions(self):
         for action in Backend.lun_backend_cmd_mapping.keys():
-            backend = Backend(ConfigHolder(self.cfg_fname))
+            backend = Backend()
             assert None == backend.getCmd(action).next()
 
     def test_getCmd(self):
@@ -43,7 +35,7 @@ class BackendTest(unittest.TestCase):
         Backend.backend_cmds = {'foo': ['bar']}
         Backend._type = 'baz'
         try:
-            backend = Backend(ConfigHolder(self.cfg_fname))
+            backend = Backend()
             backendCmd = backend.getCmd('check').next()
     
             assert None != backendCmd

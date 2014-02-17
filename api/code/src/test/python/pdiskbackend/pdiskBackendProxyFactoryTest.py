@@ -14,7 +14,6 @@ CONFIG_TEST = """
 [main]
 mgt_user_name = root
 mgt_user_private_key = /some/file.rsa
-log_file =
 
 [foo]
 type = bar
@@ -35,9 +34,6 @@ type = File
 [lvm.org]
 type = LVM
 """
-
-from stratuslab.pdiskbackend.utils import Logger
-Logger._add_syslog_logger = Mock()
 
 class BackendTest(unittest.TestCase):
 

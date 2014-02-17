@@ -18,7 +18,6 @@ def getBackendProxy(config):
     return CephBackend(proxy_name,
                        backend_attributes['mgt_user_name'],
                        backend_attributes['mgt_user_private_key'],
-                       config,
                        monitors=monitors,
                        identity=backend_attributes['identity'],
                        poolName=backend_attributes['pool_name'],
@@ -136,9 +135,9 @@ class CephBackend(Backend):
       'size': '.*<size>([0-9]+)</size>.*',
     }
     
-    def __init__(self, proxyHost, mgtUser, mgtPrivKey, configHolder, monitors=None, identity='cloud', 
+    def __init__(self, proxyHost, mgtUser, mgtPrivKey, monitors=None, identity='cloud', 
                  poolName='cloud', snapshotName='base'):
-        super(CephBackend, self).__init__(configHolder)
+        super(CephBackend, self).__init__()
 
         self.proxyHost = proxyHost
         self.mgtUser = mgtUser

@@ -21,17 +21,16 @@ def getBackendProxy(config):
                             backend_attributes['volume_name'],
                             backend_attributes['lun_namespace'],
                             backend_attributes['initiator_group'],
-                            backend_attributes['volume_snapshot_prefix'],
-                            config)   
+                            backend_attributes['volume_snapshot_prefix'])   
 
 def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace, 
-                     initiatorGroup, snapshotPrefix, configHolder):
+                     initiatorGroup, snapshotPrefix):
     if flavor.lower() in NETAPP_7MODE:
         return NetApp7Mode(proxy, mgtUser, mgtPrivKey, volume, namespace, 
-                             initiatorGroup, snapshotPrefix, configHolder)
+                             initiatorGroup, snapshotPrefix)
     elif flavor.lower() in NETAPP_CLUSTER:
         return NetAppCluster(proxy, mgtUser, mgtPrivKey, volume, namespace, 
-                             initiatorGroup, snapshotPrefix, configHolder)
+                             initiatorGroup, snapshotPrefix)
     else:
         raise Exception('Unknown NetApp flavor provided: %s' % flavor)
 
@@ -60,8 +59,8 @@ class NetAppBackend(Backend):
     lunOS = 'linux'
     
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                 snapshotPrefix, configHolder):
-        super(NetAppBackend, self).__init__(configHolder)
+                 snapshotPrefix):
+        super(NetAppBackend, self).__init__()
         
         self.proxyHost = proxy
         self.mgtUser = mgtUser
@@ -124,9 +123,9 @@ class NetApp7Mode(NetAppBackend):
                           }
     
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                 snapshotPrefix, configHolder):
-        super(NetApp7Mode, self).__init__(proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                                          snapshotPrefix, configHolder)
+                 snapshotPrefix):
+        super(NetApp7Mode, self).__init__(proxy, mgtUser, mgtPrivKey, volume, 
+                                          namespace, initiatorGroup, snapshotPrefix)
 
 class NetAppCluster(NetApp7Mode):
     
@@ -161,7 +160,6 @@ class NetAppCluster(NetApp7Mode):
                   'snapshot':['^creating snapshot', '^Snapshot already exists.']})
 
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
-                 snapshotPrefix, configHolder):
+                 snapshotPrefix):
         super(NetAppCluster, self).__init__(proxy, mgtUser, mgtPrivKey, volume, 
-                                            namespace, initiatorGroup, 
-                                            snapshotPrefix, configHolder)
+                                            namespace, initiatorGroup, snapshotPrefix)

@@ -16,7 +16,7 @@ class BackendTest(unittest.TestCase):
 
     def testInit(self):
         ch = ConfigHolder(self.cfg_fname)
-        assert defaults.LOG_FILE == ch.get(defaults.CONFIG_MAIN_SECTION, 'log_file')
+        assert defaults.CONFIG_LOG_DIRECTION == ch.get(defaults.CONFIG_MAIN_SECTION, 'log_direction')
         
     def testConfigFileDoesNotExist(self):
         self.assertRaises(SystemExit, 

@@ -1,8 +1,8 @@
 import re
 import socket
 
-from stratuslab.pdiskbackend.utils import abort
 from .BackendCommand import BackendCommand
+from stratuslab.pdiskbackend.utils import abort, print_detail
 
 ####################################################################
 # Superclass describing common aspect of every iSCSI backends      #
@@ -88,7 +88,7 @@ class Backend(object):
     new_lun_required = {
                         }
 
-    def __init__(self, configHolder):
+    def __init__(self):
         if not self._type:
             raise Exception('Backend type should be set.')
 
@@ -96,8 +96,6 @@ class Backend(object):
         self.mgtPrivKey = ''
         self.volumeName = ''
         self.mgtUser = ''
-    
-        self._logger = configHolder.logger
     
     # Generator function returning:
     #    - the command corresponding to the action as a list of tokens, with iSCSI proxy related
@@ -218,4 +216,4 @@ class Backend(object):
         return self._type
 
     def debug(self, level, msg):
-        self._logger.debug(level, msg)
+        print_detail(msg, level)
