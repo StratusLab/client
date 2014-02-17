@@ -24,13 +24,12 @@ class LUN(object):
     additional_opt_info = {'rebase':'%%SNAP_UUID%%',
                           }
     
-    def __init__(self, uuid, size=None, proxy=None, logger=None):
+    def __init__(self, uuid, size=None, proxy=None):
         self.uuid = uuid
         self.size = size
         self.proxy = proxy
         # Another LUN involved in actions like rebase or snapshot
         self.associatedLUN = None
-        self._logger = logger
     
     def getUuid(self):
         return self.uuid
@@ -155,7 +154,7 @@ class LUN(object):
 
     def _run_command(self, action, command, success_patterns, failure_ok_patterns):
         command = CommandRunner(action, command, success_patterns, 
-                                failure_ok_patterns, logger=self._logger)
+                                failure_ok_patterns)
         command.execute()
         return command.checkStatus()
 
