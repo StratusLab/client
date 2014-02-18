@@ -37,8 +37,8 @@ class CommandRunner(object):
         optInfo = ()
         try:
             retcode, output = self._getStatusOutputOrRetry(self.action)
-            output = output.strip()
-            if retcode != 0 and output:
+            output = self._filter_command_output(output)
+            if retcode != 0 and len(output) != 0:
                 self.debug("ERROR: %s action, exit code %s. Command output:\n%s\n%s\n%s" % \
                            (self.action, retcode, self.cmd_output_start, output, self.cmd_output_end))
                 # In some cases we are OK when failure happens.
@@ -91,6 +91,20 @@ class CommandRunner(object):
 
         return retcode, optInfo
     
+    def _filter_command_output(self, output):
+        lines = []
+        for line in output.split('\n'):
+            line = line.strip().strip('\r').strip()
+            if not line:
+                continue
+            if line.startswith('Warning: Permanently added'):
+                continue
+            # NetApp Clustered may return a bell... crazy.
+            if line.startswith('\x07'):
+                continue
+            lines.append(line)
+        return '\n'.join(lines)
+
     def _getStatusOutputOrRetry(self, _action=''):
         """_action parameter is required only for testability: for mocking the method
         with 'side_effect'."""
