@@ -16,11 +16,11 @@ class CommandRunner(object):
     RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.'))]
     MAX_RETRIES = 3
     
-    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs={}):
+    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs=[]):
         self.action = action
         self.action_cmd = cmd
         self.successMsgs = successMsgs or []
-        self.failureOkMsgs = failureOkMsgs or {}
+        self.failureOkMsgs = failureOkMsgs or []
         self.proc = None
 
     def execute(self):
@@ -42,7 +42,7 @@ class CommandRunner(object):
                 self.debug("ERROR: %s action, exit code %s. Command output:\n%s\n%s\n%s" % \
                            (self.action, retcode, self.cmd_output_start, output, self.cmd_output_end))
                 # In some cases we are OK when failure happens.
-                for failurePattern in self.failureOkMsgs.get(self.action, []):
+                for failurePattern in self.failureOkMsgs:
                     output_regexp = re.compile(failurePattern, re.MULTILINE)
                     matcher = output_regexp.search(output)
                     if matcher:
