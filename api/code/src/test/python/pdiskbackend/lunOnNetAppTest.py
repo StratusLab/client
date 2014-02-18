@@ -69,5 +69,37 @@ hniscsi1 %s
         status, _ = lun._execute_action('getturl')
         assert 255 == status
 
+    def test_action_delete(self):
+        from stratuslab.pdiskbackend import CommandRunner
+        CommandRunner.CommandRunner._getStatusOutputOrRetry = Mock(return_value=(255, """
+Error: There are no entries matching your query."""))
+
+        from stratuslab.pdiskbackend.LUN import LUN
+        lun = LUN('123', proxy=NetAppCluster('localhost', 'jay', '/foo/bar', 
+                                             '/netapp/volume', 'namespace', 
+                                             'initiatorGroup', 'snapshotPrefix'))
+        assert (0, '') == lun._execute_action('delete')
+
+    def test_action_snapshot_failure(self):
+        PORTAL = 'localhost'
+
+        def side_effect(action):
+            if action == 'snapshot':
+                return (255, """Error: command failed: The Snapshot(tm) copy name already exists""")
+            elif action == 'clone':
+                return (255, """Error: command failed: Clone start failed: Clone operation failed to start:
+Clone file exists.""")
+
+        from stratuslab.pdiskbackend import CommandRunner
+        CommandRunner.CommandRunner._getStatusOutputOrRetry = Mock(side_effect=side_effect)
+
+        from stratuslab.pdiskbackend.LUN import LUN
+        lun = LUN('123', proxy=NetAppCluster(PORTAL, 'jay', '/foo/bar', 
+                                             '/netapp/volume', 'namespace', 
+                                             'initiatorGroup', 'snapshotPrefix'))
+        lun.associatedLUN = Mock()
+        lun.associatedLUN.getUuid = Mock(return_value='foo')
+        assert (255, '') == lun._execute_action('snapshot')
+
 if __name__ == "__main__":
     unittest.main()
