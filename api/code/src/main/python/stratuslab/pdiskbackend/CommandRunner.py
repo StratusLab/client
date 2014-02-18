@@ -25,9 +25,6 @@ class CommandRunner(object):
 
     def execute(self):
         status = 0
-        # Execute command: NetApp command don't return an exit code. When a command is successful,
-        # its output is empty.
-        # action_cmd = 'echo ' + self.action_cmd
         self.debug("Executing command: '%s'" % (' '.join(self.action_cmd)), 1)
         try:
             self.proc = Popen(self.action_cmd, shell=False, stdout=PIPE, stderr=STDOUT)
