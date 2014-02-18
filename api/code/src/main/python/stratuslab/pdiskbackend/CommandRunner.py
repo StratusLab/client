@@ -13,7 +13,9 @@ class CommandRunner(object):
     cmd_output_start = '<<<<<<<<<<'
     cmd_output_end = '>>>>>>>>>>'
     
-    RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.'))]
+    RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.', re.MULTILINE)),
+                    (1, re.compile('^ssh: connect to host .* Connection refused', re.MULTILINE)),
+                    (255, re.compile('^ssh: connect to host .* No route to host', re.MULTILINE))]
     MAX_RETRIES = 3
     
     def __init__(self, action, cmd, successMsgs=[], failureOkMsgs=[]):
