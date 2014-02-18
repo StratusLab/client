@@ -54,7 +54,10 @@ class CommandRunner(object):
             else:
                 # Need to check if the command is expected to return an output when successful
                 success = False
-                if self.successMsgs:
+                if len(output) == 0:
+                    success = True
+                if self.successMsgs and len(output) > 0:
+                    success = False
                     for successPattern in self.successMsgs:
                         output_regexp = re.compile(successPattern, re.MULTILINE)
                         matcher = output_regexp.search(output)
@@ -64,9 +67,6 @@ class CommandRunner(object):
                                 optInfo = matcher.groups()
                             success = True
                             break
-                else:
-                    if len(output) == 0:
-                        success = True
                 if success:
                     self.debug("SUCCESS: %s action completed successfully." % self.action, 1)
                     if len(output) > 0:
