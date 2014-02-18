@@ -174,8 +174,9 @@ class Backend(object):
     # If there is no specific instructions for a given action, just join all list elements as a space
     # separated string.
     def formatOptInfos(self, action, optInfos):
+        """optInfos - tuple of strings."""
         if not optInfos:
-            return
+            return ''
         if action in self.opt_info_format:
             optInfosFmt = self.detokenize(self.opt_info_format[action])
             return optInfosFmt % optInfos

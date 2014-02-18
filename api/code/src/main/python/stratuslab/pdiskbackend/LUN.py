@@ -88,7 +88,13 @@ class LUN(object):
         status, _ = self._execute_action('unmap')
         return status
     
-    
+    def _runRollback(self, backendCmd):
+        status_, optInfo_ = self._runCommandOnFailure(backendCmd)
+        if status_ != 0:
+            if not optInfo_:
+                optInfo_ = ()
+            print "Rollback command", backendCmd.failure_command, "failed:", optInfo_
+
     # Execute an action on a LUN.
     # An action may involve several actual commands : getCmd() method of proxy is a generator returning
     # the commands to execute one by one.
@@ -99,26 +105,23 @@ class LUN(object):
     #  - None: action is not implemented
     #  - empty list: action does nothing
     def _execute_action(self, action):
-        optInfos = None
+        optInfos = ()
 
         for backendCmd in self._getBackendCmd(action):
-
             if not backendCmd:
                 abort("Action '%s' not implemented by back-end type '%s'" % \
                                                       (action, self._getBackendType()))
-
             self._detokenizeBackendCmd(backendCmd)
 
             status, optInfo = self._runCommand(backendCmd)
-            if status != 0 and backendCmd.run_on_failure():
-                status_, optInfo_ = self._runCommandOnFailure(backendCmd)
-                if status_ != 0:
-                    if not optInfo_:
-                        optInfo_ = ()
-                    print "Rollback command", backendCmd.failure_command, "failed:", optInfo_
-                break
-            # Stop LUN action processing if no on-failure command defined.
-            elif not backendCmd.run_on_failure():
+            if status != 0:
+                if backendCmd.run_on_failure():
+                    self._runRollback(backendCmd)
+                if optInfo:
+                    if optInfos:
+                        optInfos += optInfo
+                    else:
+                        optInfos = optInfo
                 break
             
             if optInfo:
@@ -134,9 +137,11 @@ class LUN(object):
             optInfos += self._detokenize(self.additional_opt_info[action]),
         
         if optInfos:
+            if isinstance(optInfos, (basestring,)):
+                optInfos = (optInfos,)
             optInfosStr = self.proxy.formatOptInfos(action, optInfos)
         else:
-            optInfosStr = None
+            optInfosStr = ''
         
         return status, optInfosStr
     

@@ -34,9 +34,9 @@ class CommandRunner(object):
         return status
     
     def checkStatus(self):
-        optInfo = None
+        optInfo = ()
         try:
-            retcode, output = self._getStatusOutputOrRetry()
+            retcode, output = self._getStatusOutputOrRetry(self.action)
             output = output.strip()
             if retcode != 0 and output:
                 self.debug("ERROR: %s action, exit code %s. Command output:\n%s\n%s\n%s" % \
@@ -91,7 +91,9 @@ class CommandRunner(object):
 
         return retcode, optInfo
     
-    def _getStatusOutputOrRetry(self):
+    def _getStatusOutputOrRetry(self, _action=''):
+        """_action parameter is required only for testability: for mocking the method
+        with 'side_effect'."""
         retcode, output = self._getStatusOutput()
         return self._retryOnError(retcode, output)
     
