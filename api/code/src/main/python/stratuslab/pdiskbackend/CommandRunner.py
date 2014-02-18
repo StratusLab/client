@@ -66,7 +66,7 @@ class CommandRunner(object):
                     if len(output) == 0:
                         success = True
                 if success:
-                    self.debug("SUCCESS: %s action completed successfully." % (self.action), 1)
+                    self.debug("SUCCESS: %s action completed successfully." % self.action, 1)
                     if len(output) > 0:
                         self.debug('Command output:\n%s\n%s\n%s' % (self.cmd_output_start, output, self.cmd_output_end), 2)
                 else:
