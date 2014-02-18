@@ -139,6 +139,7 @@ class NetAppCluster(NetApp7Mode):
     failure_ok_msg_pattern = NetApp7Mode.failure_ok_msg_pattern.copy()
     failure_ok_msg_pattern.update({'destroy':['(^Error: There are no entries matching your query)'],
                                    'delete':['(^Error: There are no entries matching your query)'],
+                                   'snapshot':['.*The Snapshot\(tm\) copy name already exists'],
                                    'snapdel':['(^Error: There are no entries matching your query)'],
                                    'map':['(^Error: command failed: LUN already mapped to this group)']})
 
