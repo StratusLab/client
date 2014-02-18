@@ -136,12 +136,12 @@ class LUN(object):
                 optInfos = ()
             optInfos += self._detokenize(self.additional_opt_info[action]),
         
-        if optInfos:
-            if isinstance(optInfos, (basestring,)):
-                optInfos = (optInfos,)
+        if isinstance(optInfos, (basestring,)):
+            optInfos = (optInfos,)
+        if status == 0 and optInfos:
             optInfosStr = self.proxy.formatOptInfos(action, optInfos)
         else:
-            optInfosStr = ''
+            optInfosStr = ' '.join(optInfos)
         
         return status, optInfosStr
     
