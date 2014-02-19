@@ -20,6 +20,7 @@
 
 import time
 import xml.etree.ElementTree as ET
+from mock.mock import Mock
 import unittest
 
 from stratuslab.accounting.Computer import Computer
@@ -74,6 +75,17 @@ VM_XML = """
 """
 
 HOUR = 60 * 60
+
+DISK_SIZE = 123
+IMAGE_MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<metadata>
+    <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:slreq="http://mp.stratuslab.eu/slreq#" xmlns:slterms="http://mp.stratuslab.eu/slterms#" xml:base="http://mp.stratuslab.eu/">
+        <rdf:Description rdf:about="#GuiiMg3AYfPMvyVWH242-ctLuR7">
+            <dcterms:identifier>GuiiMg3AYfPMvyVWH242-ctLuR7</dcterms:identifier>
+            <slreq:bytes>%s</slreq:bytes>
+        </rdf:Description>
+    </rdf:RDF>
+</metadata>""" % DISK_SIZE
 
 class ComputerTest(unittest.TestCase):
 
@@ -179,6 +191,12 @@ class ComputerTest(unittest.TestCase):
         cmptr = Computer(self.w_start, self.w_end, '', True)
         assert False == cmptr.vm_in_range(vm)
 
+    def test_get_size_from_marketplace(self):
+        cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._get_url = Mock(return_value=IMAGE_MANIFEST)
+        assert DISK_SIZE == cmptr.get_size_from_marketplace('http://foo.bar/baz')
+        assert DISK_SIZE == cmptr.marketplaceSizeCache['http://foo.bar/baz']
+
     def _get_vm(self, stime, etime):
         vm = ET.fromstring(VM_XML)
         vm.find('slice/' + Computer.VM_RUN_STARTTIME_ELEM).text = str(stime)
@@ -188,7 +206,6 @@ class ComputerTest(unittest.TestCase):
     def _update_and_assert(self, vm, delta_time_hours):
         cmptr = Computer(self.w_start, self.w_end, '', True)
         cmptr._update_time_on_vm(vm)
-        print int(vm.find('time').text)
         assert delta_time_hours == int(vm.find('time').text)
 
 if __name__ == "__main__":

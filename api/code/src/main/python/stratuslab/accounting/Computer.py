@@ -226,28 +226,37 @@ class Computer(object):
     def get_disks(self, vm):
         return vm.findall('TEMPLATE/DISK')
 
-    def get_size_from_marketplace(self, disk):
-        source = disk.find('SOURCE')
-        url = source.text
+    def get_size_from_marketplace(self, url):
         if url in self.marketplaceSizeCache:
             return self.marketplaceSizeCache[url]
         try:
-            marketplaceDefinition = urllib2.urlopen(url + '?status=all&location=all').read()
-            root = ET.fromstring(marketplaceDefinition)
-            _bytes = root.find('rdf:RDF/rdf:Description/ns2:bytes', namespaces={"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","ns2":"http://mp.stratuslab.eu/slreq#"}).text
-            _bytes = int(_bytes)
-        except (urllib2.URLError, ValueError):
+            marketplaceDefinition = self._get_url(url + '?status=all&location=all')
+        except urllib2.URLError as ex:
             _bytes = 0
-            print "Error retrieving marketplace url:", url
+            print "Error retrieving marketplace url:", url, ex
+        else:
+            root = ET.fromstring(marketplaceDefinition)
+            _bytes = root.find('{0}RDF/{0}Description/{1}bytes'.\
+                               format("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}",
+                                      "{http://mp.stratuslab.eu/slreq#}")).text
+            _bytes = int(_bytes)
         self.marketplaceSizeCache[url] = _bytes
         return _bytes
+
+    def _get_url(self, url):
+        """Raises urllib2.URLError"""
+        return urllib2.urlopen(url).read()
 
     def get_disk_size(self, disk):
         size = disk.find('SIZE')
         if size is not None:
             return float(size.text)/1024
         else:
-            return self.bytes_to_giga_approximation(self.get_size_from_marketplace(disk))
+            return self.bytes_to_giga_approximation(self.get_size_from_marketplace(
+                                                        self.get_disk_source(disk)))
+
+    def get_disk_source(self, disk):
+        return disk.find('SOURCE').text.strip()
 
     def bytes_to_GB(self, _bytes):
         return _bytes / 1024 / 1024 / 1024
