@@ -132,9 +132,10 @@ class NetAppCluster(NetApp7Mode):
     _type = 'netapp-clustered'
 
     backend_cmds = NetApp7Mode.backend_cmds.copy()
-    backend_cmds.update({'clone':[ 'file', 'clone', 'create', '-destination-path', '%%SNAP_NAME%%', '-source-path', '%%NAME%%', '-s', '%%SNAP_PARENT%%'  ],
+    backend_cmds.update({'clone':[ 'file', 'clone', 'create', '-destination-path', '%%SNAP_NAME%%', '-source-path', '%%NAME%%', '-s', '%%SNAP_PARENT%%'],
                          'get_lun':[ 'lun', 'show', '-v', '-m', '%%NAME%%' ],
-                         'get_target':[ 'vserver', 'iscsi', 'show', '-fields', 'target-name']})
+                         'get_target':[ 'vserver', 'iscsi', 'show', '-fields', 'target-name'],
+                         'snapdel':['volume', 'snap', 'delete', '-volume', '%%VOLUME_NAME%%', '-snapshot', '%%SNAP_PARENT%%']})
 
     failure_ok_msg_pattern = NetApp7Mode.failure_ok_msg_pattern.copy()
     failure_ok_msg_pattern.update({'destroy':['(^Error: There are no entries matching your query)'],
