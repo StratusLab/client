@@ -21,9 +21,10 @@
 import unittest
 import os
 import tempfile
+from mock.mock import Mock
 
 from stratuslab.tm.TMCloneCache import TMCloneCache
-from mock.mock import Mock
+from stratuslab import Util
 
 class TMCloneCacheTest(unittest.TestCase):
 
@@ -33,6 +34,7 @@ persistent_disk_lvm_device = /dev/pdisk
 one_username = oneadmin
 one_password = oneadmin
 one_port = 2633
+persistent_disk_public_base_url = https://example.com:8445
 """
 
     def setUp(self):
@@ -91,6 +93,21 @@ one_port = 2633
             tm._checkAuthorization()
         except ValueError:
             self.fail('Should not have thrown ValueError')
+
+    def test_updatePDiskSrcUrlFromPublicToLocalIp(self):
+        tm = TMCloneCache({TMCloneCache._ARG_SRC_POS : 'foo:bar',
+                           TMCloneCache._ARG_DST_POS : 'foo:bar',
+                           'bar' : 'baz'},
+                           conf_filename=self.conf_filename)
+        assert 'https://example.com:8445' == tm.persistentDiskPublicBaseUrl
+        tm.diskSrc = 'pdisk:%s:uuid-123' % Util.getHostnamePortFromUri(
+                                                tm.persistentDiskPublicBaseUrl)
+        tm._updatePDiskSrcUrlFromPublicToLocalIp()
+        assert 'pdisk:127.0.0.1:8445:uuid-123' == tm.diskSrc
+
+        # The URI shouldn't be updated when it points to an IP different to the public one.
+        tm._updatePDiskSrcUrlFromPublicToLocalIp()
+        assert 'pdisk:127.0.0.1:8445:uuid-123' == tm.diskSrc
 
     # Utils
     def _write_conf_file(self):

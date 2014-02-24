@@ -34,6 +34,7 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.Compressor import Compressor
+from stratuslab import Util
 
 
 class TMCloneCache(object):
@@ -124,8 +125,23 @@ class TMCloneCache(object):
         self.diskDstPath = self._getDiskPath(dst)
         self.diskSrc = args[self._ARG_SRC_POS]
 
+    def _updatePDiskSrcUrlFromPublicToLocalIp(self):
+        """When PDisk is running behind a proxy, KVMs usually can't connect to 
+        it on the public IP. Instead substitute the public IP with the local one.
+        Substitution is only made if the pdisk URL points to the public IP of the 
+        PDisk (i.e., the source disk is located on this site).
+        persistent_disk_public_base_url should be set in the configuration."""
+        src_pdisk_hostname = self._getStringPart(self.diskSrc, 1, 4)
+        public_pdisk_hostname = Util.getHostnameFromUri(self.persistentDiskPublicBaseUrl) or\
+                                    self.persistentDiskIp
+        if src_pdisk_hostname == public_pdisk_hostname:
+            disk_src_parts = self.diskSrc.split(':')
+            disk_src_parts[1] = self.persistentDiskIp
+            self.diskSrc = ':'.join(disk_src_parts)
+
     def _retrieveDisk(self):
         if self.diskSrc.startswith('pdisk:'):
+            self._updatePDiskSrcUrlFromPublicToLocalIp()
             self._startFromPersisted()
         else:
             self._startFromCowSnapshot()
