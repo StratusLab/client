@@ -211,6 +211,17 @@ class PersistentDisk(object):
         self._raiseOnErrors(headers, uuid)
         return self._getUuidFromJson(uuid)
 
+    def getMountVmIds(self, uuid):
+        "Return IDs of VMs (list of strings) to which the volume is mounted."
+        self._setPDiskUserCredentials()
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s/mounts' % (self.endpoint, uuid)
+        headers, json_mounts = self._getJson(url)
+        self._raiseOnErrors(headers, json_mounts)
+        mounts = json.loads(json_mounts)
+        return [m['vmId'] for m in mounts]
+
     def volumeExists(self, uuid):
         self._initPDiskConnection()
         self._printContacting()

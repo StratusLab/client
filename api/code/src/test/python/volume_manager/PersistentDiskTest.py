@@ -74,6 +74,20 @@ class PersistentDiskTest(unittest.TestCase):
         pd.quarantinePeriod = '15d'
         self.assertEqual(pd._getQuarantinePeriod(), 15*60*24)
 
+    def testGetMountVmIds(self):
+        pd = PersistentDisk()
+        pd.endpoint = 'https://example.com:8445/pwd'
+        pd._raiseOnErrors = pd._setPDiskUserCredentials =\
+                                                pd._initPDiskConnection = Mock()
+        pd._getJson = Mock(return_value=('', '[{"vmId":"1234", "device":"static"}]'))
+        assert ['1234'] == pd.getMountVmIds('foo')
+        pd._getJson.assert_called_once_with(*('https://example.com:8445/pwd/disks/foo/mounts',), **{})
+
+        pd._getJson = Mock(return_value=('', 
+                '[{"vmId":"1234", "device":"static"}, {"vmId":"4567", "device":"static"}]'))
+        assert ['1234', '4567'] == pd.getMountVmIds('bar')
+        pd._getJson.assert_called_with(*('https://example.com:8445/pwd/disks/bar/mounts',), **{})
+
 
 if __name__ == "__main__":
     unittest.main()
