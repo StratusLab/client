@@ -345,6 +345,12 @@ class BaseSystem(object):
             replace = '%s ALL = NOPASSWD: %s' % (self.oneUsername, cmd)
             self.appendOrReplaceInFileCmd('/etc/sudoers', '%s' % replace, replace)
 
+        replace = 'Defaults:%s !requiretty' % self.oneUsername
+        self.appendOrReplaceInFileCmd('/etc/sudoers', '%s' % replace, replace)
+
+        replace = 'Defaults:%s !requiretty' % 'root'
+        self.appendOrReplaceInFileCmd('/etc/sudoers', '%s' % replace, replace)
+
     def _setOneHome(self):
         if not self.oneHome:
             self.oneHome = os.path.expanduser('~' + self.oneUsername)

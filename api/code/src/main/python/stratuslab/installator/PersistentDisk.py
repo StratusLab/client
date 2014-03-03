@@ -193,6 +193,9 @@ class PersistentDisk(Installator):
         self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
                                                  'Defaults:%s !requiretty' % self.oneUsername,
                                                  'Defaults:%s !requiretty' % self.oneUsername)
+        self.system._remoteAppendOrReplaceInFile('/etc/sudoers',
+                                                 'Defaults:%s !requiretty' % 'root',
+                                                 'Defaults:%s !requiretty' % 'root')
 
     def _configureNodeScripts(self):
         printStep('Configuring node script...')
