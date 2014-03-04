@@ -102,6 +102,7 @@
 
 	  <requires>
 	    <require>stratuslab-api-externals</require>
+            <require>dosfstools</require>  <!-- mkfs.vfat for cloud-init -->
 	  </requires>
 	  
 	  <buildarch>noarch</buildarch>
