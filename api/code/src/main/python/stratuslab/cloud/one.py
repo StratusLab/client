@@ -160,7 +160,7 @@ class OneConnector(object):
         if not ret:
             raise OneException(info)
 
-        vmlist = etree.fromstring(info)
+        vmlist = Util.etree_from_text(info)
         for xml in vmlist.findall('VM'):
             self._addStateSummary(xml)
 
@@ -169,7 +169,7 @@ class OneConnector(object):
     def _getVmInfoAsXml(self, vmId):
         info = self._vmInfo(vmId)
 
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
 
         self._addStateSummary(xml)
 
@@ -203,30 +203,30 @@ class OneConnector(object):
 
     def getVmInfo(self, vmId):
         info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
         self._addStateSummary(xml)
         return etree.tostring(xml)
 
     def getVmNode(self, vmId):
         info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
         return xml.find('HISTORY_RECORDS/HISTORY/HOSTNAME').text
 
     def getVmOwner(self, vmId):
         info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
         return xml.find('UNAME').text
 
     def getVmDiskSource(self, vmId, diskId):
         info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
         sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK')
                    if x.find('DISK_ID').text == str(diskId)]
         return sources[0]
 
     def getCreateImageInfo(self, vmId):
         info = self._vmInfo(vmId)
-        dom = etree.fromstring(info)
+        dom = Util.etree_from_text(info)
         createImage_dom = dom.find('TEMPLATE/CREATE_IMAGE')
         infos = {}
         for elem in createImage_dom:
@@ -239,7 +239,7 @@ class OneConnector(object):
 
     def getVmSource(self, vmId):
         info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
         return xml.find('TEMPLATE/DISK/DISK_ID=0/../SOURCE').text
 
     def isVmRunning(self, vmId):
@@ -315,7 +315,7 @@ class OneConnector(object):
 
     def _getVmStateSummary(self, vmId):
         info = self._vmInfo(vmId)
-        xml = etree.fromstring(info)
+        xml = Util.etree_from_text(info)
         return self._getOneVmStateFromXml(xml)
 
     # -------------------------------------------

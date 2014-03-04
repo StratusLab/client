@@ -38,7 +38,6 @@ import stratuslab.api.LogUtil as LogUtil
 
 import Defaults
 
-
 # TODO: Move to Defaults
 utilPath = os.path.abspath(os.path.dirname(__file__))
 defaultRepoConfigSection = 'stratuslab_repo'
@@ -731,20 +730,6 @@ def isFalseConfVal(var):
     return (str(var).lower() in ['false', 'no', 'off', '0', '']) or False
 
 
-def importETree():
-    try:
-        import xml.etree.cElementTree as etree  # c-version first
-
-        return etree
-    except ImportError:
-        try:
-            import xml.etree.ElementTree as etree  # python version
-
-            return etree
-        except ImportError:
-            raise Exception('failed to import ElementTree')
-
-
 def escapeDoubleQuotes(string, times=1):
     return re.sub('"', '%s"' % ('\\' * times), string)
 
@@ -802,3 +787,32 @@ def getValueInKB(value):
 
 def is_uuid(str_uuid):
     return RE_UUID.match(str_uuid)
+
+
+def importETree():
+    try:
+        import xml.etree.cElementTree as etree  # c-version first
+
+        return etree
+    except ImportError:
+        try:
+            import xml.etree.ElementTree as etree  # python version
+
+            return etree
+        except ImportError:
+            raise Exception('failed to import ElementTree')
+
+
+etree = importETree()
+
+
+def etree_from_text(text):
+    """
+    The native fromstring method in etree doesn't handle unicode
+    values correctly without explicit encoding in Python 2.x.  
+    As the Python 2.x is essentially frozen, the python maintainers
+    will not be fixing this in the distribution.
+    """
+    if isinstance(text, unicode):
+        text = text.encode('utf-8')
+    return etree.fromstring(text)

@@ -89,7 +89,7 @@ class Monitor(Configurable):
 
     def _nodeDetail(self, nodeId):
         res = self.cloud.getHostInfo(int(nodeId))
-        host = etree.fromstring(res)
+        host = Util.etree_from_text(res)
         info = CloudInfo()
         info.populate(host)
         return info
@@ -102,7 +102,7 @@ class Monitor(Configurable):
 
     def _vmDetail(self, vmId):
         res = self.cloud.getVmInfo(int(vmId))
-        vm = etree.fromstring(res)
+        vm = Util.etree_from_text(res)
         if self.portTranslationClient:
             self.portTranslationClient.addPortTranslationToSingleVmInfo(vm)
         info = CloudInfo()
@@ -139,7 +139,7 @@ class Monitor(Configurable):
     def listNodes(self):
         nodes = self.cloud.listHosts()
         correct_nodes = []
-        for node in self._iterate(etree.fromstring(nodes)):
+        for node in self._iterate(Util.etree_from_text(nodes)):
             # FIXME: remove this later.
             try:
                 node.attribs['template_usedcpu'] = round(float(node.attribs['template_usedcpu']), 2)
@@ -150,7 +150,7 @@ class Monitor(Configurable):
 
     def listVms(self, showVmsFromAllUsers=False):
         res = self.cloud.listVms(showVmsFromAllUsers)
-        vms = etree.fromstring(res)
+        vms = Util.etree_from_text(res)
 
         self._addHostnameToVmsInfo(vms)
 

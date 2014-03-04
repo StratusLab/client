@@ -139,7 +139,7 @@ class OpenNebulaFrontend(OpenNebulaCommon):
     def _getVnetIdFromVnetName(self, vnet_name):
             vnet_info = self._getVnetInfoXml(vnet_name)
             try:
-                vnet_tree = etree.fromstring(vnet_info)
+                vnet_tree = Util.etree_from_text(vnet_info)
             except SyntaxError, ex:
                 raise ExecutionException('Unable to parse vnet %s info: %s' %
                                          (vnet_name, str(ex)))

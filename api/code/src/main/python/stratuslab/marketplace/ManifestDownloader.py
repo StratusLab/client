@@ -53,7 +53,7 @@ class ManifestDownloader(object):
 
     @staticmethod
     def _parseXml(xmlAsString):
-        return etree.fromstring(xmlAsString)
+        return Util.etree_from_text(xmlAsString)
 
     def _extractManifestInfos(self, manifestRootElement):
         manifestElements = manifestRootElement.findall('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF')
@@ -79,7 +79,7 @@ class ManifestDownloader(object):
             return self.__getManifest(url)
         except:
             reason = ''.join(traceback.format_exception_only(*(sys.exc_info()[:2])))
-            Util.printError('Failed to get manifest for resource uri: %s. %s' % (url, 
+            Util.printError('Failed to get manifest for resource uri: %s. %s' % (url,
                                                                                  reason))
 
     def __getManifest(self, url):

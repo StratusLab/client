@@ -157,7 +157,7 @@ class ManifestInfo(object):
     def parseManifest(self, manifest):
 
         try:
-            xml_tree = etree.fromstring(manifest)
+            xml_tree = Util.etree_from_text(manifest)
         except SyntaxError, ex:
             raise ExecutionException('Unable to parse manifest: %s\nMANIFEST:\n%s' %
                                      (str(ex), manifest))

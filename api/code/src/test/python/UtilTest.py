@@ -176,6 +176,13 @@ olcLastMod: TRUE
         finally:
             os.unlink(filename)
 
+    def testXmlUnicode(self):
+        utf = unicode('éñôøü', encoding='utf8')
+        xml = "<root>%s</root>" % utf
+        root = Util.etree_from_text(xml)
+        result = root.text
+        self.failUnlessEqual(utf, result)
+
     def testgetValueInKB(self):
         self.failUnlessEqual('1', Util.getValueInKB('1'))
         self.failUnlessEqual('123', Util.getValueInKB('123'))
