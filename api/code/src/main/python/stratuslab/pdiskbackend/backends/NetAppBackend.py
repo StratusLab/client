@@ -135,7 +135,8 @@ class NetAppCluster(NetApp7Mode):
     backend_cmds.update({'clone':[ 'file', 'clone', 'create', '-destination-path', '%%SNAP_NAME%%', '-source-path', '%%NAME%%', '-s', '%%SNAP_PARENT%%'],
                          'get_lun':[ 'lun', 'show', '-v', '-m', '%%NAME%%' ],
                          'get_target':[ 'vserver', 'iscsi', 'show', '-fields', 'target-name'],
-                         'snapdel':['volume', 'snap', 'delete', '-volume', '%%VOLUME_NAME%%', '-snapshot', '%%SNAP_PARENT%%']})
+                         'snapdel':['volume', 'snap', 'delete', '-volume', '%%VOLUME_NAME%%', '-snapshot', '%%SNAP_PARENT%%'],
+                         'map':[ 'lun', 'map', '-path', '%%NAME%%', '-igroup', '%%INITIATORGRP%%' ]})
 
     failure_ok_msg_pattern = NetApp7Mode.failure_ok_msg_pattern.copy()
     failure_ok_msg_pattern.update({'destroy':['(^Error: There are no entries matching your query)'],
@@ -147,7 +148,7 @@ class NetAppCluster(NetApp7Mode):
     success_msg_pattern = NetApp7Mode.success_msg_pattern.copy()
     success_msg_pattern.update({'create':'Created a LUN of size.*',
                   'delete':'.*Error: There are no entries matching your query.*',
-                  'map':'.*',
+                  'map':'.*LUN already mapped to this group',
                   'unmap':'.*',
                   'check':'online',
                   'get_lun':'LUN ID:\s+(\d+)',
