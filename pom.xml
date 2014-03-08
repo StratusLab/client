@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.client</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>14.03.0</version>
+  <version>14.03.1-SNAPSHOT</version>
   <name>StratusLab Parent (POM)</name>
 
   <url>http://github.com/StratusLab/client</url>
@@ -53,7 +53,7 @@ with minimal dependencies for maximum portability.
   <scm>
     <connection>scm:git:ssh://git@github.com/StratusLab/client.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/StratusLab/client.git</developerConnection>
-    <tag>stratuslab-parent-14.03.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
