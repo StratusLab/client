@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.client</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>14.02.0-SNAPSHOT</version>
+  <version>14.06.0-SNAPSHOT</version>
   <name>StratusLab Parent (POM)</name>
 
   <url>http://github.com/StratusLab/client</url>
@@ -20,7 +20,7 @@ with minimal dependencies for maximum portability.
   <parent>
     <groupId>eu.stratuslab</groupId>
     <artifactId>distribution</artifactId>
-    <version>14.02.0-SNAPSHOT</version>
+    <version>14.06.0-SNAPSHOT</version>
   </parent>
 
   <modules>
@@ -41,7 +41,7 @@ with minimal dependencies for maximum portability.
     <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> 
     <RELEASE>0.${maven.build.timestamp}.${package.os}</RELEASE>
 
-    <metadata.version>14.02.0-SNAPSHOT</metadata.version>
+    <metadata.version>14.06.0-SNAPSHOT</metadata.version>
 
   </properties>
 

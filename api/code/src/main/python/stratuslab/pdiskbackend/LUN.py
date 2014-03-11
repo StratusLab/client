@@ -105,7 +105,10 @@ class LUN(object):
     #  - None: action is not implemented
     #  - empty list: action does nothing
     def _execute_action(self, action):
+
+        # Ensure that the local variables are always initialized.
         optInfos = ()
+        status = 0
 
         for backendCmd in self._getBackendCmd(action):
             if not backendCmd:
@@ -138,6 +141,7 @@ class LUN(object):
         
         if isinstance(optInfos, (basestring,)):
             optInfos = (optInfos,)
+
         if status == 0 and optInfos:
             optInfosStr = self.proxy.formatOptInfos(action, optInfos)
         else:

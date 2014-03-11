@@ -26,7 +26,7 @@ from stratuslab.Exceptions import InputException, ClientException,\
     ExecutionException
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
-from stratuslab.Util import importETree
+from stratuslab.Util import importETree, etree_from_text
 
 etree = importETree()
 
@@ -50,26 +50,26 @@ class Uploader(object):
         client = HttpClient(self.confHolder)
         if not os.path.exists(manifestFilename):
             raise InputException('Can\'t find metadata file: %s' % manifestFilename)
-        
+
         manifest = open(manifestFilename).read()
 
         info = ManifestInfo(self.confHolder)
         info.parseManifest(manifest)
-        
+
         url = MarketplaceUtil.metadataEndpointUrl(self.marketplaceEndpoint)
         try:
             client.post(url, manifest)
         except ClientException, ex:
             error = ''
             try:
-                error = etree.fromstring(ex.content).text
+                error = etree_from_text(ex.content).text
             except: pass
             raise ExecutionException("Failed to upload: %s: %s" % (ex.reason, error))
         except AttributeError, ex:
             raise ExecutionException("Failed to upload (post) to URL: %s" % url)
 
-        finalUrl = MarketplaceUtil.metadataCompleteUrl(self.marketplaceEndpoint, 
-                                                       info.identifier, 
-                                                       info.email, 
+        finalUrl = MarketplaceUtil.metadataCompleteUrl(self.marketplaceEndpoint,
+                                                       info.identifier,
+                                                       info.email,
                                                        info.created)
         return finalUrl
