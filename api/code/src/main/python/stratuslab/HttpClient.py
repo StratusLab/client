@@ -63,7 +63,7 @@ class HttpClient(object):
         self.crendentials = {}
         self.certificates = {}
         self.handleResponse = True
-        self.useHttpCache = True
+        self.useHttpCache = False
         configHolder.assign(self)
 
     def get(self, url, accept='application/xml'):
