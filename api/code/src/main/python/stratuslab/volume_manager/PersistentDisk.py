@@ -222,6 +222,13 @@ class PersistentDisk(object):
         mounts = json.loads(json_mounts)
         return [m['vmId'] for m in mounts]
 
+    def deleteMount(self, uuid, vm_id):
+        self._initPDiskConnection()
+        self._printContacting()
+        url = '%s/disks/%s/mounts/%s' % (self.endpoint, uuid, self.disk_uuid + "_" + vm_id)
+        headers, uuid = self.client.delete(url, accept="application/json")
+        self._raiseOnErrors(headers, uuid)
+
     def volumeExists(self, uuid):
         self._initPDiskConnection()
         self._printContacting()
