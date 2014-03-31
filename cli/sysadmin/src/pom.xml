@@ -22,7 +22,7 @@
     </dependency>
     <dependency>
       <groupId>eu.stratuslab.metadata</groupId>
-      <artifactId>metadata</artifactId>
+      <artifactId>metadata-fatjar</artifactId>
       <type>jar</type>
       <classifier>jar-with-dependencies</classifier>
       <scope>compile</scope>
@@ -129,7 +129,7 @@
 			<artifactItems>
 				<artifactItem>
 					<groupId>eu.stratuslab.metadata</groupId>
-					<artifactId>metadata</artifactId>
+					<artifactId>metadata-fatjar</artifactId>
 					<classifier>jar-with-dependencies</classifier>
 					<type>jar</type>
 				</artifactItem>
