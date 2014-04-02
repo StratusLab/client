@@ -1,7 +1,7 @@
 include README
 include README.txt
 
-include java/metadata-${metadata.version}-jar-with-dependencies.jar
+include java/metadata-fatjar-${metadata.version}-jar-with-dependencies.jar
 include share/vm/schema.one
 include share/template/manifest.xml.tpl
 include conf/stratuslab-user.cfg.ref

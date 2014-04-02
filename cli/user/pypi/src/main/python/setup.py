@@ -66,7 +66,7 @@ setup(
         ],
 
     data_files=[
-        ('java', ['java/metadata-${metadata.version}-jar-with-dependencies.jar']),
+        ('java', ['java/metadata-fatjar-${metadata.version}-jar-with-dependencies.jar']),
         ('share/vm', ['share/vm/schema.one']),
         ('share/template', ['share/template/manifest.xml.tpl']),
         ('conf', ['conf/stratuslab-user.cfg.ref']),
