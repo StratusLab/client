@@ -20,55 +20,39 @@
 
 import os
 import xml.etree.ElementTree as ET
-import commands
 import urllib2
 import datetime
+import time
+
+from .one_query import get_all_users_from_one, get_all_vms_from_one, \
+    get_vm_details_from_one
+
 
 class Computer(object):
-    
+
     # The queueing time of the VM instantiation request.
     VM_STARTTIME_ELEM = 'stime'
     VM_ENDTIME_ELEM = 'etime'
     VM_RUN_STARTTIME_ELEM = 'rstime'
     VM_RUN_ENDTIME_ELEM = 'retime'
     VM_EPILOG_ENDTIME_ELEM = 'eetime'
-    
-    def __init__(self, fromInSecs, toInSecs, outputDir, daily, rtimes=True):
+
+    def __init__(self, fromInSecs, toInSecs, outputDir, daily,
+                 stime_running=True, etime_done=True):
         self.outputDir = outputDir
         self.daily = daily
         self.marketplaceSizeCache = {}
         self.fromInSecs = int(fromInSecs)
         self.toInSecs = int(toInSecs)
 
-        """Start time corresponds to the VM entering Running state. Alternative 
-        is to use get_stime() - time when the request for the VM instantiation 
+        """Start time corresponds to the VM entering Running state. Alternative
+        is to use get_stime() - time when the request for the VM instantiation
         was queued (Pending state)."""
-        self.get_starttime = rtimes and self.get_rstime or self.get_stime
-    
-        """End time is when the VM stopped Running. Another option is to use 
+        self.get_starttime = stime_running and self.get_rstime or self.get_stime
+
+        """End time is when the VM stopped Running. Another option is to use
         get_donetime() which takes into account Epilog."""
-        self.get_endtime = rtimes and self.get_retime or self.get_donetime
-
-    def run_command(self, cmd):
-        rc, output = commands.getstatusoutput(cmd)
-        if rc != 0:
-            raise Exception('Failed: %s' % output)
-        return output
-
-    def get_all_users_from_one(self):
-        return self.run_command("oneuser list -x")
-
-    def get_all_vms_from_one(self, userId):
-        return self.run_command("oneacct -u %s -x" % str(userId))
-
-    def get_vm_details_from_one(self, vmId):
-        return self.run_command("onevm show %s -x" % str(vmId))
-
-    def to_xml(self, xmlAsString):
-        xml = None
-        if xmlAsString.strip():
-            xml = ET.fromstring(xmlAsString)
-        return xml
+        self.get_endtime = etime_done and self.get_donetime or self.get_retime
 
     def get_stime(self, vm):
         return int(vm.find('slice/' + self.VM_STARTTIME_ELEM).text)
@@ -85,25 +69,40 @@ class Computer(object):
     def get_etime(self, vm):
         return int(vm.find('slice/' + self.VM_ENDTIME_ELEM).text)
 
+    def get_etime_vm_details(self, vm):
+        return int(vm.find('ETIME').text)
+
     def get_donetime(self, vm):
         retime = self.get_retime(vm)
         eetime = self.get_eetime(vm)
-        return (eetime > retime) and eetime or retime
-    
+        etime = (eetime > retime) and eetime or retime
+        if etime == 0:
+            etime = self.get_etime(vm)
+            # The VM might have failed to start. In this case 'ETIME' is set
+            # on the VM details only taken from ONE DB by 'onevm'. This looks
+            # like a bug in 'oneacctd' or 'oneacct'.
+            if etime == 0:
+                etime = self._query_etime_from_vm_details(vm)
+        return etime
+
+    def _query_etime_from_vm_details(self, vm):
+        vm_details = get_vm_details_from_one(self.get_id(vm))
+        return self.get_etime_vm_details(vm_details)
+
     def get_id(self, vm):
         return vm.get('id')
 
     def vm_in_range(self, vm):
-        """Filter out VMs that were stopped before or started after the time 
+        """Filter out VMs that were stopped before or started after the time
         slice we are concerned with."""
         endtime = int(self.get_endtime(vm))
         # endtime == 0 assumes that the VM is still running or didn't run
-        if endtime > 0 and endtime < self.fromInSecs: # ended before metering window
+        if endtime > 0 and endtime < self.fromInSecs:  # ended before metering window
             return False
         starttime = int(self.get_starttime(vm))
-        if starttime > self.toInSecs: # started after metering window
+        if starttime > self.toInSecs:  # started after metering window
             return False
-        if starttime == 0: # VM didn't run
+        if starttime == 0:  # VM didn't run
             stime = self.get_stime(vm)
             if stime > self.fromInSecs and stime < self.toInSecs:
                 return True
@@ -140,10 +139,10 @@ class Computer(object):
         return vms
 
     def _update_time_on_vm(self, vm):
-        timeElem = vm.find('time')
         _slice = vm.find('slice')
         if _slice is None:
             print 'time for missing slice:', vm.findtext('time')
+            timeElem = vm.find('time')
             timeElem.text = "XX"
         else:
             meter_stime, meter_etime = self.get_meter_start_end_times(vm)
@@ -157,7 +156,9 @@ class Computer(object):
             vm.remove(_slice)
 
     def get_meter_start_end_times(self, vm):
-        if self.get_starttime(vm) == self.get_endtime(vm): # VM didn't run
+        stime = self.get_starttime(vm)
+        etime = self.get_endtime(vm)
+        if stime == etime:  # VM didn't run
             meter_stime = self.get_stime(vm)
             meter_etime = self.get_etime(vm)
         else:
@@ -167,7 +168,7 @@ class Computer(object):
 
     def get_meter_stime(self, vm):
         stime = self.get_starttime(vm)
-        if stime == 0: # VM didn't run
+        if stime == 0:  # VM didn't run
             stime = self.get_stime(vm)
         if self.fromInSecs > stime:
             return self.fromInSecs
@@ -176,7 +177,7 @@ class Computer(object):
 
     def get_meter_etime(self, vm):
         etime = self.get_endtime(vm)
-        if etime == 0: # Machine is still running or didn't run
+        if etime == 0:  # Machine is still running or didn't run
             return self.toInSecs
         if etime < self.toInSecs:
             return etime
@@ -199,7 +200,7 @@ class Computer(object):
         vm.append(time_elem)
 
     def bytes_to_giga_approximation(self, numberOfBytes):
-        return (numberOfBytes / 1024**3) + 1
+        return (numberOfBytes / 1024 ** 3) + 1
 
     def get_sizes(self, vmDetail):
         disks = self.get_disks(vmDetail)
@@ -216,7 +217,7 @@ class Computer(object):
 
     def add_detail_info(self, vms):
         for vm in vms:
-            vmDetail = self.to_xml(self.get_vm_details_from_one(self.get_id(vm)))
+            vmDetail = get_vm_details_from_one(self.get_id(vm))
             if vmDetail is not None:
                 sizes = self.get_sizes(vmDetail)
                 self.insert_disks(vm, sizes)
@@ -250,10 +251,10 @@ class Computer(object):
     def get_disk_size(self, disk):
         size = disk.find('SIZE')
         if size is not None:
-            return float(size.text)/1024
+            return float(size.text) / 1024
         else:
-            return self.bytes_to_giga_approximation(self.get_size_from_marketplace(
-                                                        self.get_disk_source(disk)))
+            return self.bytes_to_giga_approximation(
+                self.get_size_from_marketplace(self.get_disk_source(disk)))
 
     def get_disk_source(self, disk):
         return disk.find('SOURCE').text.strip()
@@ -270,13 +271,13 @@ class Computer(object):
         totalNetTx = 0
 
         for vm in root.findall('vm'):
-            time = float(vm.find('time').text) # in hours
+            time = float(vm.find('time').text)  # in hours
             totalTime += time
             totalCpu += float(vm.find('cpu').text) * time
             totalRam += float(vm.find('mem').text) * time / 1024
             totalNetRx += int(vm.find('net_rx').text)
             totalNetTx += int(vm.find('net_tx').text)
-            disk = reduce(lambda a,b: a+b, [float(disk.find('size').text) for disk in vm.findall('disk')], 0)
+            disk = reduce(lambda a, b: a + b, [float(disk.find('size').text) for disk in vm.findall('disk')], 0)
             totalDisk += disk * time
 
         root.set('total_time', str("%.0f" % totalTime))
@@ -287,7 +288,7 @@ class Computer(object):
         root.set('total_net_tx', str("%.0f" % (self.bytes_to_GB(totalNetTx))))
 
     def get_users(self):
-        return self.filter_users(self.to_xml(self.get_all_users_from_one()))
+        return self.filter_users(get_all_users_from_one())
 
     def _append_vms(self, root, allVms):
         if allVms is not None:
@@ -301,12 +302,11 @@ class Computer(object):
         _id = user['id']
         username = user['name']
         print 'processing', username, '...'
-        vmsFromOne = self.get_all_vms_from_one(_id)
-        allVms = self.to_xml(vmsFromOne)
+        allVms = get_all_vms_from_one(_id)
         root = ET.Element('usagerecord')
-        
+
         self._append_vms(root, allVms)
-        
+
         root.set('userid', _id)
         root.set('username', username)
         _from = datetime.datetime.fromtimestamp(self.fromInSecs)
@@ -320,17 +320,22 @@ class Computer(object):
         filenameTemplate = "acctpy_User-Id%(id)s_%(date)s.xml"
         if(self.daily):
             formattedDate = to.strftime(dateFormat)
-            filename = os.path.join(self.outputDir, filenameTemplate % {'id': _id, 'date': formattedDate})
+            filename = os.path.join(self.outputDir, filenameTemplate % \
+                                    {'id': _id, 'date': formattedDate})
         else:
-            formattedDate = _from.strftime(dateFormat) + '_' + _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
-            filename = os.path.join(self.outputDir, filenameTemplate % {'id': _id, 'date': formattedDate})
-        open(filename,'w').write(ET.tostring(root))
+            formattedDate = _from.strftime(dateFormat) + '_' + \
+                _from.strftime(hourFormat) + '-' + to.strftime(hourFormat)
+            filename = os.path.join(self.outputDir, filenameTemplate % \
+                                    {'id': _id, 'date': formattedDate})
+        open(filename, 'w').write(ET.tostring(root))
 
     def compute(self):
         for user in self.get_users():
             try:
                 self.compute_user(user)
             except Exception as ex:
-                print "Error processing user", user['name']
+                _time = time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                      time.gmtime(time.time()))
+                print _time, "Error processing user", user['name']
                 print ex
         return

@@ -44,7 +44,7 @@ USAGERECORD_XML = """
     </disk>
   </vm>
 </usagerecord>
-""" % {'1GB' : 1024**3}
+""" % {'1GB': 1024 ** 3}
 
 # Ony time related elements as returned by 'oneacct' CLI.
 VM_XML = """
@@ -87,6 +87,7 @@ IMAGE_MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
     </rdf:RDF>
 </metadata>""" % DISK_SIZE
 
+
 class ComputerTest(unittest.TestCase):
 
     def setUp(self):
@@ -104,7 +105,7 @@ class ComputerTest(unittest.TestCase):
         assert '2' == root.get('total_disk')
         assert '1' == root.get('total_net_rx')
         assert '1' == root.get('total_net_tx')
-  
+
     def test_update_time_on_vm_started_before_still_running(self):
         "Started before the metering window and still running."
         stime = int(self.w_start - HOUR)
@@ -143,11 +144,8 @@ class ComputerTest(unittest.TestCase):
 
     def test_update_time_on_vm_accepted_within_didnot_running(self):
         "Started within the metering window and still running."
-        vm = self._get_vm(0, 0)
-        stime = int(self.w_end - HOUR)
-        vm.find('slice/' + Computer.VM_STARTTIME_ELEM).text = str(stime)
-
-        self._update_and_assert(vm, 0)
+        vm = self._get_vm(int(self.w_end - HOUR), 0)
+        self._update_and_assert(vm, 1)
 
     def test_vm_in_range_ended_before(self):
         etime = int(self.w_start - HOUR)
@@ -168,6 +166,7 @@ class ComputerTest(unittest.TestCase):
         etime = 0
         vm = self._get_vm(stime, etime)
         cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._query_etime_from_vm_details = cmptr.get_etime
         assert True == cmptr.vm_in_range(vm)
 
     def test_vm_in_range_accepted_within_didnot_run(self):
@@ -175,6 +174,7 @@ class ComputerTest(unittest.TestCase):
         stime = int(self.w_end - HOUR)
         vm.find('slice/' + Computer.VM_STARTTIME_ELEM).text = str(stime)
         cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._query_etime_from_vm_details = cmptr.get_etime
         assert True == cmptr.vm_in_range(vm)
 
     def test_vm_in_range_accepted_before_didnot_run(self):
@@ -182,6 +182,7 @@ class ComputerTest(unittest.TestCase):
         stime = int(self.w_start - HOUR)
         vm.find('slice/' + Computer.VM_STARTTIME_ELEM).text = str(stime)
         cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._query_etime_from_vm_details = cmptr.get_etime
         assert False == cmptr.vm_in_range(vm)
 
     def test_vm_in_range_accepted_after_didnot_run(self):
@@ -189,10 +190,12 @@ class ComputerTest(unittest.TestCase):
         stime = int(self.w_end + HOUR)
         vm.find('slice/' + Computer.VM_STARTTIME_ELEM).text = str(stime)
         cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._query_etime_from_vm_details = cmptr.get_etime
         assert False == cmptr.vm_in_range(vm)
 
     def test_get_size_from_marketplace(self):
         cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._query_etime_from_vm_details = cmptr.get_etime
         cmptr._get_url = Mock(return_value=IMAGE_MANIFEST)
         assert DISK_SIZE == cmptr.get_size_from_marketplace('http://foo.bar/baz')
         assert DISK_SIZE == cmptr.marketplaceSizeCache['http://foo.bar/baz']
@@ -205,6 +208,7 @@ class ComputerTest(unittest.TestCase):
 
     def _update_and_assert(self, vm, delta_time_hours):
         cmptr = Computer(self.w_start, self.w_end, '', True)
+        cmptr._query_etime_from_vm_details = cmptr.get_etime
         cmptr._update_time_on_vm(vm)
         assert delta_time_hours == int(vm.find('time').text)
 

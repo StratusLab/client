@@ -10,6 +10,8 @@ import datetime
 
 from optparse import OptionParser
 
+sys.path.append('/var/lib/stratuslab/python')
+
 from stratuslab.accounting.Computer import Computer
 
 class MainProgram():
@@ -45,8 +47,8 @@ class MainProgram():
         except:
             print "invalid <last-no-of-hours> format"
             self._exit(2)
-    if self.lastNoOfHours > 24:
-        print "Invalid <last-no-of-hours>, cannot be more than 24"
+        if self.lastNoOfHours > 24:
+            print "Invalid <last-no-of-hours>, cannot be more than 24"
         if self.lastNoOfHours < 1:
             print "Invalid <last-no-of-hours>, cannot be less than 1"
         self.outputDir = self.options.outputDir
@@ -68,21 +70,22 @@ class MainProgram():
         sys.exit(code)
 
     def do_work(self):
-        refDate = datetime.datetime(1970,1,1)
+        refDate = datetime.datetime(1970, 1, 1)
         now = datetime.datetime.now()
         delta = datetime.timedelta(hours=self.lastNoOfHours)
 
         fromInSecs = self.total_seconds(now - delta - refDate)
         toInSecs = self.total_seconds(now - refDate)
 
-    if self.lastNoOfHours == 24:
-        daily = True
-    else:
-        daily = False
+        if self.lastNoOfHours == 24:
+            daily = True
+        else:
+            daily = False
         Computer(fromInSecs, toInSecs, self.outputDir, daily).compute()
 
     def total_seconds(self, td):
-        return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+        return (td.microseconds + \
+                (td.seconds + td.days * 24 * 3600) * 10 ** 6) / 10 ** 6
 
 main = MainProgram
 
