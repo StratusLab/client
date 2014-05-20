@@ -1,4 +1,4 @@
-from mock.mock import Mock
+from mock import Mock
 import unittest
 import json
 import xml.etree.ElementTree as ET
@@ -20,13 +20,13 @@ class TestOneQuery(unittest.TestCase):
     def test_user_vms_dict2et(self):
         user_vm_dict = json.loads(self._get_single_vm_as_json())
         user_vm_etree = one_query._user_vms_dict2et(user_vm_dict)
-        assert isinstance(user_vm_etree, ET.Element)
+        assert type(ET.Element('a')) == type(user_vm_etree)
         assert 'user' == user_vm_etree.tag
         assert 1 == len(user_vm_etree.getiterator('vm'))
 
         user_vms_dict = json.loads(self._get_multiple_vms_as_json())
         user_vms_etree = one_query._user_vms_dict2et(user_vms_dict)
-        assert isinstance(user_vm_etree, ET.Element)
+        assert type(ET.Element('a')) == type(user_vms_etree)
         assert 'user' == user_vms_etree.tag
         assert 2 == len(user_vms_etree.getiterator('vm'))
 
@@ -38,7 +38,7 @@ class TestOneQuery(unittest.TestCase):
         one_query._get_all_vms_from_one_json = \
             Mock(return_value=self._get_single_vm_as_json())
         user_vm_etree = one_query.get_all_vms_from_one('007')
-        assert isinstance(user_vm_etree, ET.Element)
+        assert type(ET.Element('a')) == type(user_vm_etree)
         assert 'user' == user_vm_etree.tag
         assert 1 == len(user_vm_etree.getiterator('vm'))
 
