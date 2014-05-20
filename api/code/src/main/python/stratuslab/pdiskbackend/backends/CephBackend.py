@@ -114,18 +114,21 @@ class CephBackend(Backend):
       'snap_rollback': rbd_bin_with_options + ['snap', 'rollback', '%%POOL_NAME%%/%%IMAGE_NAME%%@%%SNAPSHOT_NAME%%'],
       'unmap': rbd_bin_with_options + ['unmap', '%%DEVICE_NAME%%'],
     }
-    
-    backend_failure_cmds = {
+
+    # This is a workaround to the backend failure system. It implies that
+    # snapshots should not be manipulated directly because failures are
+    # ignored.
+    failure_ok_msg_pattern = {
       # Do not raise an error whether a snapshot already exists or already
       # protected before creating a RBD clone. At worst, the clone creation
       # itself will fail.
-      'snap_create': {'snapshot': None},
-      'snap_protect': {'snapshot': None},
+      'snap_create': ['^rbd: failed to create snapshot: \(17\) File exists.*'],
+      'snap_protect': ['^rbd: protecting snap failed: \(16\) Device or resource busy'],
       # Do not raise an error whether a snapshot doesn't exist or is not
       # protected before deleting a RBD image. At worst, the image deletion
       # itself will fail.
-      'snap_rm': {'delete': None},
-      'snap_unprotect': {'delete': None},
+      'snap_unprotect': ['^rbd: unprotecting snap failed: \(2\) No such file or directory'],
+      'snap_rm': ['^rbd: failed to remove snapshot: \(2\) No such file or directory'],
     }
     
     success_msg_pattern = {
