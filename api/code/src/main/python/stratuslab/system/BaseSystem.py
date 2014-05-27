@@ -1151,7 +1151,7 @@ group {
         rc = self.restartService(serviceName)
 
         if rc != 0:
-            Util.printError('Filed to (re)start DHCP service.')
+            Util.printError('Failed to (re)start DHCP service.')
 
     # -------------------------------------------
     # DB
