@@ -37,10 +37,13 @@ class Computer(object):
     VM_RUN_ENDTIME_ELEM = 'retime'
     VM_EPILOG_ENDTIME_ELEM = 'eetime'
 
+    USER_IGNORE_LIST = ['oneadmin']
+
     def __init__(self, fromInSecs, toInSecs, outputDir, daily,
-                 stime_running=True, etime_done=True):
+                 stime_running=True, etime_done=True, user_names=[]):
         self.outputDir = outputDir
         self.daily = daily
+        self.user_names = user_names
         self.marketplaceSizeCache = {}
         self.fromInSecs = int(fromInSecs)
         self.toInSecs = int(toInSecs)
@@ -111,22 +114,37 @@ class Computer(object):
         return True
 
     def user_in_range(self, user):
-        ignore = ['oneadmin']
         username = user.findtext('NAME')
-        if username in ignore:
+        return self.username_in_range(username)
+
+    def username_in_range(self, username):
+        if username in self.USER_IGNORE_LIST:
             print 'skipping', username
             return False
         return True
 
     def filter_users(self, root):
+        def _append_user(_users, u):
+            user = {}
+            user['id'] = u.findtext('ID')
+            user['name'] = u.findtext('NAME')
+            _users.append(user)
         users = []
         if root is not None:
-            for u in root.getiterator('USER'):
-                if self.user_in_range(u):
-                    user = {}
-                    user['id'] = u.findtext('ID')
-                    user['name'] = u.findtext('NAME')
-                    users.append(user)
+            if self.user_names:
+                cloud_users = dict((u.findtext('NAME'), u) for u in root.findall('USER'))
+                for name in self.user_names:
+                    if self.username_in_range(name):
+                        try:
+                            u = cloud_users[name]
+                        except KeyError:
+                            print 'WARNING: user %s not found.' % name
+                        else:
+                            _append_user(users, cloud_users[name])
+            else:
+                for u in root.getiterator('USER'):
+                    if self.user_in_range(u):
+                        _append_user(users, u)
         return users
 
     def filter_and_update_vms(self, root):
@@ -196,7 +214,7 @@ class Computer(object):
 
     def _vm_set_time_in_sec(self, vm, _time, time_elem_name):
         time_elem = ET.Element(time_elem_name)
-        time_elem.text = str(datetime.datetime.fromtimestamp(float(_time)))
+        time_elem.text = str(datetime.datetime.utcfromtimestamp(float(_time)))
         vm.append(time_elem)
 
     def bytes_to_giga_approximation(self, numberOfBytes):
@@ -309,9 +327,9 @@ class Computer(object):
 
         root.set('userid', _id)
         root.set('username', username)
-        _from = datetime.datetime.fromtimestamp(self.fromInSecs)
+        _from = datetime.datetime.utcfromtimestamp(self.fromInSecs)
         root.set('from', str(_from))
-        to = datetime.datetime.fromtimestamp(self.toInSecs)
+        to = datetime.datetime.utcfromtimestamp(self.toInSecs)
         root.set('to', str(to))
 
         self.compute_totals(root)
