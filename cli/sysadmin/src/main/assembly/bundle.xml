@@ -19,6 +19,15 @@
 		</fileSet>
 
 		<fileSet>
+			<directory>main/scripts</directory>
+			<outputDirectory>usr/libexec/stratuslab</outputDirectory>
+			<fileMode>755</fileMode>
+			<includes>
+				<include>acct.py</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
 			<directory>${project.build.directory}/scripts/</directory>
 			<outputDirectory>scripts</outputDirectory>
 			<includes>

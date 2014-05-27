@@ -193,6 +193,22 @@
 		</source>
 	      </sources>
 	    </mapping>
+      <mapping>
+        <directory>/usr/libexec/stratuslab</directory>
+        <filemode>755</filemode>
+        <username>root</username>
+        <groupname>root</groupname>
+        <directoryIncluded>false</directoryIncluded>
+        <sources>
+          <source>
+            <location>${project.build.directory}/zip-sources/usr/libexec/stratuslab</location>
+            <includes>
+              <include>acct.py</include>
+            </includes>
+          </source>
+        </sources>
+      </mapping>
+
 	  </mappings>
 	  <installScriptlet>
 	    <script>
