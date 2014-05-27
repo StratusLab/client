@@ -21,7 +21,7 @@
 import os
 import time
 
-from ConfigParser import SafeConfigParser
+from ConfigParser import RawConfigParser
 
 from couchbase import Couchbase
 import couchbase
@@ -44,7 +44,7 @@ def read_cb_cfg(service_name, default_cfg_docid, cfg_path=CB_CFG_PATH):
     Will raise an exception if the configuration file cannot be read or if
     there are missing parameters in the configuration.
     """
-    cfg = SafeConfigParser(CB_CFG_DEFAULTS)
+    cfg = RawConfigParser(CB_CFG_DEFAULTS)
 
     cfg.read(cfg_path)
 

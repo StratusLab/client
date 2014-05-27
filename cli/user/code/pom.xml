@@ -127,6 +127,7 @@
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/jar</outputDirectory>
+              <stripVersion>true</stripVersion>
               <artifactItems>
                 <artifactItem>
                   <groupId>eu.stratuslab.metadata</groupId>
