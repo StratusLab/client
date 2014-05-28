@@ -19,7 +19,7 @@ import unittest
 
 import stratuslab.controller.util as util
 
-from ConfigParser import RawConfigParser
+from ConfigParser import SafeConfigParser
 
 
 class UtilTest(unittest.TestCase):
@@ -41,7 +41,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual('', params['cfg_docid'])
 
     def testCfgValuesFromDefaultSection(self):
-        cfg_parser = RawConfigParser()
+        cfg_parser = SafeConfigParser()
 
         cfg_parser.set('DEFAULT', 'host', 'myhost')
         cfg_parser.set('DEFAULT', 'bucket', 'mybucket')
@@ -61,7 +61,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual('mycfg_docid', params['cfg_docid'])
 
     def testCfgValuesFromNamedSection(self):
-        cfg_parser = RawConfigParser()
+        cfg_parser = SafeConfigParser()
 
         cfg_parser.set('DEFAULT', 'host', 'myhost')
         cfg_parser.set('DEFAULT', 'bucket', 'mybucket')
@@ -87,7 +87,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual('pdccfg_docid', params['cfg_docid'])
 
     def testDefaultCfgDocId(self):
-        cfg_parser = RawConfigParser()
+        cfg_parser = SafeConfigParser()
 
         cfg_parser.set('DEFAULT', 'host', 'myhost')
         cfg_parser.set('DEFAULT', 'bucket', 'mybucket')

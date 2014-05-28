@@ -21,7 +21,7 @@ import os
 import re
 import copy
 
-from ConfigParser import RawConfigParser
+from ConfigParser import SafeConfigParser
 import ConfigParser
 import stratuslab.Util as Util
 from stratuslab.Exceptions import ConfigurationException
@@ -41,7 +41,7 @@ class ConfigHolder(object):
 
     @staticmethod
     def configFileHandlerToDict(configFileHandler):
-        config = RawConfigParser()
+        config = SafeConfigParser()
         config.readfp(configFileHandler)
         dict = ConfigHolder._convertToDict(config)
         return dict
@@ -79,7 +79,7 @@ class ConfigHolder(object):
             msg = 'Cannot access configuration file %s: %s' % (configFileName,
                                                                str(ex))
             raise ConfigurationException(msg)
-        config = RawConfigParser()
+        config = SafeConfigParser()
         config.read(configFileName)
         return config
 
@@ -203,7 +203,7 @@ class UserConfigurator(object):
     def __init__(self, configFile=Util.defaultConfigFileUser):
         '''Reads argument as file-like object first, then as a filename.
            Note that NO checks are made on the existence of the referenced file.'''
-        self._parser = RawConfigParser()
+        self._parser = SafeConfigParser()
 
         try:
             try:

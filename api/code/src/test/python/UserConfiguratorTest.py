@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 import unittest
-from ConfigParser import RawConfigParser
+from ConfigParser import SafeConfigParser
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.ConfigHolder import UserConfigurator
