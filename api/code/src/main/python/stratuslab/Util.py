@@ -683,8 +683,8 @@ def sanitizeEndpoint(endpoint, protocol=Defaults.marketplaceProtocol, port=Defau
     sanitized = endpoint
     _protocol, _, _, _ = parseUri(endpoint)
     if not _protocol:
-        sanitized = constructEndPoint(sanitized, protocol, port)[:-1]  # trim trailing /
-    return sanitized
+        sanitized = constructEndPoint(sanitized, protocol, port)
+    return sanitized.rstrip('/')  # trim all trailing slashes
 
 
 def getHostnameFromUri(uri):

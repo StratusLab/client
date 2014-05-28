@@ -71,7 +71,7 @@ class CredentialsConnector(object):
         self.pathPrefix = ''
 
     def _manglePath(self, url):
-        parts = url.split('/')
+        parts = filter(None, url.split('/')) # removes empty path elements
         return '/'.join(parts[0:-1]) + self.pathPrefix + parts[-1]
 
     def _insertUsernamePassword(self, url):
