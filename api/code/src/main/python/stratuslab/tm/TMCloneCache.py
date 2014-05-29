@@ -94,13 +94,16 @@ class TMCloneCache(object):
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
         self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
+        self.configHolder.set('pdiskPort', self.configHolder.persistentDiskPort or _PDISK_PORT)
         self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
     def _initPdiskClient(self):
         self.pdiskEndpoint = self.configHolder.persistentDiskIp
+        self.pdiskPort = self.configHolder.persistentDiskPort or _PDISK_PORT
         self.pdiskLVMDevice = self.configHolder.persistentDiskLvmDevice
         self.configHolder.set('pdiskEndpoint', self.pdiskEndpoint)
+        self.configHolder.set('pdiskPort', self.pdiskPort)
         self.pdisk = VolumeManagerFactory.create(self.configHolder)
 
     def _initMarketplaceRelated(self):

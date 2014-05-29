@@ -98,6 +98,7 @@ class TMSaveCache(object):
         self.cloud = None
 
         self.persistentDiskIp = None
+        self.persistentDiskPort = None
         self.persistentDiskLvmDevice = None
 
         self.builtImageValidityPeriod = None
@@ -141,6 +142,7 @@ class TMSaveCache(object):
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
         self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
+        self.configHolder.set('pdiskPort', self.configHolder.persistentDiskPort)
         self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
@@ -407,9 +409,10 @@ class TMSaveCache(object):
         snapshotPath = self._getSnapshotPath()
         checksumOutput = self._ssh(self.persistentDiskIp, [self._CHECKSUM_CMD, snapshotPath],
                                    'Unable to compute checksum of "%s"' % snapshotPath)
-        printInfo('persistent disk IP: "%s"' % self.persistentDiskIp)
-        printInfo('snapshot path: "%s"' % snapshotPath)
-        printInfo('checksum output is: "%s"' % checksumOutput)
+        printInfo('persistent disk IP:   "%s"' % self.persistentDiskIp)
+        printInfo('persistent disk port: "%s"' % str(self.persistentDiskPort))
+        printInfo('snapshot path:        "%s"' % snapshotPath)
+        printInfo('checksum output is:   "%s"' % checksumOutput)
         return checksumOutput.split(' ')[0]
 
     def _configPdiskGetIscsiBackendType(self):

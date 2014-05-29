@@ -38,6 +38,7 @@ class TMSaveCacheTest(unittest.TestCase):
 
     CONFIG_FILE = """[default]
 persistent_disk_ip = 127.0.0.1
+persistent_disk_port = 8445
 one_username = oneadmin
 one_password = oneadmin
 one_port = 2633

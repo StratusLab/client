@@ -30,6 +30,7 @@ class TMCloneCacheTest(unittest.TestCase):
 
     CONFIG_FILE = """[default]
 persistent_disk_ip = 127.0.0.1
+persistent_disk_port = 8445
 persistent_disk_lvm_device = /dev/pdisk
 one_username = oneadmin
 one_password = oneadmin

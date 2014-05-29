@@ -176,6 +176,7 @@ persistent_disk_temp_store = /var/lib/one/images/
 
 # Location of the persistent disk storage service
 persistent_disk_ip =
+persistent_disk_port = 8445
 
 # Target LVM device
 persistent_disk_lvm_device = /dev/pdisk
