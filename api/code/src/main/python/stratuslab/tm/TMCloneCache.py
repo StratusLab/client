@@ -18,6 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import re
 from time import time
 from os.path import dirname
 from os.path import basename
@@ -291,13 +292,12 @@ class TMCloneCache(object):
             self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
 
     def _getMarketplaceEndpointFromURI(self, uri):
-        uri_parts = urlparse(uri)
-        return '%s://%s/' % (uri_parts.scheme, uri_parts.netloc)
+        matcher = re.match("^(.*)/metadata/.*$", uri)
+        return matcher.group(1)
 
     def _getImageIdFromURI(self, uri):
-        fragments = uri.split('/')
-        # POP two times if trailing slash
-        return fragments.pop() or fragments.pop()
+        fragments = uri.rstrip('/').split('/')
+        return fragments.pop()
 
     def _validateMarketplaceImagePolicy(self):
         try:
