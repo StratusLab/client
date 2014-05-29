@@ -141,7 +141,7 @@ class TMSaveCache(object):
                                                                 defaultConfigFile)
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
-        self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
+        self.configHolder.set('pdiskEndpoint', self._createPdiskEndpoint())
         self.configHolder.set('pdiskPort', self.configHolder.persistentDiskPort)
         self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
@@ -164,6 +164,14 @@ class TMSaveCache(object):
         src = self.args[self._ARG_SRC_POS]
         self.diskSrcPath = self._getDiskPath(src)
         self.diskSrcHost = self._getDiskHost(src)
+
+    # FIXME: duplicates should be pulled into common location
+    def _createPdiskEndpoint(self):
+        host = self.configHolder.persistentDiskIp
+        port = self.configHolder.persistentDiskPort or _PDISK_PORT
+        path = self.configHolder.persistentDiskPath or ''
+        path = path.strip('/')
+        return 'https://%s:%s/%s' % (host, port, path)
 
     #--------------------------------------------
     # Persistent disk and related
@@ -410,7 +418,6 @@ class TMSaveCache(object):
         checksumOutput = self._ssh(self.persistentDiskIp, [self._CHECKSUM_CMD, snapshotPath],
                                    'Unable to compute checksum of "%s"' % snapshotPath)
         printInfo('persistent disk IP:   "%s"' % self.persistentDiskIp)
-        printInfo('persistent disk port: "%s"' % str(self.persistentDiskPort))
         printInfo('snapshot path:        "%s"' % snapshotPath)
         printInfo('checksum output is:   "%s"' % checksumOutput)
         return checksumOutput.split(' ')[0]

@@ -31,6 +31,7 @@ class TMCloneCacheTest(unittest.TestCase):
     CONFIG_FILE = """[default]
 persistent_disk_ip = 127.0.0.1
 persistent_disk_port = 8445
+persistent_disk_path = 
 persistent_disk_lvm_device = /dev/pdisk
 one_username = oneadmin
 one_password = oneadmin
@@ -49,7 +50,7 @@ persistent_disk_public_base_url = https://example.com:8445
                            TMCloneCache._ARG_DST_POS : 'foo:bar',
                            'bar' : 'baz'},
                            conf_filename=self.conf_filename)
-        self.assertEqual(tm.pdiskEndpoint, '127.0.0.1')
+        self.assertEqual(tm.pdiskEndpoint, 'https://127.0.0.1:8445/')
         self.assertEqual(tm.persistentDiskIp, '127.0.0.1')
 
     def test_checkAuthorization(self):

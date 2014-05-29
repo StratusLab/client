@@ -93,17 +93,14 @@ class TMCloneCache(object):
                                                                 defaultConfigFile)
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
-        self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
-        self.configHolder.set('pdiskPort', self.configHolder.persistentDiskPort or _PDISK_PORT)
+        self.configHolder.set('pdiskEndpoint', self._createPdiskEndpoint())
         self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
     def _initPdiskClient(self):
-        self.pdiskEndpoint = self.configHolder.persistentDiskIp
-        self.pdiskPort = self.configHolder.persistentDiskPort or _PDISK_PORT
+        self.pdiskEndpoint = self._createPdiskEndpoint()
         self.pdiskLVMDevice = self.configHolder.persistentDiskLvmDevice
         self.configHolder.set('pdiskEndpoint', self.pdiskEndpoint)
-        self.configHolder.set('pdiskPort', self.pdiskPort)
         self.pdisk = VolumeManagerFactory.create(self.configHolder)
 
     def _initMarketplaceRelated(self):
@@ -127,6 +124,14 @@ class TMCloneCache(object):
         self.diskDstHost = self._getDiskHost(dst)
         self.diskDstPath = self._getDiskPath(dst)
         self.diskSrc = args[self._ARG_SRC_POS]
+
+    # FIXME: duplicates should be pulled into common location
+    def _createPdiskEndpoint(self):
+        host = self.configHolder.persistentDiskIp
+        port = self.configHolder.persistentDiskPort or _PDISK_PORT
+        path = self.configHolder.persistentDiskPath or ''
+        path = path.strip('/')
+        return 'https://%s:%s/%s' % (host, port, path)
 
     def _updatePDiskSrcUrlFromPublicToLocalIp(self):
         """When PDisk is running behind a proxy, KVMs usually can't connect to 

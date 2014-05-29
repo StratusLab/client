@@ -39,6 +39,7 @@ class TMSaveCacheTest(unittest.TestCase):
     CONFIG_FILE = """[default]
 persistent_disk_ip = 127.0.0.1
 persistent_disk_port = 8445
+persistent_disk_path =
 one_username = oneadmin
 one_password = oneadmin
 one_port = 2633
@@ -84,7 +85,7 @@ built_image_validity_period = %s
 
     def testInit(self):
         tm = TMSaveCache({}, conf_filename=self.conf_filename)
-        self.assertEqual(tm.pdiskEndpoint, '127.0.0.1')
+        self.assertEqual(tm.pdiskEndpoint, 'https://127.0.0.1:8445/')
         self.assertEqual(tm.persistentDiskIp, '127.0.0.1')
 
     def testParseArgs(self):
