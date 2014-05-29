@@ -70,8 +70,9 @@ class CredentialsConnector(object):
         self.runnable = runnable
         self.pathPrefix = ''
 
+    # used only for XMLRPC URL mangling
     def _manglePath(self, url):
-        parts = filter(None, url.split('/')) # removes empty path elements
+        parts = url.split('/')
         return '/'.join(parts[0:-1]) + self.pathPrefix + parts[-1]
 
     def _insertUsernamePassword(self, url):
