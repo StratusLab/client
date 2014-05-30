@@ -23,7 +23,7 @@ from time import time
 from os.path import dirname
 from os.path import basename
 from getpass import getuser
-from urlparse import urlparse
+from urlparse import urlparse, urlunparse
 
 from stratuslab.Util import sshCmdWithOutput, defaultConfigFile, printStep
 from stratuslab.Authn import LocalhostCredentialsConnector
@@ -63,7 +63,7 @@ class TMCloneCache(object):
     _TYPE_KEY = 'type'
     _OWNER_KEY = 'owner'
     _VISIBILITY_KEY = 'visibility'
-    
+
     _PDISK_SUPERUSER = 'pdisk'
     _DISK_UNAUTHORIZED_VISIBILITIES = ['PRIVATE']
 
@@ -135,18 +135,20 @@ class TMCloneCache(object):
         return 'https://%s:%s/%s' % (host, port, path)
 
     def _updatePDiskSrcUrlFromPublicToLocalIp(self):
-        """When PDisk is running behind a proxy, KVMs usually can't connect to 
+        """When PDisk is running behind a proxy, KVMs usually can't connect to
         it on the public IP. Instead substitute the public IP with the local one.
-        Substitution is only made if the pdisk URL points to the public IP of the 
+        Substitution is only made if the pdisk URL points to the public IP of the
         PDisk (i.e., the source disk is located on this site).
         persistent_disk_public_base_url should be set in the configuration."""
-        src_pdisk_hostname = self._getStringPart(self.diskSrc, 1, 4)
-        public_pdisk_hostname = Util.getHostnameFromUri(self.persistentDiskPublicBaseUrl) or\
-                                    self.persistentDiskIp
+        src_pdisk_hostname = Util.getHostnameFromUri(self.diskSrc)
+        public_pdisk_hostname = Util.getHostnameFromUri(self.persistentDiskPublicBaseUrl) or self.persistentDiskIp
         if src_pdisk_hostname == public_pdisk_hostname:
-            disk_src_parts = self.diskSrc.split(':')
-            disk_src_parts[1] = self.persistentDiskIp
-            self.diskSrc = ':'.join(disk_src_parts)
+            disk_src_parts = urlparse(self.diskSrc)
+            (scheme, _, path, params, query, fragment) = disk_src_parts
+            netloc = self.persistentDiskIp
+            if disk_src_parts.port:
+                netloc = netloc + ":" + str(disk_src_parts.port)
+            self.diskSrc = urlunparse((scheme, netloc, path, params, query, fragment))
 
     def _retrieveDisk(self):
         if self.diskSrc.startswith('pdisk:'):
@@ -156,7 +158,7 @@ class TMCloneCache(object):
             self._startFromCowSnapshot()
 
     def _startFromPersisted(self):
-        diskId = self._getStringPart(self.diskSrc, -1, 4)
+        diskId = self.diskSrc.rstrip('/').split('/').pop()
         diskType = self.pdisk.getValue('type', diskId)
 
         is_root_disk = self._getDiskIndex(self.diskDstPath) is 0
@@ -286,7 +288,7 @@ class TMCloneCache(object):
             except:
                 pass
                 # SunStone adds '<hostname>:' to the image ID
-            self.marketplaceImageId = self._getStringPart(self.diskSrc, 1)
+            self.marketplaceImageId = self.diskSrc.rstrip('/').split('/').pop()
 
         if self.marketplaceEndpoint:
             self.configHolder.set('marketplaceEndpoint', self.marketplaceEndpoint)
@@ -322,7 +324,7 @@ class TMCloneCache(object):
     # -------------------------------------------
 
     def _attachPDisk(self, diskSrc):
-        uuid = self._getStringPart(diskSrc, -1, 4)
+        uuid = diskSrc.rstrip('/').split('/').pop()
         turl = self.pdisk.getTurl(uuid)
         disk_name = basename(self.diskDstPath)
         vm_id = self._retrieveInstanceId()
@@ -421,9 +423,7 @@ class TMCloneCache(object):
         self.pdisk.updateVolume({self._IDENTIFIER_KEY: value}, pdiskId)
 
     def _getPDiskSnapshotURL(self):
-        return 'pdisk:%s:%s:%s' % (self.pdiskEndpoint,
-                                   self._PDISK_PORT,
-                                   self.pdiskSnapshotId)
+        return '%s/%s' % (self.pdiskEndpoint, self.pdiskSnapshotId)
 
     def _deletePDiskSnapshot(self, *args, **kwargs):
         if self.pdiskSnapshotId is None:
@@ -481,14 +481,14 @@ class TMCloneCache(object):
     def _assertLength(self, elements, length=2, errorMsg=None, atLeast=False):
         nbElem = len(elements)
         if not errorMsg:
-            errorMsg = 'Object should have a length of %s%s , got %s' % (length,
+            errorMsg = 'Object should have a length of %s%s , got %s\n%s' % (length,
                                                                          atLeast and ' at least' or '',
-                                                                         nbElem)
+                                                                         nbElem, str(elements))
         if not atLeast and nbElem != length or nbElem < length:
             raise ValueError(errorMsg)
 
-    def _bytesToGiga(self, bytesAmout):
-        return (bytesAmout / 1024 ** 3) + 1
+    def _bytesToGiga(self, bytesAmount):
+        return (bytesAmount / 1024 ** 3) + 1
 
     def _sshDst(self, cmd, errorMsg, dontRaiseOnError=False):
         retCode, output = sshCmdWithOutput(' '.join(cmd), self.diskDstHost, user=getuser(),
