@@ -102,7 +102,7 @@ persistent_disk_public_base_url = https://example.com:8445
                            'bar' : 'baz'},
                            conf_filename=self.conf_filename)
         assert 'https://example.com:8445' == tm.persistentDiskPublicBaseUrl
-        tm.diskSrc = 'https://%s:8445/uuid-123' % Util.getHostnamePortFromUri(
+        tm.diskSrc = 'https://%s/uuid-123' % Util.getHostnamePortFromUri(
                                                 tm.persistentDiskPublicBaseUrl)
         tm._updatePDiskSrcUrlFromPublicToLocalIp()
         assert 'https://127.0.0.1:8445/uuid-123' == tm.diskSrc
