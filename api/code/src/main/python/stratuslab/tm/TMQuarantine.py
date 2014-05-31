@@ -94,7 +94,7 @@ class TMQuarantine(object):
                                                                 defaultConfigFile)
         options = PDiskEndpoint.options()
         self.configHolder = ConfigHolder(options, config)
-        self.configHolder.set('pdiskEndpoint', self.configHolder.persistentDiskIp)
+        self.configHolder.set('pdiskEndpoint', self._createPdiskEndpoint())
         self.configHolder.set('verboseLevel', self.DEFAULT_VERBOSE_LEVEL)
         self.configHolder.assign(self)
 
@@ -111,6 +111,14 @@ class TMQuarantine(object):
         src = self.args[self._ARG_SRC_POS]
         self.diskSrcPath = self._getDiskPath(src)
         self.diskSrcHost = self._getDiskHost(src)
+
+    # FIXME: duplicates should be pulled into common location
+    def _createPdiskEndpoint(self):
+        host = self.configHolder.persistentDiskIp
+        port = self.configHolder.persistentDiskPort or _PDISK_PORT
+        path = self.configHolder.persistentDiskPath or ''
+        path = path.strip('/')
+        return 'https://%s:%s/%s' % (host, port, path)
 
     def _changeOwnerOfSnapshotVolume(self):
         pdisk = VolumeManagerFactory.create(self.configHolder)
@@ -155,7 +163,7 @@ class TMQuarantine(object):
                       volume_uris)
 
     def _getDiskNameFromURI(self, uri):
-        return uri.split(':')[-1]
+        return uri.strip().strip('/').split('/').pop()
 
     def _getPDiskHostPortFromURI(self, uri):
         splittedUri = uri.split(':')
