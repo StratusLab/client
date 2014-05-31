@@ -52,7 +52,7 @@ class Runner(VmManager):
 
     # Don't hard code disk target to allow multiple pdisk attachment
     PERSISTENT_DISK = '''DISK=[
-  SOURCE=pdisk:%(pdiskEndpointHostname)s:%(pdiskPort)s:%(persistentDiskUUID)s,
+  SOURCE=pdisk:%(pdiskEndpoint)s%(persistentDiskUUID)s,
   TARGET=%(vm_disks_prefix)sc,
   TYPE=block ]'''
 
@@ -615,7 +615,7 @@ class Runner(VmManager):
     def _createDiskUrlIfDiskId(self, image):
         if Image.isDiskId(image):
             self.pdiskEndpointHostname = VolumeManager.getFQNHostname(self.pdiskEndpoint)
-            return "pdisk:%s:%s:%s" % (self.pdiskEndpointHostname, self.pdiskPort, image)
+            return "pdisk:%s/%s" % (self.pdiskEndpoint.rstrip('/'), image)
         else:
             return image
 

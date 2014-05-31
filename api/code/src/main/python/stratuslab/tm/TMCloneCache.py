@@ -152,6 +152,7 @@ class TMCloneCache(object):
 
     def _retrieveDisk(self):
         if self.diskSrc.startswith('pdisk:'):
+            self.diskSrc = self.diskSrc[len('pdisk:'):]  # strip prefix
             self._updatePDiskSrcUrlFromPublicToLocalIp()
             self._startFromPersisted()
         else:
