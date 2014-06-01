@@ -70,12 +70,20 @@ a UUID.
     def _addConfigFileOption(self):
         ConfigHolder.addConfigFileSysadminOption(self.parser)
 
+    # FIXME: duplicates should be pulled into common location
+    def _createPdiskEndpoint(self):
+        host = Configurator(configHolder).getValue('persistent_disk_ip')
+        port = Configurator(configHolder).getValue('persistent_disk_port') or _PDISK_PORT
+        path = Configurator(configHolder).getValue('persistent_disk_path') or ''
+        path = path.strip('/')
+        return 'https://%s:%s/%s' % (host, port, path)
+
     def doWork(self):
         config = ConfigHolder.configFileToDict(self.options.configFile)
         configHolder = ConfigHolder(self.options.__dict__, config)
 
         if not configHolder.pdiskEndpoint:
-            configHolder.pdiskEndpoint = Configurator(configHolder).getValue('persistent_disk_ip')
+            configHolder.pdiskEndpoint = self._createPdiskEndpoint()
 
         pdisk = VolumeManagerFactory.create(configHolder)
 
