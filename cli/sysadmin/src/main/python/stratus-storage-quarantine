@@ -71,7 +71,7 @@ a UUID.
         ConfigHolder.addConfigFileSysadminOption(self.parser)
 
     # FIXME: duplicates should be pulled into common location
-    def _createPdiskEndpoint(self):
+    def _createPdiskEndpoint(self, configHolder):
         host = Configurator(configHolder).getValue('persistent_disk_ip')
         port = Configurator(configHolder).getValue('persistent_disk_port') or _PDISK_PORT
         path = Configurator(configHolder).getValue('persistent_disk_path') or ''
@@ -83,7 +83,7 @@ a UUID.
         configHolder = ConfigHolder(self.options.__dict__, config)
 
         if not configHolder.pdiskEndpoint:
-            configHolder.pdiskEndpoint = self._createPdiskEndpoint()
+            configHolder.pdiskEndpoint = self._createPdiskEndpoint(configHolder)
 
         pdisk = VolumeManagerFactory.create(configHolder)
 
