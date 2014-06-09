@@ -38,9 +38,6 @@ with minimal dependencies for maximum portability.
 #
     </BUILD_INFO>
 
-    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format> 
-    <RELEASE>0.${maven.build.timestamp}.${package.os}</RELEASE>
-
   </properties>
 
   <issueManagement>
