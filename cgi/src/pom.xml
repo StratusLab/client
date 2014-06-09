@@ -8,14 +8,14 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-pat</artifactId>
-    <version>14.06.0_RC3-SNAPSHOT</version>
+    <version>14.06.0_RC3</version>
   </parent>
 
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-core-zip</artifactId>
-      <version>14.06.0_RC3-SNAPSHOT</version>
+      <version>14.06.0_RC3</version>
       <classifier>core-bundle</classifier>
       <type>zip</type>
       <scope>compile</scope>
