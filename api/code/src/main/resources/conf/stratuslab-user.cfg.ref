@@ -2,143 +2,73 @@
 # Reference StratusLab User Configuration File
 # ----------------------------------------------------------------------
 #
-# This should be copied to the $HOME/.stratuslab/stratuslab-user.cfg
-# file and then modified with the user's configuration parameters.
-#
-# NOTE: This file needs to be renamed from *.cfg.ref to *.cfg!
-#
-# NOTE: The [default] section is mandatory.  You can define other
-#       sections that can be used to override the default
-#       section. This allows you to group parameters for different
-#       cloud accounts and endpoints, and switch between them using an
-#       environment variable, command-line options or the
-#       'selected_section' parameter. Refer to the client help
-#       (i.e. -h/--help) or online documentation for details.
+# Use stratus-copy-config to copy this file to the right place.
 #
 # ----------------------------------------------------------------------
 
+# Global defaults for the configuration.  This section is mandatory.
 [default]
 
+# Default cloud configuration section to use.
 #
-# Select a section to override this default section
-#
-#selected_section = my-section
+selected_section = sl-cloud
 
+# Timeout (in sec) for contacting the cloud services.
+#
+endpoint_timeout = 5
 
+# Parameters for the "sl-cloud" infrastructure.  You
+# can include multiple sections (with different names) to 
+# easily switch between the cloud infrastructures.
 #
-# Cloud frontend hostname
-#
-# There is no default value for this endpoint.  It must be provided by
-# the user.  Replace the value below with the hostname of your cloud.
-#
-endpoint = cloud.frontend.hostname
+[sl-cloud]
 
-#
 # Can provide default name and country for this cloud.
 # These are used mainly in the Libcloud API.
 #
 name = "StratusLab Cloud"
-country = "unknown"
+country = "Earth"
 
+# Service endpoints.  Default should be OK for the Marketplace.
 #
-# Persistent disk storage service endpoint
-#
-# If this parameter is not provided, then it will default to the value
-# given for the 'endpoint' parameter.  Check with the cloud provider
-# whether this parameter needs to be specified. 
-#
-#pdisk_endpoint = pdisk.service.hostname
-
-
-#
-# Marketplace endpoint URL
-#
-# Normally the default is correct.  Uncomment this line and replace
-# the value only if your cloud implementation uses a different
-# Marketplace.
-#
+endpoint = https://cloud.example.com/one-proxy/xmlrpc
+pdisk_endpoint = https://cloud.example.com/pdisk
 #marketplace_endpoint = https://marketplace.stratuslab.eu
-
-
-#
-# SSH public key
-#
-# This key is installed by default on new machine instances to allow
-# you to log into the virtual machine.  Uncomment this line and
-# replace the value only if the default is not correct.
-#
-#user_public_key_file = <home>/.ssh/id_rsa.pub
-
 
 #
 # Authentication information.
 #
-# You can use either a username/password or X509 key/certificate to
-# access the cloud infrastructure.  Use one of the following pairs of
-# parameters to provide your authentication information.  If both are
-# used, then the username/password take precedence.
-
-# username/password access.
+# Username/password credentials.
+# Takes precedence over certificate credentials.
+#
 username = username
 password = password
 
-# certificate access
-#
-# If using a certificate proxy (e.g. VOMS proxy), then both of these
-# parameters should point to the proxy file.
+# Certificate or proxy credentials.
+# Use same value for both parameters for a proxy certificate.
 #
 #pem_key = <home>/.globus/userkey.pem
 #pem_certificate = <home>/.globus/usercert.pem
 
 
+# SSH public key
 #
-# This certificate is used to sign metadata entries in the Marketplace
-# for customized machine images (appliances).  It may or may not be
-# the same certificate used to access the cloud.
+# Used to log into virtual machines.  Change if not correct.
 #
-# Provide the location if it is different from the default.  The
-# password may be provided here, but if not, the user will be prompted
-# for it if it is needed by a command.
+#user_public_key_file = <home>/.ssh/id_rsa.pub
+
+
+# Certificate used to sign metadata entries in the Marketplace.
 #
 #p12_certificate = <home>/.globus/usercert.p12
 #p12_password = password
 
 
-#
 # Set the following parameter to change the default instance type to
 # use.  It may also appear in specific sections to provide separate
 # defaults for different cloud infrastructures.
 #
-# These instance types can be defined in the 'instance_types' section
-# of this configuration file or be one of the defined standard types.
-# You can list those types with 'stratus-run-instance --list-types'.
-#
 #default_instance_type=my.type
-
-
-#
-# Timeout (in sec) for contacting the cloud services.
-#
-endpoint_timeout = 5
-
-
-#
-# Create user specific sections, which you can activate using the
-# selected_section parameter in the default section or using the
-# --user-config-section command-line option.  This allows your to
-# switch easily between different StratusLab cloud infrastructures
-# without having to change this configuration file. 
-#
-# All of the previous parameters can appear in the user specific
-# sections, excepting the 'selected_section' parameter.  Values not
-# provided will be taken from the default section.
-#
-#[my-section]
-#name = "Another StratusLab Cloud"
-#country = "somewhere"
-#endpoint = another.cloud.frontend.hostname
-#username = another.username
-#password = another.password
 
 
 #
