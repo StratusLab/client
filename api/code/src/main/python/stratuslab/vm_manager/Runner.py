@@ -51,8 +51,9 @@ class Runner(VmManager):
   TYPE=fs ]'''
 
     # Don't hard code disk target to allow multiple pdisk attachment
+    # NOTE: The pdiskEndpoint must NOT have a trailing slash.
     PERSISTENT_DISK = '''DISK=[
-  SOURCE=pdisk:%(pdiskEndpoint)s%(persistentDiskUUID)s,
+  SOURCE=pdisk:%(pdiskEndpoint)s/%(persistentDiskUUID)s,
   TARGET=%(vm_disks_prefix)sc,
   TYPE=block ]'''
 
@@ -227,7 +228,12 @@ class Runner(VmManager):
             return
 
         self.pdiskEndpointHostname = VolumeManager.getFQNHostname(self.pdiskEndpoint)
-        self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % self.__dict__) or ''
+
+        # Ensure that the pdiskEndpoint does not have a trailing slash.
+        opts = self.__dict__.copy()
+        opts['pdiskEndpoint'] = self.pdiskEndpoint.rstrip('/')
+
+        self.persistent_disk = (self.persistentDiskUUID and Runner.PERSISTENT_DISK % opts) or ''
 
         self._checkPersistentDiskAvailable()
 
