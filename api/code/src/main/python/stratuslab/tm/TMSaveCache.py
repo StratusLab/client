@@ -201,12 +201,8 @@ class TMSaveCache(object):
         return ':'.join(pdisk_image_uri_list)
 
     def _getDiskNameFromURI(self, uri):
-        return uri.split(':')[-1]
-
-    def _getPDiskHostPortFromURI(self, uri):
-        splittedUri = uri.split(':')
-        self._assertLength(splittedUri, 4)
-        return ':'.join(splittedUri[1:3])
+        fragments = uri.rstrip('/').split('/')
+        return fragments.pop()
 
     def _detachAllVolumes(self):
         pdisk = VolumeManagerFactory.create(self.configHolder)
@@ -248,7 +244,7 @@ class TMSaveCache(object):
                             self._SEED_KEY: 'on',
                             self._TAG_KEY: self._getTitle()},
                             self.createdPDiskId)
-        
+
     def _getPdiskOwner(self):
         "pdisk volume owner is the owner of the VM."
         return self.cloud.getVmOwner(self.instanceId)
@@ -372,7 +368,7 @@ class TMSaveCache(object):
             # Attach LUN and link to a known location
             backend_type = self._configPdiskGetIscsiBackendType().lower()
             if backend_type == 'netapp':
-                portal = Util.getHostnameFromUri(turl) 
+                portal = Util.getHostnameFromUri(turl)
                 discover_cmd = ['sudo', 'iscsiadm', '-m', 'discovery', '-t', 'sendtargets', '-p', portal]
                 self._ssh(self.persistentDiskIp, discover_cmd,
                           'Failed discovering iSCSI targets.')
@@ -483,9 +479,9 @@ class TMSaveCache(object):
 
     def _retrieveVmDir(self):
         self.vmDir = dirname(dirname(self.diskSrcPath))
-        
+
     def _getRemoteFileContent(self, host, fn):
-        return self._ssh(host, ['cat', fn], 
+        return self._ssh(host, ['cat', fn],
                          "Failed to get content of '%s' from host '%s'." % (fn, host))
 
     def _getRemoteFileAsFileHandler(self, host, fn):
@@ -501,7 +497,7 @@ class TMSaveCache(object):
         return ConfigHolder.configFileHandlerToDict(fh)
 
     def _getSnapshotPath(self):
-        conf = self._getRemoteConfFileAsDict(self.persistentDiskIp, 
+        conf = self._getRemoteConfFileAsDict(self.persistentDiskIp,
                                              PDiskInstaller.pdiskConfigBackendFile)
         key = 'volume_name'
         try:
@@ -588,11 +584,11 @@ class TMSaveCache(object):
 The image creation was SUCCESSFUL.  The image has an ID of
 %(snapshotMarketplaceId)s.
 
-It is stored in the persistent disks service.  By default, the image 
-is private and can only be accessed/launched by the image creator.  
+It is stored in the persistent disks service.  By default, the image
+is private and can only be accessed/launched by the image creator.
 You can change the access policy by visiting the links below
 %(persistentDiskPublicBaseUrl)s/pswd/disks/%(pdiskId)s
-%(persistentDiskPublicBaseUrl)s/cert/disks/%(pdiskId)s 
+%(persistentDiskPublicBaseUrl)s/cert/disks/%(pdiskId)s
 
 A draft image manifest entry has been generated and is attached to
 this message.  It has also been uploaded to %(marketplace)s.  The
