@@ -140,8 +140,12 @@ class TMQuarantine(object):
         shutil.move(instance_dir, quarantine_dir)
 
     def _moveFilesToQuarantineHypervisor(self, instance_dir, quarantine_dir):
+        # If the storage area is on NFS and shared between the server
+        # and the hypervisor, this will always fail.  Simply try to do
+        # this and ignore errors if they arise, hoping that the error is
+        # because the quarantine has already been done.
         self._sshDst(['mv', instance_dir, quarantine_dir],
-                     'Failed to quarantine VM on hypervisor.')
+                     'Failed to quarantine VM on hypervisor.', True)
 
     #--------------------------------------------
     # Persistent disk and related
