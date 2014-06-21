@@ -28,6 +28,7 @@ from StringIO import StringIO
 
 import stratuslab.cloudinit.Util as Util
 
+
 class UtilTest(unittest.TestCase):
 
     TOO_LONG_RAW = None
@@ -35,29 +36,29 @@ class UtilTest(unittest.TestCase):
 
     def setUp(self):
         self.TOO_LONG_RAW = ''.join(random.choice(string.ascii_uppercase)
-                                    for x in range(2*Util.MAX_BYTES))
-        with closing(StringIO()) as buffer:
-            with closing(GzipFile('', 'wb', 9, buffer)) as f:
+                                    for _ in range(2*Util.MAX_BYTES))
+        with closing(StringIO()) as buf:
+            with closing(GzipFile('', 'wb', 9, buf)) as f:
                 f.write(self.TOO_LONG_RAW)
-            self.TOO_LONG_GZIP = base64.b64encode(buffer.getvalue())
+            self.TOO_LONG_GZIP = base64.b64encode(buf.getvalue())
 
     def tearDown(self):
         pass
 
-    def testEncodeDecodeMultipart(self):
+    def test_encode_decode_multipart(self):
         initial_text = 'some dummy data to check encoding and decoding'
-        encoded = Util.encodeMultipart(initial_text)
-        decoded = Util.decodeMultipart(encoded)
+        encoded = Util.encode_multipart(initial_text)
+        decoded = Util.decode_multipart(encoded)
 
         self.assertTrue(len(encoded) > 0)
         self.assertTrue(len(decoded) > 0)
         self.assertEqual(initial_text, decoded)
 
-    def testEncodeDecodeMultipartAsJson(self):
+    def test_encode_decode_multipart_as_json(self):
         initial_text = 'some dummy data to check encoding and decoding'
         dsmode = 'local'
-        encoded = Util.encodeMultipart(initial_text)
-        decoded = Util.decodeMultipartAsJson(dsmode, encoded)
+        encoded = Util.encode_multipart(initial_text)
+        decoded = Util.decode_multipart_as_json(dsmode, encoded)
 
         json_data = json.loads(decoded)
 
@@ -66,13 +67,13 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(initial_text, json_data['user-data'])
         self.assertEqual(dsmode, json_data['dsmode'])
 
-    def testEncodeOversizedMultipart(self):
-        self.assertRaises(ValueError, Util.encodeMultipart, self.TOO_LONG_RAW)
+    def test_encode_oversized_multipart(self):
+        self.assertRaises(ValueError, Util.encode_multipart, self.TOO_LONG_RAW)
 
-    def testDecodeOversizedMultipart(self):
-        self.assertRaises(ValueError, Util.decodeMultipart, self.TOO_LONG_GZIP)
+    def test_decode_oversized_multipart(self):
+        self.assertRaises(ValueError, Util.decode_multipart, self.TOO_LONG_GZIP)
 
-    def testCreateAuthorizedKeysFromFiles(self):
+    def test_create_authorized_keys_from_files(self):
         files = []
         values = []
         for i in range(3):
@@ -83,14 +84,14 @@ class UtilTest(unittest.TestCase):
                 f.write(value)
                 values.append(value)
 
-        result = Util.createAuthorizedKeysFromFiles(files)
+        result = Util.create_authorized_keys_from_files(files)
 
-        for file in files:
-            os.remove(file)
+        for f in files:
+            os.remove(f)
 
         self.assertEqual("\n".join(values)+"\n", result)
 
-    def testCreateMultipartString(self):
+    def test_create_multipart_string(self):
         files = []
         values = []
         for i in range(3):
@@ -98,20 +99,20 @@ class UtilTest(unittest.TestCase):
             values.append(value)
             files.append(('plain', value))
 
-        result = Util.createMultipartString(files)
+        result = Util.create_multipart_string(files)
 
-        with closing(StringIO(result)) as buffer:
+        with closing(StringIO(result)) as buf:
             parser = Parser()
-            msg = parser.parse(buffer)
+            msg = parser.parse(buf)
 
         for part in msg.walk():
             if msg.is_multipart():
                 i = 0
                 for msg in part.get_payload():
                     self.assertEqual(values[i], msg.get_payload())
-                    i = i + 1
+                    i += 1
 
-    def testCreateMultipartStringWithNone(self):
+    def test_create_multipart_string_with_none(self):
         files = []
         values = []
         for i in range(3):
@@ -119,12 +120,11 @@ class UtilTest(unittest.TestCase):
             values.append(value)
             files.append(('none', value))
 
-        result = Util.createMultipartString(files)
+        result = Util.create_multipart_string(files)
 
         self.assertEqual(values[0], result)
 
-
-    def testCreateMultipartStringFromFiles(self):
+    def test_create_multipart_string_from_files(self):
         files = []
         values = []
         for i in range(3):
@@ -135,24 +135,23 @@ class UtilTest(unittest.TestCase):
                 f.write(value)
                 values.append(value)
 
-        result = Util.createMultipartStringFromFiles(files)
+        result = Util.create_multipart_string_from_files(files)
 
-        for mime, file in files:
-            os.remove(file)
+        for mime, f in files:
+            os.remove(f)
 
-        with closing(StringIO(result)) as buffer:
+        with closing(StringIO(result)) as buf:
             parser = Parser()
-            msg = parser.parse(buffer)
+            msg = parser.parse(buf)
 
         for part in msg.walk():
             if msg.is_multipart():
                 i = 0
                 for msg in part.get_payload():
                     self.assertEqual(values[i], msg.get_payload())
-                    i = i + 1
+                    i += 1
 
-
-    def testCreateMultipartStringFromFilesWithNone(self):
+    def test_create_multipart_string_from_files_with_none(self):
         files = []
         values = []
         for i in range(3):
@@ -163,7 +162,7 @@ class UtilTest(unittest.TestCase):
                 f.write(value)
                 values.append(value)
 
-        result = Util.createMultipartStringFromFiles(files)
+        result = Util.create_multipart_string_from_files(files)
 
         self.assertEqual(values[0], result)
 
