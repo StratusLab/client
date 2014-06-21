@@ -54,7 +54,7 @@ keys.  The output is in the file 'cloud-init.txt'.
         pass
 
     def doWork(self):
-        contents = Util.contextFile(self.args)
+        contents = Util.context_file(self.args)
 
         with open('cloud-init.txt', 'wb') as f:
             f.write(contents)
