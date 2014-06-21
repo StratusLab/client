@@ -30,14 +30,14 @@ SIZE_ERROR_MSG = 'multipart size (%d) exceeds limit (%d)'
 '''
 The maximum number of bytes that can be passed as user data is
 limited (essentially by AWS).  Having such a limit avoids DOS
-attacks; enforce the limit here. 
+attacks; enforce the limit here.
 '''
 MAX_BYTES = 16384
 
 '''
 This creates a single multipart file from the given parts.  Each part
-must be a tuple containing mime-type and the raw contents.  The 
-mime-type should be the subtype ONLY.  All files are assumed to be 
+must be a tuple containing mime-type and the raw contents.  The
+mime-type should be the subtype ONLY.  All files are assumed to be
 text files.
 '''
 def createMultipartString(parts):
@@ -49,7 +49,7 @@ def createMultipartString(parts):
         msg.attach(part)
         if (mimetype == 'none'):
             return content
-        
+
     return msg.as_string()
 
 '''
@@ -83,7 +83,7 @@ def createTextPart(content, mimetype, filename):
 
 '''
 This gzips the multipart content and then base64 encodes the result.
-The result is compatible with sending as a value in the context 
+The result is compatible with sending as a value in the context
 key-value pairs supported by OpenNebula.  Note that this checks that
 the maximum size of the result does not exceed 16384 bytes.
 '''
@@ -100,8 +100,8 @@ def encodeMultipart(multipart):
     return base64.b64encode(gzipped_data)
 
 '''
-Decodes the multipart content and returns it.  The input must be 
-a base64 encoded, gzipped file.  It will only decode values that 
+Decodes the multipart content and returns it.  The input must be
+a base64 encoded, gzipped file.  It will only decode values that
 do not exceed the maximum size.
 '''
 def decodeMultipart(encoded_multipart):
@@ -133,9 +133,13 @@ line.
 def createAuthorizedKeysFromFiles(keyfiles):
     with closing(StringIO()) as buffer:
         for keyfile in keyfiles:
-            with open(keyfile, 'rb') as f:
-                key = f.read()
-                buffer.write(key.strip())
+            with open(keyfile, 'r') as f:
+                lines = []
+                for line in f:
+                    line = line.strip()
+                    if not line.startswith('Comment:'):
+                        lines.append(line)
+                buffer.write("\n".join(lines))
             buffer.write("\n")
         return buffer.getvalue()
 
@@ -164,12 +168,15 @@ list of arguments.  Each argument must be a mimetype and filename pair
 separated by a comma.  This ignores all entries except those with the
 pseudo-mimetype of 'ssh'.
 '''
-def encodedAuthorizedKeysFile(args):
+def encodedAuthorizedKeysFile(args, default_public_key_file=None):
     keyfiles = []
     for entry in args:
         mimetype, file = entry.split(',')
         if (mimetype == 'ssh'):
             keyfiles.append(file)
+    if len(keyfiles) == 0 and not default_public_key_file is None:
+        keyfiles.append(default_public_key_file)
+
     if (len(keyfiles) == 0):
         return None
     else:
@@ -182,8 +189,8 @@ arguments.  The method accepts an optional separator character, which
 is a newline by default. Each argument must be a mimetype and filename
 pair separated by a comma.
 '''
-def contextFile(args, separator="\n"):
-   authorized_keys = encodedAuthorizedKeysFile(args)
+def contextFile(args, separator="\n", default_public_key_file=None):
+   authorized_keys = encodedAuthorizedKeysFile(args, default_public_key_file=default_public_key_file)
    user_data = encodedUserData(args)
 
    kvpairs = []
