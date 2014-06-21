@@ -453,7 +453,7 @@ class Runner(VmManager):
 
         if self.cloudInit:
             cloudInitArgs = self.cloudInit.split(Util.cliLineSplitChar)
-            cloudInitData = CloudInitUtil.contextFile(cloudInitArgs)
+            cloudInitData = CloudInitUtil.context_file(cloudInitArgs)
             contextElems.extend(cloudInitData.split('\n'))
 
         for line in contextElems:

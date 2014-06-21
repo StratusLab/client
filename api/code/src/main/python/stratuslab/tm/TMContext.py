@@ -24,10 +24,10 @@ from os.path import dirname
 from tempfile import mkstemp, mkdtemp
 
 from stratuslab.Util import execute, scp
-from stratuslab.cloudinit.Util import decodeMultipartAsJson
+from stratuslab.cloudinit.Util import decode_multipart_as_json
 
 class TMContext(object):
-    ''' Create the disk with context information.  This is a CDROM for 
+    ''' Create the disk with context information.  This is a CDROM for
         standard OpenNebula/HEPiX contextualization.  It is a VFAT-formatted
         volume for cloud-init contextualization.
     '''
@@ -50,7 +50,7 @@ class TMContext(object):
             self._cleanup()
 
     def _run(self):
-        
+
         TMContext._checkArgs(self.args)
 
         contextFile = self.args[1]
@@ -82,7 +82,7 @@ class TMContext(object):
        for the lines with the keys CONTEXT_METHOD,
        CLOUD_INIT_USER_DATA and CLOUD_INIT_AUTHORIZED_KEYS.  All of
        the other key-value pairs do not need to be understood by this
-       class.  A map with these values (if found) are returned. 
+       class.  A map with these values (if found) are returned.
     '''
     @staticmethod
     def _parseContextFile(context_file):
@@ -130,8 +130,8 @@ class TMContext(object):
     def _makeEmptyFile(size=1024*1000):
         _, file = mkstemp()
         with open(file, 'w') as f:
-            f.seek(size - 1) 
-            f.write('\0') 
+            f.seek(size - 1)
+            f.write('\0')
         return file
 
     @staticmethod
@@ -177,7 +177,7 @@ class TMContext(object):
             except KeyError:
                 encoded_content = None
 
-            meta_content = decodeMultipartAsJson('local', encoded_content)
+            meta_content = decode_multipart_as_json('local', encoded_content)
 
             meta_file = os.path.join(content_dir, 'meta.js')
 
