@@ -176,8 +176,8 @@ persistent_disk_temp_store = /var/lib/one/images/
 
 # Location of the persistent disk storage service
 persistent_disk_ip =
-persistent_disk_port = 8445
-persistent_disk_path = 
+persistent_disk_port = 443
+persistent_disk_path = pdisk
 
 # Target LVM device
 persistent_disk_lvm_device = /dev/pdisk
@@ -253,7 +253,7 @@ persistent_disk_host_volume_mgmt_dir = /var/run/stratuslab
 # sun-network. Mainly used during new image creation in the user notification 
 # email and image endpoint in the image manifest for Marketplace. If not set, 
 # persistent_disk_ip is used instead. 
-# Example: https://1.2.3.4:8445
+# Example: https://1.2.3.4:443
 persistent_disk_public_base_url = 
 
 # Hostname/IP of the PDisk backend.
