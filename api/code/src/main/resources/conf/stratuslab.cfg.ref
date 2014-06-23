@@ -194,7 +194,7 @@ persistent_disk_storage = lvm
 
 # Location of the disk for file storage. Not used with LVM
 persistent_disk_file_location = /tmp/pdisk 
-persistent_disk_system = fedora
+persistent_disk_system = centos
 
 # Only used at install
 persistent_disk_private_key = /root/.ssh/id_rsa 
