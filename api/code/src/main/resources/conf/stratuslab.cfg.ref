@@ -200,9 +200,9 @@ persistent_disk_system = centos
 persistent_disk_private_key = /root/.ssh/id_rsa 
 
 # Shall we configure to share same auth file with one-proxy? 
-# This imply to have one-proxy on the same machine 
+# This implies having one-proxy on the same machine 
 # Only used at install
-persistent_disk_merge_auth_with_proxy = false
+persistent_disk_merge_auth_with_proxy = true
 
 # Only used for nfs sharing. If specified will use this NFS share to store
 # the disk else a NFS share is created on the service
