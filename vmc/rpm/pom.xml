@@ -111,14 +111,17 @@
             <require>python-daemon</require>
 	  </requires>
 	  
+          <defaultDirmode>755</defaultDirmode>
+          <defaultFilemode>644</defaultFilemode>
+          <defaultGroupname>root</defaultGroupname>
+          <defaultUsername>root</defaultUsername>
+
 	  <mappings>
 
 	    <mapping>
 	      <directory>/usr/sbin</directory>
 	      <directoryIncluded>false</directoryIncluded>
 	      <filemode>755</filemode>
-	      <username>root</username>
-	      <groupname>root</groupname>
 	      <sources>
 		<source>
 		  <location>${project.build.directory}/zip-sources/bin</location>
@@ -128,10 +131,7 @@
 
 	    <mapping>
 	      <directory>/var/lib/stratuslab/python</directory>
-	      <directoryIncluded>true</directoryIncluded>
-	      <filemode>644</filemode>
-	      <username>root</username>
-	      <groupname>root</groupname>
+	      <directoryIncluded>false</directoryIncluded>
 	      <sources>
 		<source>
 		  <location>${project.build.directory}/zip-sources/lib</location>
@@ -143,8 +143,6 @@
 	      <directory>/etc/init.d</directory>
 	      <directoryIncluded>false</directoryIncluded>
 	      <filemode>755</filemode>
-	      <username>root</username>
-	      <groupname>root</groupname>
 	      <sources>
 		<source>
 		  <location>${basedir}/src/main/scripts</location>
