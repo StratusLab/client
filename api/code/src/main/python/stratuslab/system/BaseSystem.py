@@ -694,7 +694,7 @@ class BaseSystem(object):
         Util.appendOrReplaceInFile(filename, search, replace)
 
     def configureCloudProxyService(self):
-        self.installPackages(['stratuslab-one-proxy'])
+        self.installPackages(['stratuslab-one-proxy', 'stratuslab-nginx-load'])
         self._configureProxyDefaultUsers()
         self._restartJetty()
 
