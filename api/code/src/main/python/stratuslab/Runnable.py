@@ -82,6 +82,10 @@ class Runnable(AuthnCommand):
                                help='extra context string (separate by %s)' % Util.cliLineSplitChar,
                                default=default_options['extraContextData'])
 
+        self.parser.add_option('--context-method', dest='defaultContextMethod', metavar='METHOD',
+                               help='default contextualization method (one or cloud-init)',
+                               default=default_options['defaultContextMethod'])
+
         self.parser.add_option('--cloud-init', dest='cloudInit', metavar='PAIRS',
                                help='mimetype,file pairs (separate by %s)' % Util.cliLineSplitChar,
                                default=default_options['cloudInit'])

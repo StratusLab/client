@@ -44,6 +44,13 @@ pdisk_endpoint = https://cloud.example.com/pdisk
 username = username
 password = password
 
+#
+# Contextualization method
+#   one = OpenNebula/HEPiX (default)
+#   cloud-init = CloudInit contextualization
+#
+# default_context_method = cloud-init
+
 # Certificate or proxy credentials.
 # Use same value for both parameters for a proxy certificate.
 #

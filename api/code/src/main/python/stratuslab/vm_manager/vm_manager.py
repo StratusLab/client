@@ -65,14 +65,12 @@ class VmManager(object):
         self.vm_image = image
         self.configHolder = config_holder
 
-
     @staticmethod
     def getTemplatePath(instance=None):
         if instance and hasattr(instance, 'vmTemplateFile'):
             return Util.get_share_file(['vm', 'schema.one'], instance.vmTemplateFile)
         else:
             return Util.get_share_file(['vm', 'schema.one'])
-
 
     @staticmethod
     def getDefaultInstanceTypes():
@@ -116,7 +114,8 @@ class VmManager(object):
                            'isPrivateIp': False,
                            'extraContextFile': '',
                            'extraContextData': '',
-                           'cloudInit': '',
+                           'cloudInit': None,
+                           'defaultContextMethod': 'one',
                            # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM.
                            #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
                            'vncPort': '-1',
