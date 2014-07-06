@@ -98,7 +98,7 @@ class Runner(VmManager):
         self.rawData = ''
         self.extraContextFile = ''
         self.extraContextData = ''
-        self.cloudInit = ''
+        self.cloudInit = None
         self.vncPort = ''
         self.vncListen = ''
         self.noCheckImageUrl = False
@@ -314,7 +314,7 @@ class Runner(VmManager):
                      'isPrivateIp': False,
                      'extraContextFile': '',
                      'extraContextData': '',
-                     'cloudInit': '',
+                     'cloudInit': None,
                      # FIXME: hack to fix a weird problem with network in CentOS on Fedora 14 + KVM.
                      #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
                      'vncPort': '-1',
@@ -451,9 +451,12 @@ class Runner(VmManager):
         if self.extraContextData:
             contextElems.extend(self.extraContextData.split(Util.cliLineSplitChar))
 
-        if self.cloudInit:
+        if self.cloudInit or (self.defaultContextMethod and self.defaultContextMethod == 'cloud-init'):
+            if self.cloudInit is None:
+                self.cloudInit = ''
+
             cloudInitArgs = self.cloudInit.split(Util.cliLineSplitChar)
-            cloudInitData = CloudInitUtil.context_file(cloudInitArgs)
+            cloudInitData = CloudInitUtil.context_file(cloudInitArgs, default_public_key_file=self.userPublicKeyFile)
             contextElems.extend(cloudInitData.split('\n'))
 
         for line in contextElems:

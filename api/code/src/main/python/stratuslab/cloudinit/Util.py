@@ -35,6 +35,36 @@ attacks; enforce the limit here.
 MAX_BYTES = 16384
 
 
+def _strip_args(args):
+    """
+    Strips white space from the ends of each argument and
+    removes any empty strings from the list of arguments.
+    """
+    return filter(None, [a.strip() for a in args])
+
+
+def _mimetype_tuple(mimetype_pair):
+    """
+    Splits the mimetype pair on commas and returns a tuple
+    with the first two values.  The returned values have whitespace
+    stripped from both ends.
+    """
+    try:
+        mimetype, filename = mimetype_pair.split(',')
+        return mimetype.strip(), filename.strip()
+    except ValueError:
+        raise Exception("invalid CloudInit mimetype pair: '%s'" % mimetype_pair)
+
+
+def _mimetype_tuples(args):
+    """
+    Converts the list of CloudInit mimetype pairs into a list
+    of two-element tuples (mimetype and filename).  Empty values
+    are ignored.
+    """
+    return [_mimetype_tuple(a) for a in _strip_args(args)]
+
+
 def create_multipart_string(parts):
     """
     This creates a single multipart file from the given parts.  Each part
@@ -163,10 +193,10 @@ def encoded_user_data(args):
     """
 
     mimefiles = []
-    for entry in args:
-        mimetype, filename = entry.split(',')
+    for mimetype, filename in _mimetype_tuples(args):
         if mimetype != 'ssh':
             mimefiles.append((mimetype, filename))
+
     if len(mimefiles) == 0:
         return None
     else:
@@ -182,11 +212,12 @@ def encoded_authorized_keys_file(args, default_public_key_file=None):
     """
 
     keyfiles = []
-    for entry in args:
-        mimetype, filename = entry.split(',')
+
+    for mimetype, filename in _mimetype_tuples(args):
         if mimetype == 'ssh':
             keyfiles.append(filename)
-    if len(keyfiles) == 0 and not default_public_key_file is None:
+
+    if len(keyfiles) == 0 and (default_public_key_file is not None):
         keyfiles.append(default_public_key_file)
 
     if len(keyfiles) == 0:
