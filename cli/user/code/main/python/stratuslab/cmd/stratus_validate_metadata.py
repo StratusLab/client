@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2012, Centre National de la Recherche Scientifique (CNRS)
+# Created as part of the StratusLab project (http://stratuslab.eu),
+# co-funded by the European Commission under the Grant Agreement
+# INFSO-RI-261552."
+#
+# Copyright (c) 2010, SixSq Sarl
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +20,14 @@
 # limitations under the License.
 #
 
+import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.CommandBase import CommandBase
-from stratuslab.cloudinit import Util
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab.Signator import Signator
 
 # initialize console logging
 import stratuslab.api.LogUtil as LogUtil
@@ -29,36 +36,41 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(CommandBase):
-    """
-    A command-line utility for generating a cloud-init context file.
-    The output file is always named cloud-init.txt and written to the
-    current directory.
-    """
+    """A command-line program to validate image manifest."""
+
     def __init__(self):
-        self.image = None
+        self.manifestFile = None
+        self.args = None
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog file-desc ...'
+        self.parser.usage = '''%prog [options] metadata-file'''
 
         self.parser.description = '''
-Creates a context file for use with the CloudInit virtual machine
-contextualization.  Each argument is a mime-type and file name pair,
-separated by a comma.  The pseudo-mime-type 'ssh' is used for ssh
-keys.  The output is in the file 'cloud-init.txt'.
+Upload the metadata description of a machine or disk image to the
+Marketplace.  The metadata-file argument is the file containing the
+image metadata.
 '''
 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        pass
+        if not self.args:
+            self.parser.error('Missing manifest file')
+
+        self.manifestFile = self.args[0]
+
+        isFile = os.path.isfile(self.manifestFile)
+        exists = os.path.exists(self.manifestFile)
+        if not (exists and isFile):
+            self.parser.error("Manifest file doesn't exist or is not a file")
 
     def doWork(self):
-        contents = Util.context_file(self.args)
-
-        with open('cloud-init.txt', 'wb') as f:
-            f.write(contents)
-            f.write("\n")
+        configHolder = ConfigHolder(self.options.__dict__)
+        signator = Signator(self.manifestFile, configHolder)
+        rc = signator.validate()
+        if rc != 0:
+            sys.exit(rc)
 
 
 if __name__ == '__main__':

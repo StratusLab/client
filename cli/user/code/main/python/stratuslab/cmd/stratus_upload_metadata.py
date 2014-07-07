@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement

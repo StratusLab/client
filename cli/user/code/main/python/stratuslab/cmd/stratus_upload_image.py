@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -19,15 +20,17 @@
 # limitations under the License.
 #
 
+import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.CommandBase import CommandBaseUser
-from stratuslab.marketplace.Deprecator import Deprecator
+from stratuslab.image.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commandbase.StorageCommand import PDiskVolume
 
 # initialize console logging
 import stratuslab.api.LogUtil as LogUtil
@@ -36,31 +39,47 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand):
-    """A command-line program to deprecate a StratusLab metadata entry."""
+    """A command-line program to upload StratusLab appliance."""
 
     def __init__(self):
-        self.imageid = None
+        self.image = None
         super(MainProgram, self).__init__()
 
     def parse(self):
-        Deprecator.buildDeprecatorParser(self.parser)
+        Uploader.buildUploadParser(self.parser)
+
+        self.parser.usage = '''%prog [options] image-file'''
+
+        self.parser.description = '''
+Uploads the given machine or disk image file to the persistent
+disk service.  The image-file argument is the file to upload.
+'''
+
+        self.addP12CertOptions(self.parser, AuthnCommand.defaultRunOptions())
 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
         if len(self.args) != 1:
-            self.parser.error('Please specify an image ID')
-        self.imageid = self.args[0]
+            self.parser.error('Please specify an image as <filename>.img')
+        self.image = self.args[0]
 
-        Deprecator.checkDeprecatorOptions(self.options, self.parser)
+        Uploader.checkUploadOptions(self.options, self.parser)
+        if not self.options.imageOnly:
+            self.checkP12CertOptionsOnly()
+
+        if not os.path.isfile(self.image):
+            self.parser.error('Image file does not exist: ' + self.image)
 
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
-        deprecator = Deprecator(configHolder)
+        configHolder = ConfigHolder(self.options.__dict__, self.config or {})
+        configHolder.set('imageMetadata',
+                         PDiskVolume.extractVolumeOptionsAsDict(self.options))
+
+        uploader = Uploader(self.image, configHolder)
 
         try:
-            deprecatedUrl = deprecator.deprecate(self.imageid)
-            print deprecatedUrl
+            uploader.start()
         except InputException, e:
             print e
             sys.exit(1)

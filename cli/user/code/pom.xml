@@ -9,14 +9,14 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli-user</artifactId>
-    <version>14.06.0_RC6-SNAPSHOT</version>
+    <version>14.06.0.RC6-SNAPSHOT</version>
   </parent>
 
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-core-zip</artifactId>
-      <version>14.06.0_RC6-SNAPSHOT</version>
+      <version>14.06.0.RC6-SNAPSHOT</version>
       <classifier>core-bundle</classifier>
       <type>zip</type>
       <scope>compile</scope>
@@ -140,26 +140,6 @@
           </execution>
         </executions>
 
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-	  <executable>/bin/bash</executable>
-	  <arguments>
-	    <argument>-c</argument>
-	    <argument>main/scripts/create-windows-stubs.py</argument>
-	  </arguments>
-	</configuration>
       </plugin>
 
     </plugins>

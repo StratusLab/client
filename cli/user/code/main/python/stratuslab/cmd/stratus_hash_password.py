@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -19,14 +20,15 @@
 # limitations under the License.
 #
 
-import os
 import sys
+import crypt
+import getpass
+import hashlib
+import re
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBase
-from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Signator import Signator
+from stratuslab.Runnable import Runnable
 
 # initialize console logging
 import stratuslab.api.LogUtil as LogUtil
@@ -34,8 +36,8 @@ import stratuslab.api.LogUtil as LogUtil
 LogUtil.get_console_logger()
 
 
-class MainProgram(CommandBase):
-    """A command-line program to validate image manifest."""
+class MainProgram(Runnable):
+    """A command-line program to hash a username and password."""
 
     def __init__(self):
         self.manifestFile = None
@@ -43,33 +45,46 @@ class MainProgram(CommandBase):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '''%prog [options] metadata-file'''
+        self.parser.usage = '''%prog [options]'''
 
         self.parser.description = '''
-Upload the metadata description of a machine or disk image to the
-Marketplace.  The metadata-file argument is the file containing the
-image metadata.
+Hashes a given username and password in crypt and MD5 formats.  The
+values are requested from the standard input.
 '''
 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        if not self.args:
-            self.parser.error('Missing manifest file')
-
-        self.manifestFile = self.args[0]
-
-        isFile = os.path.isfile(self.manifestFile)
-        exists = os.path.exists(self.manifestFile)
-        if not (exists and isFile):
-            self.parser.error("Manifest file doesn't exist or is not a file")
+        pass
 
     def doWork(self):
-        configHolder = ConfigHolder(self.options.__dict__)
-        signator = Signator(self.manifestFile, configHolder)
-        rc = signator.validate()
-        if rc != 0:
-            sys.exit(rc)
+        username, password = self.get_input()
+        print self.hash_password(password)
+        print self.crypt_password(username, password)
+
+    def get_input(self):
+        username = raw_input('username:')
+        password1 = getpass.getpass('password:')
+        password2 = getpass.getpass('retype password:')
+
+        if password1 != password2:
+            raise ValueError("Passwords did not match")
+
+        return username, password1
+
+    def remove_invalid_salt_chars(self, string):
+        invalid_salt_chars = re.compile(r"[^\./a-zA-Z0-9]")
+        return ''.join(invalid_salt_chars.split(string))
+
+    def crypt_password(self, username, password):
+        salt = self.remove_invalid_salt_chars(username + "..")
+        salt = salt[:2]
+        return "CRYPT:" + crypt.crypt(password, salt)
+
+    def hash_password(self, password):
+        m = hashlib.md5()
+        m.update(password)
+        return "MD5:" + m.hexdigest()
 
 
 if __name__ == '__main__':

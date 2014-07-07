@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -20,17 +21,14 @@
 #
 
 import sys
-
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Util import printError
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
+from stratuslab.volume_manager.volume_manager import VolumeManager
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Authn import AuthnFactory
-from stratuslab.Exceptions import OneException
 
 # initialize console logging
 import stratuslab.api.LogUtil as LogUtil
@@ -39,26 +37,19 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
-    """A command-line program to attach a persistent disk."""
+    """A command-line program to create a persistent disk."""
 
     def __init__(self):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog [options] volume-uuid'
-
+        self.parser.usage = '%prog [options] volume-uuid ...'
         self.parser.description = '''
-Attach a persistent volume (disk) to a running virtual machine.  The
-volume-uuid argument is the unique identifier of the volume (disk) to
-attach.
+Delete a persistent volume (disk) or volumes. The volume-uuid
+arguments are the unique identifiers of volumes to remove.
 '''
 
-        self.parser.add_option('-i', '--instance', dest='instance',
-                               help='The ID of the instance to which the volume attaches', metavar='VM_ID',
-                               default=0, type='int')
-
         StorageCommand.addPDiskEndpointOptions(self.parser)
-        AuthnCommand.addCloudEndpointOptions(self.parser)
 
         super(MainProgram, self).parse()
 
@@ -66,34 +57,25 @@ attach.
 
     def checkOptions(self):
         super(MainProgram, self).checkOptions()
-        if not self.uuids:
-            printError('Please provide at least one persistent disk UUID to attach')
-        if (self.options.instance < 0):
-            printError('Please provide a VM ID on which to attach disk')
-        try:
-            self._setupCloudConnection()
-            if not self.options.cloud.isVmRunning(self.options.instance):
-                printError('VM %s is not in running state' % self.options.instance)
-            self.node = self.options.cloud.getVmNode(self.options.instance)
-        except OneException, e:
-            printError(e)
+        self._getUuid()
+        self._checkUuid()
 
-    def _setupCloudConnection(self):
-        credentials = AuthnFactory.getCredentials(self.options)
-        self.options.cloud = CloudConnectorFactory.getCloud(credentials)
-        self.options.cloud.setEndpoint(self.options.endpoint)
+    def _getUuid(self):
+        if len(self.uuids) < 1:
+            printError('At least one disk UUID is required')
+
+    def _checkUuid(self):
+        for uuid in self.uuids:
+            if not VolumeManager.isValidUuid(uuid):
+                printError('Invalid UUID %s' % uuid)
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
         pdisk = VolumeManagerFactory.create(configHolder)
         for uuid in self.uuids:
-            free, _ = pdisk.getVolumeUsers(uuid)
-            if free < 1:
-                printError('DISK %s: Disk not available\n' % uuid, exit=False)
-            else:
-                target = pdisk.hotAttach(self.node, self.options.instance, uuid)
-                print 'ATTACHED %s in VM %s on /dev/%s' % (uuid, self.options.instance, target)
+            volumeId = pdisk.deleteVolume(uuid)
+            print 'DELETED %s' % volumeId
 
 
 if __name__ == '__main__':
