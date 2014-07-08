@@ -24,6 +24,8 @@ include windows/stratus-run-instance.bat
 include windows/stratus-shutdown-instance.bat
 include windows/stratus-sign-metadata.bat
 include windows/stratus-update-volume.bat
+include windows/stratus-show-image.bat
+include windows/stratus-list-images.bat
 include windows/stratus-upload-image.bat
 include windows/stratus-upload-metadata.bat
 include windows/stratus-validate-metadata.bat

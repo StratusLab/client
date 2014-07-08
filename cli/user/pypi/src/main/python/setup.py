@@ -42,6 +42,8 @@ setup(
         'bin/stratus-shutdown-instance',
         'bin/stratus-sign-metadata',
         'bin/stratus-update-volume',
+        'bin/stratus-show-image',
+        'bin/stratus-list-images',
         'bin/stratus-upload-image',
         'bin/stratus-upload-metadata',
         'bin/stratus-validate-metadata',
