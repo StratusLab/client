@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.stratuslab.client</groupId>
     <artifactId>stratuslab-cli-user</artifactId>
-    <version>14.06.0</version>
+    <version>14.06.1-SNAPSHOT</version>
   </parent>
 
   <profiles>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
       <artifactId>stratuslab-cli-user-pkg</artifactId>
-      <version>14.06.0</version>
+      <version>14.06.1-SNAPSHOT</version>
       <!-- <classifier>cli-user-bundle</classifier> -->
       <type>zip</type>
       <scope>compile</scope>
