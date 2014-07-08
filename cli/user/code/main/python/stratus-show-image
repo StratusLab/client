@@ -22,6 +22,7 @@
 
 
 import sys
+import urllib2
 from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
@@ -58,7 +59,7 @@ def MainProgram():
 
     parser = OptionParser()
 
-    parser.usage = '%prog [options] image-id ...'
+    parser.usage = '%prog -i image-id ...'
     parser.description = 'Show a specific image on MarketPlace.'
     parser.add_option("-i", "--image",
                   action="store", type="string", dest="image")
@@ -66,23 +67,18 @@ def MainProgram():
     (options, args) = parser.parse_args()
 
     if not options.image:
-        parser.error('Please specify the machine image to start')
+        parser.error('Please specify the machine image to show')
 
     ID = options.image
-
-    try:
-        import mechanize
-    except:
-        sys.exit("mechanize not found ! Please install it with pip! Exiting...")
-
-    br = mechanize.Browser()
-    response = br.open(ENDPOINT_MKP)
-    content = response.read()
-
 
     # checking marketplace endpoint URL
     url_is_ok = Util.checkUrlExists(ENDPOINT_MKP, 30)
     if url_is_ok is True and ID is not False:
+
+        req = urllib2.Request(ENDPOINT_MKP)
+        response = urllib2.urlopen(req)
+        content = response.read()
+
         xml = Util.etree_from_text(content)
 
         desc_nodes = xml.iter("{" + RDF + "}Description")
