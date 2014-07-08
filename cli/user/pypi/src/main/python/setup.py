@@ -59,7 +59,7 @@ setup(
         'stratuslab.image',
         #'stratuslab.installator',
         'stratuslab.marketplace',
-        'stratuslab.messaging',
+        #'stratuslab.messaging',
         'stratuslab.pat',
         'stratuslab.system',
         'stratuslab.vm_manager',
@@ -112,8 +112,8 @@ setup(
         ],
 
     install_requires=[
-        "dirq >= 1.2.2",
-        "stomp.py >= 3.1.3",
+        #"dirq >= 1.2.2",
+        #"stomp.py >= 3.1.3",
         "httplib2 >= 0.7.7",
         "requests >= 2.2.0"
     ],
