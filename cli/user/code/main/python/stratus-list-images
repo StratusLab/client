@@ -23,22 +23,27 @@
 
 import sys
 sys.path.append('/var/lib/stratuslab/python')
-#import re
 
 # initialize console logging
 #import stratuslab.api.LogUtil as LogUtil
-#from stratuslab.marketplace import *
 from stratuslab.ConfigHolder import ConfigHolder
 #from stratuslab.CommandBase import CommandBaseUser
 #from stratuslab.Exceptions import InputException
 import stratuslab.Util as Util
 
-from stratuslab.marketplace.Util import Util as MarketplaceUtil
+#from stratuslab.marketplace import *
+#from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.Util import etree_from_text
 
 from stratuslab import Defaults
 from stratuslab.Exceptions import ValidationException
 
+# initialize console logging
+import stratuslab.api.LogUtil as LogUtil
+
+LogUtil.get_console_logger()
+
+# define some vars
 ENVVAR_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'
 #OPTION_STRING = '--marketplace-endpoint'
 
@@ -47,6 +52,7 @@ ENDPOINT_MKP = ENDPOINT + "/marketplace/metadata"
 
 DCTERMS = "http://purl.org/dc/terms/"
 RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+SLTERMS = "http://mp.stratuslab.eu/slterms#"
 
 def MainProgram():
     """
@@ -55,7 +61,7 @@ def MainProgram():
     try:
         import mechanize
     except:
-        sys.exit("mechanize not found !! Exiting...")
+        sys.exit("mechanize not found ! Please install it with pip! Exiting...")
     br = mechanize.Browser()
     response = br.open(ENDPOINT_MKP)
     content = response.read()
@@ -74,10 +80,15 @@ def MainProgram():
             desc["identifier"] = desc_node.find('{' + DCTERMS + '}identifier').text
             desc["creator"] = desc_node.find('{' + DCTERMS + '}creator').text
             desc["created"] = desc_node.find('{' + DCTERMS + '}created').text
+            desc["os"] = desc_node.find('{' + SLTERMS + '}os').text
+            desc["os-version"] = desc_node.find('{' + SLTERMS + '}os-version').text
+            desc["os-arch"] = desc_node.find('{' + SLTERMS + '}os-arch').text
 
-            # cast in str for None object (otherwise, I should use try/Except)
+            # cast in str for NoneType object (otherwise, we should use try/Except)
             print "Description: " + str(desc["description"])
             print "ID: " + str(desc["identifier"])
+            print "OS: " + str(desc["os"]), str(desc["os-version"]), \
+            "| Arch: " + str(desc["os-arch"])
             print "Creator: " + str(desc["creator"])
             print "Created at: " + str(desc["created"].replace("Z","").split('T'))
             print "####\n"
