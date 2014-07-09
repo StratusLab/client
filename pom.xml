@@ -5,7 +5,7 @@
 
   <groupId>eu.stratuslab.client</groupId>
   <artifactId>stratuslab-parent</artifactId>
-  <version>14.06.0.RC6-SNAPSHOT</version>
+  <version>14.06.1-SNAPSHOT</version>
   <name>StratusLab Parent (POM)</name>
 
   <url>http://github.com/StratusLab/client</url>
@@ -20,7 +20,7 @@ with minimal dependencies for maximum portability.
   <parent>
     <groupId>eu.stratuslab</groupId>
     <artifactId>distribution</artifactId>
-    <version>14.06.0_RC6-SNAPSHOT</version>
+    <version>14.06.1-SNAPSHOT</version>
   </parent>
 
   <modules>
@@ -84,27 +84,27 @@ with minimal dependencies for maximum portability.
       <dependency>
         <groupId>eu.stratuslab.authn</groupId>
         <artifactId>authn-ssl</artifactId>
-        <version>14.06.0_RC6-SNAPSHOT</version>
+        <version>14.06.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>eu.stratuslab.authn</groupId>
         <artifactId>authn-login-module</artifactId>
-        <version>14.06.0_RC6-SNAPSHOT</version>
+        <version>14.06.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>eu.stratuslab.authn</groupId>
         <artifactId>authn-one-proxy-war</artifactId>
-        <version>14.06.0_RC6-SNAPSHOT</version>
+        <version>14.06.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>eu.stratuslab.metadata</groupId>
         <artifactId>metadata</artifactId>
-        <version>14.06.0_RC6-SNAPSHOT</version>
+        <version>14.06.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>eu.stratuslab.metadata</groupId>
         <artifactId>metadata-fatjar</artifactId>
-        <version>14.06.0_RC6-SNAPSHOT</version>
+        <version>14.06.1-SNAPSHOT</version>
         <type>jar</type>
         <classifier>jar-with-dependencies</classifier>
       </dependency>

@@ -451,7 +451,9 @@ class Runner(VmManager):
         if self.extraContextData:
             contextElems.extend(self.extraContextData.split(Util.cliLineSplitChar))
 
-        if self.cloudInit or (self.defaultContextMethod and self.defaultContextMethod == 'cloud-init'):
+        if self.cloudInit or (hasattr(self, 'defaultContextMethod') and 
+                              self.defaultContextMethod and 
+                              self.defaultContextMethod == 'cloud-init'):
             if self.cloudInit is None:
                 self.cloudInit = ''
 
