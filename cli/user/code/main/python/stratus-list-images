@@ -22,6 +22,7 @@
 
 
 import sys
+import urllib2
 sys.path.append('/var/lib/stratuslab/python')
 
 # initialize console logging
@@ -58,17 +59,15 @@ def MainProgram():
     """
     List images on a given MarketPlace using mechanize
     """
-    try:
-        import mechanize
-    except:
-        sys.exit("mechanize not found ! Please install it with pip! Exiting...")
-    br = mechanize.Browser()
-    response = br.open(ENDPOINT_MKP)
-    content = response.read()
 
     # checking marketplace endpoint URL
     url_is_ok = Util.checkUrlExists(ENDPOINT_MKP, 30)
     if url_is_ok is True:
+
+        req = urllib2.Request(ENDPOINT_MKP)
+        response = urllib2.urlopen(req)
+        content = response.read()
+
         xml = Util.etree_from_text(content)
 
         desc_nodes = xml.iter("{" + RDF + "}Description")
