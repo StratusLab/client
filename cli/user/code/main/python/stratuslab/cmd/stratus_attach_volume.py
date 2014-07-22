@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -39,17 +40,18 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
-    """A command-line program to detach a persistent disk."""
+    """A command-line program to attach a persistent disk."""
 
     def __init__(self):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog [options] volume-uuid ...'
+        self.parser.usage = '%prog [options] volume-uuid'
+
         self.parser.description = '''
-Detach one or more persistent volumes (disks) that were dynamically
-attached to a running virtual machine.  The volume-uuid arguments are
-the unique identifiers of volumes to detach.
+Attach a persistent volume (disk) to a running virtual machine.  The
+volume-uuid argument is the unique identifier of the volume (disk) to
+attach.
 '''
 
         self.parser.add_option('-i', '--instance', dest='instance',
@@ -66,34 +68,39 @@ the unique identifiers of volumes to detach.
     def checkOptions(self):
         super(MainProgram, self).checkOptions()
         if not self.uuids:
-            printError('Please provide at least one persistent disk UUID to detach')
+            printError('Please provide at least one persistent disk UUID to attach')
         if self.options.instance < 0:
-            printError('Please provide a VM ID on which to detach disk')
+            printError('Please provide a VM ID on which to attach disk')
         try:
-            self._retrieveVmNode()
+            self._setupCloudConnection()
+            if not self.options.cloud.isVmRunning(self.options.instance):
+                printError('VM %s is not in running state' % self.options.instance)
+            self.node = self.options.cloud.getVmNode(self.options.instance)
         except OneException, e:
             printError(e)
 
-    def _retrieveVmNode(self):
+    def _setupCloudConnection(self):
         credentials = AuthnFactory.getCredentials(self.options)
         self.options.cloud = CloudConnectorFactory.getCloud(credentials)
         self.options.cloud.setEndpoint(self.options.endpoint)
-        self.node = self.options.cloud.getVmNode(self.options.instance)
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
         pdisk = VolumeManagerFactory.create(configHolder)
         for uuid in self.uuids:
-            try:
-                target = pdisk.hotDetach(self.options.instance, uuid)
-                print 'DETACHED %s from VM %s on /dev/%s' % (uuid, self.options.instance, target)
-            except Exception, e:
-                printError('DISK %s: %s' % (uuid, e), exit=False)
+            free, _ = pdisk.getVolumeUsers(uuid)
+            if free < 1:
+                printError('DISK %s: Disk not available\n' % uuid, exit=False)
+            else:
+                target = pdisk.hotAttach(self.node, self.options.instance, uuid)
+                print 'ATTACHED %s in VM %s on /dev/%s' % (uuid, self.options.instance, target)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
+        return 0
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

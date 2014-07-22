@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -102,8 +103,9 @@ that have a tag matching the regex pattern.''',
             self.options.filters.append('uuid:%s' % uuid)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

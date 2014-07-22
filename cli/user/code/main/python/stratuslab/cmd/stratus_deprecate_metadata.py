@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -19,14 +20,14 @@
 # limitations under the License.
 #
 
-import os
 import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBase
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.Signator import Signator
+from stratuslab.marketplace.Deprecator import Deprecator
+from stratuslab.Exceptions import InputException
+from stratuslab.AuthnCommand import AuthnCommand
 
 # initialize console logging
 import stratuslab.api.LogUtil as LogUtil
@@ -34,45 +35,38 @@ import stratuslab.api.LogUtil as LogUtil
 LogUtil.get_console_logger()
 
 
-class MainProgram(CommandBase):
-    """A command-line program to validate image manifest."""
+class MainProgram(AuthnCommand):
+    """A command-line program to deprecate a StratusLab metadata entry."""
 
     def __init__(self):
-        self.manifestFile = None
-        self.args = None
+        self.imageid = None
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '''%prog [options] metadata-file'''
-
-        self.parser.description = '''
-Upload the metadata description of a machine or disk image to the
-Marketplace.  The metadata-file argument is the file containing the
-image metadata.
-'''
+        Deprecator.buildDeprecatorParser(self.parser)
 
         self.options, self.args = self.parser.parse_args()
 
     def checkOptions(self):
-        if not self.args:
-            self.parser.error('Missing manifest file')
+        if len(self.args) != 1:
+            self.parser.error('Please specify an image ID')
+        self.imageid = self.args[0]
 
-        self.manifestFile = self.args[0]
-
-        isFile = os.path.isfile(self.manifestFile)
-        exists = os.path.exists(self.manifestFile)
-        if not (exists and isFile):
-            self.parser.error("Manifest file doesn't exist or is not a file")
+        Deprecator.checkDeprecatorOptions(self.options, self.parser)
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__)
-        signator = Signator(self.manifestFile, configHolder)
-        rc = signator.validate()
-        if rc != 0:
-            sys.exit(rc)
+        deprecator = Deprecator(configHolder)
+
+        try:
+            deprecatedUrl = deprecator.deprecate(self.imageid)
+            print deprecatedUrl
+        except InputException, e:
+            print e
+            sys.exit(1)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:

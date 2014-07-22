@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -34,7 +35,6 @@ LogUtil.get_console_logger()
 class MainProgram(InstanceCommand):
     """A command-line program to shutdown a virtual machine."""
 
-
     def parse(self):
         self.parser_usage = '''%prog [options] vm-id ...'''
         self.parser_description = '''
@@ -49,7 +49,7 @@ instances to shutdown.
         self.shutdownInstances()
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:

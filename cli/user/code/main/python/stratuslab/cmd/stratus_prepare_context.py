@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2012, Centre National de la Recherche Scientifique (CNRS)
 #
@@ -61,8 +62,9 @@ keys.  The output is in the file 'cloud-init.txt'.
             f.write("\n")
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

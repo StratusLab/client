@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -20,13 +21,13 @@
 #
 
 import sys
+
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import printError
-from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
-from stratuslab.volume_manager.volume_manager import VolumeManager
 from stratuslab.ConfigHolder import ConfigHolder
 
 # initialize console logging
@@ -36,49 +37,50 @@ LogUtil.get_console_logger()
 
 
 class MainProgram(AuthnCommand, StorageCommand):
-    """A command-line program to create a persistent disk."""
+    """A command-line program to update persistent disk metadata."""
 
     def __init__(self):
         super(MainProgram, self).__init__()
 
     def parse(self):
-        self.parser.usage = '%prog [options] volume-uuid ...'
+        self.parser.usage = '%prog [options] volume-uuid'
         self.parser.description = '''
-Delete a persistent volume (disk) or volumes. The volume-uuid
-arguments are the unique identifiers of volumes to remove.
+Update the metadata for a given persistent volume (disk).  The
+volume-uuid is the unique identifier for the volume to update.
 '''
 
-        StorageCommand.addPDiskEndpointOptions(self.parser)
+        StorageCommand.addOptions(self.parser)
 
         super(MainProgram, self).parse()
 
         self.options, self.uuids = self.parser.parse_args()
 
     def checkOptions(self):
+        StorageCommand.checkVolumeOptions(self)
         super(MainProgram, self).checkOptions()
-        self._getUuid()
-        self._checkUuid()
+        self._checkUuids()
 
-    def _getUuid(self):
-        if len(self.uuids) < 1:
-            printError('At least one disk UUID is required')
-
-    def _checkUuid(self):
-        for uuid in self.uuids:
-            if not VolumeManager.isValidUuid(uuid):
-                printError('Invalid UUID %s' % uuid)
+    def _checkUuids(self):
+        if not self.uuids:
+            printError('A disk UUID must be supplied')
+        if len(self.uuids) > 1:
+            printError('Only one disk UUID can be specified')
+        self.uuid = self.uuids[0]
 
     def doWork(self):
         configHolder = ConfigHolder(self.options.__dict__, self.config or {})
         configHolder.pdiskProtocol = "https"
         pdisk = VolumeManagerFactory.create(configHolder)
-        for uuid in self.uuids:
-            volumeId = pdisk.deleteVolume(uuid)
-            print 'DELETED %s' % volumeId
+
+        keyvalues = self.extractVolumeOptionsAsDict()
+
+        if len(keyvalues) > 0:
+            pdisk.updateVolumeAsUser(keyvalues, self.uuid)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

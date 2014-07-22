@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2013, Centre National de la Recherche Scientifique
 #
@@ -67,9 +68,9 @@ unless forced.
 
     def _get_config_path(self):
         root = os.path.join(Util.modulePath, '..', '..')
-        paths = [os.path.join(Util.modulePath, 'conf', self.refConfigFile), # easy_install
+        paths = [os.path.join(Util.modulePath, 'conf', self.refConfigFile),  # easy_install
                  os.path.join(root, 'conf', self.refConfigFile),
-                 os.path.join(root, '..', 'conf', self.refConfigFile), # pip
+                 os.path.join(root, '..', 'conf', self.refConfigFile),  # pip
                  os.path.join(root, '..', '..', 'etc', 'stratuslab', self.refConfigFile)]
 
         for path in paths:
@@ -109,8 +110,9 @@ unless forced.
                 Util.printError(e)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

@@ -22,20 +22,16 @@
     
     <fileSet>
       <directory>${project.build.directory}/scripts</directory>
-      <outputDirectory>bin</outputDirectory>
-      <fileMode>0755</fileMode>
+      <outputDirectory>lib/stratuslab/python</outputDirectory>
+      <fileMode>0644</fileMode>
       <directoryMode>0755</directoryMode>
-      <includes>
-        <include>stratus-*</include>
-      </includes>
     </fileSet>
     
     <fileSet>
-      <directory>${project.build.directory}/windows</directory>
-      <outputDirectory>windows</outputDirectory>
-      <includes>
-        <include>stratus-*.bat</include>
-      </includes>
+      <directory>${project.build.directory}/stratuslab/cmd</directory>
+      <outputDirectory>lib/stratuslab/python</outputDirectory>
+      <fileMode>0644</fileMode>
+      <directoryMode>0755</directoryMode>
     </fileSet>
     
     <fileSet>

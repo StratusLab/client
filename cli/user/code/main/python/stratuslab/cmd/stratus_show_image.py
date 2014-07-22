@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-#
-# Created as part of the StratusLab project (http://stratuslab.eu),
-# co-funded by the European Commission under the Grant Agreement
-# INFSO-RI-261552."
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2014, Centre National de la Recherche Scientifique (CNRS)
 #
@@ -132,10 +129,9 @@ def MainProgram():
                     print str(desc["checksum"]["algo"][i]), str(desc["checksum"]["val"][i])
                 print "####\n"
 
-
-
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

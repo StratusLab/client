@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Created as part of the StratusLab project (http://stratuslab.eu),
 # co-funded by the European Commission under the Grant Agreement
@@ -45,7 +46,6 @@ class MainProgram(Runnable):
 Runs a batch cluster using the given image.  The image argument is the
 Marketplace ID of image with batch software installed.
 '''
-
 
     def parse(self):
         options = VmManager.defaultRunOptions()
@@ -157,8 +157,9 @@ Marketplace ID of image with batch software installed.
         printStep('Done!')
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+        return 0
