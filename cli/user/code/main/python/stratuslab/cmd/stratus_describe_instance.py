@@ -95,8 +95,9 @@ virtual machines will be listed if no argument is given.
         sys.stdout.write(result)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

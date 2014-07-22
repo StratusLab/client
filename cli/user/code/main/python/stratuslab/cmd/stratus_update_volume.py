@@ -78,8 +78,9 @@ volume-uuid is the unique identifier for the volume to update.
             pdisk.updateVolumeAsUser(keyvalues, self.uuid)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

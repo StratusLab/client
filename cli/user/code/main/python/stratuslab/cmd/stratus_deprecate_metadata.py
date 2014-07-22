@@ -25,7 +25,6 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.marketplace.Deprecator import Deprecator
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
@@ -67,7 +66,7 @@ class MainProgram(AuthnCommand):
             sys.exit(1)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:

@@ -93,8 +93,9 @@ the unique identifiers of volumes to detach.
                 printError('DISK %s: %s' % (uuid, e), exit=False)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

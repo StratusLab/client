@@ -103,8 +103,9 @@ that have a tag matching the regex pattern.''',
             self.options.filters.append('uuid:%s' % uuid)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

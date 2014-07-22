@@ -87,8 +87,9 @@ values are requested from the standard input.
         return "MD5:" + m.hexdigest()
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

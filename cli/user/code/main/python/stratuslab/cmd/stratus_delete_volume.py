@@ -78,8 +78,9 @@ arguments are the unique identifiers of volumes to remove.
             print 'DELETED %s' % volumeId
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

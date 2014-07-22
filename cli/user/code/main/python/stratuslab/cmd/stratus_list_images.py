@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-#
-# Created as part of the StratusLab project (http://stratuslab.eu),
-# co-funded by the European Commission under the Grant Agreement
-# INFSO-RI-261552."
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2014, Centre National de la Recherche Scientifique (CNRS)
 #
@@ -19,25 +16,23 @@
 # limitations under the License.
 #
 
-
-
 import sys
 import urllib2
 sys.path.append('/var/lib/stratuslab/python')
 
 # initialize console logging
 #import stratuslab.api.LogUtil as LogUtil
-from stratuslab.ConfigHolder import ConfigHolder
+#from stratuslab.ConfigHolder import ConfigHolder
 #from stratuslab.CommandBase import CommandBaseUser
 #from stratuslab.Exceptions import InputException
 import stratuslab.Util as Util
 
 #from stratuslab.marketplace import *
 #from stratuslab.marketplace.Util import Util as MarketplaceUtil
-from stratuslab.Util import etree_from_text
+#from stratuslab.Util import etree_from_text
 
 from stratuslab import Defaults
-from stratuslab.Exceptions import ValidationException
+#from stratuslab.Exceptions import ValidationException
 
 # initialize console logging
 import stratuslab.api.LogUtil as LogUtil
@@ -54,6 +49,7 @@ ENDPOINT_MKP = ENDPOINT + "/marketplace/metadata"
 DCTERMS = "http://purl.org/dc/terms/"
 RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 SLTERMS = "http://mp.stratuslab.eu/slterms#"
+
 
 def MainProgram():
     """
@@ -86,17 +82,16 @@ def MainProgram():
             # cast in str for NoneType object (otherwise, we should use try/Except)
             print "Description: " + str(desc["description"])
             print "ID: " + str(desc["identifier"])
-            print "OS: " + str(desc["os"]), str(desc["os-version"]), \
-            "| Arch: " + str(desc["os-arch"])
+            print "OS: " + str(desc["os"]), str(desc["os-version"]), "| Arch: " + str(desc["os-arch"])
             print "Creator: " + str(desc["creator"])
-            print "Created at: " + str(desc["created"].replace("Z","").split('T'))
+            print "Created at: " + str(desc["created"].replace("Z", "").split('T'))
             print "####\n"
             all_desc.append(desc)
 
 
-
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

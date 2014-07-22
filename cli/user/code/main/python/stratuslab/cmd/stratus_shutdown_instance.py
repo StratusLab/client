@@ -35,7 +35,6 @@ LogUtil.get_console_logger()
 class MainProgram(InstanceCommand):
     """A command-line program to shutdown a virtual machine."""
 
-
     def parse(self):
         self.parser_usage = '''%prog [options] vm-id ...'''
         self.parser_description = '''
@@ -50,7 +49,7 @@ instances to shutdown.
         self.shutdownInstances()
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:

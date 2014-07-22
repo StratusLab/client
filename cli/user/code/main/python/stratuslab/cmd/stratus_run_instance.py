@@ -202,8 +202,9 @@ the Marketplace ID or persistent volume UUID to start.
                 self._printShortResults(vmInfo)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

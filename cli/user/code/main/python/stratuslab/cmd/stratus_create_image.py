@@ -167,7 +167,7 @@ you\'ll never be able to retrieve the new image')
         self.creator.create()
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:

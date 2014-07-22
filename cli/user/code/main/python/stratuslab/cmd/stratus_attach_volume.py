@@ -69,7 +69,7 @@ attach.
         super(MainProgram, self).checkOptions()
         if not self.uuids:
             printError('Please provide at least one persistent disk UUID to attach')
-        if (self.options.instance < 0):
+        if self.options.instance < 0:
             printError('Please provide a VM ID on which to attach disk')
         try:
             self._setupCloudConnection()
@@ -97,8 +97,10 @@ attach.
                 print 'ATTACHED %s in VM %s on /dev/%s' % (uuid, self.options.instance, target)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
+        return 0
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

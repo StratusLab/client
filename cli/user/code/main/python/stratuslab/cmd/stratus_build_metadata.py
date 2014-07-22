@@ -160,7 +160,7 @@ image argument is the machine or disk image file to describe.
             self.options.__dict__.update({'compression': compression})
 
         if self.options.disksbus not in VmManager.DISKS_BUS_AVAILABLE:
-            self.parser.error("Unknown disks bus type %s. Available types: %s" % \
+            self.parser.error("Unknown disks bus type %s. Available types: %s" %
                               (self.options.disksbus, ', '.join(VmManager.DISKS_BUS_AVAILABLE)))
 
     def doWork(self):
@@ -188,8 +188,9 @@ image argument is the machine or disk image file to describe.
         self.options.__dict__.update(chksums)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0

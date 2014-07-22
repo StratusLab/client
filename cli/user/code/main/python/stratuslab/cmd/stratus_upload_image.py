@@ -26,7 +26,6 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.CommandBase import CommandBaseUser
 from stratuslab.image.Uploader import Uploader
 from stratuslab.Exceptions import InputException
 from stratuslab.AuthnCommand import AuthnCommand
@@ -85,8 +84,9 @@ disk service.  The image-file argument is the file to upload.
             sys.exit(1)
 
 
-if __name__ == '__main__':
+def main():
     try:
         MainProgram()
     except KeyboardInterrupt:
         print '\n\nExecution interrupted by the user... goodbye!'
+    return 0
