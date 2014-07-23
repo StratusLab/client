@@ -385,7 +385,7 @@ class PersistentDisk(object):
             try:
                 self.deleteVolume(disk['uuid'])
             except (ClientException, ServerException), ex:
-                Util.printError(str(datetime.now()) + ' ' + str(ex))
+                Util.printError(str(datetime.now()) + ' ' + str(ex), exit=False)
 
     def _getQuarantineThresholdDate(self):
         now = datetime.now()
