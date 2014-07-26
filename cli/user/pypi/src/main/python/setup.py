@@ -44,10 +44,38 @@ setup(
     ],
 
     data_files=[
-        ('java', ['java/metadata-fatjar-jar-with-dependencies.jar']),
-        ('share/vm', ['share/vm/schema.one']),
-        ('share/template', ['share/template/manifest.xml.tpl']),
         ('conf', ['conf/stratuslab-user.cfg.ref']),
+
+        ('java', ['java/metadata-fatjar-jar-with-dependencies.jar']),
+
+        ('share/context', ['share/context/env.sh',
+                           'share/context/onecontext',
+                           ]),
+        ('share/creation', ['share/creation/create-manifest.sh',
+                            'share/creation/install-pkg.sh',
+                            'share/creation/quattor-client-install.sh',
+                            'share/creation/scientific-linux.recipe.xml',
+                            'share/creation/views.ddoc',
+                            ]),
+        ('share/resources', ['share/resources/manifest-invalid-sha1.xml']),
+        ('share/template', ['share/template/manifest.xml.tpl',
+                            'share/template/debian.br.tpl',
+                            'share/template/manifest.xml.tpl',
+                            'share/template/monitoring.cfg.tpl',
+                            'share/template/oned.conf.tpl',
+                            'share/template/pdisk-backend.cfg.tpl',
+                            'share/template/pdisk.cfg.tpl',
+                            'share/template/policy.cfg.tpl',
+                            'share/template/quota.conf.tpl',
+                            'share/template/registration.cfg.tpl',
+                            'share/template/stratuslab.repo.cfg.tpl',
+                            'share/template/webdav.conf.tpl',
+                            'share/template/webdav-ldap.conf.tpl',
+                            ]),
+        ('share/vm', ['share/vm/schema.one']),
+        ('share/vnet', ['share/vnet/fixed.net',
+                        'share/vnet/ranged.net']),
+
     ],
 
     entry_points={

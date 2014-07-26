@@ -1,7 +1,36 @@
 include README
 include README.txt
 
-include java/metadata-fatjar-jar-with-dependencies.jar
-include share/vm/schema.one
-include share/template/manifest.xml.tpl
 include conf/stratuslab-user.cfg.ref
+
+include java/metadata-fatjar-jar-with-dependencies.jar
+
+include share/context/env.sh
+include share/context/onecontext
+
+include share/creation/create-manifest.sh
+include share/creation/install-pkg.sh
+include share/creation/quattor-client-install.sh
+include share/creation/scientific-linux.recipe.xml
+include share/creation/views.ddoc
+
+include share/resources/manifest-invalid-sha1.xml
+
+include share/template/manifest.xml.tpl
+include share/template/debian.br.tpl
+include share/template/manifest.xml.tpl
+include share/template/monitoring.cfg.tpl
+include share/template/oned.conf.tpl
+include share/template/pdisk-backend.cfg.tpl
+include share/template/pdisk.cfg.tpl
+include share/template/policy.cfg.tpl
+include share/template/quota.conf.tpl
+include share/template/registration.cfg.tpl
+include share/template/stratuslab.repo.cfg.tpl
+include share/template/webdav.conf.tpl
+include share/template/webdav-ldap.conf.tpl
+
+include share/vm/schema.one
+
+include share/vnet/fixed.net
+include share/vnet/ranged.net
