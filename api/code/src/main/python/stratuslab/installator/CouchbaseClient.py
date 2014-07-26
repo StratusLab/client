@@ -89,7 +89,7 @@ class CouchbaseClient(Installator):
         self._executeExitOnError(cmd)
 
         Util.printStep('Upgrading pip for Couchbase python client')
-        cmd = 'pip install --upgrade'
+        cmd = 'pip install --upgrade pip'
         self._executeExitOnError(cmd)
 
         Util.printStep('Installing Couchbase python client')
