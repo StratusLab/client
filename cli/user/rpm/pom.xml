@@ -34,22 +34,42 @@
 		<id>unpack-sources</id>
 		<phase>generate-sources</phase>
 		<goals>
-		  <goal>unpack</goal>
+		  <goal>copy</goal>
 		</goals>
 		<configuration>
 		  <outputDirectory>${project.build.directory}/zip-sources</outputDirectory>
 		  <artifactItems>
 		    <artifactItem>
 		      <groupId>eu.stratuslab.client</groupId>
-		      <artifactId>stratuslab-cli-user-pkg</artifactId>
-		      <!-- <classifier>cli-user-bundle</classifier> -->
-		      <type>zip</type>
+		      <artifactId>stratuslab-client-pypi</artifactId>
+                      <type>tar.gz</type>
 		    </artifactItem>
 		  </artifactItems>
 		</configuration>
 	      </execution>
 	    </executions>
 
+	  </plugin>
+
+	  <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+		<phase>process-sources</phase>
+		<goals>
+		  <goal>exec</goal>
+		</goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>${basedir}/src/main/scripts/install-client.sh</executable>
+              <workingDirectory>${project.build.directory}</workingDirectory>
+              <arguments>
+		<argument>${project.build.directory}</argument>
+		<argument>${project.build.directory}/zip-sources/stratuslab-client-pypi-${project.version}.tar.gz</argument>
+              </arguments>
+            </configuration>
 	  </plugin>
 
 	  <plugin>
@@ -73,10 +93,9 @@
   <dependencies>
     <dependency>
       <groupId>eu.stratuslab.client</groupId>
-      <artifactId>stratuslab-cli-user-pkg</artifactId>
+      <artifactId>stratuslab-client-pypi</artifactId>
       <version>14.06.1-SNAPSHOT</version>
-      <!-- <classifier>cli-user-bundle</classifier> -->
-      <type>zip</type>
+      <type>tar.gz</type>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -121,7 +140,7 @@
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/bin</location>
+		  <location>${project.build.directory}/venv/bin</location>
 		  <includes>
 		    <include>stratus-*</include>
 		  </includes>
@@ -135,7 +154,7 @@
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/share</location>
+		  <location>${project.build.directory}/venv/share</location>
 		</source>
 	      </sources>
 	    </mapping>
@@ -147,7 +166,7 @@
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/conf</location>
+		  <location>${project.build.directory}/venv/conf</location>
 		  <includes>
 		    <include>stratuslab-user.cfg.ref</include>
 		  </includes>
@@ -161,7 +180,7 @@
 	      <groupname>root</groupname>
 	      <sources>
 		<source>
-		  <location>${project.build.directory}/zip-sources/java</location>
+		  <location>${project.build.directory}/venv/java</location>
 		  <includes>
 		    <include>**/*.jar</include>
 		  </includes>
