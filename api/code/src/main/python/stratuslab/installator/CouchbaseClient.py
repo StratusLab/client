@@ -88,6 +88,10 @@ class CouchbaseClient(Installator):
         cmd = 'yum install -y %s' % ' '.join(self._deps)
         self._executeExitOnError(cmd)
 
+        Util.printStep('Upgrading pip for Couchbase python client')
+        cmd = 'pip install --upgrade'
+        self._executeExitOnError(cmd)
+
         Util.printStep('Installing Couchbase python client')
         cmd = 'pip install couchbase'
         self._executeExitOnError(cmd)
