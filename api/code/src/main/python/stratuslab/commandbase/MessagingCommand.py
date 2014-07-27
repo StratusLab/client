@@ -19,7 +19,7 @@
 #
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.commandbase.CommandBase import CommandBaseSysadmin
 from stratuslab.messaging.Defaults import MSG_TYPES
 from stratuslab.messaging.Defaults import MSG_SMTP_HOST
 from stratuslab.messaging.MessagePublishers import ImageIdPublisher, SingleMessagePublisher

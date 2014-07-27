@@ -22,10 +22,12 @@
 
 import sys
 
+from stratuslab.commandbase import AuthnCommand
+
+
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import printError
-from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import StorageCommand
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.ConfigHolder import ConfigHolder

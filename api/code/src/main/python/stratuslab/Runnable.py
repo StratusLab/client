@@ -19,10 +19,9 @@
 #
 import os
 
-from stratuslab.AuthnCommand import AuthnCommand
 import stratuslab.Util as Util
-
 from marketplace.Util import Util as MarketplaceUtil
+from stratuslab.commandbase import AuthnCommand
 from stratuslab.vm_manager.vm_manager import VmManager
 
 

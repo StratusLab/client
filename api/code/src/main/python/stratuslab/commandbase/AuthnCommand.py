@@ -23,7 +23,7 @@ import getpass
 
 from stratuslab import Defaults
 
-from CommandBase import CommandBaseUser
+from stratuslab.commandbase.CommandBase import CommandBaseUser
 
 
 class AuthnCommand(CommandBaseUser):

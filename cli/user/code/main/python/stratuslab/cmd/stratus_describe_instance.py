@@ -22,9 +22,11 @@
 
 import sys
 
+from stratuslab.commandbase import AuthnCommand
+
+
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.Monitor import Monitor, MultisiteMonitor
 from stratuslab.ConfigHolder import ConfigHolder
 import stratuslab.Util as Util

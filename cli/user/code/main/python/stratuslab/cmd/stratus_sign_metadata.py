@@ -26,9 +26,9 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 import stratuslab.Util as Util
-from stratuslab.CommandBase import CommandBaseUser
+from stratuslab.commandbase.CommandBase import CommandBaseUser
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import P12Certificate
+from stratuslab.commandbase.AuthnCommand import P12Certificate
 from stratuslab.Signator import Signator
 
 # initialize console logging

@@ -93,7 +93,6 @@ setup(
             'stratus-detach-volume = stratuslab.cmd.stratus_detach_volume:main',
             'stratus-hash-password = stratuslab.cmd.stratus_hash_password:main',
             'stratus-kill-instance = stratuslab.cmd.stratus_kill_instance:main',
-            'stratus-list-instances = stratuslab.cmd.stratus_list_instances:main',
             'stratus-list-images = stratuslab.cmd.stratus_list_images:main',
             'stratus-prepare-context = stratuslab.cmd.stratus_prepare_context:main',
             'stratus-run-cluster = stratuslab.cmd.stratus_run_cluster:main',

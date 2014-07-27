@@ -23,7 +23,7 @@ sys.path.append('/var/lib/stratuslab/python')
 
 import shutil
 import stratuslab.Util as Util
-from stratuslab.CommandBase import CommandBaseUser
+from stratuslab.commandbase.CommandBase import CommandBaseUser
 from stratuslab.ConfigHolder import ConfigHolder
 
 # initialize console logging

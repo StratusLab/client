@@ -23,7 +23,7 @@ import os
 
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab import Defaults
-from stratuslab.AuthnCommand import CloudEndpoint
+from stratuslab.commandbase.AuthnCommand import CloudEndpoint
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 import stratuslab.Util as Util

@@ -23,12 +23,14 @@
 import os
 import sys
 
+from stratuslab.commandbase import AuthnCommand
+
+
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.image.Uploader import Uploader
 from stratuslab.Exceptions import InputException
-from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.commandbase.StorageCommand import PDiskVolume
 
 # initialize console logging

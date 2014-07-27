@@ -24,13 +24,12 @@ from stratuslab import Util
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.Signator import Signator
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import P12Certificate
-
+from stratuslab.commandbase.AuthnCommand import P12Certificate
 from stratuslab.marketplace.Uploader import Uploader
-
 from Util import Util as MarketplaceUtil
 from stratuslab.Exceptions import ExecutionException
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
+
 
 etree = Util.importETree()
 
@@ -122,7 +121,7 @@ argument is the identifier of the image to deprecate.
             isError = signator.sign()
             if isError:
                 raise ExecutionException('Error signing new manifest')
-            
+
             return self.uploader.upload(tempDeprecatedMetadataFilename)
         finally:
             try:

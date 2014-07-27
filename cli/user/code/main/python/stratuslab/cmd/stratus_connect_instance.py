@@ -23,11 +23,13 @@
 import os
 import sys
 
+from stratuslab.commandbase import AuthnCommand
+
+
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab import Defaults
 from stratuslab import Util
-from stratuslab.AuthnCommand import AuthnCommand
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Monitor import Monitor
 from stratuslab.pat.Command import PortTranslationCommand

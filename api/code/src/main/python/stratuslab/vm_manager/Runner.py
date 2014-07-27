@@ -29,7 +29,7 @@ from stratuslab.CloudConnectorFactory import CloudConnectorFactory
 from stratuslab.Authn import AuthnFactory
 from stratuslab.image.Image import Image
 from stratuslab import Defaults
-from stratuslab.AuthnCommand import CloudEndpoint
+from stratuslab.commandbase.AuthnCommand import CloudEndpoint
 from stratuslab.commandbase.StorageCommand import PDiskEndpoint
 from stratuslab.vm_manager.vm_manager import VmManager
 from stratuslab.volume_manager.volume_manager import VolumeManager
@@ -451,8 +451,8 @@ class Runner(VmManager):
         if self.extraContextData:
             contextElems.extend(self.extraContextData.split(Util.cliLineSplitChar))
 
-        if self.cloudInit or (hasattr(self, 'defaultContextMethod') and 
-                              self.defaultContextMethod and 
+        if self.cloudInit or (hasattr(self, 'defaultContextMethod') and
+                              self.defaultContextMethod and
                               self.defaultContextMethod == 'cloud-init'):
             if self.cloudInit is None:
                 self.cloudInit = ''

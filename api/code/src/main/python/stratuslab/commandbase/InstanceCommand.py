@@ -19,7 +19,7 @@
 #
 
 from stratuslab.ConfigHolder import ConfigHolder
-from stratuslab.AuthnCommand import AuthnCommand
+from stratuslab.commandbase import AuthnCommand
 from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
 
 

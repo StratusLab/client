@@ -22,8 +22,8 @@ import os
 from optparse import OptionParser
 
 from stratuslab import Defaults
-from stratuslab.AuthnCommand import UsernamePassword
-from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.commandbase.AuthnCommand import UsernamePassword
+from stratuslab.commandbase.CommandBase import CommandBaseSysadmin
 
 
 class StorageCommand(CommandBaseSysadmin):
