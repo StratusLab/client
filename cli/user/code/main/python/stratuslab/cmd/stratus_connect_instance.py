@@ -23,7 +23,7 @@
 import os
 import sys
 
-from stratuslab.commandbase import AuthnCommand
+from stratuslab.commandbase.AuthnCommand import AuthnCommand
 
 
 sys.path.append('/var/lib/stratuslab/python')
