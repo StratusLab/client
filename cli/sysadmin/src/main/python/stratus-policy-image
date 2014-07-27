@@ -24,7 +24,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
-from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.commandbase.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.marketplace.Policy import Policy
 

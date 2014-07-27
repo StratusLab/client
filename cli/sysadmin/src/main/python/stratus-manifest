@@ -4,7 +4,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.commandbase.CommandBase import CommandBaseSysadmin
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.marketplace.Util import Util as MarketplaceUtil
 from stratuslab.ConfigHolder import ConfigHolder

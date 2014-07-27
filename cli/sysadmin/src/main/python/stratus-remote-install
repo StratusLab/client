@@ -26,7 +26,7 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from stratuslab.Util import fileGetContent
 from stratuslab.Util import cliLineSplitChar
-from stratuslab.CommandBase import CommandBase
+from stratuslab.commandbase.CommandBase import CommandBase
 from stratuslab.Util import sshCmd
 from stratuslab.Util import scp
 from stratuslab.Util import printAction

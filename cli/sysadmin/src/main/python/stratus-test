@@ -24,7 +24,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBase
+from stratuslab.commandbase.CommandBase import CommandBase
 from stratuslab.Testor import Testor
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.AuthnCommand import AuthnCommand

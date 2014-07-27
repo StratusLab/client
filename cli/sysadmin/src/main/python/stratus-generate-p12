@@ -23,7 +23,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.commandbase.CommandBase import CommandBaseSysadmin
 from stratuslab.CertGenerator import CertGenerator
 from stratuslab.ConfigHolder import ConfigHolder
 
