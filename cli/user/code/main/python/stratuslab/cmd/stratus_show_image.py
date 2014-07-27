@@ -18,14 +18,12 @@
 
 import sys
 import urllib2
-from optparse import OptionParser
 sys.path.append('/var/lib/stratuslab/python')
 
 import stratuslab.Util as Util
 
 from stratuslab import Defaults
 
-from stratuslab.Util import printError
 from stratuslab.commandbase.CommandBase import CommandBaseUser
 
 ENVVAR_ENDPOINT = 'STRATUSLAB_MARKETPLACE_ENDPOINT'

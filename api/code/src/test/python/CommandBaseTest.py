@@ -21,7 +21,7 @@ import unittest
 import os
 import sys
 
-from stratuslab.CommandBase import CommandBaseUser
+from stratuslab.commandbase.CommandBase import CommandBaseUser
 from optparse import OptionParser
 
 import stratuslab.Util as Util

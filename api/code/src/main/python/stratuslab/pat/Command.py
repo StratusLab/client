@@ -21,7 +21,7 @@
 import sys
 
 from stratuslab import Util
-from stratuslab.CommandBase import CommandBaseUser
+from stratuslab.commandbase.CommandBase import CommandBaseUser
 
 class PortTranslationCommand(CommandBaseUser):
 
