@@ -26,7 +26,7 @@ from optparse import OptionGroup
 sys.path.append('/var/lib/stratuslab/python')
 
 import stratuslab.Util as Util
-from stratuslab.CommandBase import CommandBaseSysadmin
+from stratuslab.commandbase.CommandBase import CommandBaseSysadmin
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.installator.BaseInstallator import BaseInstallator
 
