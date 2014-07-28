@@ -25,7 +25,7 @@ import sys
 
 sys.path.append('/var/lib/stratuslab/python')
 
-from stratuslab.CommandBase import CommandBase
+from stratuslab.commandbase.CommandBase import CommandBase
 from stratuslab.ManifestInfo import ManifestInfo, imageTypes, imageKinds, imageFormats
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.Compressor import Compressor
