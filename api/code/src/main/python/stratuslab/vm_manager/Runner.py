@@ -92,6 +92,7 @@ class Runner(VmManager):
         self.vmName = ''
         self.vmKernel = ''
         self.vmRamdisk = ''
+        self.vmNetworkModel = None
         self.isLocalIp = False
         self.isPrivateIp = False
         self.specificAddressRequest = False
@@ -311,6 +312,7 @@ class Runner(VmManager):
                      'vmSwap': None,
                      'vmDisksBus': Runner.vmDisksBus,
                      'vmRequirements': '',
+                     'vmNetworkModel': None,
                      'isLocalIp': False,
                      'isPrivateIp': False,
                      'extraContextFile': '',
@@ -415,10 +417,16 @@ class Runner(VmManager):
         networkName = self._getNetworkName()
         networkPrefix = 'NIC = [ network_uname=oneadmin,network = "%s" ' % networkName
         networkPostfix = ']\n'
+
+        self.vm_nic = networkPrefix;
+
         if self.specificAddressRequest:
-            self.vm_nic = networkPrefix + ',\nIP = "%s"' % self.specificAddressRequest + networkPostfix
-        else:
-            self.vm_nic = networkPrefix + networkPostfix
+            self.vm_nic += ',\nIP = "%s"' % self.specificAddressRequest
+
+        if self.vmNetworkModel:
+            self.vm_nic += ',\nMODEL = "%s"' % self.vmNetworkModel
+
+        self.vm_nic += networkPostfix;
 
     def _getNetworkName(self):
         networkName = 'public'

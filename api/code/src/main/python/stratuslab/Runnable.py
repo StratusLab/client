@@ -114,6 +114,11 @@ class Runnable(AuthnCommand):
                                     'e.g. --vm-requirements \'CLUSTER = \\"test\\" & MAGICNUMBER = 42\'',
                                default=None)
 
+        self.parser.add_option('--vm-network-model', dest='vmNetworkModel', metavar='MODEL',
+                               help='NIC model. '
+                                    'Default: hypervisor default.  Common value: virtio.',
+                               default=None)
+
         self.parser.add_option('--vm-template-file', dest='vmTemplateFile', metavar='FILE',
                                help='VM template file. Default %s' % default_options['vmTemplateFile'],
                                default=default_options['vmTemplateFile'])

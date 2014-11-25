@@ -110,6 +110,7 @@ class VmManager(object):
                            'vmSwap': None,
                            'vmDisksBus': VmManager.vmDisksBus,
                            'vmRequirements': '',
+                           'vmNetworkModel': None,
                            'isLocalIp': False,
                            'isPrivateIp': False,
                            'extraContextFile': '',
