@@ -20,7 +20,7 @@
 
 from stratuslab.ConfigHolder import ConfigHolder
 from stratuslab.vm_manager.Runner import Runner
-from stratuslab.vm_manager.CimiRunner import CimiRunner
+#from stratuslab.vm_manager.CimiRunner import CimiRunner
 
 
 class VmManagerFactory:
@@ -45,7 +45,7 @@ class VmManagerFactory:
 
         if vm_manager_type == 'one':
             return Runner(image, config_holder)
-        elif vm_manager_type == 'cimi':
-            return CimiRunner(image, config_holder)
+        #elif vm_manager_type == 'cimi':
+        #    return CimiRunner(image, config_holder)
         else:
             raise NotImplementedError('unknown VM manager type: %s' % vm_manager_type)
