@@ -121,6 +121,7 @@ class VmManager(object):
                            'vncPort': '-1',
                            #'vncPort': None,
                            'keymap': 'en-us',
+                           'useHostCpu': False,
 
                            'vncListen': '',
                            'specificAddressRequest': None,

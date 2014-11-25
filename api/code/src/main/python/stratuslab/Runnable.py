@@ -103,6 +103,11 @@ class Runnable(AuthnCommand):
                                help='Keymap to use.',
                                default=default_options['keymap'])
 
+        self.parser.add_option('--use-host-cpu', dest='useHostCpu',
+                               help='Use host CPU extensions (flags)',
+                               default=default_options['useHostCpu'],
+                               action='store_true')
+
         self.parser.add_option('--vm-requirements', dest='vmRequirements', metavar='REQUIREMENTS',
                                help='Advanced requirements for VM placement. '
                                     'Available values depend on the cloud configuration. '

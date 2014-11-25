@@ -437,7 +437,18 @@ class Runner(VmManager):
             self.rawData = re.escape(self.rawData)
             hypervisor = 'kvm'
             self.raw_data = 'RAW = [ type="%s", data="%s" ]' % (hypervisor,
+
                                                                 self.rawData)
+        # This will override any other raw data settings!
+        if self.useHostCpu:
+            hypervisor = 'kvm'
+            data = '''
+  <qemu:commandline>
+    <qemu:arg value='-cpu' />
+    <qemu:arg value='host' />
+  </qemu:commandline>
+'''
+            self.raw_data = 'RAW = [ type="%s", data="%s" ]' % (hypervisor, data)
 
     def _manageExtraContext(self):
         extraContext = {}
