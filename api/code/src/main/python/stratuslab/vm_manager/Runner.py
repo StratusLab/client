@@ -101,6 +101,7 @@ class Runner(VmManager):
         self.cloudInit = None
         self.vncPort = ''
         self.vncListen = ''
+        self.keymap = 'en-us'
         self.noCheckImageUrl = False
         self.saveDisk = False
         self.userDefinedInstanceTypes = {}
@@ -488,6 +489,9 @@ class Runner(VmManager):
 
         if self.vncListen:
             vncInfo.append('listen = "%s"' % self.vncListen)
+
+        if self.keymap:
+            vncInfo.append('keymap = "%s"' % self.keymap)
 
         if len(vncInfo) > 0:
             vncInfo.append('type = "vnc"')

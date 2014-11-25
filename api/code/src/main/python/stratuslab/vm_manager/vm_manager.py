@@ -120,6 +120,7 @@ class VmManager(object):
                            #        Network is not starting unless VNC is defined. Weird yeh...? 8-/
                            'vncPort': '-1',
                            #'vncPort': None,
+                           'keymap': 'en-us',
 
                            'vncListen': '',
                            'specificAddressRequest': None,

@@ -94,9 +94,14 @@ class Runnable(AuthnCommand):
                                     'VNC port. So for VNC port 0 you should specify 5900, for '
                                     'port 1 is 5901 and so on. ',
                                default=default_options['vncPort'])
+
         self.parser.add_option('--vnc-listen', dest='vncListen', metavar='ADDRESS',
                                help='IP to listen on',
                                default=default_options['vncListen'])
+
+        self.parser.add_option('--keymap', dest='keymap', metavar='LANGUAGE',
+                               help='Keymap to use.',
+                               default=default_options['keymap'])
 
         self.parser.add_option('--vm-requirements', dest='vmRequirements', metavar='REQUIREMENTS',
                                help='Advanced requirements for VM placement. '
