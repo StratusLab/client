@@ -116,18 +116,6 @@
 	      </sources>
 	    </mapping>
 	  </mappings>
-	  <installScriptlet>
-	    <script>
-#
-# This is a nasty hack to turn off the /usr/lib/rpm/brp-python-bytecompile
-# script. This script tries to precompile the python code, but causes the
-# rpm packaging to fail because the *.pyc and *.pyo files are not listed in
-# the list of files created by maven.
-#
-
-export RPM_BUILD_ROOT=
-	    </script>
-	  </installScriptlet>
 	</configuration>
       </plugin>
 
