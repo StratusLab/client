@@ -21,7 +21,7 @@
 import unittest
 import os
 import tempfile
-from mock.mock import Mock
+from mock import Mock
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.ManifestInfo import ManifestInfo
 from stratuslab.tm.TMSaveCache import TMSaveCache
@@ -207,10 +207,10 @@ volume_name = /foo/bar
 
     def test_updatePDiskIpForNewImageUri(self):
         tm = TMSaveCache({}, conf_filename=self.conf_filename)
-        
+
         tm.persistentDiskPublicBaseUrl = 'https://1.2.3.4'
         assert 'pdisk:1.2.3.4:987:uuid' == tm._updatePDiskIpForNewImageUri('pdisk:0.0.0.0:987:uuid')
-       
+
         tm.persistentDiskPublicBaseUrl = 'https://1.2.3.4:123'
         assert 'pdisk:1.2.3.4:123:uuid' == tm._updatePDiskIpForNewImageUri('pdisk:0.0.0.0:987:uuid')
 
