@@ -101,3 +101,9 @@ class ConfigHolder(object):
                     abort('Undefined SSH private key to connect to the proxy.')
 
         return mgt_user_name, mgt_user_private_key
+
+    def force_iscsi_proxy(self, iscsi_proxy):
+        if not self._config.has_section(iscsi_proxy):
+            abort("Config should have same name section as the name "
+                  "provided with --iscsi-proxy option.\n")
+        self._config.set(CONFIG_MAIN_SECTION, 'iscsi_proxies', iscsi_proxy)
