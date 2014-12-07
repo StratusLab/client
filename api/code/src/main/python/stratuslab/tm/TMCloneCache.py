@@ -188,7 +188,6 @@ class TMCloneCache(object):
 
     def _startFromCowSnapshot(self):
         if self._cacheMiss():
-            #self._retrieveAndCachePDiskImage()
             self._remotelyCachePDiskImage()
 
         try:
@@ -230,12 +229,6 @@ class TMCloneCache(object):
                         self.downloadedLocalImageLocation, imageMarketplaceLocation],
                        'Unable to download "%s"' % imageMarketplaceLocation)
 
-    def _checkDownloadedImageChecksum(self):
-        hash_fun = self._CHECKSUM
-        size_b, checksum = self._getDownloadedImageChecksum(hash_fun)
-        self._validateImageSize(size_b)
-        self._validateImageChecksum(checksum, hash_fun)
-
     def _getDownloadedImageChecksum(self, hash_fun):
         size_b, sums = Compressor.checksum_file(self.downloadedLocalImageLocation,
                                                 [hash_fun])
@@ -265,10 +258,6 @@ class TMCloneCache(object):
 
     def _getImageChecksum(self, checksum):
         return self.manifestDownloader.getImageElementValue(checksum)
-
-    def _deleteDownloadedImage(self):
-        self._sshPDisk(['rm', '-f', self.downloadedLocalImageLocation],
-                       'Unable to remove temporary image', True)
 
     # -------------------------------------------
     # Marketplace and related
@@ -341,22 +330,6 @@ class TMCloneCache(object):
                      'Unable to attach persistent disk: %s, %s, %s, %s, %s' %
                      (diskSrc, vm_dir, str(vm_id), disk_name, turl))
 
-    def _retrieveAndCachePDiskImage(self):
-        self.manifestDownloader.downloadManifestByImageId(self.marketplaceImageId)
-        self._validateMarketplaceImagePolicy()
-        try:
-            self._downloadImage()
-            self._checkDownloadedImageChecksum()
-            self._uploadDownloadedImageToPdisk()
-        except:
-            self._deletePDiskSnapshot()
-            raise
-        finally:
-            try:
-                self._deleteDownloadedImage()
-            except:
-                pass
-
     def _remotelyCachePDiskImage(self):
         """
         This function initializes a new persistent volume from a URL.  The image
@@ -379,19 +352,11 @@ class TMCloneCache(object):
         if long(sizeInBytes) % gbBytes > 0:
             sizeInGB += 1
 
-        self.pdiskImageId = self.pdisk.createVolumeFromUrl(sizeInGB, '', False,
-                                                           url, str(sizeInBytes), sha1)
-
-        self._setNewPDiskImageOriginProperties()
-
-    def _uploadDownloadedImageToPdisk(self):
-        volume_url = self.pdisk.uploadVolume(self.downloadedLocalImageLocation)
-        self.pdiskImageId = volume_url.rsplit('/', 1)[1]
-        self._setNewPDiskImageOriginProperties()
-
-    def _setNewPDiskImageOriginProperties(self):
-        self._setPDiskInfo(self._IDENTIFIER_KEY, self.marketplaceImageId, self.pdiskImageId)
-        self._setPDiskInfo(self._TYPE_KEY, 'MACHINE_IMAGE_ORIGIN', self.pdiskImageId)
+        form_params = {self._IDENTIFIER_KEY: self.marketplaceImageId,
+                       self._TYPE_KEY: 'MACHINE_IMAGE_ORIGIN'}
+        self.pdiskImageId = self.pdisk.createVolumeFromUrl(
+            sizeInGB, '', False, url, str(sizeInBytes), sha1,
+            form_params_extra=form_params)
 
     def _getPDiskTempStore(self):
         store = self.configHolder.persistentDiskTempStore or '/tmp'
@@ -408,8 +373,8 @@ class TMCloneCache(object):
         disk_owner = self._getDiskOwner(self.pdiskImageId)
         disk_visibility = self._getDiskVisibility(self.pdiskImageId)
         if disk_owner not in [self.vmOwner, self._PDISK_SUPERUSER] and \
-             disk_visibility in self._DISK_UNAUTHORIZED_VISIBILITIES:
-            raise ValueError('User %s is not authorized to start image %s' % \
+            disk_visibility in self._DISK_UNAUTHORIZED_VISIBILITIES:
+            raise ValueError('User %s is not authorized to start image %s' %
                              (self.vmOwner, self.marketplaceImageId))
 
     def _setSnapshotOwner(self):
@@ -430,7 +395,7 @@ class TMCloneCache(object):
         if self.pdiskSnapshotId is None:
             return
         try:
-            #FIXME: why do we need to set credentials here?
+            # FIXME: why do we need to set credentials here?
             self.pdisk._setPDiskUserCredentials()
             self.pdisk.deleteVolume(self.pdiskSnapshotId)
         except:
