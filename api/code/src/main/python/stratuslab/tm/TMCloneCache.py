@@ -129,7 +129,7 @@ class TMCloneCache(object):
     # FIXME: duplicates should be pulled into common location
     def _createPdiskEndpoint(self):
         host = self.configHolder.persistentDiskIp
-        port = self.configHolder.persistentDiskPort or _PDISK_PORT
+        port = self.configHolder.persistentDiskPort or self._PDISK_PORT
         path = self.configHolder.persistentDiskPath or ''
         path = path.strip('/')
         return 'https://%s:%s/%s' % (host, port, path)
