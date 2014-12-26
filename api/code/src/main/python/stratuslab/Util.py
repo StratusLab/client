@@ -32,6 +32,8 @@ import hashlib
 from random import sample
 from string import ascii_lowercase
 import platform
+from datetime import datetime
+import tempfile
 
 from stratuslab.Exceptions import ExecutionException, ValidationException
 import stratuslab.api.LogUtil as LogUtil
@@ -809,10 +811,23 @@ etree = importETree()
 def etree_from_text(text):
     """
     The native fromstring method in etree doesn't handle unicode
-    values correctly without explicit encoding in Python 2.x.  
+    values correctly without explicit encoding in Python 2.x.
     As the Python 2.x is essentially frozen, the python maintainers
     will not be fixing this in the distribution.
     """
     if isinstance(text, unicode):
         text = text.encode('utf-8')
     return etree.fromstring(text)
+
+
+def set_stdouterr(obj, _file=True):
+    dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    tmpdir = tempfile.gettempdir()
+    if _file:
+        stdout_val = open(os.path.join(tmpdir,('stratuslab_%s.log' % dateNow)), 'a')
+        stderr_val = open(os.path.join(tmpdir,('stratuslab_%s.err' % dateNow)), 'a')
+    else:
+        stdout_val = sys.stdout
+        stderr_val = sys.stderr
+    setattr(obj, 'stdout', stdout_val)
+    setattr(obj, 'stderr', stderr_val)

@@ -94,9 +94,7 @@ class Creator(object):
 
         configHolder.assign(self)
 
-        dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        self.stdout = open('/tmp/stratuslab_%s.log' % dateNow, 'a')
-        self.stderr = open('/tmp/stratuslab_%s.err' % dateNow, 'a')
+        self._set_stdouterr()
 
         credentials = AuthnFactory.getCredentials(self)
         self.cloud = CloudConnectorFactory.getCloud(credentials)
@@ -134,6 +132,9 @@ class Creator(object):
         self.manifestLocalFileName = ''
 
         self.__listener = CreatorBaseListener()
+
+    def _set_stdouterr(self):
+        Util.set_stdouterr(self)
 
     def printDetail(self, msg):
         return Util.printDetail(msg, self.verboseLevel, Util.VERBOSE_LEVEL_NORMAL)

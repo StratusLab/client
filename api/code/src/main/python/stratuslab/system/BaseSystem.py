@@ -21,16 +21,14 @@ import os
 import re
 import shutil
 import time
-import tempfile
 import xml.etree.ElementTree as ET
-from datetime import datetime
 
 import requests
 
 from stratuslab import Exceptions
 from stratuslab import Defaults
 from stratuslab.Util import appendOrReplaceInFile, execute, fileAppendContent, \
-    fileGetContent, filePutContent, scp, sshCmd
+    fileGetContent, filePutContent, scp, sshCmd, set_stdouterr
 import stratuslab.Util as Util
 from stratuslab.system.PackageInfo import PackageInfo
 from stratuslab.system import Systems
@@ -45,10 +43,8 @@ class BaseSystem(object):
     vomsesDir = '/etc/grid-security/vomsdir'
 
     def __init__(self):
-        dateNow = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        tmpdir = tempfile.gettempdir()
-        self.stdout = open(os.path.join(tmpdir,('stratuslab_%s.log' % dateNow)), 'a')
-        self.stderr = open(os.path.join(tmpdir,('stratuslab_%s.err' % dateNow)), 'a')
+
+        self._set_stdouterr()
 
         self.extraRepos = {}
         self.packages = {}
@@ -68,6 +64,9 @@ class BaseSystem(object):
 
     def init(self):
         self._setOneHome()
+
+    def _set_stdouterr(self):
+        set_stdouterr(self)
 
     # -------------------------------------------
     #     Packages manager and related
