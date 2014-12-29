@@ -26,6 +26,26 @@ import time
 
 from .one_query import get_all_users_from_one, get_all_vms_from_one, \
     get_vm_details_from_one
+from stratuslab.volume_manager.PersistentDisk import PersistentDisk
+from stratuslab.ConfigHolder import ConfigHolder
+from stratuslab import Util
+
+
+class ManifestGetFromMarketplaceError(Exception):
+    pass
+
+
+def bytes_to_GB(_bytes):
+    return _bytes / 1024 / 1024 / 1024
+
+
+def bytes_to_giga_approximation(numberOfBytes):
+    return (numberOfBytes / 1024 ** 3) + 1
+
+
+def url_get(url):
+    """Raises urllib2.URLError"""
+    return urllib2.urlopen(url).read()
 
 
 class Computer(object):
@@ -44,7 +64,8 @@ class Computer(object):
         self.outputDir = outputDir
         self.daily = daily
         self.user_names = user_names
-        self.marketplaceSizeCache = {}
+        self.marketplace_size_cache = {}
+        self.pdisk_size_cache = {}
         self.fromInSecs = int(fromInSecs)
         self.toInSecs = int(toInSecs)
 
@@ -72,7 +93,8 @@ class Computer(object):
     def get_etime(self, vm):
         return int(vm.find('slice/' + self.VM_ENDTIME_ELEM).text)
 
-    def get_etime_vm_details(self, vm):
+    @staticmethod
+    def get_etime_vm_details(vm):
         return int(vm.find('ETIME').text)
 
     def get_donetime(self, vm):
@@ -92,7 +114,8 @@ class Computer(object):
         vm_details = get_vm_details_from_one(self.get_id(vm))
         return self.get_etime_vm_details(vm_details)
 
-    def get_id(self, vm):
+    @staticmethod
+    def get_id(vm):
         return vm.get('id')
 
     def vm_in_range(self, vm):
@@ -202,7 +225,8 @@ class Computer(object):
         else:
             return self.toInSecs
 
-    def set_totaltime(self, vm, _time):
+    @staticmethod
+    def set_totaltime(vm, _time):
         time_elem = vm.find('time')
         time_elem.text = str(_time)
 
@@ -212,20 +236,19 @@ class Computer(object):
     def set_endtime(self, vm, endtime):
         self._vm_set_time_in_sec(vm, endtime, 'endtime')
 
-    def _vm_set_time_in_sec(self, vm, _time, time_elem_name):
+    @staticmethod
+    def _vm_set_time_in_sec(vm, _time, time_elem_name):
         time_elem = ET.Element(time_elem_name)
         time_elem.text = str(datetime.datetime.utcfromtimestamp(float(_time)))
         vm.append(time_elem)
-
-    def bytes_to_giga_approximation(self, numberOfBytes):
-        return (numberOfBytes / 1024 ** 3) + 1
 
     def get_sizes(self, vmDetail):
         disks = self.get_disks(vmDetail)
         sizes = [self.get_disk_size(disk) for disk in disks]
         return sizes
 
-    def insert_disks(self, vm, sizes):
+    @staticmethod
+    def insert_disks(vm, sizes):
         for size in sizes:
             diskElement = ET.Element('disk')
             sizeElement = ET.Element('size')
@@ -242,59 +265,76 @@ class Computer(object):
                 vm.find('name').text = vmDetail.find('NAME').text
         return vms
 
-    def get_disks(self, vm):
+    @staticmethod
+    def get_disks(vm):
         return vm.findall('TEMPLATE/DISK')
-
-    def get_size_from_marketplace(self, url):
-        if url in self.marketplaceSizeCache:
-            return self.marketplaceSizeCache[url]
-        try:
-            marketplaceDefinition = self._get_url(url + '?status=all&location=all')
-        except urllib2.URLError as ex:
-            _bytes = 0
-            print "Error retrieving marketplace url:", url, ex
-        else:
-            root = ET.fromstring(marketplaceDefinition)
-            _bytes = root.find('{0}RDF/{0}Description/{1}bytes'.\
-                               format("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}",
-                                      "{http://mp.stratuslab.eu/slreq#}")).text
-            _bytes = int(_bytes)
-        self.marketplaceSizeCache[url] = _bytes
-        return _bytes
-
-    def _get_url(self, url):
-        """Raises urllib2.URLError"""
-        return urllib2.urlopen(url).read()
 
     def get_disk_size(self, disk):
         size = disk.find('SIZE')
         if size is not None:
             return float(size.text) / 1024
         else:
-            return self.bytes_to_giga_approximation(
-                self.get_size_from_marketplace(self.get_disk_source(disk)))
+            source = self.get_disk_source(disk)
+            if source.startswith('http'):
+                return self.get_size_from_marketplace_or_pdisk_by_manifest_id(source)
+            elif source.startswith('pdisk'):
+                return self.get_size_from_pdisk(source)
 
-    def get_disk_source(self, disk):
+    def get_size_from_pdisk(self, uri):
+        """uri - pdisk:ip[:port]:uuid
+        """
+        if uri in self.pdisk_size_cache:
+            return self.pdisk_size_cache[uri]
+        endpoint, uuid = PDiskHelper.get_endpoint_and_disk_uuid_from_uri(uri)
+        size_gb = PDiskHelper.get_size(endpoint, uuid)
+        self.pdisk_size_cache[uri] = size_gb
+        return size_gb
+
+    def get_size_from_marketplace_or_pdisk_by_manifest_id(self, source):
+        """Return size in GB as int.  Size is set to 0GB if not found neither in
+        Marketplace nor PDisk.  Cache the size on success.
+        """
+        # Check the size in cache.
+        if source in self.marketplace_size_cache:
+            return self.marketplace_size_cache[source]
+        size_gb = self._get_size_from_marketplace_or_pdisk_by_manifest_id(source)
+        # Cache the size.
+        self.marketplace_size_cache[source] = size_gb
+        return size_gb
+
+    @staticmethod
+    def _get_size_from_marketplace_or_pdisk_by_manifest_id(url):
+        try:
+            return MPHelper.get_size(url)
+        except ManifestGetFromMarketplaceError as ex:
+            print 'WARNING: Failed to get disk size %s from MP: %s' % (url, str(ex))
+            print 'WARNING: Trying to get disk size from PDisk.'
+            try:
+                return PDiskHelper.get_size_by_marketplace_url(url)
+            except Exception as ex:
+                print 'WARNING: Failed to get size from PDisk by MP ID: %s. Setting to 0GB.' % str(ex)
+                return 0
+
+    @staticmethod
+    def get_disk_source(disk):
         return disk.find('SOURCE').text.strip()
 
-    def bytes_to_GB(self, _bytes):
-        return _bytes / 1024 / 1024 / 1024
-
-    def compute_totals(self, root):
+    @staticmethod
+    def compute_totals(root):
         totalTime = 0
         totalCpu = 0
         totalRam = 0
         totalDisk = 0
-        totalNetRx = 0
-        totalNetTx = 0
+        # totalNetRx = 0
+        # totalNetTx = 0
 
         for vm in root.findall('vm'):
             time = float(vm.find('time').text)  # in hours
             totalTime += time
             totalCpu += float(vm.find('cpu').text) * time
             totalRam += float(vm.find('mem').text) * time / 1024
-            totalNetRx += int(vm.find('net_rx').text)
-            totalNetTx += int(vm.find('net_tx').text)
+            # totalNetRx += int(vm.find('net_rx').text)
+            # totalNetTx += int(vm.find('net_tx').text)
             disk = reduce(lambda a, b: a + b, [float(disk.find('size').text) for disk in vm.findall('disk')], 0)
             totalDisk += disk * time
 
@@ -302,8 +342,8 @@ class Computer(object):
         root.set('total_cpu', str("%.0f" % totalCpu))
         root.set('total_ram', str("%.0f" % totalRam))
         root.set('total_disk', str("%.0f" % totalDisk))
-        root.set('total_net_rx', str("%.0f" % (self.bytes_to_GB(totalNetRx))))
-        root.set('total_net_tx', str("%.0f" % (self.bytes_to_GB(totalNetTx))))
+        # root.set('total_net_rx', str("%.0f" % (bytes_to_GB(totalNetRx))))
+        # root.set('total_net_tx', str("%.0f" % (bytes_to_GB(totalNetTx))))
 
     def get_users(self):
         return self.filter_users(get_all_users_from_one())
@@ -357,3 +397,93 @@ class Computer(object):
                 print _time, "Error processing user", user['name']
                 print ex
         return
+
+
+class PDiskHelper(object):
+    """
+    PDisk credentials will be recovered from configuration file by
+    PersistentDisk. User under which the script is ran should be in the
+    group that has the permission to access the configuration file.
+    """
+
+    @staticmethod
+    def get_size(endpoint, uuid):
+        pd = PDiskHelper._get_pdisk()
+        size_gb = pd.getValue('size', uuid)
+        size_gb = size_gb.replace(',', '')
+        return int(size_gb)
+
+    @staticmethod
+    def get_size_by_marketplace_url(markteplace_url):
+        manifest_id = markteplace_url.split('/')[-1]
+        return PDiskHelper._get_size_by_manifest_id(manifest_id)
+
+    @staticmethod
+    def get_endpoint_and_disk_uuid_from_uri(uri):
+        """uri - pdisk:ip[:port]:uuid
+        """
+        parts = uri.replace('/', ':').split(':')
+        if len(parts) == 4:
+            _, ip, port, uuid = parts
+            endpoint = '%s:%s' % (ip, port)
+        elif len(parts) == 3:
+            _proto, ip, uuid = parts
+            endpoint = ip
+        else:
+            raise Exception('Failed to get PDisk endpoint from disk URI: %s' % uri)
+        return endpoint, uuid
+
+    @staticmethod
+    def _get_size_by_manifest_id(manifest_id):
+        pd = PDiskHelper._get_pdisk()
+        filter = ('tag', manifest_id)
+        uuids = pd.search(*filter)
+        if not uuids:
+            raise Exception('Failed to find %s in PDisk.' % str(filter))
+        if len(uuids) > 1:
+            print 'WARNING: got more than one PDisk uuid with %s.' % str(filter)
+        size_gb = pd.getValue('size', uuids[0])
+        return int(size_gb)
+
+    @staticmethod
+    def _get_pdisk():
+        config = PDiskHelper._get_config_holder()
+        return PersistentDisk(config)
+
+    @staticmethod
+    def _get_config_holder():
+        config = PDiskHelper._get_config_as_dict()
+        ch = ConfigHolder()
+        ch.set('pdiskEndpoint', config['persistentDiskIp'])
+        ch.set('persistentDiskCloudServiceUser', config['persistentDiskCloudServiceUser'])
+        return ch
+
+    @staticmethod
+    def _get_config_as_dict():
+        config_file = Util.defaultConfigFile
+        try:
+            return ConfigHolder.configFileToDictWithFormattedKeys(config_file)
+        except Exception as ex:
+            raise Exception('Failed to get persistent_disk_ip parameter '
+                            'from %s: %s' % (config_file, str(ex)))
+
+
+class MPHelper(object):
+    """StratusLab Marketplace wrapper.
+    """
+
+    @staticmethod
+    def get_size(url):
+        """Return size in bytes as int or raise ManifestGetFromMarketplaceError().
+        """
+        try:
+            marketplaceDefinition = url_get(url + '?status=all&location=all')
+        except urllib2.URLError as ex:
+            raise ManifestGetFromMarketplaceError("Error retrieving %s: '%s'" %
+                                                  (url, str(ex)))
+        else:
+            root = ET.fromstring(marketplaceDefinition)
+            size_bytes = root.find('{0}RDF/{0}Description/{1}bytes'.\
+                                   format("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}",
+                                          "{http://mp.stratuslab.eu/slreq#}")).text
+            return bytes_to_giga_approximation(int(size_bytes))

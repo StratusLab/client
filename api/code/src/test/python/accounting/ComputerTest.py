@@ -20,10 +20,13 @@
 
 import time
 import xml.etree.ElementTree as ET
-from mock.mock import Mock
+from mock import Mock
 import unittest
 
-from stratuslab.accounting.Computer import Computer
+import stratuslab.accounting.Computer
+from stratuslab.accounting.Computer import Computer, PDiskHelper, \
+    bytes_to_giga_approximation, ManifestGetFromMarketplaceError
+from stratuslab.volume_manager.PersistentDisk import PersistentDisk
 
 USAGERECORD_XML = """
 <usagerecord>
@@ -76,12 +79,12 @@ VM_XML = """
 
 HOUR = 60 * 60
 
-DISK_SIZE = 123
+DISK_SIZE = 10 * 1024 ** 3
 IMAGE_MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <metadata>
     <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:slreq="http://mp.stratuslab.eu/slreq#" xmlns:slterms="http://mp.stratuslab.eu/slterms#" xml:base="http://mp.stratuslab.eu/">
-        <rdf:Description rdf:about="#GuiiMg3AYfPMvyVWH242-ctLuR7">
-            <dcterms:identifier>GuiiMg3AYfPMvyVWH242-ctLuR7</dcterms:identifier>
+        <rdf:Description rdf:about="#Pd1C0IktTPRXFPGlEHfxrF7gxOF">
+            <dcterms:identifier>Pd1C0IktTPRXFPGlEHfxrF7gxOF</dcterms:identifier>
             <slreq:bytes>%s</slreq:bytes>
         </rdf:Description>
     </rdf:RDF>
@@ -195,10 +198,94 @@ class ComputerTest(unittest.TestCase):
 
     def test_get_size_from_marketplace(self):
         cmptr = Computer(self.w_start, self.w_end, '', True)
-        cmptr._query_etime_from_vm_details = cmptr.get_etime
-        cmptr._get_url = Mock(return_value=IMAGE_MANIFEST)
-        assert DISK_SIZE == cmptr.get_size_from_marketplace('http://foo.bar/baz')
-        assert DISK_SIZE == cmptr.marketplaceSizeCache['http://foo.bar/baz']
+        _url_get_save = stratuslab.accounting.Computer.url_get
+        try:
+            stratuslab.accounting.Computer.url_get = Mock(return_value=IMAGE_MANIFEST)
+            size_gb = bytes_to_giga_approximation(DISK_SIZE)
+            assert size_gb == cmptr.get_size_from_marketplace_or_pdisk_by_manifest_id('http://foo.bar/baz')
+            assert size_gb == cmptr.marketplace_size_cache['http://foo.bar/baz']
+        finally:
+            stratuslab.accounting.Computer.url_get = _url_get_save
+
+    def test_get_size_from_pdisk_by_manifest_id(self):
+        cmptr = Computer(self.w_start, self.w_end, '', True)
+        size_gb = bytes_to_giga_approximation(DISK_SIZE)
+        _get_size_saved = stratuslab.accounting.Computer.MPHelper.get_size
+        _get_size_by_marketplace_url_saved = \
+            stratuslab.accounting.Computer.PDiskHelper.get_size_by_marketplace_url
+        try:
+            stratuslab.accounting.Computer.MPHelper.get_size = \
+                Mock(side_effect=ManifestGetFromMarketplaceError('Moked exception.'))
+            stratuslab.accounting.Computer.PDiskHelper.get_size_by_marketplace_url = \
+                Mock(return_value=size_gb)
+            assert size_gb == cmptr.get_size_from_marketplace_or_pdisk_by_manifest_id('http://foo.bar/baz')
+            assert size_gb == cmptr.marketplace_size_cache['http://foo.bar/baz']
+        finally:
+            stratuslab.accounting.Computer.MPHelper.get_size = _get_size_saved
+            stratuslab.accounting.Computer.PDiskHelper.get_size_by_marketplace_url = \
+                _get_size_by_marketplace_url_saved
+
+    def test_get_size_from_pdisk(self):
+        cmptr = Computer(self.w_start, self.w_end, '', True)
+        _get_config_as_dict_saved = \
+            stratuslab.accounting.Computer.PDiskHelper._get_config_as_dict
+        try:
+            stratuslab.accounting.Computer.PDiskHelper._get_config_as_dict = \
+                Mock(return_value={'pdiskEndpoint': 'foo-endpoint', 'persistentDiskCloudServiceUser': 'bar-user'})
+            PersistentDisk.getValue = Mock(return_value='2048')
+            assert 2048 == cmptr.get_size_from_pdisk('foo:1.2.3.4:1234:1-2-3-4')
+            assert 2048 == cmptr.pdisk_size_cache['foo:1.2.3.4:1234:1-2-3-4']
+        finally:
+            stratuslab.accounting.Computer.PDiskHelper._get_config_as_dict = \
+                _get_config_as_dict_saved
+
+    def test__get_pdisk_endpoint_and_disk_uuid_from_uri(self):
+        endpoint, uuid = PDiskHelper.get_endpoint_and_disk_uuid_from_uri('foo:1.2.3.4:1234:1-2-3-4')
+        assert endpoint == '1.2.3.4:1234'
+        assert uuid == '1-2-3-4'
+
+        endpoint, uuid = PDiskHelper.get_endpoint_and_disk_uuid_from_uri('foo:1.2.3.4:1-2-3-4')
+        assert endpoint == '1.2.3.4'
+        assert uuid == '1-2-3-4'
+
+        self.assertRaises(Exception,
+                          PDiskHelper.get_endpoint_and_disk_uuid_from_uri,
+                          ('foo:bar',))
+
+    def test_get_disk_size_with_MP_swap_PDisk_disks(self):
+        cmptr = Computer(self.w_start, self.w_end, '', True)
+        with open('vm-with-extra-disk-in-pdisk.xml') as f:
+            vm = ET.fromstring(f.read())
+        disks = cmptr.get_disks(vm)
+        assert 3 == len(disks)
+        disk_MP, disk_swap, disk_pdisk = disks
+
+        # Disk from Marketplace (11GB)
+        _url_get_save = stratuslab.accounting.Computer.url_get
+        stratuslab.accounting.Computer.url_get = Mock(return_value=IMAGE_MANIFEST)
+        try:
+            size_gb = bytes_to_giga_approximation(DISK_SIZE)
+            assert size_gb == cmptr.get_disk_size(disk_MP)
+            assert size_gb == \
+                cmptr.marketplace_size_cache['https://marketplace.stratuslab.eu/metadata/Pd1C0IktTPRXFPGlEHfxrF7gxOF']
+        finally:
+            stratuslab.accounting.Computer.url_get = _url_get_save
+
+        # swap (1.5GB)
+        assert float('1536') / 1024 == cmptr.get_disk_size(disk_swap)
+
+        # disk from PDisk (2TB)
+        _get_config_as_dict_saved = \
+            stratuslab.accounting.Computer.PDiskHelper._get_config_as_dict
+        try:
+            stratuslab.accounting.Computer.PDiskHelper._get_config_as_dict = \
+                Mock(return_value={'pdiskEndpoint': 'foo-endpoint', 'persistentDiskCloudServiceUser': 'bar-user'})
+            PersistentDisk.getValue = Mock(return_value='2048')
+            assert 2048 == cmptr.get_disk_size(disk_pdisk)
+            assert 2048 == cmptr.pdisk_size_cache['pdisk:154.48.152.10:8445/95b75092-17d2-459f-9fa0-cd1deaa721f1']
+        finally:
+            stratuslab.accounting.Computer.PDiskHelper._get_config_as_dict = \
+                _get_config_as_dict_saved
 
     def _get_vm(self, stime, etime):
         vm = ET.fromstring(VM_XML)
@@ -211,6 +298,7 @@ class ComputerTest(unittest.TestCase):
         cmptr._query_etime_from_vm_details = cmptr.get_etime
         cmptr._update_time_on_vm(vm)
         assert delta_time_hours == int(vm.find('time').text)
+
 
 if __name__ == "__main__":
     unittest.main()
