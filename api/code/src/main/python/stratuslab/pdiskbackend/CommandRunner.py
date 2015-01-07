@@ -9,21 +9,32 @@ from stratuslab.pdiskbackend.utils import abort, print_detail
 # Class representing a command passed to the back-end #
 #######################################################
 
+
 class CommandRunner(object):
     cmd_output_start = '<<<<<<<<<<'
     cmd_output_end = '>>>>>>>>>>'
-    
-    RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.', re.MULTILINE)),
-                    (1, re.compile('^ssh: connect to host .* Connection refused', re.MULTILINE)),
-                    (255, re.compile('^ssh: connect to host .* No route to host', re.MULTILINE))]
+
+    DEFAULT_TIMEOUT = 1
     MAX_RETRIES = 3
-    
-    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs=[]):
+    RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES),
+                    (1, re.compile('^ssh: connect to host .* Connection refused', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES),
+                    (255, re.compile('^ssh: connect to host .* No route to host', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES)]
+
+    def __init__(self, action, cmd, successMsgs=[], failureOkMsgs=[], retry_errors=[]):
+        """
+        retry_errors: list of three-tuples - (err_code<int>, compiled_regexp<pattern-object>, timeout<int>)
+        """
         self.action = action
         self.action_cmd = cmd
         self.successMsgs = successMsgs or []
         self.failureOkMsgs = failureOkMsgs or []
         self.proc = None
+        self._update_retry_errors(retry_errors or [])
+
+    def _update_retry_errors(self, retry_errors):
+        for retry_err in retry_errors:
+            if retry_err not in self.RETRY_ERRORS:
+                self.RETRY_ERRORS.append(retry_err)
 
     def execute(self):
         status = 0
@@ -34,7 +45,7 @@ class CommandRunner(object):
             abort('Failed to execute %s action: %s' % (self.action, details))
             status = 1
         return status
-    
+
     def checkStatus(self):
         optInfo = ()
         try:
@@ -92,7 +103,7 @@ class CommandRunner(object):
                 self.debug('unmap action - exit code was reset to %i.' % retcode)
 
         return retcode, optInfo
-    
+
     def _filter_command_output(self, output):
         lines = []
         for line in output.split('\n'):
@@ -112,27 +123,34 @@ class CommandRunner(object):
         with 'side_effect'."""
         retcode, output = self._getStatusOutput()
         return self._retryOnError(retcode, output)
-    
+
     def _getStatusOutput(self):
         retcode = self.proc.wait()
         return retcode, self.proc.communicate()[0]
-    
+
     def _retryOnError(self, retcode, output):
         retries = 0
-        while self._needToRetry(retcode, output) and retries < self.MAX_RETRIES:
-            time.sleep(1)
+        timeout, max_retries = self._get_timeout(retcode, output)
+        while self._needToRetry(retcode, output) and retries < max_retries:
+            time.sleep(timeout)
             self.execute()
             retcode, output = self._getStatusOutput()
             retries += 1
         return retcode, output
-    
+
     def _needToRetry(self, retcode, output):
         if retcode == 0:
             return False
-        for rc, re_out in self.RETRY_ERRORS:
+        for rc, re_out, _, _ in self.RETRY_ERRORS:
             if rc == retcode and re_out.match(output):
                 return True
         return False
+
+    def _get_timeout(self, retcode, output):
+        for rc, re_out, timeout, max_retries in self.RETRY_ERRORS:
+            if rc == retcode and re_out.match(output):
+                return timeout, max_retries
+        return self.DEFAULT_TIMEOUT, self.MAX_RETRIES
 
     def debug(self, msg, level=0):
         print_detail(msg, level)

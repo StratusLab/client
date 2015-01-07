@@ -1,4 +1,5 @@
 
+import re
 from .Backend import Backend
 
 NETAPP_7MODE = ['netapp', 'netapp-7mode']  # 'netapp' is for backward compatibility.
@@ -23,7 +24,6 @@ def getBackendProxy(config):
                             backend_attributes['lun_namespace'],
                             backend_attributes['initiator_group'],
                             backend_attributes['volume_snapshot_prefix'])
-
 
 def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace,
                      initiatorGroup, snapshotPrefix):
@@ -90,7 +90,6 @@ class NetAppBackend(Backend):
         elif string == '%%SNAP_NAME%%':
             string = self.namespace + "/%%SNAP_UUID%%"
         return super(NetAppBackend, self).detokenize(string)
-
 
 class NetApp7Mode(NetAppBackend):
 
@@ -166,6 +165,13 @@ class NetAppCluster(NetApp7Mode):
                              'No such snapshot',
                              'Error: There are no entries matching your query.'],
                   'snapshot':['^creating snapshot', '^Snapshot already exists.']})
+
+    retry_errors = NetApp7Mode.retry_errors.copy()
+    _timeout = 30
+    _max_retries = 4
+    retry_errors.update({'snapshot':
+                        [(255, re.compile('.*Snapshot operation not allowed due to clones backed by.*', re.MULTILINE | re.DOTALL), _timeout, _max_retries), ]
+                        })
 
     def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup,
                  snapshotPrefix):

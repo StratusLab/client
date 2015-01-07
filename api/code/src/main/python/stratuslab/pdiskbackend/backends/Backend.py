@@ -88,6 +88,12 @@ class Backend(object):
     new_lun_required = {
                         }
 
+    # Dictionary with { action: list of four-tuples}. Where the tuples are:
+    # (err_code<int>, compiled_regexp<pattern-object>, timeout<int>, max-retries<int>).
+    # Used by CommandRunner to retry on errors with timeout.
+    retry_errors = {
+                    }
+
     def __init__(self):
         if not self._type:
             raise Exception('Backend type should be set.')
@@ -114,6 +120,7 @@ class Backend(object):
                                  success_patterns=self._get_success_patterns(action),
                                  failure_command=self._get_failure_command(lun_action, action),
                                  failure_ok_patterns=self._get_failure_ok_patterns(action),
+                                 retry_errors=self._get_retry_errors(action),
                                  action=action)
 
     def _get_backend_actions(self, lun_action):
@@ -159,6 +166,9 @@ class Backend(object):
             if isinstance(failure_ok_patterns, str):
                 failure_ok_patterns = [ failure_ok_patterns ]
         return failure_ok_patterns
+
+    def _get_retry_errors(self, action):
+        return self.retry_errors.get(action, None)
 
     # Method returning true if creation of a new LUN is required for a particular LUN action.
     # LUN creation is the responsibility of the caller.

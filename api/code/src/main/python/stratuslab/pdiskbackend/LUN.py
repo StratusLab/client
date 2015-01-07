@@ -23,45 +23,45 @@ class LUN(object):
     # By default, a command returns nothing on stdout.
     additional_opt_info = {'rebase':'%%SNAP_UUID%%',
                           }
-    
+
     def __init__(self, uuid, size=None, proxy=None):
         self.uuid = uuid
         self.size = size
         self.proxy = proxy
         # Another LUN involved in actions like rebase or snapshot
         self.associatedLUN = None
-    
+
     def getUuid(self):
         return self.uuid
-    
+
     def check(self):
         status, _ = self._execute_action('check')
         return status
-    
+
     def create(self):
         status, _ = self._execute_action('create')
         return status
-    
+
     def delete(self):
         status, _ = self._execute_action('delete')
         return status
-    
+
     def getSize(self):
         status, self.size = self._execute_action('size')
         if status != 0:
             abort('Failure to retrieve size of LUN %s' % (self.uuid))
         return status
-    
+
     def getTurl(self):
         status, self.turl = self._execute_action('getturl')
         if status != 0:
             abort('Failure to retrieve Transport URL of %s' % (self.uuid))
         return self.turl
-    
+
     def map(self):
         status, _ = self._execute_action('map')
         return status
-    
+
     def rebase(self):
         if self.proxy.newLunRequired('rebase'):
             # TODO: generate a UUID based on creation timestamp as in PDisk
@@ -78,16 +78,16 @@ class LUN(object):
         # Don't return directly self.associatedLUN but use optional information
         # returned by action execution to allow reformatting if needed.
         return rebasedLUN
-    
+
     def snapshot(self, snapshot_lun):
         self.associatedLUN = snapshot_lun
         status, _ = self._execute_action('snapshot')
         return status
-    
+
     def unmap(self):
         status, _ = self._execute_action('unmap')
         return status
-    
+
     def _runRollback(self, backendCmd):
         status_, optInfo_ = self._runCommandOnFailure(backendCmd)
         if status_ != 0:
@@ -126,19 +126,19 @@ class LUN(object):
                     else:
                         optInfos = optInfo
                 break
-            
+
             if optInfo:
                 if optInfos:
                     optInfos += optInfo
                 else:
                     optInfos = optInfo
-            
+
         # Append an optional additional value built from LUN attributes, if necessary
         if status == 0 and action in self.additional_opt_info:
             if not optInfos:
                 optInfos = ()
             optInfos += self._detokenize(self.additional_opt_info[action]),
-        
+
         if isinstance(optInfos, (basestring,)):
             optInfos = (optInfos,)
 
@@ -146,37 +146,40 @@ class LUN(object):
             optInfosStr = self.proxy.formatOptInfos(action, optInfos)
         else:
             optInfosStr = ' '.join(optInfos)
-        
+
         return status, optInfosStr
-    
+
     def _runCommand(self, backendCmd):
         return self._run_command(backendCmd.action,
                                  backendCmd.command,
                                  backendCmd.success_patterns,
-                                 backendCmd.failure_ok_patterns)
-    
+                                 backendCmd.failure_ok_patterns,
+                                 backendCmd.retry_errors)
+
     def _runCommandOnFailure(self, backendCmd):
         return self._run_command(backendCmd.action,
                                  backendCmd.failure_command,
                                  backendCmd.success_patterns,
-                                 backendCmd.failure_ok_patterns)
+                                 backendCmd.failure_ok_patterns,
+                                 backendCmd.retry_errors)
 
-    def _run_command(self, action, command, success_patterns, failure_ok_patterns):
-        command = CommandRunner(action, command, success_patterns, 
-                                failure_ok_patterns)
+    def _run_command(self, action, command, success_patterns, failure_ok_patterns,
+                     retry_errors=[]):
+        command = CommandRunner(action, command, success_patterns,
+                                failure_ok_patterns, retry_errors)
         command.execute()
         return command.checkStatus()
 
     def _getBackendCmd(self, action):
         return self.proxy.getCmd(action)
-    
+
     def _getBackendType(self):
         return self.proxy.getType()
-    
+
     def _detokenizeBackendCmd(self, backendCmd):
         backendCmd.command = self._detokenizeCmd(backendCmd.command)
         backendCmd.failure_command = self._detokenizeCmd(backendCmd.failure_command)
-        
+
     def _detokenizeCmd(self, action_cmd):
         """LUN related de-tokenization."""
         if not action_cmd:
@@ -185,7 +188,7 @@ class LUN(object):
         for i in range(len(action_cmd)):
             action_cmd[i] = self._detokenize(action_cmd[i])
         return action_cmd
-    
+
     def _detokenize(self, string):
         if re.search('%%SIZE%%', string):
             string = re.sub('%%SIZE%%', self.size, string)
