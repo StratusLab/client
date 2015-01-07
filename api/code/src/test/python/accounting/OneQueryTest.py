@@ -1,4 +1,4 @@
-from mock.mock import Mock
+from mock import Mock
 import unittest
 import json
 import xml.etree.ElementTree as ET
