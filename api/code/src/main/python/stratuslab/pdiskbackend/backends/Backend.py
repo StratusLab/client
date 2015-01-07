@@ -12,14 +12,14 @@ from stratuslab.pdiskbackend.utils import abort, print_detail
 ####################################################################
 
 class Backend(object):
-    
+
     _type = ''
-    
+
     # Command prefix to use to connect through ssh
     ssh_cmd_prefix = [ 'ssh', '-x', '-i', '%%PRIVKEY%%', '%%ISCSI_PROXY%%' ]
-    
+
     cmd_prefix = []
-    
+
     # Table defining mapping of LUN actions to backend actions.
     # This is a 1 to n mapping (several backend commands may be needed for one LUN action).
     # map and unmap are necessary as separate actions as they are not necessarily executed on
@@ -37,11 +37,11 @@ class Backend(object):
                                'snapshot':None,
                                'unmap':None,
                               }
-    
+
     # Definitions of backend commands used to implement actions.
     backend_cmds = {
                     }
-    
+
     # Commands to execute when a given backend command fails.
     # This is a dictionary where key is one of the backend_cmds key and the value is another dictionary
     # whose key is the name of lun action (as defined in lun_backend_cmd_mapping) that defines the
@@ -53,14 +53,14 @@ class Backend(object):
     # with next command if any.
     backend_failure_cmds = {
                             }
-    
+
     # Most commands are expected to return nothing when they succeeded. The following
     # dictionary lists exceptions and provides a pattern matching output in case of
     # success.
     # Keys must match an existing key in backend_cmds
     success_msg_pattern = {
                           }
-    
+
     # Some commands may fail (exit with return code greater than zero), but depending
     # on the operation and by examining its output we might want to decide to mark the
     # operation as successful. The following dictionary lists exceptions and provides
@@ -68,7 +68,7 @@ class Backend(object):
     # Keys must match an existing key in backend_cmds
     failure_ok_msg_pattern = {
                               }
-    
+
     # Some backend actions must return a value (eg. LUN, TURL...)
     # that is build from the output of executed commands. This dictionary
     # allows to specify how the final value returned is built from the
@@ -78,7 +78,7 @@ class Backend(object):
     # Value must be a valid formatting instruction.
     opt_info_format = {
                       }
-    
+
     # The creation of a new LUN may be required by some operations
     # on some backends (e.g. rebase with LVM backend).
     # This dictionary allows to define which LUN actions (same keys
@@ -88,6 +88,12 @@ class Backend(object):
     new_lun_required = {
                         }
 
+    # Dictionary with { action: list of four-tuples}. Where the tuples are:
+    # (err_code<int>, compiled_regexp<pattern-object>, timeout<int>, max-retries<int>).
+    # Used by CommandRunner to retry on errors with timeout.
+    retry_errors = {
+                    }
+
     def __init__(self):
         if not self._type:
             raise Exception('Backend type should be set.')
@@ -96,7 +102,7 @@ class Backend(object):
         self.mgtPrivKey = ''
         self.volumeName = ''
         self.mgtUser = ''
-    
+
     # Generator function returning:
     #    - the command corresponding to the action as a list of tokens, with iSCSI proxy related
     #      variables parsed.
@@ -108,12 +114,13 @@ class Backend(object):
 
         if backend_actions == None:
             yield None
-    
+
         for action in backend_actions:
             yield BackendCommand(command=self._get_command(action),
                                  success_patterns=self._get_success_patterns(action),
                                  failure_command=self._get_failure_command(lun_action, action),
                                  failure_ok_patterns=self._get_failure_ok_patterns(action),
+                                 retry_errors=self._get_retry_errors(action),
                                  action=action)
 
     def _get_backend_actions(self, lun_action):
@@ -127,7 +134,7 @@ class Backend(object):
             return self._buildCmd(self.backend_cmds[action])
         else:
             abort("Internal error: action '%s' unknown" % (action))
-    
+
     def _get_success_patterns(self, action):
         success_patterns = None
         if action in self.success_msg_pattern:
@@ -135,7 +142,7 @@ class Backend(object):
             if isinstance(success_patterns, str):
                 success_patterns = [ success_patterns ]
         return success_patterns
-    
+
     def _get_failure_command(self, lun_action, action):
         failure_command = None
         if action in self.backend_failure_cmds:
@@ -149,9 +156,9 @@ class Backend(object):
                 command = None
             if command:
                 failure_command = self._buildCmd(command)
-    
+
         return failure_command
-    
+
     def _get_failure_ok_patterns(self, action):
         failure_ok_patterns = None
         if action in self.failure_ok_msg_pattern:
@@ -159,12 +166,15 @@ class Backend(object):
             if isinstance(failure_ok_patterns, str):
                 failure_ok_patterns = [ failure_ok_patterns ]
         return failure_ok_patterns
-    
+
+    def _get_retry_errors(self, action):
+        return self.retry_errors.get(action, None)
+
     # Method returning true if creation of a new LUN is required for a particular LUN action.
     # LUN creation is the responsibility of the caller.
     def newLunRequired(self, action):
         return action in self.new_lun_required
-    
+
     # Method formatting optional information returned by executed commands as a string.
     # Optional information are passed as a tuple.
     # Formatting instructions are retrieved in a backend-specific dictionary with one entry
@@ -182,7 +192,7 @@ class Backend(object):
             return optInfosFmt % optInfos
         else:
             return ' '.join(optInfos)
-    
+
     # Add command prefix and parse all variables related to iSCSI proxy in the command (passed as a list of tokens).
     # Return parsed command as a list of token.
     def _buildCmd(self, command):
@@ -193,7 +203,7 @@ class Backend(object):
         for i in range(len(action_cmd)):
             action_cmd[i] = self.detokenize(action_cmd[i])
         return action_cmd
-    
+
     # Parse all variables related to iSCSI proxy in the string passed as argument.
     # Return parsed string.
     # Note that this class must generally be overridden in the derived class to process

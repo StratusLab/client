@@ -1,7 +1,8 @@
 
+import re
 from .Backend import Backend
 
-NETAPP_7MODE = ['netapp', 'netapp-7mode'] # 'netapp' is for backward compatibility.
+NETAPP_7MODE = ['netapp', 'netapp-7mode']  # 'netapp' is for backward compatibility.
 NETAPP_CLUSTER = ['netapp-cluster']
 
 NETAPP_FLAVOURS = NETAPP_7MODE + NETAPP_CLUSTER
@@ -21,15 +22,15 @@ def getBackendProxy(config):
                             backend_attributes['volume_name'],
                             backend_attributes['lun_namespace'],
                             backend_attributes['initiator_group'],
-                            backend_attributes['volume_snapshot_prefix'])   
+                            backend_attributes['volume_snapshot_prefix'])
 
-def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace, 
+def getNetAppBackend(flavor, proxy, mgtUser, mgtPrivKey, volume, namespace,
                      initiatorGroup, snapshotPrefix):
     if flavor.lower() in NETAPP_7MODE:
-        return NetApp7Mode(proxy, mgtUser, mgtPrivKey, volume, namespace, 
+        return NetApp7Mode(proxy, mgtUser, mgtPrivKey, volume, namespace,
                              initiatorGroup, snapshotPrefix)
     elif flavor.lower() in NETAPP_CLUSTER:
-        return NetAppCluster(proxy, mgtUser, mgtPrivKey, volume, namespace, 
+        return NetAppCluster(proxy, mgtUser, mgtPrivKey, volume, namespace,
                              initiatorGroup, snapshotPrefix)
     else:
         raise Exception('Unknown NetApp flavor provided: %s' % flavor)
@@ -50,18 +51,18 @@ class NetAppBackend(Backend):
                                }
 
     backend_failure_cmds = {}
-    
+
     failure_ok_msg_pattern = {}
-    
+
     opt_info_format = {'getturl':'iscsi://%%ISCSI_HOST%%/%s:%s'}
 
     # Would be great to have it configurable as NetApp needs to know the client OS
     lunOS = 'linux'
-    
-    def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
+
+    def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup,
                  snapshotPrefix):
         super(NetAppBackend, self).__init__()
-        
+
         self.proxyHost = proxy
         self.mgtUser = mgtUser
         self.mgtPrivKey = mgtPrivKey
@@ -72,7 +73,7 @@ class NetAppBackend(Backend):
         self.snapshotPrefix = snapshotPrefix
         # Command to connect to NetApp filer (always ssh)
         self.cmd_prefix = self.ssh_cmd_prefix
-        
+
     # Parse all variables related to iSCSI proxy in the string passed as argument.
     # Return parsed string.
     def detokenize(self, string):
@@ -87,14 +88,14 @@ class NetAppBackend(Backend):
         elif string == '%%SNAP_NAME%%':
             string = self.namespace + "/%%SNAP_UUID%%"
         return super(NetAppBackend, self).detokenize(string)
-    
+
 class NetApp7Mode(NetAppBackend):
-    
+
     _type = 'netapp-7mode'
-    
+
     # The following variables define which command to execute for each action.
     # They are documented in the superclass Backend.
-    
+
     backend_cmds = {'check':[ 'lun', 'show', '%%NAME%%' ],
                     'clone':[ 'lun', 'clone', 'create', '%%SNAP_NAME%%', '-b', '%%NAME%%', '%%SNAP_PARENT%%'  ],
                     'create':[ 'lun', 'create', '-s', '%%SIZE%%g', '-t', '%%LUNOS%%', '%%NAME%%' ],
@@ -109,26 +110,26 @@ class NetApp7Mode(NetAppBackend):
                     'snapshot':[ 'snap', 'create', '%%VOLUME_NAME%%', '%%SNAP_PARENT%%' ],
                     'unmap':[ 'lun', 'unmap', '%%NAME%%', '%%INITIATORGRP%%' ]
                     }
-    
+
     success_msg_pattern = {'check':'online',
                            'get_lun':'Maps:\s+[\w\-]+=(\d+)',
                            'get_target':'iSCSI target nodename:\s+([\w\-:\.]+)',
-                           'igroup_create':['','igroup\s+create:\s+Initiator\s+group\s+already\s+exists'],
+                           'igroup_create':['', 'igroup\s+create:\s+Initiator\s+group\s+already\s+exists'],
                            # snapdel is expected to fail if there is still a LUN clone using it or if the snapshot doesnt exist
                            # (LUN never cloned or is a clone). These are not considered as an error.
-                           'snapdel':['deleting snapshot\.\.\.', 
+                           'snapdel':['deleting snapshot\.\.\.',
                                       'Snapshot [\w\-]+ is busy because of LUN clone',
                                       'No such snapshot'],
-                           'snapshot':['^creating snapshot','^Snapshot already exists.']
+                           'snapshot':['^creating snapshot', '^Snapshot already exists.']
                           }
-    
-    def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
+
+    def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup,
                  snapshotPrefix):
-        super(NetApp7Mode, self).__init__(proxy, mgtUser, mgtPrivKey, volume, 
+        super(NetApp7Mode, self).__init__(proxy, mgtUser, mgtPrivKey, volume,
                                           namespace, initiatorGroup, snapshotPrefix)
 
 class NetAppCluster(NetApp7Mode):
-    
+
     _type = 'netapp-clustered'
 
     backend_cmds = NetApp7Mode.backend_cmds.copy()
@@ -156,13 +157,20 @@ class NetAppCluster(NetApp7Mode):
                   'igroup_create':['', 'igroup\s+create:\s+Initiator\s+group\s+already\s+exists'],
                   # snapdel is expected to fail if there is still a LUN clone using it or if the snapshot doesnt exist
                   # (LUN never cloned or is a clone). These are not considered as an error.
-                  'snapdel':[ 'deleting snapshot\.\.\.', 
-                             'Snapshot [\w\-]+ is busy because of LUN clone', 
-                             'No such snapshot', 
+                  'snapdel':[ 'deleting snapshot\.\.\.',
+                             'Snapshot [\w\-]+ is busy because of LUN clone',
+                             'No such snapshot',
                              'Error: There are no entries matching your query.'],
                   'snapshot':['^creating snapshot', '^Snapshot already exists.']})
 
-    def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup, 
+    retry_errors = NetApp7Mode.retry_errors.copy()
+    _timeout = 30
+    _max_retries = 4
+    retry_errors.update({'snapshot':
+                        [(255, re.compile('.*Snapshot operation not allowed due to clones backed by.*', re.MULTILINE | re.DOTALL), _timeout, _max_retries), ]
+                        })
+
+    def __init__(self, proxy, mgtUser, mgtPrivKey, volume, namespace, initiatorGroup,
                  snapshotPrefix):
-        super(NetAppCluster, self).__init__(proxy, mgtUser, mgtPrivKey, volume, 
+        super(NetAppCluster, self).__init__(proxy, mgtUser, mgtPrivKey, volume,
                                             namespace, initiatorGroup, snapshotPrefix)

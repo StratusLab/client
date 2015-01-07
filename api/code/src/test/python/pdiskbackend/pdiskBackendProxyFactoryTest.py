@@ -1,7 +1,7 @@
 import os
 import unittest
 import tempfile
-from mock.mock import Mock
+from mock import Mock
 
 from stratuslab.pdiskbackend.ConfigHolder import ConfigHolder
 from stratuslab.pdiskbackend.PdiskBackendProxyFactory import PdiskBackendProxyFactory
@@ -48,7 +48,7 @@ class BackendTest(unittest.TestCase):
     def testInit(self):
         ch = ConfigHolder(self.cfg_fname)
         ch.get_proxy_name = Mock(return_value='foo')
-        self.assertRaises(SystemExit, 
+        self.assertRaises(SystemExit,
                           PdiskBackendProxyFactory.createBackendProxy, ch)
 
     def testCreateBackends(self):
@@ -57,20 +57,20 @@ class BackendTest(unittest.TestCase):
 
         for netapp_type in ['netapp.com', '7mode.netapp.com', 'cluster.netapp.com']:
             ch.get_proxy_name = Mock(return_value=netapp_type)
-            assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch), 
+            assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch),
                               NetAppBackend)
-        
+
         ch.get_proxy_name = Mock(return_value='ceph.org')
-        assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch), 
+        assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch),
                           CephBackend)
-        
+
         ch.get_proxy_name = Mock(return_value='file.org')
-        assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch), 
+        assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch),
                           FileBackend)
-        
+
         ch.get_proxy_name = Mock(return_value='lvm.org')
-        assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch), 
+        assert isinstance(PdiskBackendProxyFactory.createBackendProxy(ch),
                           LVMBackend)
-        
+
 if __name__ == "__main__":
     unittest.main()

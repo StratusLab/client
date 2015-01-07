@@ -1,11 +1,12 @@
 
 class BackendCommand(object):
     def __init__(self, command=None, success_patterns=None, failure_command=None,
-                 failure_ok_patterns=None, action=None):
+                 failure_ok_patterns=None, retry_errors=None, action=None):
         self._command = command
         self._success_patterns = success_patterns
         self._failure_command = failure_command
         self._failure_ok_patterns = failure_ok_patterns
+        self._retry_errors = retry_errors
         self._action = action
 
     @property
@@ -26,6 +27,9 @@ class BackendCommand(object):
     @property
     def failure_ok_patterns(self):
         return self._failure_ok_patterns
+    @property
+    def retry_errors(self):
+        return self._retry_errors
     @property
     def action(self):
         return self._action
