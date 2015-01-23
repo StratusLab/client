@@ -96,6 +96,7 @@ class TMSaveCache(object):
         self.imageSha1 = None
         self.createImageInfo = None
         self.cloud = None
+        self.saveImageReplyToEmail = None
 
         self.persistentDiskIp = None
         self.persistentDiskPort = None
@@ -168,7 +169,7 @@ class TMSaveCache(object):
     # FIXME: duplicates should be pulled into common location
     def _createPdiskEndpoint(self):
         host = self.configHolder.persistentDiskIp
-        port = self.configHolder.persistentDiskPort or _PDISK_PORT
+        port = self.configHolder.persistentDiskPort or self._PDISK_PORT
         path = self.configHolder.persistentDiskPath or ''
         path = path.strip('/')
         return 'https://%s:%s/%s' % (host, port, path)
@@ -205,19 +206,18 @@ class TMSaveCache(object):
         return fragments.pop()
 
     def _detachAllVolumes(self):
-        pdisk = VolumeManagerFactory.create(self.configHolder)
         msg = ''
         for pdisk_uri in self.attachedVolumeURIs:
             try:
-                self._detachSingleVolume(pdisk, pdisk_uri)
+                self._detachSingleVolume(pdisk_uri)
             except Exception as e:
                 msg += str(e) + "\n"
         if msg:
             raise Exception(msg)
 
-    def _detachSingleVolume(self, pdisk, pdisk_uri):
+    def _detachSingleVolume(self, pdisk_uri):
         uuid = self._getDiskNameFromURI(pdisk_uri)
-        turl = pdisk.getTurl(uuid)
+        turl = self._getTurl(uuid)
         self._sshDst(['/usr/sbin/stratus-pdisk-client.py',
                       '--pdisk-id', pdisk_uri,
                       '--vm-id', str(self.instanceId),
@@ -354,14 +354,6 @@ class TMSaveCache(object):
                       'Failed to map %s on NetApp' % self.diskName,
                       dontRaiseOnError=True)
 
-        def _getTURL():
-            # Get TURL
-            get_turl_cmd = [PDISK_BACKEND_CMD,
-                            '--action', 'getturl',
-                            self.diskName]
-            return self._ssh(self.persistentDiskIp, get_turl_cmd,
-                             'Failed to get TURL for %s' % self.diskName)
-
         def _attachLUN(turl):
             snapshotPath = os.path.join('/var/tmp/stratuslab',
                                         self.diskName + '.link')
@@ -402,12 +394,16 @@ class TMSaveCache(object):
                       dontRaiseOnError=True)
 
         _mapDisk()
-        turl = _getTURL()
+        turl = self._getTurl(self.diskName)
         snapshotPath = _attachLUN(turl)
         checksum = _checksumSnapshot(snapshotPath)
         _clenup(snapshotPath)
 
         return checksum
+
+    def _getTurl(self, uuid):
+        pdisk = VolumeManagerFactory.create(self.configHolder)
+        return pdisk.getTurl(uuid)
 
     def _getSnapshotChecksum_Lvm(self):
         snapshotPath = self._getSnapshotPath()
