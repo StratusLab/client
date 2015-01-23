@@ -18,7 +18,8 @@ class CommandRunner(object):
     MAX_RETRIES = 3
     RETRY_ERRORS = [(255, re.compile('^Connection to .* closed by remote host.', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES),
                     (1, re.compile('^ssh: connect to host .* Connection refused', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES),
-                    (255, re.compile('^ssh: connect to host .* No route to host', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES)]
+                    (255, re.compile('^ssh: connect to host .* No route to host', re.MULTILINE), DEFAULT_TIMEOUT, MAX_RETRIES),
+                    (255, re.compile('.*ssh_exchange_identification: Connection closed by remote host.*', re.MULTILINE | re.DOTALL), 5, 6)]
 
     def __init__(self, action, cmd, successMsgs=[], failureOkMsgs=[], retry_errors=[]):
         """
