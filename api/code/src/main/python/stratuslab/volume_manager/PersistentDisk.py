@@ -330,7 +330,7 @@ class PersistentDisk(object):
             addDisk = True
             for propertyName, searchedValue in filters.items():
                 diskProperty = disk.get(propertyName, None)
-                if not diskProperty:
+                if diskProperty is None:
                     addDisk = False
                     break
                 for value in searchedValue:
