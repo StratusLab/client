@@ -3,6 +3,7 @@ from stratuslab.pdiskbackend.utils import abort
 
 backend_modules = {'lvm' : 'LVMBackend',
                    'ceph' : 'CephBackend',
+                   'gpfs' : 'GPFSBackend',
                    'file' : 'FileBackend',
                    'netapp' : 'NetAppBackend',
                    'netapp-7mode' : 'NetAppBackend',
