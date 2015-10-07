@@ -12,6 +12,7 @@ source   = "%(vm_image)s",
 target   = "%(vm_disks_prefix)sa",
 save     = %(save_disk)s,
 readonly = "no",
+%(root_disk_size_entry)s
 driver = "%(disk_driver)s"
 ]
 DISK = [
