@@ -99,6 +99,12 @@ class RunnerTest(unittest.TestCase):
     def tearDown(self):
         reload(ConfigHolder)
 
+    def test_set_root_disk_size(self):
+        runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
+                                            'MMZu9WvwKIro-rtBQfDk4PsKO7_')
+        vm_params = runner._vmParamDict()
+        self.failUnlessEqual('size = 0,', vm_params['root_disk_size_entry'])
+
     def testDisksBusTypeVirtio(self):
         runner = self._getRunnerForManifest(self.MANIFEST_DISKS_BUS_VIRTIO,
                                             'MMZu9WvwKIro-rtBQfDk4PsKO7_')

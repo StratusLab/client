@@ -58,5 +58,33 @@ class VmInfoTest(unittest.TestCase):
         self.assertEqual('ID3',info.level1_level2_level3_id3)
         self.assertEqual('ID4',info.level1_id4)
 
+    def test_disk_element(self):
+        xml = '''
+<root>
+    <level1>
+        <id1>ID1</id1>
+        <DISK>
+            <DISK_ID>0</DISK_ID>
+            <SIZE>123</SIZE>
+        </DISK>
+        <DISK>
+            <SIZE>456</SIZE>
+        </DISK>
+    </level1>
+</root>
+'''
+        root = etree.fromstring(xml)
+
+        info = CloudInfo()
+        info.populate(root)
+
+        assert hasattr(info, 'level1_disk_0_disk_id')
+        assert hasattr(info, 'level1_disk_0_size')
+        assert hasattr(info, 'level1_disk_x_size')
+        assert '0' == info.level1_disk_0_disk_id
+        assert '123' == info.level1_disk_0_size
+        assert '456' == info.level1_disk_x_size
+
+
 if __name__ == "__main__":
     unittest.main()
