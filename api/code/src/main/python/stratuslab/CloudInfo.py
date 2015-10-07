@@ -35,9 +35,17 @@ class CloudInfo(object):
             for child in children:
                 self._populate(child, _parentHierachy)
         else:
-            # skip the root element
-            hierachy = parentHierachy[1:] + [element.tag]
-            attributeName = '_'.join(hierachy)
+            # root element is not included
+            if parentHierachy[-1].tag == 'DISK':
+                try:
+                    disk_id = parentHierachy[-1].find('DISK_ID').text
+                except Exception:
+                    disk_id = 'X'
+                hierachy = [e.tag for e in parentHierachy[1:]] + [disk_id, element.tag]
+                attributeName = '_'.join(hierachy)
+            else:
+                hierachy = parentHierachy[1:] + [element]
+                attributeName = '_'.join([e.tag for e in hierachy])
             if isinstance(element.text, unicode):
                 text = element.text.encode('utf-8')
             else:
@@ -50,7 +58,7 @@ class CloudInfo(object):
     
     def _updateHierachy(self, element, parentHierachy):
         _parentHierachy = parentHierachy[:]
-        _parentHierachy.append(element.tag)
+        _parentHierachy.append(element)
         return _parentHierachy
 
     def getAttributes(self):
