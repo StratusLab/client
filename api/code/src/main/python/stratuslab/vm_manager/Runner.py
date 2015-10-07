@@ -113,6 +113,7 @@ class Runner(VmManager):
         self._setCloudContext()
         self.createImageData = {self.CREATE_IMAGE_KEY_CREATOR_EMAIL: self.authorEmail,
                                 self.CREATE_IMAGE_KEY_NEWIMAGE_MARKETPLACE: self.marketplaceEndpointNewimage}
+        self._image = None
         self._initVmAttributes()
         self.instancesDetail = []
         self.availableInstanceTypes = self._getAvailableInstanceTypes()
@@ -146,6 +147,10 @@ class Runner(VmManager):
 
         self._initVmAttributesStatic()
 
+        if not self._image:
+            self._image = Image(self.configHolder)
+
+        self._set_root_disk_size_entry()
         self._setMsgRecipients()
         self._setUserKeyIfDefined()
         self._setSaveDisk()
@@ -177,6 +182,13 @@ class Runner(VmManager):
         self.diskImageFormat = None
         self.disk_driver = None
         self.inbound_ports = ''
+        self.root_disk_size_entry = ''
+
+    def _set_root_disk_size_entry(self):
+        if self.vm_image:
+            size_bytes = int(self._image.get_image_size_by_image_id(self.vm_image))
+            size_MB = size_bytes / 1024 ** 2
+            self.root_disk_size_entry = 'size = %s,' % size_MB
 
     def _setMsgRecipients(self):
         try:
@@ -189,8 +201,7 @@ class Runner(VmManager):
         # if image ID was provided extract disk driver type from manifest
         if self.vm_image:
             if not useQcowDiskFormat and Image.isImageId(self.vm_image):
-                image = Image(self.configHolder)
-                self.disk_driver = image.getImageFormatByImageId(self.vm_image)
+                self.disk_driver = self._image.getImageFormatByImageId(self.vm_image)
                 return
         self.disk_driver = (useQcowDiskFormat and 'qcow2') or 'raw'
 
@@ -199,8 +210,7 @@ class Runner(VmManager):
             disks_bus = self.vmDisksBus
         else:
             if Image.isImageId(self.vm_image):
-                image = Image(self.configHolder)
-                disks_bus = image.getImageDisksBusTypeByImageId(self.vm_image)
+                disks_bus = self._image.getImageDisksBusTypeByImageId(self.vm_image)
             else:
                 return
 
@@ -261,9 +271,8 @@ class Runner(VmManager):
 
     def _setInboundPorts(self):
         if Image.isImageId(self.vm_image):
-            image = Image(self.configHolder)
             try:
-                self.inboundPorts = image.getInboundPortsByImageId(self.vm_image)
+                self.inboundPorts = self._image.getInboundPortsByImageId(self.vm_image)
             except Exceptions.ExecutionException:
                 pass
 
@@ -637,8 +646,9 @@ class Runner(VmManager):
         if self.noCheckImageUrl:
             printWarning('Image availability check is disabled.')
             return
-        imageObject = Image(self.configHolder)
-        imageObject.checkImageExists(imageId)
+        if not self._image:
+            self._image = Image(self.configHolder)
+        self._image.checkImageExists(imageId)
 
     def _prependMarketplaceUrlIfImageId(self, image):
         if Image.isImageId(image):

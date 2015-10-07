@@ -68,6 +68,9 @@ class Image(object):
     def getInboundPortsByImageId(self, imageId):
         return self._getImageElementValue('inboundports', imageId)
 
+    def get_image_size_by_image_id(self, image_id):
+        return self._getImageElementValue('bytes', image_id)
+
     def _getImageElementValue(self, element, imageId):
         if Image.isImageId(imageId):
             return self.manifestDownloader.getImageElementValue(element, imageId)
